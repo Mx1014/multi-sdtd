@@ -1,4 +1,4 @@
-package com.rzt;
+package com.rzt.khtask;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
