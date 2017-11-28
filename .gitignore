@@ -1,4 +1,0 @@
-#忽略以.idea开头的文件夹
-.idea
-#忽略生成的target目录
-target
