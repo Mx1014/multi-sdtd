@@ -34,7 +34,7 @@
 		<java.version>1.8</java.version>
 	</properties>
 
-<!--	<repositories>
+	<repositories>
 		<repository>
 			<id>nexus</id>
 			<name>nexus</name>
@@ -46,7 +46,7 @@
 				<enabled>true</enabled>
 			</snapshots>
 		</repository>
-	</repositories>-->
+	</repositories>
 
 	<dependencies>
 		<dependency>
