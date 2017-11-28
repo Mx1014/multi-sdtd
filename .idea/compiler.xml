@@ -14,14 +14,14 @@
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="census-server" target="1.8" />
-      <module name="census-server (1)" target="1.8" />
+
       <module name="config-server" target="1.8" />
-      <module name="config-server (1)" target="1.8" />
+
       <module name="eureka-server" target="1.8" />
-      <module name="eureka-server (1)" target="1.8" />
+
       <module name="nursetask-server" target="1.8" />
       <module name="xstask-server" target="1.8" />
-      <module name="xstask-server (1)" target="1.8" />
+
     </bytecodeTargetLevel>
   </component>
 </project>
