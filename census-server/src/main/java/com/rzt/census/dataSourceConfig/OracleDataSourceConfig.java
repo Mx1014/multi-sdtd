@@ -18,15 +18,15 @@ import javax.sql.DataSource;
 import java.util.Map;
 
 /**
- * mysql数据源配置
+ * oracle数据源配置
  */
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(
-        entityManagerFactoryRef = "mysqlEntityManagerFactory",
-        transactionManagerRef = "mysqlTransactionManager",
+        entityManagerFactoryRef = "oracleEntityManagerFactory",
+        transactionManagerRef = "oracleTransactionManager",
         basePackages = {"com.rzt.census.repository"}) //设置Repository所在位置
-public class MysqlDataSourceConfig {
+public class OracleDataSourceConfig {
     @Autowired
     private JpaProperties jpaProperties;
 
