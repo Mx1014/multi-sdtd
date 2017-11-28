@@ -50,17 +50,19 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <!--druid连接池-->
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>druid</artifactId>
             <version>1.0.29</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/com.oracle/ojdbc14 -->
+        <!-- ojdbc JDBC驱动 -->
         <dependency>
             <groupId>com.oracle</groupId>
             <artifactId>ojdbc14</artifactId>
             <version>10.2.0.4.0</version>
         </dependency>
+        <!--公司的base-->
         <dependency>
             <groupId>com.rzt.base</groupId>
             <artifactId>Rzt-base</artifactId>
