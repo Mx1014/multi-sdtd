@@ -1,19 +1,8 @@
 server:
-  port: 8090
-eureka:
-  instance:
-    hostname: localhost
-  client:
-    register-with-eureka: false
-    fetch-registry:false
-spring:
-  application:
-    name: config-server
-  cloud:
-    config:
-      server:
-        git:
-          uri: http://ygx@168.130.7.25/sdtd2/java/sdtd2-task.git
-          search-paths: config-repo
-          username: ygx_job@126.com
-          password: ygx680712
+  port: 7011
+#eureka:
+#  instance:
+#    hostname: localhost
+#  client:
+#    register-with-eureka: false
+#    fetch-registry:false
