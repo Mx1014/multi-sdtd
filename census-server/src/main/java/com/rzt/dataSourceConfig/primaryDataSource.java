@@ -1,4 +1,4 @@
-package com.rzt.census.dataSourceConfig;
+package com.rzt.dataSourceConfig;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import org.slf4j.Logger;

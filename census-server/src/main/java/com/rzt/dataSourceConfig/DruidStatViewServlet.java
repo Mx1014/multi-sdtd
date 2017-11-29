@@ -1,4 +1,4 @@
-package com.rzt.census.dataSourceConfig;
+package com.rzt.dataSourceConfig;
 
 import com.alibaba.druid.support.http.StatViewServlet;
 

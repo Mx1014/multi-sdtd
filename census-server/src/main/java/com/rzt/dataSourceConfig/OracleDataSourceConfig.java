@@ -1,4 +1,4 @@
-package com.rzt.census.dataSourceConfig;
+package com.rzt.dataSourceConfig;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
