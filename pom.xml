@@ -17,8 +17,8 @@
 		<module>config-repo</module>
 		<module>eureka-server</module>
 		<module>xstask-server</module>-->
-		<module>file-server</module>
-		<module>exam-server</module>
+		<!--<module>file-server</module>
+		<module>exam-server</module>-->
 	</modules>
 
 	<parent>
