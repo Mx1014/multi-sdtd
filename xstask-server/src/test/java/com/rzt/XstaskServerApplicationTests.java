@@ -1,4 +1,4 @@
-package com.rzt.xstask;
+package com.rzt;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

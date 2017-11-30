@@ -1,0 +1,32 @@
+server:
+    port: 10093
+    context-path: #/liuzh/
+
+spring:
+    datasource:
+      oracle:
+        type: com.alibaba.druid.pool.DruidDataSource
+        url: jdbc:oracle:thin:@192.168.1.246:1521:ORCL
+        username: repair
+        password: repair
+        driver-class-name: oracle.jdbc.driver.OracleDriver
+        minIdle: 10
+        maxActive: 200
+        initialSize: 5
+        timeBetweenEvictionRunsMillis: 3000
+        minEvictableIdleTimeMillis: 300000
+        validationQuery: SELECT 'ZTM' FROM DUAL
+        testWhileIdle: true
+        testOnBorrow: false
+        testOnReturn: false
+      mysql:
+        type: com.alibaba.druid.pool.DruidDataSource
+        url: jdbc:mysql://192.168.1.246:3306/repair?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT
+        username: root
+        password: 123456
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        validationQuery: SELECT 1
+        testWhileIdle: true
+
+    aop:
+      auto: true
