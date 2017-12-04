@@ -7,7 +7,13 @@
 package com.rzt.repository;
 import com.rzt.entity.KhTask;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.util.Date;
+
 /**
  * 类名称：KhTaskRepository    
  * 类描述：    
@@ -20,4 +26,28 @@ import org.springframework.stereotype.Repository;
  */
  @Repository
 public interface KhTaskRepository extends JpaRepository<KhTask,String> {
+
+
+
+    @Query(value = "SELECT COUNT(*) FROM kh_task where status not in ('已消缺')",nativeQuery = true)
+    int getcount();
+
+    @Query(value = "SELECT COUNT(*) FROM kh_task where site_id=?1 and user_id=?2",nativeQuery = true)
+    int getCount(String id, String userId);
+
+    @Modifying
+    @Query(value = "update kh_task set ddxc_time = ?1 where id = ?2",nativeQuery = true)
+    void updateDDTime(Date time, String id);
+
+    @Modifying
+    @Query(value = "update kh_task set sfqr_time = ?1 where id = ?2",nativeQuery = true)
+    void updateSFQRTime(Date time, String id);
+
+    @Modifying
+    @Query(value = "update kh_task set wpqr_time = ?1 where id = ?2",nativeQuery = true)
+    void updateWPQRTime(Date time, String id);
+
+    @Modifying
+    @Query(value = "update kh_task set real_start_time = ?1 where id = ?2",nativeQuery = true)
+    void updateRealStartTime(Date time, String id);
 }
