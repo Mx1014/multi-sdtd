@@ -5,10 +5,12 @@
  * Copyright 融智通科技(北京)股份有限公司 版权所有    
  */
 package com.rzt.controller;
+import com.rzt.entity.CheckLiveTask;
 import com.rzt.entity.KhSite;
 import com.rzt.entity.KhTask;
 import com.rzt.entity.KhYhHistory;
 import com.rzt.entity.model.KhTaskModel;
+import com.rzt.service.CheckLiveTaskService;
 import com.rzt.service.KhSiteService;
 import com.rzt.service.KhTaskService;
 import com.rzt.service.KhYhHistoryService;
@@ -46,14 +48,37 @@ public class KhSiteController extends
 	private KhYhHistoryService yhservice;
 	@Autowired
 	private KhTaskService taskService;
+	@Autowired
+    private CheckLiveTaskService checkService;
 
+
+//  数据没有设置完成  稽查任务实体类有部分修改
 	@PostMapping("/saveYh.do")
 	@ResponseBody
 	@Transactional
 	public WebApiResponse saveYh(KhYhHistory yh) {
 		try {
+            KhSite task = new KhSite();
+            String taskName = yh.getVtype()+yh.getLineName()+yh.getStartTower()+"-"+yh.getEndTower()+"号杆塔看护任务";
+            task.setCreateTime(new Date());
+            task.setVtype(yh.getVtype());
+            task.setLineName(yh.getLineName());
+            task.setTdywOrg(yh.getTdwhOrg());
+            task.setTaskName(taskName);
+            task.setStatus("0");//隐患未消除
+            task.setInUse("0");//未停用
+            task.setTaskTimes("0");//生成任务次数0
+            task.setYhId(yh.getId());
+            task.setCreateTime(new Date());
+            this.service.add(task);
 			yh.setYhdm("未定级");
+			yh.setYhddgddwid(task.getId());
 			yhservice.add(yh);
+            CheckLiveTask check = new CheckLiveTask();
+            check.setCheckType("0");
+            check.setCreateTime(new Date());
+            check.setTaskName(yh.getVtype()+yh.getLineName()+yh.getStartTower()+"-"+yh.getEndTower()+"号杆塔稽查任务");
+            checkService.add(check);
 			return WebApiResponse.success("保存成功");
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -140,7 +165,7 @@ public class KhSiteController extends
 			KhSite site = this.service.findOne(id);
 			List<KhTask> taskList = model.getTaskList();
 			//生成多条看护任务  队伍标识没有
-			String groupFlag = UUID.randomUUID().toString();
+			String groupFlag = System.currentTimeMillis()+"";
 			for (KhTask task:taskList) {
 				if (site.getKhfzrId1()==null&&task.getCaptain().equals("01")){
 					site.setKhfzrId1(task.getUserId());
