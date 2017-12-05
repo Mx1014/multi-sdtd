@@ -1,4 +1,4 @@
-package com.rzt.dataSourceConfig;
+package com.rzt.datasourceconfig;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -20,12 +20,13 @@ import java.util.Map;
 /**
  * oracle数据源配置
  */
+@SuppressWarnings({"ALL", "AlibabaCommentsMustBeJavadocFormat"})
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(
         entityManagerFactoryRef = "oracleEntityManagerFactory",
         transactionManagerRef = "oracleTransactionManager",
-        basePackages = {"com.rzt.census.repository"}) //设置Repository所在位置
+        basePackages = {"com.rzt.repository"}) //设置Repository所在位置
 public class OracleDataSourceConfig {
     @Autowired
     private JpaProperties jpaProperties;
@@ -45,7 +46,7 @@ public class OracleDataSourceConfig {
         return builder
                 .dataSource(userDataSource)
                 .properties(getVendorProperties(userDataSource))
-                .packages("com.rzt.census.entity") //设置实体类所在位置
+                .packages("com.rzt.entity") //设置实体类所在位置
                 .persistenceUnit("oraclePersistenceUnit")
                 .build();
         //.getObject();//不要在这里直接获取EntityManagerFactory
@@ -63,6 +64,7 @@ public class OracleDataSourceConfig {
      * @param builder
      * @return
      */
+    @SuppressWarnings("AlibabaCommentsMustBeJavadocFormat")
     @Bean(name = "oracleEntityManagerFactory")
     //主数据库
     //------------

@@ -1,4 +1,4 @@
-package com.rzt.dataSourceConfig;
+package com.rzt.datasourceconfig;
 
 import com.alibaba.druid.support.http.StatViewServlet;
 
@@ -6,9 +6,8 @@ import javax.servlet.annotation.WebInitParam;
 import javax.servlet.annotation.WebServlet;
 
 /**
- * druid数据源状态监控.
- *
- * @author Administrator
+ * @author liuze
+ * @date
  */
 @WebServlet(urlPatterns = "/druid/*",
         initParams = {
