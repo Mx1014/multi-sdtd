@@ -67,4 +67,42 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
         }
         return null;
     }
+
+    /**
+     * xslx 巡视类型 1 正常巡视 2 保电巡视
+     *
+     * @param xslx
+     * @param id
+     * @return
+     */
+    public List<Map<String, Object>> tourMissionDetails(int xslx, String id) {
+        int one = 1;
+        int two = 2;
+        String bdtxSql = "select id, task_name, cm_user_id, xs_txbd_cycle_id, td_org, wx_org, class_id, stauts, plan_xs_num, real_xs_num, to_char(plan_start_time,'yyyy-MM-dd hh24:mi:ss') as plan_start_time, to_char(plan_end_time,'yyyy-MM-dd hh24:mi:ss') as plan_end_time, real_start_time, sfqr_time, ddxc_time, xsks_time, real_end_time, task_num_in_cycle from xs_txbd_task where id = ?1";
+        String zcxsSql = "select id, task_name, cm_user_id, td_org, wx_org, class_id, xs_zc_cycle_id, stauts, plan_xs_num, real_xs_num, plan_start_time, plan_end_time, real_start_time, sfqr_time, ddxc_time, xsks_time, real_end_time, task_num_in_cycle from xs_zc_task where id = ?1";
+        if (xslx == one) {
+            return this.execSql(zcxsSql, id);
+        } else if (xslx == two) {
+            return this.execSql(bdtxSql, id);
+        }
+        return null;
+    }
+
+    /**
+     * xslx 巡视类型 1 正常巡视 2 保电巡视
+     *
+     * @param id
+     * @param xslx
+     * @return
+     */
+    public int updateSfqrTime(String id, int xslx) {
+        int one = 1;
+        int two = 2;
+        if (xslx == one) {
+            return this.reposiotry.zxXsSfqrTime(id);
+        } else if (two == two) {
+            return this.reposiotry.bdXsSfqrTime(id);
+        }
+        return 0;
+    }
 }

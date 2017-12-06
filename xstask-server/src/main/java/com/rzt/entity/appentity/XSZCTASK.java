@@ -10,25 +10,22 @@ import com.rzt.entity.BaseEntity;
 import com.rzt.util.excelUtil.ExcelResources;
 import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.UUID;
 
 /**
- * 类名称：XSZCTASK    
+ * 类名称：XSZCTASK
  * 类描述：${table.comment}
- * 创建人：张虎成   
- * 创建时间：2017/12/05 10:02:41 
- * 修改人：张虎成    
- * 修改时间：2017/12/05 10:02:41    
- * 修改备注：    
- * @version
+ * 创建人：张虎成
+ * 创建时间：2017/12/05 10:02:41
+ * 修改人：张虎成
+ * 修改时间：2017/12/05 10:02:41
+ * 修改备注：
  */
 @Entity
+@Table(name = "XS_ZC_TASK")
 public class XSZCTASK extends BaseEntity implements Serializable {
     //字段描述: 通道单位
     @Column(name = "TD_ORG")
