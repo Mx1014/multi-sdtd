@@ -11,6 +11,7 @@ import com.rzt.repository.apprepository.XSZCTASKRepository;
 import com.rzt.service.CurdService;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -90,6 +91,7 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
 
     /**
      * xslx 巡视类型 1 正常巡视 2 保电巡视
+     * 实际开始时间 ,巡视开始时间 ,身份确认时间 更改时间
      *
      * @param id
      * @param xslx
@@ -102,6 +104,25 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
             return this.reposiotry.zxXsSfqrTime(id);
         } else if (two == two) {
             return this.reposiotry.bdXsSfqrTime(id);
+        }
+        return 0;
+    }
+
+    /**
+     * xslx 巡视类型 1 正常巡视 2 保电巡视 id 任务ID
+     * 到达现场更改时间
+     *
+     * @param xslx
+     * @param id
+     * @return
+     */
+    public int reachSpot(int xslx, String id) {
+        int one = 1;
+        int two = 2;
+        if (xslx == one) {
+            return this.reposiotry.zcXsDdxcTime(id);
+        } else if (xslx == two) {
+            return this.reposiotry.bdXsDdxcTime(id);
         }
         return 0;
     }

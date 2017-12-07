@@ -6,10 +6,11 @@ server:
 spring:
     datasource:
       type: com.alibaba.druid.pool.DruidDataSource
-      url: jdbc:oracle:thin:@168.130.7.81:1521:sdtd
+#      url: jdbc:oracle:thin:@47.92.67.90:1521:ORCL
+      url: jdbc:oracle:thin:@localhost:1521:LIUZE
       username: sdtd27
       password: sdtd27
-      driver-class-name: oracle.jdbc.driver.OracleDriver
+      driver-class-name: oracle.jdbc.OracleDriver
       minIdle: 10
       maxActive: 200
       initialSize: 5

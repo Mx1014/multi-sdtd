@@ -24,13 +24,55 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Repository
 public interface XSZCTASKRepository extends JpaRepository<XSZCTASK, String> {
+    /**
+     * 实际开始时间 ,巡视开始时间 ,身份确认时间 更改时间 正常巡视
+     *
+     * @param id
+     * @return
+     */
     @Modifying
     @Transactional
     @Query(value = "update xs_zc_task set real_start_time = sysdate,xsks_time = sysdate,sfqr_time = sysdate where id=?1", nativeQuery = true)
     int zxXsSfqrTime(String id);
 
+    /**
+     * 实际开始时间 ,巡视开始时间 ,身份确认时间 更改时间 保电巡视
+     *
+     * @param id
+     * @return
+     */
     @Modifying
     @Transactional
     @Query(value = "update xs_txbd_task set xsks_time = sysdate,real_start_time = sysdate,sfqr_time  =sysdate where id=?1", nativeQuery = true)
     int bdXsSfqrTime(String id);
+
+    /**
+     * 保电巡视 到达现场时间修改
+     *
+     * @param id
+     * @return
+     */
+    @Modifying
+    @Transactional
+    @Query(value = "update xs_txbd_task set ddxc_time = sysdate where id =?1", nativeQuery = true)
+    int bdXsDdxcTime(String id);
+
+    /**
+     * 正常巡视 到达现场时间更改
+     *
+     * @param id
+     * @return
+     */
+    @Modifying
+    @Transactional
+    @Query(value = "update xs_zc_task set ddxc_time  = sysdate where id =?1", nativeQuery = true)
+    int zcXsDdxcTime(String id);
+
+    @Modifying
+    @Transactional
+    @Query(value = "insert into xs_zc_task_exec " +
+            "  (id, xs_zc_task_id, xs_start_time,  xs_repeat_num, xs_status) " +
+            "values " +
+            "  (?1, sysdate, v_xs_end_time, ?2, ?3)", nativeQuery = true)
+    int zcXsPatrollingTowerStart();
 }
