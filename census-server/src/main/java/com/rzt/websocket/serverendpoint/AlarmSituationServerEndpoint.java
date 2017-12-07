@@ -1,4 +1,4 @@
-package com.rzt.websocket;
+package com.rzt.websocket.serverendpoint;
 
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
@@ -14,13 +14,22 @@ import java.util.concurrent.ConcurrentHashMap;
  * User: liuze
  * Date: 2017-11-29
  * Time: 15:11
+ * 告警情况展示
  */
-@ServerEndpoint("/chat-room/{username}/{orgid}")
-public class PushServerEndpoint {
-    //WebSocket服务器端通过一个线程安全的队列来保持所有客户端的Session
+@ServerEndpoint("/serverendpoint/AlarmSituation/{username}/{orgid}")
+public class AlarmSituationServerEndpoint {
+    /**
+     * WebSocket服务器端通过一个线程安全的队列来保持所有客户端的Session
+     */
     private static Map<String, HashMap> livingSessions = new ConcurrentHashMap<String, HashMap>();
 
-    //建立连接
+    /**
+     * 建立连接
+     *
+     * @param usernamee
+     * @param orgid
+     * @param session
+     */
     @OnOpen
     public void openSession(@PathParam("username") String usernamee, @PathParam("orgid") String orgid, Session session) {
 
@@ -36,21 +45,35 @@ public class PushServerEndpoint {
         return livingSessions;
     }
 
-    //关闭连接
+    /**
+     * 关闭连接
+     *
+     * @param session
+     */
     @OnClose
     public void onClose(Session session) {
         String sessionId = session.getId();
         livingSessions.remove(sessionId);
     }
 
-    //连接发生错误
+    /**
+     * 连接发生错误
+     *
+     * @param session
+     * @param error
+     */
     @OnError
     public void onError(Session session, Throwable error) {
         System.out.println("发生错误");
         error.printStackTrace();
     }
 
-    //推送消息
+    /**
+     * 推送消息
+     *
+     * @param session
+     * @param message
+     */
     public void sendText(Session session, String message) {
         RemoteEndpoint.Basic basic = session.getBasicRemote();
         try {

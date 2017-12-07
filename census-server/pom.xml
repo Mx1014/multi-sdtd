@@ -68,8 +68,8 @@
         <!-- ojdbc JDBC驱动 -->
         <dependency>
             <groupId>com.oracle</groupId>
-            <artifactId>ojdbc14</artifactId>
-            <version>10.2.0.4.0</version>
+            <artifactId>ojdbc6</artifactId>
+            <version>11.1.0.7.0</version>
         </dependency>
         <!--公司的base-->
         <dependency>
