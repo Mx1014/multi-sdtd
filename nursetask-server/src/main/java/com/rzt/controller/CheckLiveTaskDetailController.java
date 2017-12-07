@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.rzt.controller.CurdController;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**
@@ -34,13 +35,13 @@ import java.util.List;
 public class CheckLiveTaskDetailController extends
         CurdController<CheckLiveTaskDetail,CheckLiveTaskDetailService> {
 
-    //删除已经稽查的任务   /CheckLiveTaskDetail/{id}  请求方式Delete
+    //删除已经稽查的任务   /CheckLiveTasks/{id}  请求方式Delete
 
     //查看已稽查的任务详情  详细查询的内容未完成
-    @GetMapping("/listCheckNotDoById.do")
+    @GetMapping("/listCheckDoingById.do")
     public WebApiResponse listCheckNotDoById(String id){
         try {
-            List list = this.service.listCheckNotDoById(id);
+            List list = this.service.listCheckDoingById(id);
             return WebApiResponse.success(list);
         }catch (Exception e){
             return WebApiResponse.erro("数据查询失败"+e.getMessage());
@@ -53,6 +54,15 @@ public class CheckLiveTaskDetailController extends
             return WebApiResponse.success(list);
         }catch (Exception e) {
             return WebApiResponse.erro("数据获取失败"+e.getMessage());
+        }
+    }
+    @GetMapping("/exportCheckTask.do")
+    public WebApiResponse ExportCheckTask(HttpServletResponse response){
+        try{
+            this.service.exportExcel(response);
+            return WebApiResponse.success("数据导出成功");
+        }catch (Exception e) {
+            return WebApiResponse.erro("数据导出失败"+e.getMessage());
         }
     }
 }

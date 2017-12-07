@@ -55,7 +55,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
         params.add((pageable.getPageNumber()+1)*pageable.getPageSize());
         buffer.append(" order by c.create_time desc ) a) b ");
         buffer.append(" where b.rn>? and b.rn <=?");
-        String sql = "select * from (select a.*,rownum rn from (select "+result+" from check_live_task c left join user u on c.user_id = u.id left join kh_site k on k.id = c.task_id " + buffer.toString();
+        String sql = "select * from (select a.*,rownum rn from (select "+result+" from check_live_task_detail c left join user u on c.user_id = u.id left join check_live_task c1 on c.task_id=c.id left join kh_site k on k.id = c.task_id " + buffer.toString();
         return this.execSql(sql,params.toArray());
     }
 

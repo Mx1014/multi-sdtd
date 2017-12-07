@@ -32,7 +32,7 @@ import java.util.List;
 public class CheckLiveTaskDetailService extends CurdService<CheckLiveTaskDetail,CheckLiveTaskDetailRepository> {
 
 
-    public List listCheckNotDoById(String id) {
+    public List listCheckDoingById(String id) {
         String result = " c.task_name as taskName,u.user_name as userName,u.phone_num as phoneNum,c.check_type as checkType ";
 //        List params = new ArrayList<>();
         StringBuffer buffer = new StringBuffer();
