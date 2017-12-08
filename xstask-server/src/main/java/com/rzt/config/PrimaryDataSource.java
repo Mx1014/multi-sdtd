@@ -12,8 +12,8 @@ import javax.sql.DataSource;
 import java.sql.SQLException;
 
 @Configuration
-public class primaryDataSource {
-    private Logger logger = LoggerFactory.getLogger(primaryDataSource.class);
+public class PrimaryDataSource {
+    private Logger logger = LoggerFactory.getLogger(PrimaryDataSource.class);
     @Value("${spring.datasource.url}")
     private String dbUrlMy;
 
