@@ -6,8 +6,7 @@
  */
 package com.rzt.service.app;
 
-import com.alibaba.druid.sql.visitor.functions.Char;
-import com.rzt.entity.appentity.XSZCTASK;
+import com.rzt.entity.app.XSZCTASK;
 import com.rzt.repository.app.XSZCTASKRepository;
 import com.rzt.service.CurdService;
 import org.springframework.data.domain.Page;

@@ -6,7 +6,7 @@
  */
 package com.rzt.repository.app;
 
-import com.rzt.entity.appentity.XSZCTASK;
+import com.rzt.entity.app.XSZCTASK;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
