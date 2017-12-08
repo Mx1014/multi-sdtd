@@ -7,7 +7,7 @@
 package com.rzt.controller.pc;
 
 import com.rzt.controller.CurdController;
-import com.rzt.entity.appentity.XSZCTASK;
+import com.rzt.entity.app.XSZCTASK;
 import com.rzt.entity.pc.XsZcCycle;
 import com.rzt.service.app.XSZCTASKService;
 import com.rzt.util.WebApiResponse;
