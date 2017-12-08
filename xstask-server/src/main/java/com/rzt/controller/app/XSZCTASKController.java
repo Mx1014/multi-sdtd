@@ -6,9 +6,8 @@
  */
 package com.rzt.controller.app;
 
-import com.alibaba.druid.sql.visitor.functions.Char;
 import com.rzt.controller.CurdController;
-import com.rzt.entity.appentity.XSZCTASK;
+import com.rzt.entity.app.XSZCTASK;
 import com.rzt.service.app.XSZCTASKService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;

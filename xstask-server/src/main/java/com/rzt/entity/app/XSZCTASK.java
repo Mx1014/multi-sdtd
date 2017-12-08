@@ -4,7 +4,7 @@
  * 日期：2017/12/05 10:02:41
  * Copyright 融智通科技(北京)股份有限公司 版权所有
  */
-package com.rzt.entity.appentity;
+package com.rzt.entity.app;
 
 import com.rzt.entity.BaseEntity;
 import com.rzt.util.excelUtil.ExcelResources;

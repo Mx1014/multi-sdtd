@@ -1,14 +1,11 @@
 package com.rzt.service.app;
 
-import com.rzt.entity.appentity.xsZcTaskwpqr;
+import com.rzt.entity.app.xsZcTaskwpqr;
 import com.rzt.repository.app.xsZcTaskwpqrRepository;
 import com.rzt.service.CurdService;
 import com.rzt.util.UUIDTool;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * @ProjectName: sdtd2-task
