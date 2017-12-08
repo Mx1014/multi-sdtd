@@ -1,7 +1,7 @@
 package com.rzt.controller.app;
 
 import com.rzt.controller.CurdController;
-import com.rzt.entity.appentity.xsZcTaskwpqr;
+import com.rzt.entity.app.xsZcTaskwpqr;
 import com.rzt.service.app.xsZcTaskwpqrService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
