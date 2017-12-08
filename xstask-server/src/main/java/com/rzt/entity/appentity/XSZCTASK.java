@@ -162,7 +162,7 @@ public class XSZCTASK extends BaseEntity implements Serializable {
 
     @ExcelResources(title = "计划结束时间", order = 9)
     public Date getPlanEndTime() {
-        return this.planEndTime;
+        return  this.planEndTime;
     }
 
     public void setRealStartTime(Date realStartTime) {

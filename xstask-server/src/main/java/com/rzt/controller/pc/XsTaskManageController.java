@@ -1,4 +1,4 @@
-package com.rzt.controller.pcController;
+package com.rzt.controller.pc;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
