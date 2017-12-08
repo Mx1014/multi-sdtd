@@ -15,7 +15,7 @@ import java.io.Serializable;
  */
 @Entity
 @Table(name = "XS_ZC_TASKWPQR")
-public class xsZcTaskwpqr extends BaseEntity implements Serializable {
+public class XsZcTaskwpqr extends BaseEntity implements Serializable {
     /**
      * 字段描述: ID
      */
