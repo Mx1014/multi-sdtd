@@ -75,10 +75,19 @@ public class KhSiteController extends
 			yh.setYhddgddwid(task.getId());
 			yhservice.add(yh);
             CheckLiveTask check = new CheckLiveTask();
-            check.setCheckType("0");
+            check.setCheckType("0"); //0为 看护类型稽查
+            check.setTaskId(task.getId());
+            check.setTaskType("1");// 1 为正常稽查
+            check.setStatus("0");  // 0 为未派发
+            check.setTdwhOrg(yh.getTdwhOrg());
             check.setCreateTime(new Date());
+            check.setCheckDept("0"); // 0为属地公司
+            check.setCheckCycle("1");// 1 为周期1天
             check.setTaskName(yh.getVtype()+yh.getLineName()+yh.getStartTower()+"-"+yh.getEndTower()+"号杆塔稽查任务");
             checkService.add(check);
+            check.setCheckDept("1"); // 1为北京公司
+            check.setCheckCycle("3"); // 周期为3天
+			checkService.add(check);
 			return WebApiResponse.success("保存成功");
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -119,7 +128,6 @@ public class KhSiteController extends
 			e.printStackTrace();
 			return WebApiResponse.erro("数据查询失败" + e.getMessage());
 		}
-
 	}
 	/***
 	 * 获取 待安排的看护任务

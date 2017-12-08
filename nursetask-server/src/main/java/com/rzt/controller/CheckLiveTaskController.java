@@ -8,6 +8,8 @@ package com.rzt.controller;
 import com.rzt.entity.CheckLiveTask;
 import com.rzt.entity.CheckLiveTaskDetail;
 import com.rzt.entity.KhTask;
+import com.rzt.entity.model.CheckLiveTaskDetailModel;
+import com.rzt.entity.model.CheckLiveTasks;
 import com.rzt.service.CheckLiveTaskDetailService;
 import com.rzt.service.CheckLiveTaskService;
 import com.rzt.util.WebApiResponse;
@@ -75,15 +77,19 @@ public class CheckLiveTaskController extends
 			return WebApiResponse.erro("数据获取失败"+e.getMessage());
 		}
 	}
-	//派发稽查任务
+	//派发稽查任务  多条派发为1条
 	@GetMapping("/paifaCheckTask.do")
 	@ResponseBody
-	public WebApiResponse paifaCheckTask(String id,CheckLiveTaskDetail task){
+	public WebApiResponse paifaCheckTask(CheckLiveTaskDetailModel model){
 		try{
-			task.setTaskId(id);
+			List<CheckLiveTasks> list = model.getList();
+			for (CheckLiveTasks task:list) {
+				
+			}
+			/*task.setTaskId(id);
 			task.setStatus("0");  //未开始
 			task.setCheckType("0");//看护任务
-			checkService.add(task);
+			checkService.add(task);*/
 			return WebApiResponse.success("任务派发成功");
 		}catch (Exception e) {
 			return WebApiResponse.erro("任务派发失败"+e.getMessage());
@@ -99,4 +105,6 @@ public class CheckLiveTaskController extends
 			return WebApiResponse.erro("数据获取失败"+e.getMessage());
 		}
 	}
+	/*@GetMapping("/App")*/
+
 }
