@@ -20,7 +20,7 @@ spring:
 #      type: com.alibaba.druid.pool.DruidDataSource
       #oracle数据库配置
       driverClassName: oracle.jdbc.driver.OracleDriver
-      url: jdbc:oracle:thin:@168.130.7.81:1521/sdtd
+      url: jdbc:oracle:thin:@47.92.67.90:1521/orcl
       username: sdtd27
       password: sdtd27
 # 下面为连接池的补充设置，应用到上面所有数据源中
@@ -56,6 +56,11 @@ spring:
       max-request-size: 50Mb
 
 #文件上传路径,必须以/结尾
+my-defined:
+   mapProps:
+    upload-dir: F:/sdtd/test/
+    thum-height: 50
+    thum-width: 50
 file:
   upload-dir: F:/sdtd/test/
   thum:

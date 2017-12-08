@@ -7,12 +7,12 @@
 package com.rzt.entity;
 
 import com.rzt.util.excelUtil.ExcelResources;
+import com.rzt.utils.SnowflakeIdWorker;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.sql.Date;
-import java.util.UUID;
 
 /**
  * 类名称：PICTURETOUR    
@@ -56,7 +56,7 @@ public class PICTURETOUR extends BaseEntity implements Serializable{
     	//字段描述: 纬度
    	 @Column(name = "LAT")
      private String lat;
-    	//字段描述: 文件类型
+    	//字段描述: 文件类型1图片2录音3摄像
    	 @Column(name = "FILE_TYPE")
      private String fileType;
     	//字段描述: 上传人id
@@ -75,7 +75,12 @@ public class PICTURETOUR extends BaseEntity implements Serializable{
 	}
 
 	public void setId(String id){
-		this.id = UUID.randomUUID().toString();
+		if(id==null||"".equals(id.trim())){
+			this.id = String.valueOf(new SnowflakeIdWorker(0,0).nextId());
+		}else{
+			this.id = id;
+		}
+		//this.id = UUID.randomUUID().toString();
 	}
 	@ExcelResources(title="",order=2)
 	public String getId(){
