@@ -1,4 +1,4 @@
-package com.rzt.entity.appentity;
+package com.rzt.entity.app;
 
 import com.rzt.entity.BaseEntity;
 import com.rzt.util.excelUtil.ExcelResources;
