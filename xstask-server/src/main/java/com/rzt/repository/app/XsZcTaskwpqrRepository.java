@@ -1,6 +1,6 @@
 package com.rzt.repository.app;
 
-import com.rzt.entity.app.xsZcTaskwpqr;
+import com.rzt.entity.app.XsZcTaskwpqr;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @date: 2017-12-7 19:42
  */
 @Repository
-public interface xsZcTaskwpqrRepository extends JpaRepository<xsZcTaskwpqr, String> {
+public interface XsZcTaskwpqrRepository extends JpaRepository<XsZcTaskwpqr, String> {
     /**
      * 实际开始时间 ,巡视开始时间 ,身份确认时间 更改时间 正常巡视
      *

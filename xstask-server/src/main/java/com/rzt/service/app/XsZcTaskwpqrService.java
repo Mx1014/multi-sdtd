@@ -1,7 +1,7 @@
 package com.rzt.service.app;
 
-import com.rzt.entity.app.xsZcTaskwpqr;
-import com.rzt.repository.app.xsZcTaskwpqrRepository;
+import com.rzt.entity.app.XsZcTaskwpqr;
+import com.rzt.repository.app.XsZcTaskwpqrRepository;
 import com.rzt.service.CurdService;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -13,7 +13,7 @@ import org.springframework.util.StringUtils;
  * @date: 2017-12-7 19:43
  */
 @Service
-public class xsZcTaskwpqrService extends CurdService<xsZcTaskwpqr, xsZcTaskwpqrRepository> {
+public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrRepository> {
     /**
      * xslx 巡视类型 1 正常巡视 2 保电巡视
      * 实际开始时间 ,巡视开始时间 ,身份确认时间 更改时间
@@ -23,12 +23,11 @@ public class xsZcTaskwpqrService extends CurdService<xsZcTaskwpqr, xsZcTaskwpqrR
      * @return
      */
     public int updateSfqrTime(String id, int xslx) {
-        int one = 1;
-        int two = 2;
-        if (xslx == one) {
-            return this.reposiotry.zxXsSfqrTime(id);
-        } else if (two == two) {
+        int one = 1, two = 2, zero = 0;
+        if (xslx == one || xslx == zero) {
             return this.reposiotry.bdXsSfqrTime(id);
+        } else if (xslx == two) {
+            return this.reposiotry.zxXsSfqrTime(id);
         }
         return 0;
     }

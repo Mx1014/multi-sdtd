@@ -93,7 +93,7 @@ public class XSZCTASKController extends
      */
     @PostMapping("itemsToRemind")
     @ApiOperation(value = "物品提醒", notes = "xslx 0 特殊 1 保电 2 正常")
-    public List<Map<String, Object>> itemsToRemind(int xslx, String id) {
-        return this.service.itemsToRemind(xslx, id);
+    public List<Map<String, Object>> itemsToRemind(int xslx, String taskId) {
+        return this.service.itemsToRemind(xslx, taskId);
     }
 }

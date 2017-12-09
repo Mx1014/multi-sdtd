@@ -111,18 +111,18 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
     /**
      * 物品提醒查询
      *
-     * @param xslx 0 特殊 1 保电 2 正常
-     * @param id   任务ID
+     * @param xslx   0 特殊 1 保电 2 正常
+     * @param taskId 任务ID
      * @return
      */
-    public List<Map<String, Object>> itemsToRemind(int xslx, String id) {
+    public List<Map<String, Object>> itemsToRemind(int xslx, String taskId) {
         int zero = 0, one = 1, two = 2;
         String txbd = "SELECT ID,TASKID,WP_ZT AS WPZT FROM XS_TXBD_TASKWPQR where taskid=?1 ";
         String zcbd = "SELECT ID,TASKID,WP_ZT AS WPZT FROM XS_ZC_TASKWPQR where taskid=?1 ";
         if (xslx == zero || xslx == one) {
-            return this.execSql(txbd, id);
+            return this.execSql(txbd, taskId);
         } else if (xslx == two) {
-            return this.execSql(zcbd, id);
+            return this.execSql(zcbd, taskId);
         }
         return null;
     }

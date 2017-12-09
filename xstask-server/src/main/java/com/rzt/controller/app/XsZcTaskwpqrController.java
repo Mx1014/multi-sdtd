@@ -1,8 +1,8 @@
 package com.rzt.controller.app;
 
 import com.rzt.controller.CurdController;
-import com.rzt.entity.app.xsZcTaskwpqr;
-import com.rzt.service.app.xsZcTaskwpqrService;
+import com.rzt.entity.app.XsZcTaskwpqr;
+import com.rzt.service.app.XsZcTaskwpqrService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,7 +22,7 @@ import java.util.HashMap;
 @RequestMapping("xsAppChange")
 @EnableSwagger2
 @Api(value = "巡视任务app修改接口")
-public class xsZcTaskwpqrController extends CurdController<xsZcTaskwpqr, xsZcTaskwpqrService> {
+public class XsZcTaskwpqrController extends CurdController<XsZcTaskwpqr, XsZcTaskwpqrService> {
     /**
      * xslx 巡视类型 1 正常巡视 2 保电巡视 ID 任务id
      * 身份确认修改时间
