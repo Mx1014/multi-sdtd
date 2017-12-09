@@ -2,6 +2,17 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <resourceExtensions />
+    <wildcardResourcePatterns>
+      <entry name="!?*.java" />
+      <entry name="!?*.form" />
+      <entry name="!?*.class" />
+      <entry name="!?*.groovy" />
+      <entry name="!?*.scala" />
+      <entry name="!?*.flex" />
+      <entry name="!?*.kt" />
+      <entry name="!?*.clj" />
+      <entry name="!?*.aj" />
+    </wildcardResourcePatterns>
     <annotationProcessing>
       <profile default="true" name="Default" enabled="false">
         <processorPath useClasspath="true" />
@@ -11,25 +22,24 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="true" />
-        <module name="exam-server" />
-        <module name="file-server" />
+        <module name="census-server" />
+        <module name="eureka-server" />
+        <module name="examserver" />
+        <module name="fileserver" />
+        <module name="nursetask-server" />
+        <module name="userCenter" />
+        <module name="xstask-server" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="census-server" target="1.8" />
-      <module name="census-server (1)" target="1.8" />
-      <module name="config-server" target="1.8" />
-      <module name="config-server (1)" target="1.8" />
       <module name="eureka-server" target="1.8" />
-      <module name="eureka-server (1)" target="1.8" />
-      <module name="exam-server" target="1.8" />
-      <module name="file-server" target="1.8" />
+      <module name="examserver" target="1.8" />
       <module name="fileserver" target="1.8" />
-      <module name="fileserver1" target="1.8" />
       <module name="nursetask-server" target="1.8" />
       <module name="sdtd2-task" target="1.8" />
+      <module name="userCenter" target="1.8" />
       <module name="xstask-server" target="1.8" />
-      <module name="xstask-server (1)" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>
