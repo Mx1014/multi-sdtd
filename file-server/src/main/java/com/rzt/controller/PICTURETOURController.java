@@ -11,8 +11,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.PICTURETOUR;
 import com.rzt.service.PICTURETOURService;
 import com.rzt.utils.DateUtil;
-import com.rzt.utils.ImageUtils;
 import com.rzt.utils.SnowflakeIdWorker;
+import com.rzt.utils.StorageUtils;
 import com.rzt.utils.YmlConfigUtil;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
@@ -72,13 +72,13 @@ public class PICTURETOURController extends
         }
 
         try {
-            Map<String, Object> map = ImageUtils.resizeDefault(file, taskId);
+            Map<String, Object> map = StorageUtils.resizeDefault(file, taskId);
             if("true".equals(map.get("success").toString())){
 
-                String targetPath = map.get("targetPath").toString();
+                String targetPath = map.get("picPath").toString();
                 String thumPath = map.get("thumPath").toString();
                 String picName = map.get("picName").toString();
-                picturetour.setId("");
+                picturetour.setId(null);
                 picturetour.setCreateTime(new Date(System.currentTimeMillis()));
                 picturetour.setFileName(picName);
                 picturetour.setFilePath(targetPath);
@@ -174,10 +174,10 @@ public class PICTURETOURController extends
                 if("jpg".equals(suffix)){
                     int picHeight = Integer.parseInt(YmlConfigUtil.getConfigByKey("thum-height"));
                     int picWidth = Integer.parseInt(YmlConfigUtil.getConfigByKey("thum-width"));
-                    ImageUtils.resize(file,targetDir + picHeight + "x" + picWidth + originalFilename,picHeight,picWidth);
+                    StorageUtils.resize(file,targetDir + picHeight + "x" + picWidth + originalFilename,picHeight,picWidth);
                 }
                 file.transferTo(targetFile);
-                picturetour.setId("");
+                picturetour.setId(null);
                 picturetour.setFileName("");
                 picturetour.setCreateTime(new Date(new java.util.Date().getTime()));
                 result.put("success",true);
@@ -225,7 +225,7 @@ public class PICTURETOURController extends
                 public void run() {
                     try {
                         PICTURETOUR picturetour = new PICTURETOUR();
-                        picturetour.setId(String.valueOf(idWorker.nextId()));
+                        picturetour.setId(idWorker.nextId());
                         picturetour.setFileName(String.valueOf(idWorker.nextId()));
                         service.add(picturetour);
                         System.out.println();
