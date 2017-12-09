@@ -3,7 +3,6 @@ package com.rzt.service.app;
 import com.rzt.entity.app.xsZcTaskwpqr;
 import com.rzt.repository.app.xsZcTaskwpqrRepository;
 import com.rzt.service.CurdService;
-import com.rzt.util.UUIDTool;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -71,9 +70,9 @@ public class xsZcTaskwpqrService extends CurdService<xsZcTaskwpqr, xsZcTaskwpqrR
             }
         } else {
             if (xslx == zero || xslx == one) {
-                return this.reposiotry.bdXsArticlesInsert(UUIDTool.getUUID(), taskID, rwZt);
+//                return this.reposiotry.bdXsArticlesInsert(UUIDTool.getUUID(), taskID, rwZt);
             } else if (xslx == two) {
-                return this.reposiotry.zcXsArticlesInsert(UUIDTool.getUUID(), taskID, rwZt);
+//                return this.reposiotry.zcXsArticlesInsert(UUIDTool.getUUID(), taskID, rwZt);
             }
         }
         return zero;

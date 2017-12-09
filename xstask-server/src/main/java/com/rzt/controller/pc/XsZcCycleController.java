@@ -14,10 +14,10 @@ import com.rzt.util.WebApiResponse;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 类名称：XsZcCycleController
@@ -49,11 +49,34 @@ public class XsZcCycleController extends
     @ApiOperation(value = "周期维护 新增周期",notes = "pc端新增周期")
     @PostMapping("addCycle")
     public Object addCycle(@RequestBody XsZcCycle xsZcCycle) {
-
 		return this.service.addCycle(xsZcCycle);
-
 	}
-	
+
+	/**
+	 * @Method addCycle
+	 * @Description 周期维护页面列表
+	 * @param [cycleList]
+	 * @return java.lang.Object
+	 * @date 2017/12/7 16:25
+	 * @author nwz
+	 */
+	@ApiOperation(value = "周期维护页面列表",notes = "周期维护页面列表 查询的接口")
+	@PostMapping("listCycle")
+	public Object cycleList(@RequestParam(value = "page",defaultValue = "0") Integer page, @RequestParam(value = "size",defaultValue = "15") Integer size, @RequestParam(value = "sortField",defaultValue = "id") String sortField, @RequestParam(value = "sortDirection",defaultValue = "DESC") String sortDirection) {
+		try {
+			Sort sort = new Sort(Sort.Direction.DESC, new String[]{sortField});
+			if (sortDirection.equals("ASC")) {
+				sort = new Sort(Sort.Direction.ASC, new String[]{sortField});
+			}
+
+			Pageable pageable = new PageRequest(page, size, sort);
+			return WebApiResponse.success(this.service.findAll(pageable));
+		} catch (Exception var7) {
+			return WebApiResponse.erro("数据查询失败" + var7.getMessage());
+		}
+	}
+
+
 	
 	/**
 	* @Method addPlan
