@@ -1,15 +1,14 @@
 server:
-    port: 1234
-#    context-path: #/liuzh/
-
-
+    port: 8098
+    context-path: /userCenter
 spring:
     datasource:
       type: com.alibaba.druid.pool.DruidDataSource
-      url: jdbc:oracle:thin:@47.92.67.90:1521:orcl
+#      url: jdbc:oracle:thin:@47.92.67.90:1521:ORCL
+      url: jdbc:oracle:thin:@192.168.1.111:1521:LIUZE
       username: sdtd27
       password: sdtd27
-      driver-class-name: oracle.jdbc.driver.OracleDriver
+      driver-class-name: oracle.jdbc.OracleDriver
       minIdle: 10
       maxActive: 200
       initialSize: 5
@@ -24,6 +23,11 @@ spring:
       maxPoolPreparedStatementPerConnectionSize: 20
       filters: stat,wall,log4j
       connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMill
+    jpa:
+      hibernate:
+        ddl-auto: update
+      show-sql: true
+
 logging:
   config: classpath:logback-spring.xml
 

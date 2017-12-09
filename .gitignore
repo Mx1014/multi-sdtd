@@ -7,8 +7,8 @@
 .springBeans
 
 ### IntelliJ IDEA ###
-.idea
-target
+.idea/
+target/
 *.iws
 *.iml
 *.ipr
