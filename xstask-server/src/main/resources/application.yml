@@ -1,5 +1,4 @@
 spring:
   profiles:
     active: prd
-
-    #
+#     active: dev

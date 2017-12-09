@@ -8,7 +8,10 @@ package com.rzt.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import com.rzt.entity.PICTURETOUR;
-/**      
+
+import java.util.List;
+
+/**
  * 类名称：PICTURETOURRepository    
  * 类描述：    
  * 创建人：张虎成   
@@ -20,4 +23,6 @@ import com.rzt.entity.PICTURETOUR;
  */
  @Repository
 public interface PICTURETOURRepository extends JpaRepository<PICTURETOUR,String> {
+
+    List<PICTURETOUR> findBytaskId(String taskId);
 }
