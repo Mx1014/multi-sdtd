@@ -52,7 +52,11 @@ public class RztSysDepartment extends BaseEntity implements Serializable{
     	//字段描述: 
    	 @Column(name = "createtime")
      private Date createtime;
-    
+	//字段描述: 角色id
+	@Column(name = "roleid")
+	private String roleid;
+
+
 	public void setId(String id){
 		this.id = UUID.randomUUID().toString();
 	}
@@ -115,6 +119,14 @@ public class RztSysDepartment extends BaseEntity implements Serializable{
 	@ExcelResources(title="",order=8)
 	public Date getCreatetime(){
 		return this.createtime;
+	}
+
+	public String getRoleid() {
+		return roleid;
+	}
+	@ExcelResources(title="",order=9)
+	public void setRoleid(String roleid) {
+		this.roleid = roleid;
 	}
 
 }
