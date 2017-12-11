@@ -45,10 +45,10 @@ public class XSZCTASK implements Serializable {
     private String stauts;
     //字段描述: 巡视频率 每次任务中巡视应该重复的次数
     @Column(name = "PLAN_XS_NUM")
-    private String planXsNum;
+    private Integer planXsNum;
     //字段描述: 本次巡视重复次数
     @Column(name = "REAL_XS_NUM")
-    private String realXsNum;
+    private Integer realXsNum;
     //字段描述: 计划开始时间
     @Column(name = "PLAN_START_TIME")
     private Date planStartTime;
@@ -128,21 +128,21 @@ public class XSZCTASK implements Serializable {
         return this.stauts;
     }
 
-    public void setPlanXsNum(String planXsNum) {
+    public void setPlanXsNum(Integer planXsNum) {
         this.planXsNum = planXsNum;
     }
 
     @ExcelResources(title = "巡视频率 每次任务中巡视应该重复的次数", order = 6)
-    public String getPlanXsNum() {
+    public Integer getPlanXsNum() {
         return this.planXsNum;
     }
 
-    public void setRealXsNum(String realXsNum) {
+    public void setRealXsNum(Integer realXsNum) {
         this.realXsNum = realXsNum;
     }
 
     @ExcelResources(title = "本次巡视重复次数", order = 7)
-    public String getRealXsNum() {
+    public Integer getRealXsNum() {
         return this.realXsNum;
     }
 
