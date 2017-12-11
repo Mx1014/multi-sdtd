@@ -53,18 +53,15 @@ public class KhTaskService extends CurdService<KhTask,KhTaskRepository> {
             buffer.append(" and k.status like ? ");
             params.add(task.getStatus());
          }
-         if (task.getUserId() != null && !task.getUserId().equals("")){
+          if (task.getUserId() != null && !task.getUserId().equals("")){
              task.setUserId("%"+task.getUserId()+"%");
              buffer.append(" and u.user_name like ?");
              params.add(task.getUserId());
          }
          //此处加分页 人员表换成真实表
-         buffer.append(" order by k.create_time desc ) a) b ");
-         buffer.append(" where b.rn>? and b.rn <=?");
-        String sql = "select * from (select a.*,rownum rn from (select "+result+" from kh_task k " +
+         buffer.append(" order by k.create_time desc ");
+        String sql = "select "+result+" from kh_task k " +
                " left join cm_user u on u.id = k.user_id "+ buffer.toString();
-        params.add(pageable.getPageNumber()*pageable.getPageSize());
-        params.add((pageable.getPageNumber()+1)*pageable.getPageSize());
         Page<Map<String, Object>> maps = execSqlPage(pageable, sql, params.toArray());
         long count = this.reposiotry.count();
         //int count = this.reposiotry.getcount();
@@ -72,35 +69,6 @@ public class KhTaskService extends CurdService<KhTask,KhTaskRepository> {
         map.put("COUNT",count);
         maps.add(map);*/
         return maps;
-    }
-    public List listAllTaskDoing(KhTask task, Pageable pageable,String userName) {
-        task = timeUtil(task);
-        String result = "k.task_name as taskName,k.status as status,k.create_time as createTime,k.plan_start_time as startTime,k.plan_end_time as end_time";
-       //,u.user_name as userName
-        StringBuffer buffer = new StringBuffer();
-        buffer.append(" where k.status like '%已安排%'");
-        List params = new ArrayList<>();
-        if (task.getPlanStartTime()!=null){
-            buffer.append(" and k.create_time between to_date(?,'YYYY-MM-DD') and to_date(?,'YYYY-MM-DD') ");
-            params.add(task.getPlanStartTime());
-            params.add(task.getPlanEndTime());
-        }
-        if (task.getTaskName() != null){  //线路名查询
-            task.setTaskName("%"+task.getTaskName()+"%");
-            buffer.append(" and k.task_name like ? ");
-            params.add(task.getTaskName());
-        }
-        if (userName != null){
-            buffer.append(" and u.user_name like ? ");
-            params.add(userName);
-        }
-        params.add(pageable.getPageNumber()*pageable.getPageSize());
-        params.add((pageable.getPageNumber()+1)*pageable.getPageSize());
-        buffer.append(" order by k.create_time desc ) a) b ");
-        buffer.append(" where b.rn>? and b.rn <=?");
-        String sql = "select * from (select a.*,rownum rn from (select "+result+" from kh_task k " + buffer.toString();
-
-        return execSql(sql, params.toArray());
     }
 
     public KhTask timeUtil(KhTask task){
