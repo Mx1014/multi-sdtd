@@ -7,10 +7,10 @@
         <option value="$PROJECT_DIR$/pom.xml" />
         <option value="$PROJECT_DIR$/exam-server/pom.xml" />
         <option value="$PROJECT_DIR$/file-server/pom.xml" />
-        <option value="$PROJECT_DIR$/nursetask-server/pom.xml" />
-        <option value="$PROJECT_DIR$/xstask-server/pom.xml" />
         <option value="$PROJECT_DIR$/eureka-server/pom.xml" />
         <option value="$PROJECT_DIR$/census-server/pom.xml" />
+        <option value="$PROJECT_DIR$/xstask-server/pom.xml" />
+        <option value="$PROJECT_DIR$/nursetask-server/pom.xml" />
       </list>
     </option>
   </component>
