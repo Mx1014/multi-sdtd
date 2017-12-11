@@ -24,7 +24,7 @@ public interface XsZcTaskwpqrRepository extends JpaRepository<XsZcTaskwpqr, Stri
     @Modifying
     @Transactional
     @Query(value = "update xs_zc_task set real_start_time = sysdate,xsks_time = sysdate,sfqr_time = sysdate where id=?1", nativeQuery = true)
-    int zxXsSfqrTime(String id);
+    int zxXsSfqrTime(Long id);
 
     /**
      * 实际开始时间 ,巡视开始时间 ,身份确认时间 更改时间 保电巡视
@@ -35,7 +35,7 @@ public interface XsZcTaskwpqrRepository extends JpaRepository<XsZcTaskwpqr, Stri
     @Modifying
     @Transactional
     @Query(value = "update xs_txbd_task set xsks_time = sysdate,real_start_time = sysdate,sfqr_time  =sysdate where id=?1", nativeQuery = true)
-    int bdXsSfqrTime(String id);
+    int bdXsSfqrTime(Long id);
 
     /**
      * 保电巡视 到达现场时间修改
@@ -46,7 +46,7 @@ public interface XsZcTaskwpqrRepository extends JpaRepository<XsZcTaskwpqr, Stri
     @Modifying
     @Transactional
     @Query(value = "update xs_txbd_task set ddxc_time = sysdate where id =?1", nativeQuery = true)
-    int bdXsDdxcTime(String id);
+    int bdXsDdxcTime(Long id);
 
     /**
      * 正常巡视 到达现场时间更改
@@ -57,7 +57,7 @@ public interface XsZcTaskwpqrRepository extends JpaRepository<XsZcTaskwpqr, Stri
     @Modifying
     @Transactional
     @Query(value = "update xs_zc_task set ddxc_time  = sysdate where id =?1", nativeQuery = true)
-    int zcXsDdxcTime(String id);
+    int zcXsDdxcTime(Long id);
 
     /**
      * 巡视开始 每轮巡视表
@@ -94,19 +94,19 @@ public interface XsZcTaskwpqrRepository extends JpaRepository<XsZcTaskwpqr, Stri
     @Modifying
     @Transactional
     @Query(value = "INSERT INTO XS_ZC_TASKWPQR(ID,TASKID,WP_ZT) VALUES (?1,?2,?3)", nativeQuery = true)
-    int zcXsArticlesInsert(String id, String taskId, String wpZt);
+    int zcXsArticlesInsert(Long id, Long taskId, String wpZt);
 
     /**
      * 正常巡视如果有这条修改这条物品修改
      *
-     * @param rwZt 物品状态
-     * @param id   ID
+     * @param rwZt   物品状态
+     * @param taskId 任务ID
      * @return
      */
     @Modifying
     @Transactional
-    @Query(value = "UPDATE XS_ZC_TASKWPQR SET WP_ZT =?1 WHERE ID =?2", nativeQuery = true)
-    int zcXsArticlesUpdate(String rwZt, String id);
+    @Query(value = "UPDATE XS_ZC_TASKWPQR SET WP_ZT =?1 WHERE TASKID =?2", nativeQuery = true)
+    int zcXsArticlesUpdate(String rwZt, Long taskId);
 
     /**
      * 保电特寻巡视物品提醒添加
@@ -119,17 +119,17 @@ public interface XsZcTaskwpqrRepository extends JpaRepository<XsZcTaskwpqr, Stri
     @Modifying
     @Transactional
     @Query(value = "INSERT INTO XS_TXBD_TASKWPQR(ID,TASKID,WP_ZT) VALUES (?1,?2,?3)", nativeQuery = true)
-    int bdXsArticlesInsert(String id, String taskId, String wpZt);
+    int bdXsArticlesInsert(Long id, Long taskId, String wpZt);
 
     /**
      * 保电特寻如果有这条修改这条物品修改
      *
-     * @param rwZt 物品状态
-     * @param id   ID
+     * @param rwZt   物品状态
+     * @param taskId 任务ID
      * @return
      */
     @Modifying
     @Transactional
-    @Query(value = "UPDATE XS_TXBD_TASKWPQR SET WP_ZT =?1 WHERE ID =?2", nativeQuery = true)
-    int bdXsArticlesUpdate(String rwZt, String id);
+    @Query(value = "UPDATE XS_TXBD_TASKWPQR SET WP_ZT =?1 WHERE TASKID =?2", nativeQuery = true)
+    int bdXsArticlesUpdate(String rwZt, Long taskId);
 }
