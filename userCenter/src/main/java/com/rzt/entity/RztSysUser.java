@@ -78,7 +78,10 @@ public class RztSysUser extends BaseEntity implements Serializable{
 	//用户类型
 	@Column(name = "userType")
 	private int userType;
-    
+	//字段描述: 所属班组
+	@Column(name = "className")
+	private String className;
+
 	public void setId(String id){
 		this.id = UUID.randomUUID().toString();
 	}
@@ -166,5 +169,13 @@ public class RztSysUser extends BaseEntity implements Serializable{
 
 	public void setUserType(int userType) {
 		this.userType = userType;
+	}
+
+	public String getClassName() {
+		return className;
+	}
+
+	public void setClassName(String className) {
+		this.className = className;
 	}
 }
