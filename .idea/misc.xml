@@ -1,53 +1,60 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="MavenProjectsManager">
-    <option name="originalFiles">
-      <list>
-        <option value="$PROJECT_DIR$/sdtd2-task/nursetask-server/pom.xml" />
-        <option value="$PROJECT_DIR$/pom.xml" />
-        <option value="$PROJECT_DIR$/exam-server/pom.xml" />
-        <option value="$PROJECT_DIR$/file-server/pom.xml" />
-        <option value="$PROJECT_DIR$/eureka-server/pom.xml" />
-        <option value="$PROJECT_DIR$/census-server/pom.xml" />
-        <option value="$PROJECT_DIR$/xstask-server/pom.xml" />
-        <option value="$PROJECT_DIR$/nursetask-server/pom.xml" />
-      </list>
-    </option>
-  </component>
-  <component name="ProjectInspectionProfilesVisibleTreeState">
-    <entry key="Project Default">
-      <profile-state>
-        <expanded-state>
-          <State>
-            <id />
-          </State>
-          <State>
-            <id>Android &gt; Lint &gt; Correctness</id>
-          </State>
-          <State>
-            <id>Gradle</id>
-          </State>
-          <State>
-            <id>Kotlin</id>
-          </State>
-          <State>
-            <id>Maven</id>
-          </State>
-          <State>
-            <id>OSGi</id>
-          </State>
-          <State>
-            <id>Probable bugsGradle</id>
-          </State>
-        </expanded-state>
-      </profile-state>
-    </entry>
-  </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" project-jdk-name="1.8" project-jdk-type="JavaSDK">
-    <output url="file://$PROJECT_DIR$/out" />
-  </component>
-  <component name="SvnBranchConfigurationManager">
-    <option name="mySupportsUserInfoFilter" value="true" />
-  </component>
-  <component name="WebServicesPlugin" addRequiredLibraries="true" />
+    <component name="EntryPointsManager">
+        <entry_points version="2.0" />
+    </component>
+    <component name="FrameworkDetectionExcludesConfiguration">
+        <type id="Spring" />
+    </component>
+    <component name="MavenProjectsManager">
+        <option name="originalFiles">
+            <list>
+                <option value="$PROJECT_DIR$/sdtd2-task/nursetask-server/pom.xml" />
+                <option value="$PROJECT_DIR$/pom.xml" />
+                <option value="$PROJECT_DIR$/exam-server/pom.xml" />
+                <option value="$PROJECT_DIR$/file-server/pom.xml" />
+                <option value="$PROJECT_DIR$/nursetask-server/pom.xml" />
+                <option value="$PROJECT_DIR$/xstask-server/pom.xml" />
+                <option value="$PROJECT_DIR$/eureka-server/pom.xml" />
+                <option value="$PROJECT_DIR$/census-server/pom.xml" />
+                <option value="$PROJECT_DIR$/userCenter/pom.xml" />
+            </list>
+        </option>
+    </component>
+    <component name="ProjectInspectionProfilesVisibleTreeState">
+        <entry key="Project Default">
+            <profile-state>
+                <expanded-state>
+                    <State>
+                        <id />
+                    </State>
+                    <State>
+                        <id>Android &gt; Lint &gt; Correctness</id>
+                    </State>
+                    <State>
+                        <id>Gradle</id>
+                    </State>
+                    <State>
+                        <id>Kotlin</id>
+                    </State>
+                    <State>
+                        <id>Maven</id>
+                    </State>
+                    <State>
+                        <id>OSGi</id>
+                    </State>
+                    <State>
+                        <id>Probable bugsGradle</id>
+                    </State>
+                </expanded-state>
+            </profile-state>
+        </entry>
+    </component>
+    <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" assert-keyword="true" jdk-15="true" project-jdk-name="1.8" project-jdk-type="JavaSDK">
+        <output url="file://$PROJECT_DIR$/out" />
+    </component>
+    <component name="SvnBranchConfigurationManager">
+        <option name="mySupportsUserInfoFilter" value="true" />
+    </component>
+    <component name="WebServicesPlugin" addRequiredLibraries="true" />
 </project>

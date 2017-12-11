@@ -16,6 +16,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * 类名称：XsZcCycle    
@@ -71,8 +72,10 @@ public class XsZcCycle implements Serializable{
     	//字段描述: 
    	 @Column(name = "TOTAL_TASK_NUM")
      private Integer totalTaskNum;
-    
-	public void setId(Long id){
+        //字段描述
+   	 @Column(name = "CREATE_TIME")
+    private Date createTime;
+	public void setId(){
 		this.id = Long.valueOf(new SnowflakeIdWorker(0,0).nextId());
 	}
 	@ExcelResources(title="id",order=1)
@@ -176,12 +179,19 @@ public class XsZcCycle implements Serializable{
 		return this.inUse;
 	}
 
-	public void set生成任务总次数(Integer 生成任务总次数){
-		this.totalTaskNum = 生成任务总次数;
+	public void setTotalTaskNum(Integer totalTaskNum){
+		this.totalTaskNum = totalTaskNum;
 	}
 	@ExcelResources(title="",order=14)
-	public Integer get生成任务总次数(){
+	public Integer getTotalTaskNum(){
 		return this.totalTaskNum;
 	}
 
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
+    }
 }

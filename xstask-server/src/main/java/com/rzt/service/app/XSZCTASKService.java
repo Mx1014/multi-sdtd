@@ -35,7 +35,7 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
      * @param dbyb   1 代办 2已办
      * @return
      */
-    public Page<Map<String, Object>> xsTask(int page, int size, String userid, int dbyb) {
+    public Page<Map<String, Object>> xsTask(int page, int size, Long userid, int dbyb) {
         Pageable pageable = new PageRequest(page, size, null);
         int one = 1;
         int two = 2;
@@ -43,11 +43,11 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
             /**
              * 保电代办
              */
-            String sqlBddb = "SELECT id,plan_start_time AS planstarttime,plan_end_time   AS planendtime,task_name       AS taskname,XSLX_NUM        AS xslxnum,STAUTS FROM xs_txbd_task WHERE (stauts = 0 OR stauts = 1) AND trunc(plan_start_time) = trunc(sysdate) and cm_user_id = ?1 ";
+            String sqlBddb = "SELECT id,plan_start_time AS planstarttime,plan_end_time   AS planendtime,task_name       AS taskname,XSLX_NUM        AS xslxnum,STAUTS,ZXYS_NUM AS zxys FROM xs_txbd_task,XSCS_NUM AS XSCS WHERE (stauts = 0 OR stauts = 1) AND trunc(plan_start_time) = trunc(sysdate) and cm_user_id = ?1 ";
             /**
              * 正常巡视代办
              */
-            String sqlZcdb = "SELECT id,plan_start_time AS planstarttime,plan_end_time   AS planendtime,task_name       AS taskname,2        AS xslxnum,STAUTS FROM xs_zc_task WHERE (stauts = 0 OR stauts = 1) AND trunc(plan_start_time) = trunc(sysdate) AND cm_user_id = ?2  ";
+            String sqlZcdb = "SELECT id,plan_start_time AS planstarttime,plan_end_time   AS planendtime,task_name       AS taskname,2        AS xslxnum,STAUTS,ZXYS_NUM AS zxys,XSCS_NUM AS XSCS  FROM xs_zc_task WHERE (stauts = 0 OR stauts = 1) AND trunc(plan_start_time) = trunc(sysdate) AND cm_user_id = ?2  ";
             String sql = "(" + sqlBddb + ") UNION ALL (" + sqlZcdb + ")";
             return this.execSqlPage(pageable, sql, userid, userid);
         } else if (dbyb == two) {
@@ -73,7 +73,7 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
      * @param id
      * @return
      */
-    public List<Map<String, Object>> tourMissionDetails(int xslx, String id) {
+    public List<Map<String, Object>> tourMissionDetails(int xslx, Long id) {
         int zero = 0;
         int one = 1;
         int two = 2;
@@ -94,7 +94,7 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
      * @param id   任务ID
      * @return
      */
-    public List<Map<String, Object>> personCollection(int xslx, String id) {
+    public List<Map<String, Object>> personCollection(int xslx, Long id) {
         int zero = 0;
         int one = 1;
         int two = 2;
@@ -115,13 +115,13 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
      * @param taskId 任务ID
      * @return
      */
-    public List<Map<String, Object>> itemsToRemind(int xslx, String taskId) {
+    public List<Map<String, Object>> itemsToRemind(int xslx, Long taskId) {
         int zero = 0, one = 1, two = 2;
-        String txbd = "SELECT ID,TASKID,WP_ZT AS WPZT FROM XS_TXBD_TASKWPQR where taskid=?1 ";
-        String zcbd = "SELECT ID,TASKID,WP_ZT AS WPZT FROM XS_ZC_TASKWPQR where taskid=?1 ";
         if (xslx == zero || xslx == one) {
+            String txbd = "SELECT ID,TASKID,WP_ZT AS WPZT FROM XS_TXBD_TASKWPQR where taskid=?1 ";
             return this.execSql(txbd, taskId);
         } else if (xslx == two) {
+            String zcbd = "SELECT ID,TASKID,WP_ZT AS WPZT FROM XS_ZC_TASKWPQR where taskid=?1 ";
             return this.execSql(zcbd, taskId);
         }
         return null;

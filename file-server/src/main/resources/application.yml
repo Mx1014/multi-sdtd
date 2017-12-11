@@ -58,11 +58,8 @@ spring:
 #文件上传路径,必须以/结尾
 my-defined:
    mapProps:
-    upload-dir: F:/sdtd/test/
+    file-dir: F:/sdtd/
+    pic-dir: F:/sdtd/test/
     thum-height: 50
     thum-width: 50
-file:
-  upload-dir: F:/sdtd/test/
-  thum:
-    height: 50
-    width: 50
+
