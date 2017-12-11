@@ -68,7 +68,7 @@ public class CMINSTALLController extends
             return null;
         } catch (Exception e) {
             e.printStackTrace();
-            return WebApiResponse.erro("失败");
+            return WebApiResponse.erro("错误");
         }
     }
 }
