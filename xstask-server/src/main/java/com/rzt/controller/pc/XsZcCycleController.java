@@ -10,6 +10,7 @@ import com.rzt.controller.CurdController;
 import com.rzt.entity.app.XSZCTASK;
 import com.rzt.entity.pc.XsZcCycle;
 import com.rzt.service.app.XSZCTASKService;
+import com.rzt.service.pc.XsZcCycleService;
 import com.rzt.util.WebApiResponse;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -33,7 +34,7 @@ import org.springframework.web.bind.annotation.*;
 @Api(value = "pc巡视任务管理")
 @RequestMapping("XsZcCycle")
 public class XsZcCycleController extends
-		CurdController<XsZcCycle, com.rzt.service.pc.XsZcCycleService> {
+		CurdController<XsZcCycle, XsZcCycleService> {
 
 	@Autowired
 	private XSZCTASKService xszctaskService;
@@ -88,14 +89,8 @@ public class XsZcCycleController extends
 	*/
 	@ApiOperation(value = "计划制定",notes = "pc端计划制定")
 	@PostMapping("addPlan")
-	public Object addPlan( XSZCTASK xszctask) {
-        try {
-            xszctask.setId();
-            xszctaskService.add(xszctask);xszctask.setId();
-			return WebApiResponse.success("数据保存成功!");
-		} catch (Exception var3) {
-			return WebApiResponse.erro("数据保存失败" + var3.getMessage());
-		}
+	public Object addPlan( @RequestBody XSZCTASK xszctask) {
+        return this.service.addPlan(xszctask);
 
 	}
 

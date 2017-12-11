@@ -28,6 +28,7 @@ import java.util.Date;
 @Entity
 @Table(name = "XS_ZC_TASK")
 public class XSZCTASK implements Serializable {
+    public static final String 巡视频率_每次任务中巡视应该重复的次数 = "巡视频率 每次任务中巡视应该重复的次数";
     //字段描述: 通道单位
     @Column(name = "TD_ORG")
     private String tdOrg;
@@ -42,7 +43,7 @@ public class XSZCTASK implements Serializable {
     private Long xsZcCycleId;
     //字段描述: 任务状态0  待办 1进行中 2已完成
     @Column(name = "STAUTS")
-    private String stauts;
+    private Integer stauts;
     //字段描述: 巡视频率 每次任务中巡视应该重复的次数
     @Column(name = "PLAN_XS_NUM")
     private Integer planXsNum;
@@ -72,7 +73,7 @@ public class XSZCTASK implements Serializable {
     private Date realEndTime;
     //字段描述: 周期内第多少次任务
     @Column(name = "TASK_NUM_IN_CYCLE")
-    private String taskNumInCycle;
+    private Integer taskNumInCycle;
     //字段描述: id
     @Id
     private Long id;
@@ -119,12 +120,12 @@ public class XSZCTASK implements Serializable {
         return this.xsZcCycleId;
     }
 
-    public void setStauts(String stauts) {
+    public void setStauts(Integer stauts) {
         this.stauts = stauts;
     }
 
     @ExcelResources(title = "任务状态0  待办 1进行中 2已完成 ", order = 5)
-    public String getStauts() {
+    public Integer getStauts() {
         return this.stauts;
     }
 
@@ -132,7 +133,7 @@ public class XSZCTASK implements Serializable {
         this.planXsNum = planXsNum;
     }
 
-    @ExcelResources(title = "巡视频率 每次任务中巡视应该重复的次数", order = 6)
+    @ExcelResources(title = 巡视频率_每次任务中巡视应该重复的次数, order = 6)
     public Integer getPlanXsNum() {
         return this.planXsNum;
     }
@@ -209,12 +210,12 @@ public class XSZCTASK implements Serializable {
         return this.realEndTime;
     }
 
-    public void setTaskNumInCycle(String taskNumInCycle) {
+    public void setTaskNumInCycle(Integer taskNumInCycle) {
         this.taskNumInCycle = taskNumInCycle;
     }
 
     @ExcelResources(title = "周期内第多少次任务", order = 15)
-    public String getTaskNumInCycle() {
+    public Integer getTaskNumInCycle() {
         return this.taskNumInCycle;
     }
 
