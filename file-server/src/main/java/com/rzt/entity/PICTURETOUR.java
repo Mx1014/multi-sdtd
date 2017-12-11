@@ -8,9 +8,11 @@ package com.rzt.entity;
 
 import com.rzt.util.excelUtil.ExcelResources;
 import com.rzt.utils.SnowflakeIdWorker;
-import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.sql.Date;
 
@@ -26,15 +28,13 @@ import java.sql.Date;
  */
 @Entity
 @Table(name = "picture_tour")
-public class PICTURETOUR extends BaseEntity implements Serializable{
+public class PICTURETOUR implements Serializable{
 	//字段描述: 步骤名字
    	 @Column(name = "PROCESS_NAME")
      private String processName;
     	//字段描述: 
    	 @Id
-     @GeneratedValue(generator = "uuid")
-	 @GenericGenerator(name = "uuid", strategy = "uuid")
-     private String id;        
+     private Long id;
     	//字段描述: 文件名称
    	 @Column(name = "FILE_NAME")
      private String fileName;
@@ -74,16 +74,15 @@ public class PICTURETOUR extends BaseEntity implements Serializable{
 		return this.processName;
 	}
 
-	public void setId(String id){
-		if(id==null||"".equals(id.trim())){
-			this.id = String.valueOf(new SnowflakeIdWorker(0,0).nextId());
+	public void setId(Long id){
+		if(id==null||id==0){
+			this.id = new SnowflakeIdWorker(0,0).nextId();
 		}else{
 			this.id = id;
 		}
-		//this.id = UUID.randomUUID().toString();
 	}
 	@ExcelResources(title="",order=2)
-	public String getId(){
+	public Long getId(){
 		return this.id;
 	}
 

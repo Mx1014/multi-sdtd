@@ -1,0 +1,71 @@
+########################################################
+### Server
+########################################################
+server:
+  port: 9091
+#expireTime: 30000000
+#log
+logging:
+  config: classpath:logback.xml
+
+spring:
+  application:
+    name: microservice-rzt-exam
+  primary:
+    datasource:
+#      url: jdbc:mysql://localhost:3306/micro_service_exam?useUnicode=true&characterEncoding=utf-8
+#      username: root
+#      password: root
+#      driverClassName: com.mysql.jdbc.Driver
+#      type: com.alibaba.druid.pool.DruidDataSource
+      #oracle数据库配置
+#      driverClassName: oracle.jdbc.driver.OracleDriver
+#      url: jdbc:oracle:thin:@localhost:1521/orcl
+#      username: sdtd
+#      password: sdtd
+      url: jdbc:oracle:thin:@47.92.67.90:1521/orcl
+      username: sdtd27
+      password: sdtd27
+# 下面为连接池的补充设置，应用到上面所有数据源中
+# 初始化大小，最小，最大
+      initialSize: 5
+      minIdle: 5
+      maxActive: 200
+# 配置获取连接等待超时的时间
+      maxWait: 60000
+# 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
+      timeBetweenEvictionRunsMillis: 60000
+# 配置一个连接在池中最小生存的时间，单位是毫秒
+      minEvictableIdleTimeMillis: 300000
+      validationQuery: SELECT 1 FROM DUAL
+      testWhileIdle: true
+      testOnBorrow: false
+      testOnReturn: false
+# 打开PSCache，并且指定每个连接上PSCache的大小
+      poolPreparedStatements: true
+      maxPoolPreparedStatementPerConnectionSize: 20
+#监控统计用的filter:stat 日志用的filter:log4j 防御sql注入的filter:wall
+      filters: stat,log4j
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show: true
+  #文件上传
+  http:
+    encoding:
+      charset: utf-8
+    multipart:
+      max-file-size: 50Mb
+      max-request-size: 50Mb
+
+#文件上传路径,必须以/结尾
+my-defined:
+   mapProps:
+    upload-dir: F:/sdtd/test/
+    thum-height: 50
+    thum-width: 50
+file:
+  upload-dir: F:/sdtd/test/
+  thum:
+    height: 50
+    width: 50

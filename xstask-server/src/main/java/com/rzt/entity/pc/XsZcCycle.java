@@ -8,6 +8,7 @@ package com.rzt.entity.pc;
 
 import com.rzt.entity.BaseEntity;
 import com.rzt.util.excelUtil.ExcelResources;
+import com.rzt.utils.SnowflakeIdWorker;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.Column;
@@ -15,7 +16,6 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import java.io.Serializable;
-import java.util.UUID;
 
 /**
  * 类名称：XsZcCycle    
@@ -28,18 +28,16 @@ import java.util.UUID;
  * @version        
  */
 @Entity
-public class XsZcCycle extends BaseEntity implements Serializable{
+public class XsZcCycle implements Serializable{
 	//字段描述: 
    	 @Id
-     @GeneratedValue(generator = "uuid")
-	 @GenericGenerator(name = "uuid", strategy = "uuid")
-     private String id;        
+     private Long id;
     	//字段描述: 电压等级 0 1 2 3
    	 @Column(name = "V_LEVEL")
      private Integer vLevel;
     	//字段描述: 线路id
    	 @Column(name = "LINE_ID")
-     private String lineId;
+     private Long lineId;
     	//字段描述: 线路名称
    	 @Column(name = "TASK_NAME")
      private String taskName;
@@ -74,11 +72,11 @@ public class XsZcCycle extends BaseEntity implements Serializable{
    	 @Column(name = "TOTAL_TASK_NUM")
      private Integer totalTaskNum;
     
-	public void setId(String id){
-		this.id = UUID.randomUUID().toString();
+	public void setId(Long id){
+		this.id = Long.valueOf(new SnowflakeIdWorker(0,0).nextId());
 	}
-	@ExcelResources(title="",order=1)
-	public String getId(){
+	@ExcelResources(title="id",order=1)
+	public Long getId(){
 		return this.id;
 	}
 
@@ -90,11 +88,11 @@ public class XsZcCycle extends BaseEntity implements Serializable{
 		return this.vLevel;
 	}
 
-	public void setLineId(String lineId){
+	public void setLineId(Long lineId){
 		this.lineId = lineId;
 	}
 	@ExcelResources(title="线路id",order=3)
-	public String getLineId(){
+	public Long getLineId(){
 		return this.lineId;
 	}
 
