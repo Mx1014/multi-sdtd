@@ -16,6 +16,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -45,11 +46,15 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
     * @author nwz
     */
 
+//
+
     @Modifying
     @Transactional
     public Object addCycle(XsZcCycle xsZcCycle) {
         try {
             //添加周期
+            xsZcCycle.setId();
+            xsZcCycle.setCreateTime(new Date());
             this.add(xsZcCycle);
             //添加周期表关联的线路杆塔
             Long xsZcCycleId = xsZcCycle.getId();
@@ -61,14 +66,14 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
             for (Map<String,Object> lineTower: lineTowerList) {
                 long lineTowerId = Long.parseLong(lineTower.get("ID").toString());
                 XsZcCycleLineTower xsZcCycleLineTower = new XsZcCycleLineTower();
+                xsZcCycleLineTower.setId();
                 xsZcCycleLineTower.setCmLineTowerId(lineTowerId);
                 xsZcCycleLineTower.setXsZcCycleId(xsZcCycleId);
                 xsZcCycleLineTowerService.add(xsZcCycleLineTower);
             }
-
             return WebApiResponse.success("数据保存成功!");
         } catch (Exception var3) {
-            return WebApiResponse.erro("数据保存失败" + var3.getMessage());
+            return WebApiResponse.erro("出错了" + var3.getMessage());
         }
     }
 

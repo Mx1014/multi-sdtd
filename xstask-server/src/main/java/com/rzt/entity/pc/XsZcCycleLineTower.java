@@ -38,7 +38,7 @@ public class XsZcCycleLineTower implements Serializable{
    	 @Column(name = "CM_LINE_TOWER_ID")
      private Long cmLineTowerId;
     
-    public void setId(Long id){
+    public void setId(){
         this.id = Long.valueOf(new SnowflakeIdWorker(0,0).nextId());
     }
 
