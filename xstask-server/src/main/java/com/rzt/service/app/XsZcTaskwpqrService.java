@@ -3,7 +3,7 @@ package com.rzt.service.app;
 import com.rzt.entity.app.XsZcTaskwpqr;
 import com.rzt.repository.app.XsZcTaskwpqrRepository;
 import com.rzt.service.CurdService;
-import com.rzt.util.UUIDTool;
+import com.rzt.util.SnowflakeIdWorker;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -23,7 +23,7 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
      * @param xslx
      * @return
      */
-    public int updateSfqrTime(String id, int xslx) {
+    public int updateSfqrTime(Long id, int xslx) {
         int one = 1, two = 2, zero = 0;
         if (xslx == one || xslx == zero) {
             return this.reposiotry.bdXsSfqrTime(id);
@@ -41,7 +41,7 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
      * @param id
      * @return
      */
-    public int reachSpot(int xslx, String id) {
+    public int reachSpot(int xslx, Long id) {
         int one = 1;
         int two = 2;
         if (xslx == one) {
@@ -60,19 +60,19 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
      * @param xslx   0 特巡 1 保电 2 巡视
      * @return
      */
-    public int articlesReminding(String taskID, String rwZt, int xslx, String id) {
+    public int articlesReminding(Long taskID, String rwZt, int xslx) {
         int zero = 0, one = 1, two = 2;
-        if (!StringUtils.isEmpty(id)) {
+        if (!StringUtils.isEmpty(taskID)) {
             if (xslx == zero || xslx == one) {
-                return this.reposiotry.bdXsArticlesUpdate(rwZt, id);
+                return this.reposiotry.bdXsArticlesUpdate(rwZt, taskID);
             } else if (xslx == two) {
-                return this.reposiotry.zcXsArticlesUpdate(rwZt, id);
+                return this.reposiotry.zcXsArticlesUpdate(rwZt, taskID);
             }
         } else {
             if (xslx == zero || xslx == one) {
-                return this.reposiotry.bdXsArticlesInsert(UUIDTool.getUUID(), taskID, rwZt);
+                return this.reposiotry.bdXsArticlesInsert(new SnowflakeIdWorker(12, 20).nextId(), taskID, rwZt);
             } else if (xslx == two) {
-                return this.reposiotry.zcXsArticlesInsert(UUIDTool.getUUID(), taskID, rwZt);
+                return this.reposiotry.zcXsArticlesInsert(new SnowflakeIdWorker(13, 20).nextId(), taskID, rwZt);
             }
         }
         return zero;
