@@ -7,13 +7,8 @@
 package com.rzt.service;
 import com.rzt.entity.CMLINE;
 import com.rzt.repository.CMLINERepository;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Map;
 
 /**      
  * 类名称：CMLINEService    
@@ -29,9 +24,6 @@ import java.util.Map;
 @Transactional
 public class CMLINEService extends CurdService<CMLINE,CMLINERepository> {
 
-    public Page<Map<String, Object>> test(){
-        Pageable pageable = new PageRequest(0,3,null);
-        return this.execSqlPage(pageable, "select * from kh_yh_history");
-    }
+
 
 }

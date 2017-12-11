@@ -139,12 +139,6 @@ public class SnowflakeIdWorker {
 
 
     public static void main(String[] args) {
-//        lizezhouCeshi();
-        Long aLong = Long.valueOf(new SnowflakeIdWorker(0, 0).nextId());
-        System.out.println(aLong);
-    }
-
-    private static void lizezhouCeshi() {
         SnowflakeIdWorker idWorker = new SnowflakeIdWorker(0l, 0l);
         /*for (int i = 0; i < 1000; i++) {
             long id = idWorker.nextId();
@@ -191,5 +185,6 @@ public class SnowflakeIdWorker {
         executor.destroy();
         System.out.println("success count: " + count.get());
         System.out.println("fail count: " + failCount.get());
+
     }
 }

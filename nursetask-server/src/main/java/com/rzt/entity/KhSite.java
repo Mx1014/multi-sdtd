@@ -7,6 +7,7 @@
 package com.rzt.entity;
 import com.rzt.entity.BaseEntity;
 import com.rzt.util.excelUtil.ExcelResources;
+import com.rzt.utils.SnowflakeIdWorker;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.Column;
@@ -28,12 +29,10 @@ import java.util.UUID;
  * @version        
  */
 @Entity
-public class KhSite extends BaseEntity implements Serializable{
+public class KhSite  implements Serializable{
 	//字段描述: 主任务id
 	@Id
-	@GeneratedValue(generator = "uuid")
-	@GenericGenerator(name = "uuid", strategy = "uuid")
-	private String id;
+	private Long id;
 	//字段描述: 电压等级 0 1 2 3
 	@Column(name = "VTYPE")
 	private String vtype;
@@ -55,9 +54,9 @@ public class KhSite extends BaseEntity implements Serializable{
 	//字段描述: 通道运维单位
 	@Column(name = "TDYW_ORG")
 	private String tdywOrg;
-	//字段描述: 是否停用（消缺） 0 不停用 1停用
+	/*//字段描述: 是否停用（消缺） 0 不停用 1停用
 	@Column(name = "IN_USE")
-	private String inUse;
+	private String inUse;*/
 	//字段描述: 生成任务总次数
 	@Column(name = "TASK_TIMES")
 	private String taskTimes;
@@ -66,7 +65,7 @@ public class KhSite extends BaseEntity implements Serializable{
 	private String lineId;
 	//字段描述: 隐患id
 	@Column(name = "YH_ID")
-	private String yhId;
+	private Long yhId;
 	//字段描述: 看护范围
 	@Column(name = "KH_RANGE")
 	private String khRange;
@@ -85,11 +84,11 @@ public class KhSite extends BaseEntity implements Serializable{
 	@Column(name = "CREATE_TIME")
 	private Date createTime;
 
-	public void setId(String id){
-		this.id = UUID.randomUUID().toString();
+	public void setId(Long id){
+		this.id =   Long.valueOf(new SnowflakeIdWorker(0,0).nextId());
 	}
-	@ExcelResources(title="主任务id",order=1)
-	public String getId(){
+	@ExcelResources(title="",order=1)
+	public Long getId(){
 		return this.id;
 	}
 
@@ -149,14 +148,6 @@ public class KhSite extends BaseEntity implements Serializable{
 		return this.tdywOrg;
 	}
 
-	public void setInUse(String inUse){
-		this.inUse = inUse;
-	}
-	@ExcelResources(title="是否停用（消缺） 0 不停用 1停用",order=11)
-	public String getInUse(){
-		return this.inUse;
-	}
-
 	public void setTaskTimes(String taskTimes){
 		this.taskTimes = taskTimes;
 	}
@@ -173,11 +164,11 @@ public class KhSite extends BaseEntity implements Serializable{
 		return this.lineId;
 	}
 
-	public void setYhId(String yhId){
+	public void setYhId(Long yhId){
 		this.yhId = yhId;
 	}
 	@ExcelResources(title="隐患id",order=15)
-	public String getYhId(){
+	public Long getYhId(){
 		return this.yhId;
 	}
 

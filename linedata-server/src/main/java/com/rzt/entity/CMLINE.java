@@ -28,6 +28,7 @@ import java.io.Serializable;
 public class CMLINE implements Serializable{
 	//字段描述: 
    	 @Id
+	 //@Column(name="id",columnDefinition="NUMBER")
      private Long id;        
     	//字段描述: 
    	 @Column(name = "LINE_NAME")

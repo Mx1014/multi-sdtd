@@ -27,11 +27,11 @@ import java.util.Date;
 public interface KhSiteRepository extends JpaRepository<KhSite,String> {
 
     @Modifying
-    @Query(value = "update kh_site set in_use=?2,khxq_time=?3 where id= ?1",nativeQuery = true)
-    int updateQxTask(String id, String status, Date date);
+    @Query(value = "update kh_site set status=2,khxq_time=?2 where id= ?1",nativeQuery = true)
+    int updateQxTask(String id, Date date);
 
     @Modifying
-    @Query(value = "update kh_task set status=1,plan_end_time=?2 where site_id= ?1 and status = 0",nativeQuery = true)
+    @Query(value = "update kh_task set status='已完成',plan_end_time=?2 where site_id= ?1 and status in ('未开始','进行中')",nativeQuery = true)
     void updateDoingTask(String id,Date date);
 
     @Modifying
@@ -39,10 +39,13 @@ public interface KhSiteRepository extends JpaRepository<KhSite,String> {
     void updateSite(String id, String khfzrId1, String khdyId1, String khfzrId2, String khdyId2);
 
     @Modifying
-    @Query(value ="update kh_yh_history set ygzt=1,update_time=?2 where YHDDGDDWID=?1",nativeQuery = true)
-    void updateYH(String id, Date date);
+    @Query(value ="update kh_yh_history set yhzt=1,update_time=?2 where id=?1",nativeQuery = true)
+    void updateYH(Long id, Date date);
 
     @Modifying
     @Query(value ="update check_live_task set status=1,update_time=?2 where task_id=?1",nativeQuery = true)
     void updateCheckTask(String id, Date date);
+
+    @Query(value ="select count(*) from kh_site where status = ?1 ",nativeQuery = true)
+    int getCount(String status);
 }

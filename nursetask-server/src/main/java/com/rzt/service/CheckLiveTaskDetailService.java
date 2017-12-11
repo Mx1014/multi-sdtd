@@ -6,13 +6,10 @@
  */
 package com.rzt.service;
 import com.rzt.entity.CheckLiveTaskDetail;
-import com.rzt.entity.KhTask;
 import com.rzt.repository.CheckLiveTaskDetailRepository;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import javax.annotation.Resource;
-import com.rzt.service.CurdService;
 
 import java.util.ArrayList;
 import java.util.List;

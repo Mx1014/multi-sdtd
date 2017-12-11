@@ -1,5 +1,6 @@
 package com.rzt.entity;
 import com.rzt.util.excelUtil.ExcelResources;
+import com.rzt.utils.SnowflakeIdWorker;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -10,18 +11,17 @@ import java.util.UUID;
  * Created by admin on 2017/12/5.
  */
 @Entity
-@Table(name="CHENK_LIVE_TASK_DETAIL")
-public class CheckLiveTaskDetail extends BaseEntity implements Serializable{
+@Table(name="CHENK_LIVE_TASK_CYCLE")
+public class CheckLiveTaskDetail implements Serializable{
+    //字段描述:
     @Id
-    @GeneratedValue(generator = "uuid")
-    @GenericGenerator(name = "uuid", strategy = "uuid")
-    private String id;
+    private Long id;
     //字段描述: 稽查主任务id
     @Column(name = "TASK_ID")
-    private String taskId;
+    private Long taskId;
     //字段描述: 稽查人id
     @Column(name = "USER_ID")
-    private String userId;
+    private Long userId;
     //字段描述: 稽查任务名称
     @Column(name = "TASK_NAME")
     private String taskName;
@@ -50,27 +50,27 @@ public class CheckLiveTaskDetail extends BaseEntity implements Serializable{
     @Column(name = "DDXC_TIME")
     private String ddxcTime;
 
-    public void setId(String id){
-        this.id = UUID.randomUUID().toString();
+    public void setId(Long id){
+        this.id =Long.valueOf(new SnowflakeIdWorker(0,0).nextId());
     }
     @ExcelResources(title="",order=1)
-    public String getId(){
+    public Long getId(){
         return this.id;
     }
 
-    public void setTaskId(String taskId){
+    public void setTaskId(Long taskId){
         this.taskId = taskId;
     }
     @ExcelResources(title="稽查主任务id",order=2)
-    public String getTaskId(){
+    public Long getTaskId(){
         return this.taskId;
     }
 
-    public void setUserId(String userId){
+    public void setUserId(Long userId){
         this.userId = userId;
     }
     @ExcelResources(title="稽查人id",order=3)
-    public String getUserId(){
+    public Long getUserId(){
         return this.userId;
     }
 

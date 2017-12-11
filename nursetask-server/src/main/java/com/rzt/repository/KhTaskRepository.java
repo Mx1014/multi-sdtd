@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 
@@ -50,4 +51,12 @@ public interface KhTaskRepository extends JpaRepository<KhTask,String> {
     @Modifying
     @Query(value = "update kh_task set real_start_time = ?1 where id = ?2",nativeQuery = true)
     void updateRealStartTime(Date time, String id);
+
+    @Query(value = "SELECT COUNT(*) FROM kh_task where status = 1",nativeQuery = true)
+    int getCount2();
+
+    @Modifying
+    @Transactional
+    @Query(value = "update kh_site set khfzr_id1 = ?2, khfzr_id2 = ?3,khdy_id1 = ?4,khdy_id2 = ?5 where id = ?1",nativeQuery = true)
+    void updateTaskById(String id, String khfzrId1, String khfzrId2, String khdyId1, String khdyId2);
 }

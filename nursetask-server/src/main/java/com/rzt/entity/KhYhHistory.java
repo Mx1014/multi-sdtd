@@ -6,7 +6,9 @@
  */
 package com.rzt.entity;
 import com.rzt.util.excelUtil.ExcelResources;
+import com.rzt.utils.SnowflakeIdWorker;
 import org.hibernate.annotations.GenericGenerator;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -26,18 +28,16 @@ import java.util.UUID;
  * @version        
  */
 @Entity
-public class KhYhHistory extends BaseEntity implements Serializable{
+public class KhYhHistory implements Serializable{
 	//字段描述: 输电平台id
 	@Id
-	@GeneratedValue(generator = "uuid")
-	@GenericGenerator(name = "uuid", strategy = "uuid")
-	private String id;
+	private Long id;
 	//字段描述: 维护单位id（orgid）
-	@Column(name = "TDWH_ORGID")
-	private String tdwhOrgid;
+	@Column(name = "TDYW_ORGID")
+	private String tdywOrgid;
 	//字段描述: 维护单位（通道单位）
-	@Column(name = "TDWH_ORG")
-	private String tdwhOrg;
+	@Column(name = "TDYW_ORG")
+	private String tdywOrg;
 	//字段描述: 隐患级别
 	@Column(name = "YHJB")
 	private String yhjb;
@@ -69,8 +69,8 @@ public class KhYhHistory extends BaseEntity implements Serializable{
 	@Column(name = "YHZRDWSJZRBM")
 	private String yhzrdwsjzrbm;
 	//字段描述: taskid
-	@Column(name = "YHDDGDDWID")
-	private String yhddgddwid;
+	@Column(name = "TASK_ID")
+	private Long taskId;
 	//字段描述: 隐患发现时间
 	@Column(name = "YHFXSJ")
 	private String yhfxsj;
@@ -171,8 +171,8 @@ public class KhYhHistory extends BaseEntity implements Serializable{
 	@Column(name = "LINE_NAME")
 	private String lineName;
 	//字段描述: 设备维护单位
-	@Column(name = "SBWH_ORG")
-	private String sbwhOrg;
+	@Column(name = "SBYW_ORG")
+	private String sbywOrg;
 	//字段描述: 电压等级
 	@Column(name = "VTYPE")
 	private String vtype;
@@ -183,28 +183,28 @@ public class KhYhHistory extends BaseEntity implements Serializable{
 	@Column(name = "CREATE_TIME")
 	private String createTime;
 
-	public void setId(String id){
-		this.id = UUID.randomUUID().toString();
+	public void setId(Long id){
+		this.id =   Long.valueOf(new SnowflakeIdWorker(0,0).nextId());
 	}
-	@ExcelResources(title="输电平台id",order=1)
-	public String getId(){
+	@ExcelResources(title="",order=1)
+	public Long getId(){
 		return this.id;
 	}
 
-	public void setTdwhOrgid(String tdwhOrgid){
-		this.tdwhOrgid = tdwhOrgid;
+	public void setTdywOrgid(String tdywOrgid){
+		this.tdywOrgid = tdywOrgid;
 	}
 	@ExcelResources(title="维护单位id（orgid）",order=2)
-	public String getTdwhOrgid(){
-		return this.tdwhOrgid;
+	public String getTdywOrgid(){
+		return this.tdywOrgid;
 	}
 
-	public void setTdwhOrg(String tdwhOrg){
-		this.tdwhOrg = tdwhOrg;
+	public void setTdywOrg(String tdywOrg){
+		this.tdywOrg = tdywOrg;
 	}
 	@ExcelResources(title="维护单位（通道单位）",order=3)
-	public String getTdwhOrg(){
-		return this.tdwhOrg;
+	public String getTdywOrg(){
+		return this.tdywOrg;
 	}
 
 	public void setYhjb(String yhjb){
@@ -287,12 +287,12 @@ public class KhYhHistory extends BaseEntity implements Serializable{
 		return this.yhzrdwsjzrbm;
 	}
 
-	public void setYhddgddwid(String yhddgddwid){
-		this.yhddgddwid = yhddgddwid;
+	public void setTaskId(Long taskId){
+		this.taskId = taskId;
 	}
 	@ExcelResources(title="taskid",order=14)
-	public String getYhddgddwid(){
-		return this.yhddgddwid;
+	public Long getTaskId(){
+		return this.taskId;
 	}
 
 	public void setYhfxsj(String yhfxsj){
@@ -559,12 +559,12 @@ public class KhYhHistory extends BaseEntity implements Serializable{
 		return this.lineName;
 	}
 
-	public void setSbwhOrg(String sbwhOrg){
-		this.sbwhOrg = sbwhOrg;
+	public void setSbywOrg(String sbywOrg){
+		this.sbywOrg = sbywOrg;
 	}
 	@ExcelResources(title="设备维护单位",order=48)
-	public String getSbwhOrg(){
-		return this.sbwhOrg;
+	public String getSbywOrg(){
+		return this.sbywOrg;
 	}
 
 	public void setVtype(String vtype){

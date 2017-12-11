@@ -6,6 +6,7 @@
  */
 package com.rzt.entity;
 import com.rzt.util.excelUtil.ExcelResources;
+import com.rzt.utils.SnowflakeIdWorker;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -24,12 +25,10 @@ import java.util.UUID;
  */
 @Entity
 @Table(name="CHECK_QUESTION_ANSWER")
-public class CheckQuestionAnswer extends BaseEntity implements Serializable{
+public class CheckQuestionAnswer  implements Serializable{
 	//字段描述: 
    	 @Id
-     @GeneratedValue(generator = "uuid")
-	 @GenericGenerator(name = "uuid", strategy = "uuid")
-     private String id;        
+     private Long id;
     	//字段描述: 问题id
    	 @Column(name = "QUESTION_ID")
      private String questionId;
@@ -39,12 +38,12 @@ public class CheckQuestionAnswer extends BaseEntity implements Serializable{
     	//字段描述: 问题答案
    	 @Column(name = "ANSWER")
      private String answer;
-    
-	public void setId(String id){
-		this.id = UUID.randomUUID().toString();
+
+	public void setId(Long id){
+		this.id =   Long.valueOf(new SnowflakeIdWorker(0,0).nextId());
 	}
 	@ExcelResources(title="",order=1)
-	public String getId(){
+	public Long getId(){
 		return this.id;
 	}
 

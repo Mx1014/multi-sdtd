@@ -14,7 +14,6 @@ import com.rzt.service.CheckLiveTaskDetailService;
 import com.rzt.service.CheckLiveTaskService;
 import com.rzt.util.WebApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -84,7 +83,7 @@ public class CheckLiveTaskController extends
 		try{
 			List<CheckLiveTasks> list = model.getList();
 			for (CheckLiveTasks task:list) {
-				
+
 			}
 			/*task.setTaskId(id);
 			task.setStatus("0");  //未开始
@@ -106,5 +105,7 @@ public class CheckLiveTaskController extends
 		}
 	}
 	/*@GetMapping("/App")*/
+
+	//看护App流程
 
 }
