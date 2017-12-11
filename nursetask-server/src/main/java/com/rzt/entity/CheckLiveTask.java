@@ -69,9 +69,9 @@ public class CheckLiveTask implements Serializable{
 	private String tdwxOrgid;
 	//字段描述: 隐患id
 	@Column(name = "YH_ID")
-	private String yhId;
+	private Long yhId;
 	//字段描述: 任务状态  0 待稽查 1进行中 2已稽查 3已过期
-	@Column(name = "task_STATUS")
+	@Column(name = "TASK_STATUS")
 	private String taskStatus;
 	//字段描述: 计划开始时间
 	@Column(name = "PLAN_START_TIME")
@@ -196,11 +196,11 @@ public class CheckLiveTask implements Serializable{
 		return this.tdwxOrgid;
 	}
 
-	public void setYhId(String yhId){
+	public void setYhId(Long yhId){
 		this.yhId = yhId;
 	}
 	@ExcelResources(title="隐患id",order=14)
-	public String getYhId(){
+	public Long getYhId(){
 		return this.yhId;
 	}
 

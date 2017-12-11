@@ -6,10 +6,13 @@
  */
 package com.rzt.service;
 import com.alibaba.fastjson.JSONObject;
+import com.rzt.entity.CheckLiveTask;
 import com.rzt.entity.KhSite;
 import com.rzt.entity.KhTask;
+import com.rzt.entity.KhYhHistory;
 import com.rzt.repository.KhSiteRepository;
 import com.rzt.repository.KhTaskRepository;
+import com.rzt.util.WebApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -34,9 +37,14 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
 
     @Autowired
     private KhTaskRepository taskRepository;
+    @Autowired
+    private KhYhHistoryService yhservice;
+    @Autowired
+    private CheckLiveTaskService checkService;
+
     public Page listAllTaskNotDo(KhTask task, Pageable pageable, String userName) {
         // task = timeUtil(task);
-        String result = " k.id as id,k.task_name as taskName,k.tdyw_org as yworg,y.yhms as ms,y.yhjb as jb,k.create_time as createTime ";
+        String result = " k.id as id,k.task_name as taskName,k.tdyw_org as yworg,y.yhms as ms,y.yhjb as jb,k.create_time as createTime,k.COUNT as COUNT ";
         StringBuffer buffer = new StringBuffer();
         buffer.append(" where k.status = ?");// 0为未派发的任务
         List params = new ArrayList<>();
@@ -55,22 +63,15 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             buffer.append(" and u.user_name like ? ");
             params.add(userName);
         }
-        params.add(pageable.getPageNumber()*pageable.getPageSize());
-        params.add((pageable.getPageNumber()+1)*pageable.getPageSize());
-        buffer.append(" order by k.create_time desc ) a) b ");
-        buffer.append(" where b.rn>? and b.rn <=?");
-        String sql = "select * from (select a.*,rownum rn from (select "+result+" from kh_site k left join kh_yh_history y on k.yh_id = y.id" + buffer.toString();
+        //params.add(pageable.getPageNumber()*pageable.getPageSize());
+       // params.add((pageable.getPageNumber()+1)*pageable.getPageSize());
+        buffer.append(" order by k.create_time desc ");
+        //buffer.append(" where b.rn>? and b.rn <=?");
+        String sql = "select "+result+" from kh_site k left join kh_yh_history y on k.yh_id = y.id" + buffer.toString();
         //List<Map<String, Object>> maps = execSql(sql, params.toArray());
         int count = this.reposiotry.getCount(task.getStatus());
         JSONObject jsonObject = new JSONObject();
         Page<Map<String, Object>> maps1 = this.execSqlPage(pageable, sql, params.toArray());
-        /*if(count > 0){
-            Map<String, Object> map = new HashMap<>();
-            map.put("COUNT",count);
-            maps.add(map);
-        }*/
-        /*jsonObject.put("data",maps);
-        jsonObject.put("count",count);*/
        return maps1;
     }
 
@@ -107,5 +108,53 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                 " on d.id=k.id " +
                 " left join kh_yh_history y on k.yh_id = y.id  where k.id=? " ;
         return this.execSql(sql,id);
+    }
+
+    public WebApiResponse saveYh(KhYhHistory yh) {
+        try {
+            yh.setYhdm("未定级");
+            yh.setYhzt("0");//隐患未消除
+            yhservice.add(yh);
+            KhSite task = new KhSite();
+            String taskName = yh.getVtype()+yh.getLineName()+yh.getStartTower()+"-"+yh.getEndTower()+"号杆塔看护任务";
+            task.setCreateTime(new Date());
+            task.setVtype(yh.getVtype());
+            task.setLineName(yh.getLineName());
+            task.setTdywOrg(yh.getTdywOrg());
+            task.setTaskName(taskName);
+            task.setStatus("1");// 未派发
+            task.setTaskTimes(0);//生成任务次数0
+            task.setYhId(yh.getId());
+            task.setCreateTime(new Date());
+            this.add(task);
+            CheckLiveTask check = new CheckLiveTask();
+            check.setCheckType("0"); //0为 看护类型稽查
+            check.setTaskId(task.getId());
+            check.setTaskType("1");// 1 为正常稽查
+            check.setStatus("0");  // 0 为未派发
+            check.setTdwhOrg(yh.getTdywOrg());
+            check.setCreateTime(new Date());
+            check.setCheckDept("0"); // 0为属地公司
+            check.setYhId(yh.getId());
+            check.setCheckCycle("1");// 1 为周期1天
+            check.setTaskName(yh.getVtype()+yh.getLineName()+yh.getStartTower()+"-"+yh.getEndTower()+"号杆塔稽查任务");
+            checkService.add(check);
+            CheckLiveTask check1 = new CheckLiveTask();
+            check1.setCheckType("0"); //0为 看护类型稽查
+            check1.setTaskId(task.getId());
+            check1.setTaskType("1");// 1 为正常稽查
+            check1.setStatus("0");  // 0 为未派发
+            check1.setTdwhOrg(yh.getTdywOrg());
+            check1.setCreateTime(new Date());
+            check1.setCheckDept("1"); // 1为北京公司
+            check1.setCheckCycle("3"); // 周期为3天
+            check1.setTaskName(check.getTaskName());
+            check1.setYhId(yh.getId());
+            checkService.add(check1);
+            return WebApiResponse.success("保存成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("数据查询失败" + e.getMessage());
+        }
     }
 }
