@@ -25,7 +25,5 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("XsZcCycleLineTower")
 public class XsZcCycleLineTowerController extends
 		CurdController<XsZcCycleLineTower, XsZcCycleLineTowerService> {
-    
-    
-	
+
 }

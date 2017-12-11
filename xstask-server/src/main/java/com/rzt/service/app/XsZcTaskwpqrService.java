@@ -3,7 +3,7 @@ package com.rzt.service.app;
 import com.rzt.entity.app.XsZcTaskwpqr;
 import com.rzt.repository.app.XsZcTaskwpqrRepository;
 import com.rzt.service.CurdService;
-import com.rzt.util.SnowflakeIdWorker;
+import com.rzt.utils.SnowflakeIdWorker;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 

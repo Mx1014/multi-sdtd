@@ -90,7 +90,7 @@
         <dependency>
             <groupId>com.rzt.base</groupId>
             <artifactId>Rzt-base</artifactId>
-            <version>1.1.6-SNAPSHOT</version>
+            <version>1.1.7-SNAPSHOT</version>
         </dependency>
 
         <!--线程安全的时间插件jar包-->
@@ -112,7 +112,7 @@
         </dependency>
     </dependencies>
 
-    <build>
+        <build>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
