@@ -6,14 +6,15 @@
  */
 package com.rzt.entity.app;
 
-import com.rzt.entity.BaseEntity;
 import com.rzt.util.excelUtil.ExcelResources;
-import org.hibernate.annotations.GenericGenerator;
+import com.rzt.utils.SnowflakeIdWorker;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.Date;
-import java.util.UUID;
 
 /**
  * 类名称：XSZCTASK
@@ -26,7 +27,7 @@ import java.util.UUID;
  */
 @Entity
 @Table(name = "XS_ZC_TASK")
-public class XSZCTASK extends BaseEntity implements Serializable {
+public class XSZCTASK implements Serializable {
     //字段描述: 通道单位
     @Column(name = "TD_ORG")
     private String tdOrg;
@@ -38,7 +39,7 @@ public class XSZCTASK extends BaseEntity implements Serializable {
     private String classId;
     //字段描述: 正常巡视任务周期id
     @Column(name = "XS_ZC_CYCLE_ID")
-    private String xsZcCycleId;
+    private Long xsZcCycleId;
     //字段描述: 任务状态0  待办 1进行中 2已完成
     @Column(name = "STAUTS")
     private String stauts;
@@ -74,9 +75,7 @@ public class XSZCTASK extends BaseEntity implements Serializable {
     private String taskNumInCycle;
     //字段描述: id
     @Id
-    @GeneratedValue(generator = "uuid")
-    @GenericGenerator(name = "uuid", strategy = "uuid")
-    private String id;
+    private Long id;
     //字段描述: 任务名称
     @Column(name = "TASK_NAME")
     private String taskName;
@@ -111,12 +110,12 @@ public class XSZCTASK extends BaseEntity implements Serializable {
         return this.classId;
     }
 
-    public void setXsZcCycleId(String xsZcCycleId) {
+    public void setXsZcCycleId(Long xsZcCycleId) {
         this.xsZcCycleId = xsZcCycleId;
     }
 
     @ExcelResources(title = "正常巡视任务周期id", order = 4)
-    public String getXsZcCycleId() {
+    public Long getXsZcCycleId() {
         return this.xsZcCycleId;
     }
 
@@ -219,12 +218,12 @@ public class XSZCTASK extends BaseEntity implements Serializable {
         return this.taskNumInCycle;
     }
 
-    public void setId(String id) {
-        this.id = UUID.randomUUID().toString();
+    public void setId() {
+        this.id = Long.valueOf(new SnowflakeIdWorker(0,0).nextId());
     }
 
     @ExcelResources(title = "id", order = 16)
-    public String getId() {
+    public Long getId() {
         return this.id;
     }
 
