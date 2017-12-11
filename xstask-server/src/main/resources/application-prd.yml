@@ -26,7 +26,14 @@ spring:
       connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMill
 logging:
   config: classpath:logback-spring.xml
-
+#url加密  用于swagger模块
+security:
+  basic:
+    path: /swagger-ui.html
+    enabled: true
+  user:
+    name: sdtd27
+    password: sdtd275d
 
 #      mysql:
 #        type: com.alibaba.druid.pool.DruidDataSource

@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.*;
  * @version        
  */
 @RestController
-@Api(value = "pc")
+@Api(value = "pc巡视任务管理")
 @RequestMapping("XsZcCycle")
 public class XsZcCycleController extends
 		CurdController<XsZcCycle, com.rzt.service.pc.XsZcCycleService> {
@@ -88,8 +88,30 @@ public class XsZcCycleController extends
 	*/
 	@ApiOperation(value = "计划制定",notes = "pc端计划制定")
 	@PostMapping("addPlan")
-	public Object addPlan(@RequestBody XSZCTASK xszctask) {
+	public Object addPlan( XSZCTASK xszctask) {
+        try {
+            xszctask.setId();
+            xszctaskService.add(xszctask);xszctask.setId();
+			return WebApiResponse.success("数据保存成功!");
+		} catch (Exception var3) {
+			return WebApiResponse.erro("数据保存失败" + var3.getMessage());
+		}
+
+	}
+
+	/**
+	 * @Method listPlan
+	 * @Description  任务派发 生成任务和人员信息
+	 * @param
+	 * @return java.lang.Object
+	 * @date 2017/12/7 17:57
+	 * @author nwz
+	 */
+	@ApiOperation(value = "pc端任务派发列表",notes = "pc端任务派发列表")
+	@PostMapping("listPlan")
+	public Object listPlan(@RequestBody XSZCTASK xszctask) {
 		try {
+            xszctask.setId();
 			xszctaskService.add(xszctask);
 			return WebApiResponse.success("数据保存成功!");
 		} catch (Exception var3) {
@@ -97,5 +119,6 @@ public class XsZcCycleController extends
 		}
 
 	}
-	
+
+
 }

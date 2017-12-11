@@ -60,6 +60,12 @@ public class RztSysMenu extends BaseEntity implements Serializable{
     	//字段描述: 
    	 @Column(name = "lft")
      private int lft;
+	//字段描述: 菜单类型 1 列表类型 2 页内tab
+	@Column(name = "menutype")
+	private int menutype;
+	//字段描述: 类别 1 PC 2 APP
+	@Column(name = "type")
+	private int type;
     	//字段描述: 
    	 @Column(name = "rgt")
      private int rgt;
