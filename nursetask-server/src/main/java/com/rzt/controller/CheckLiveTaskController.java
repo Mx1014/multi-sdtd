@@ -84,7 +84,7 @@ public class CheckLiveTaskController extends
 		try{
 			List<CheckLiveTasks> list = model.getList();
 			for (CheckLiveTasks task:list) {
-				
+
 			}
 			/*task.setTaskId(id);
 			task.setStatus("0");  //未开始
@@ -106,5 +106,7 @@ public class CheckLiveTaskController extends
 		}
 	}
 	/*@GetMapping("/App")*/
+
+	//看护App流程
 
 }

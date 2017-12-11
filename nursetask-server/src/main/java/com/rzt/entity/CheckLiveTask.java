@@ -6,6 +6,7 @@
  */
 package com.rzt.entity;
 import com.rzt.util.excelUtil.ExcelResources;
+import com.rzt.utils.SnowflakeIdWorker;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -25,15 +26,13 @@ import java.util.UUID;
  */
 @Entity
 @Table(name="CHECK_LIVE_TASK")
-public class CheckLiveTask extends BaseEntity implements Serializable{
+public class CheckLiveTask implements Serializable{
 	//字段描述:
 	@Id
-	@GeneratedValue(generator = "uuid")
-	@GenericGenerator(name = "uuid", strategy = "uuid")
-	private String id;
+	private Long id;
 	//字段描述: 被稽查的任务id
 	@Column(name = "TASK_ID")
-	private String taskId;
+	private Long taskId;
 	//字段描述: 稽查任务类别（0新增 1正常 2危机）
 	@Column(name = "TASK_TYPE")
 	private String taskType;
@@ -51,7 +50,7 @@ public class CheckLiveTask extends BaseEntity implements Serializable{
 	private String taskName;
 	//字段描述: 稽查人id
 	@Column(name = "USER_ID")
-	private String userId;
+	private Long userId;
 	//字段描述: 稽查任务状态（0 未消除 1 已消除）
 	@Column(name = "STATUS")
 	private String status;
@@ -65,19 +64,19 @@ public class CheckLiveTask extends BaseEntity implements Serializable{
 	@Column(name = "CHECK_CYCLE")
 	private String checkCycle;
 
-	public void setId(String id){
-		this.id = UUID.randomUUID().toString();
+	public void setId(Long id){
+		this.id =   Long.valueOf(new SnowflakeIdWorker(0,0).nextId());
 	}
 	@ExcelResources(title="",order=1)
-	public String getId(){
+	public Long getId(){
 		return this.id;
 	}
 
-	public void setTaskId(String taskId){
+	public void setTaskId(Long taskId){
 		this.taskId = taskId;
 	}
 	@ExcelResources(title="被稽查的任务id",order=2)
-	public String getTaskId(){
+	public Long getTaskId(){
 		return this.taskId;
 	}
 
@@ -121,11 +120,11 @@ public class CheckLiveTask extends BaseEntity implements Serializable{
 		return this.taskName;
 	}
 
-	public void setUserId(String userId){
+	public void setUserId(Long userId){
 		this.userId = userId;
 	}
 	@ExcelResources(title="稽查人id",order=8)
-	public String getUserId(){
+	public Long getUserId(){
 		return this.userId;
 	}
 

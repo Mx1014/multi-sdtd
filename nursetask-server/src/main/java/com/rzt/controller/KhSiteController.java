@@ -17,6 +17,7 @@ import com.rzt.service.KhYhHistoryService;
 import com.rzt.util.WebApiResponse;
 import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -58,36 +59,43 @@ public class KhSiteController extends
 	@Transactional
 	public WebApiResponse saveYh(KhYhHistory yh) {
 		try {
+			yh.setYhdm("未定级");
+			yh.setYhzt("0");//隐患未消除
+			yhservice.add(yh);
             KhSite task = new KhSite();
             String taskName = yh.getVtype()+yh.getLineName()+yh.getStartTower()+"-"+yh.getEndTower()+"号杆塔看护任务";
             task.setCreateTime(new Date());
             task.setVtype(yh.getVtype());
             task.setLineName(yh.getLineName());
-            task.setTdywOrg(yh.getTdwhOrg());
+            task.setTdywOrg(yh.getTdywOrg());
             task.setTaskName(taskName);
-            task.setStatus("0");//隐患未消除
-            task.setInUse("0");//未停用
+            task.setStatus("1");// 未派发
             task.setTaskTimes("0");//生成任务次数0
             task.setYhId(yh.getId());
             task.setCreateTime(new Date());
             this.service.add(task);
-			yh.setYhdm("未定级");
-			yh.setYhddgddwid(task.getId());
-			yhservice.add(yh);
             CheckLiveTask check = new CheckLiveTask();
             check.setCheckType("0"); //0为 看护类型稽查
             check.setTaskId(task.getId());
             check.setTaskType("1");// 1 为正常稽查
             check.setStatus("0");  // 0 为未派发
-            check.setTdwhOrg(yh.getTdwhOrg());
+            check.setTdwhOrg(yh.getTdywOrg());
             check.setCreateTime(new Date());
             check.setCheckDept("0"); // 0为属地公司
             check.setCheckCycle("1");// 1 为周期1天
             check.setTaskName(yh.getVtype()+yh.getLineName()+yh.getStartTower()+"-"+yh.getEndTower()+"号杆塔稽查任务");
             checkService.add(check);
-            check.setCheckDept("1"); // 1为北京公司
-            check.setCheckCycle("3"); // 周期为3天
-			checkService.add(check);
+			CheckLiveTask check1 = new CheckLiveTask();
+			check1.setCheckType("0"); //0为 看护类型稽查
+			check1.setTaskId(task.getId());
+			check1.setTaskType("1");// 1 为正常稽查
+			check1.setStatus("0");  // 0 为未派发
+			check1.setTdwhOrg(yh.getTdywOrg());
+			check1.setCreateTime(new Date());
+			check1.setCheckDept("1"); // 1为北京公司
+            check1.setCheckCycle("3"); // 周期为3天
+			check1.setTaskName(check.getTaskName());
+			checkService.add(check1);
 			return WebApiResponse.success("保存成功");
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -112,16 +120,16 @@ public class KhSiteController extends
 			task.setCreateTime(new Date());
 			task.setVtype(yh.getVtype());
 			task.setLineName(yh.getLineName());
-			task.setTdywOrg(yh.getTdwhOrg());
+			task.setTdywOrg(yh.getTdywOrg());
 			task.setTaskName(taskName);
 			task.setStatus("0");//隐患未消除
-			task.setInUse("0");//未停用
+			task.setStatus("0");//未停用
 			task.setTaskTimes("0");//生成任务次数0
 			task.setYhId(yh.getId());
 			task.setCreateTime(new Date());
 			this.service.add(task);
 			yh1.setYhdm("已定级");
-			yh1.setYhddgddwid(task.getId());
+			yh1.setTaskId(task.getId());
 			yhservice.update(yh1,id);
 			return WebApiResponse.success("保存成功");
 		} catch (Exception e) {
@@ -135,10 +143,12 @@ public class KhSiteController extends
 	 */
 	@GetMapping("/listAllTaskNotDo.do")
 	@ResponseBody
-	public WebApiResponse listAllTaskNotDo(KhTask task, Pageable pageable, String userName) {
+	public WebApiResponse listAllTaskNotDo(HttpServletResponse response,KhTask task, Pageable pageable, String userName) {
 		try {
+		/*	response.setHeader("Access-Control-Allow-Origin","*");
+			response.setHeader("Access-Control-Allow-Methods","*");*/
 			//分页参数 page size
-			List list = this.service.listAllTaskNotDo(task, pageable, userName);
+			Page list = this.service.listAllTaskNotDo(task, pageable, userName);
 			return WebApiResponse.success(list);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -150,6 +160,7 @@ public class KhSiteController extends
 	 */
 	@GetMapping("/xiaoQueTask.do")
 	@ResponseBody
+	@Transactional
 	public WebApiResponse updateQxTask(String id){
 		try {
 			this.service.updateQxTask(id);
@@ -157,6 +168,17 @@ public class KhSiteController extends
 		} catch (Exception e) {
 			e.printStackTrace();
 			return WebApiResponse.erro("任务消缺失败" + e.getMessage());
+		}
+	}
+	@GetMapping("/listKhtaskByid.do")
+	@ResponseBody
+	public WebApiResponse listKhtaskByid(String id){
+		try {
+			List list = this.service.listKhtaskByid(id);
+			return WebApiResponse.success(list);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return WebApiResponse.erro("数据查询失败" + e.getMessage());
 		}
 	}
 
@@ -172,7 +194,7 @@ public class KhSiteController extends
 		try {
 			KhSite site = this.service.findOne(id);
 			List<KhTask> taskList = model.getTaskList();
-			//生成多条看护任务  队伍标识没有
+			//生成多条看护任务
 			String groupFlag = System.currentTimeMillis()+"";
 			for (KhTask task:taskList) {
 				if (site.getKhfzrId1()==null&&task.getCaptain().equals("01")){
@@ -195,7 +217,7 @@ public class KhSiteController extends
 				task.setSiteId(id);
 				task.setYhId(site.getYhId());
 				task.setTaskName(site.getTaskName());
-
+				task.setStatus("0");
 				taskService.add(task);
 			}
 			this.service.paifaTask(id,site);
@@ -338,7 +360,7 @@ public class KhSiteController extends
 		}
 	}
 	/**
-	 * 查看记录的接口
+	 * 查看图片记录的接口
 	 */
 	/*
 	<select id="getRecordAndPic" resultType="java.util.HashMap" parameterType="java.lang.String">

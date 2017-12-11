@@ -33,7 +33,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
 
     public List listAllCheckTask(KhTask task, Pageable pageable) {
         task = timeUtil(task);
-        String result = " c.task_name as taskName,u.user_name as userName,u.class as class,k.tdtw_org as org,c.create_time as createTime,c.plan_start_time as startTime,c.plan_end_time as endTime,c.status as status";
+        String result = " c.task_name as taskName,u.user_name as userName,u.class as class,k.tdtw_org as yworg,c.create_time as createTime,c.plan_start_time as startTime,c.plan_end_time as endTime,c.status as status";
         StringBuffer buffer = new StringBuffer();
         buffer.append(" where 1=1 ");
         List params = new ArrayList<>();
@@ -60,7 +60,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
     }
 
     public List listAllCheckNotDo(KhTask task, Pageable pageable) {
-        String result = " c.task_name as taskName,c.tdwx_org as org,y.yhms as yhms,y.yhjb as yhjb,c.task_type as type,c.create_time as createTime ";
+        String result = " c.task_name as taskName,c.tdyw_org as yworg,y.yhms as yhms,y.yhjb as yhjb,c.task_type as type,c.create_time as createTime ";
         StringBuffer buffer = new StringBuffer();
         buffer.append(" where c.status = 0");
         List params = new ArrayList<>();
