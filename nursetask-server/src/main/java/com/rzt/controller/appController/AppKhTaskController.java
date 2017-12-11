@@ -22,7 +22,7 @@ public class AppKhTaskController extends
 
     @GetMapping("/appKhTask.do")
     @ResponseBody
-    public WebApiResponse appKhTask(String dbyb, Pageable pageable,String userId){
+    public WebApiResponse appKhTask(int dbyb, Pageable pageable,String userId){
         try {
             this.service.appKhTask(dbyb,pageable,userId);
             return WebApiResponse.success("");

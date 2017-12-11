@@ -7,15 +7,12 @@
  */
 package com.rzt.controller;
 import com.rzt.entity.CheckLiveTaskDetail;
-import com.rzt.entity.KhTask;
 import com.rzt.service.CheckLiveTaskDetailService;
 import com.rzt.util.WebApiResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.rzt.controller.CurdController;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;

@@ -6,7 +6,6 @@
  */
 package com.rzt.entity;
 import com.rzt.util.excelUtil.ExcelResources;
-import com.rzt.utils.SnowflakeIdWorker;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -29,7 +28,9 @@ import java.util.UUID;
 public class CheckLiveTask implements Serializable{
 	//字段描述:
 	@Id
-	private Long id;
+	@GeneratedValue(generator = "uuid")
+	@GenericGenerator(name = "uuid", strategy = "uuid")
+	private String id;
 	//字段描述: 被稽查的任务id
 	@Column(name = "TASK_ID")
 	private Long taskId;
@@ -39,7 +40,7 @@ public class CheckLiveTask implements Serializable{
 	//字段描述: 稽查任务类型（0 看护  1巡视）
 	@Column(name = "CHECK_TYPE")
 	private String checkType;
-	//字段描述: 状态修改时间
+	//字段描述: 任务消缺时间
 	@Column(name = "UPDATE_TIME")
 	private Date updateTime;
 	//字段描述: 稽查任务创建时间
@@ -50,8 +51,8 @@ public class CheckLiveTask implements Serializable{
 	private String taskName;
 	//字段描述: 稽查人id
 	@Column(name = "USER_ID")
-	private Long userId;
-	//字段描述: 稽查任务状态（0 未消除 1 已消除）
+	private String userId;
+	//字段描述: 任务派发状态  0未派发  1已派发  2已消缺
 	@Column(name = "STATUS")
 	private String status;
 	//字段描述: 通道运维单位
@@ -63,12 +64,39 @@ public class CheckLiveTask implements Serializable{
 	//字段描述: 稽查周期
 	@Column(name = "CHECK_CYCLE")
 	private String checkCycle;
+	//字段描述: 通道外协单位id
+	@Column(name = "TDWX_ORGID")
+	private String tdwxOrgid;
+	//字段描述: 隐患id
+	@Column(name = "YH_ID")
+	private String yhId;
+	//字段描述: 任务状态  0 待稽查 1进行中 2已稽查 3已过期
+	@Column(name = "task_STATUS")
+	private String taskStatus;
+	//字段描述: 计划开始时间
+	@Column(name = "PLAN_START_TIME")
+	private Date planStartTime;
+	//字段描述: 计划结束时间
+	@Column(name = "PLAN_END_TIME")
+	private Date planEndTime;
+	//字段描述: 实际开始时间
+	@Column(name = "REAL_START_TIME")
+	private Date realStartTime;
+	//字段描述: 实际结束时间
+	@Column(name = "REAL_END_TIME")
+	private Date realEndTime;
+	//字段描述: 到达现场时间
+	@Column(name = "DDXC_TIME")
+	private Date ddxcTime;
+	//字段描述: 周期id
+	@Column(name = "CYCLE_ID")
+	private String cycleId;
 
-	public void setId(Long id){
-		this.id =   Long.valueOf(new SnowflakeIdWorker(0,0).nextId());
+	public void setId(String id){
+		this.id = UUID.randomUUID().toString();
 	}
 	@ExcelResources(title="",order=1)
-	public Long getId(){
+	public String getId(){
 		return this.id;
 	}
 
@@ -99,7 +127,7 @@ public class CheckLiveTask implements Serializable{
 	public void setUpdateTime(Date updateTime){
 		this.updateTime = updateTime;
 	}
-	@ExcelResources(title="状态修改时间",order=5)
+	@ExcelResources(title="任务消缺时间",order=5)
 	public Date getUpdateTime(){
 		return this.updateTime;
 	}
@@ -120,18 +148,18 @@ public class CheckLiveTask implements Serializable{
 		return this.taskName;
 	}
 
-	public void setUserId(Long userId){
+	public void setUserId(String userId){
 		this.userId = userId;
 	}
 	@ExcelResources(title="稽查人id",order=8)
-	public Long getUserId(){
+	public String getUserId(){
 		return this.userId;
 	}
 
 	public void setStatus(String status){
 		this.status = status;
 	}
-	@ExcelResources(title="稽查任务状态（0 未消除 1 已消除）",order=9)
+	@ExcelResources(title="任务派发状态  0未派发  1已派发  2已消缺",order=9)
 	public String getStatus(){
 		return this.status;
 	}
@@ -158,6 +186,78 @@ public class CheckLiveTask implements Serializable{
 	@ExcelResources(title="稽查周期",order=12)
 	public String getCheckCycle(){
 		return this.checkCycle;
+	}
+
+	public void setTdwxOrgid(String tdwxOrgid){
+		this.tdwxOrgid = tdwxOrgid;
+	}
+	@ExcelResources(title="通道外协单位id",order=13)
+	public String getTdwxOrgid(){
+		return this.tdwxOrgid;
+	}
+
+	public void setYhId(String yhId){
+		this.yhId = yhId;
+	}
+	@ExcelResources(title="隐患id",order=14)
+	public String getYhId(){
+		return this.yhId;
+	}
+
+	public void setTaskStatus(String taskStatus){
+		this.taskStatus = taskStatus;
+	}
+	@ExcelResources(title="任务状态  0 待稽查 1进行中 2已稽查 3已过期",order=15)
+	public String getTaskStatus(){
+		return this.taskStatus;
+	}
+
+	public void setPlanStartTime(Date planStartTime){
+		this.planStartTime = planStartTime;
+	}
+	@ExcelResources(title="计划开始时间",order=16)
+	public Date getPlanStartTime(){
+		return this.planStartTime;
+	}
+
+	public void setPlanEndTime(Date planEndTime){
+		this.planEndTime = planEndTime;
+	}
+	@ExcelResources(title="计划结束时间",order=17)
+	public Date getPlanEndTime(){
+		return this.planEndTime;
+	}
+
+	public void setRealStartTime(Date realStartTime){
+		this.realStartTime = realStartTime;
+	}
+	@ExcelResources(title="实际开始时间",order=18)
+	public Date getRealStartTime(){
+		return this.realStartTime;
+	}
+
+	public void setRealEndTime(Date realEndTime){
+		this.realEndTime = realEndTime;
+	}
+	@ExcelResources(title="实际结束时间",order=19)
+	public Date getRealEndTime(){
+		return this.realEndTime;
+	}
+
+	public void setDdxcTime(Date ddxcTime){
+		this.ddxcTime = ddxcTime;
+	}
+	@ExcelResources(title="到达现场时间",order=20)
+	public Date getDdxcTime(){
+		return this.ddxcTime;
+	}
+
+	public void setCycleId(String cycleId){
+		this.cycleId = cycleId;
+	}
+	@ExcelResources(title="周期id",order=21)
+	public String getCycleId(){
+		return this.cycleId;
 	}
 
 }
