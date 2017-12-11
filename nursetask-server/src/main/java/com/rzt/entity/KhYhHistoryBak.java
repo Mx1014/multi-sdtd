@@ -6,6 +6,7 @@
  */
 package com.rzt.entity;
 import com.rzt.util.excelUtil.ExcelResources;
+import com.rzt.utils.SnowflakeIdWorker;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.Column;
@@ -26,12 +27,10 @@ import java.util.UUID;
  * @version
  */
 @Entity
-public class KhYhHistoryBak extends BaseEntity implements Serializable{
+public class KhYhHistoryBak implements Serializable{
     //字段描述: 输电平台id
     @Id
-    @GeneratedValue(generator = "uuid")
-    @GenericGenerator(name = "uuid", strategy = "uuid")
-    private String id;
+    private Long id;
     //字段描述: 维护单位id（orgid）
     @Column(name = "TDWH_ORGID")
     private String tdywOrgid;
@@ -186,11 +185,11 @@ public class KhYhHistoryBak extends BaseEntity implements Serializable{
     @Column(name = "YH_ID")
     private String yhId;
 
-    public void setId(String id){
-        this.id = UUID.randomUUID().toString();
+    public void setId(Long id){
+        this.id =   Long.valueOf(new SnowflakeIdWorker(0,0).nextId());
     }
-    @ExcelResources(title="输电平台id",order=1)
-    public String getId(){
+    @ExcelResources(title="",order=1)
+    public Long getId(){
         return this.id;
     }
 

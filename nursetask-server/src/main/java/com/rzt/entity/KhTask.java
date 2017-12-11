@@ -7,6 +7,7 @@
 package com.rzt.entity;
 import com.rzt.entity.BaseEntity;
 import com.rzt.util.excelUtil.ExcelResources;
+import com.rzt.utils.SnowflakeIdWorker;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.Column;
@@ -28,11 +29,9 @@ import java.util.UUID;
  * @version        
  */
 @Entity
-public class KhTask extends BaseEntity implements Serializable{
+public class KhTask implements Serializable{
 	@Id
-	@GeneratedValue(generator = "uuid")
-	@GenericGenerator(name = "uuid", strategy = "uuid")
-	private String id;
+	private Long id;
 	//字段描述: 计划开始时间
 	@Column(name = "PLAN_START_TIME")
 	private String planStartTime;
@@ -77,7 +76,7 @@ public class KhTask extends BaseEntity implements Serializable{
 	private String groupFlag;
 	//字段描述: 隐患id
 	@Column(name = "YH_ID")
-	private String yhId;
+	private Long yhId;
 	//字段描述: 看护任务名称
 	@Column(name = "TASK_NAME")
 	private String taskName;
@@ -90,14 +89,11 @@ public class KhTask extends BaseEntity implements Serializable{
 	//字段描述: 任务状态 0未开始 1进行中 2已完成
 	@Column(name = "STATUS")
 	private String status;
-	{
-		id = UUID.randomUUID().toString();
+	public void setId(Long id){
+		this.id =   Long.valueOf(new SnowflakeIdWorker(0,0).nextId());
 	}
-	public void setId(String id){
-		this.id =id ;
-	}
-	@ExcelResources(title="看护任务ID",order=1)
-	public String getId(){
+	@ExcelResources(title="",order=1)
+	public Long getId(){
 		return this.id;
 	}
 
@@ -213,11 +209,11 @@ public class KhTask extends BaseEntity implements Serializable{
 		return this.groupFlag;
 	}
 
-	public void setYhId(String yhId){
+	public void setYhId(Long yhId){
 		this.yhId = yhId;
 	}
 	@ExcelResources(title="隐患id",order=16)
-	public String getYhId(){
+	public Long getYhId(){
 		return this.yhId;
 	}
 

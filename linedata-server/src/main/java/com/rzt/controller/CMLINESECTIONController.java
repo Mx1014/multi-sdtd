@@ -39,7 +39,7 @@ public class CMLINESECTIONController extends
 
 	@ApiOperation(value = "通道单位线路维护",notes = "通道单位线路维护的分页查询，条件搜索")
 	@GetMapping("getLineInfoByOrg")
-    public WebApiResponse getLineInfoByOrg(@RequestParam(value = "page",defaultValue = "0") Integer page, @RequestParam(value = "size",defaultValue = "15") Integer size, String tdOrg, String kv, String lineName){
+    public WebApiResponse getLineInfoByOrg(@RequestParam(value = "page",defaultValue = "0") Integer page, @RequestParam(value = "size",defaultValue = "15") Integer size, String tdOrg, String kv, String lineId){
 		Pageable pageable = new PageRequest(page, size);
 		List<String> list = new ArrayList<>();
 		Object[] objects = list.toArray();
@@ -52,9 +52,9 @@ public class CMLINESECTIONController extends
 			list.add(kv);
 			sql += " and v_level= ?" + list.size();
 		}
-		if(lineName!=null&&!"".equals(lineName.trim())){
-			list.add(lineName);
-			sql += " and wx_org= ?" + list.size();
+		if(lineId!=null&&!"".equals(lineId.trim())){
+			list.add(lineId);
+			sql += " and line_id= ?" + list.size();
 		}
 		Page<Map<String, Object>> maps = service.execSqlPage(pageable, sql,list.toArray());
 		return WebApiResponse.success(maps);
@@ -66,5 +66,6 @@ public class CMLINESECTIONController extends
 		List<Map<String, Object>> maps = service.execSql("select id,deptname from rztsysdepartment start with deptname='通道运维单位' connect by prior id=deptpid");
 		return WebApiResponse.success(maps);
 	}
+
 	
 }

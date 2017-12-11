@@ -47,7 +47,7 @@ public class RztSysUserController extends
 	private RztSysUserauthService userauthService;
 
 	@PostMapping("addUser/{password}")
-	public WebApiResponse addUser(@RequestParam("test") MultipartFile file, @PathVariable String password, @ModelAttribute RztSysUser user) {
+	public WebApiResponse addUser(@RequestParam("file") MultipartFile file, @PathVariable String password, @ModelAttribute RztSysUser user) {
 		String filePath = "";
 		if (!file.isEmpty()) {
 			// 获取文件名
@@ -121,10 +121,10 @@ public class RztSysUserController extends
 
 	/**
 	 *
-	 * @param flag 0 app登录 1 pc登录
-	 * @param loginType
-	 * @param account
-	 * @param password
+	 * @param flag 0 账号登录 1 手机号登录  2 邮箱登录
+	 * @param loginType 0 APP登录 1 PC登录
+		 * @param account 账号
+	 * @param password 密码
 	 * @param request
 	 * @return
 	 */
