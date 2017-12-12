@@ -37,7 +37,48 @@ public class RztSysUser extends BaseEntity implements Serializable{
     	//字段描述: 登录账号
    	 @Column(name = "USERNAME")
      private String username;
-    	//字段描述: 真实姓名
+
+	public String getCertificate() {
+		return certificate;
+	}
+
+	public void setCertificate(String certificate) {
+		this.certificate = certificate;
+	}
+
+	public int getWorkyear() {
+		return workyear;
+	}
+
+	public void setWorkyear(int workyear) {
+		this.workyear = workyear;
+	}
+
+	public int getWorktype() {
+		return worktype;
+	}
+
+	public void setWorktype(int worktype) {
+		this.worktype = worktype;
+	}
+
+	public String getSerialnumber() {
+		return serialnumber;
+	}
+
+	public void setSerialnumber(String serialnumber) {
+		this.serialnumber = serialnumber;
+	}
+
+	public int getAge() {
+		return age;
+	}
+
+	public void setAge(int age) {
+		this.age = age;
+	}
+
+	//字段描述: 真实姓名
    	 @Column(name = "REALNAME")
      private String realname;
     	//字段描述: 

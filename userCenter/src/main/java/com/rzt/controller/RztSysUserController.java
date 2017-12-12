@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.websocket.server.PathParam;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
@@ -47,9 +48,13 @@ public class RztSysUserController extends
     private RztSysUserauthService userauthService;
 
     @PostMapping("addUser/{password}")
-    public WebApiResponse addUser(@RequestParam("file") MultipartFile file, @PathVariable String password, @ModelAttribute RztSysUser user) {
+    /**
+     * 文件上传先注释掉等前台调好
+     */
+
+    public WebApiResponse addUser(MultipartFile file, @PathVariable String password, @ModelAttribute RztSysUser user) {
         String filePath = "";
-        if (!file.isEmpty()) {
+        if (!StringUtils.isEmpty(file)) {
             // 获取文件名
             String fileName = file.getOriginalFilename();
             // 文件上传后的路径
@@ -67,42 +72,61 @@ public class RztSysUserController extends
             return WebApiResponse.erro(flag);
         }
         user.setCreatetime(new Date());
+        user.setUserdelete(1);
         this.service.add(user);
         userauthService.addUserAuth(user, password);
         return WebApiResponse.success("添加成功！");
     }
 
+    /**
+     * 单个伪删除人员
+     *
+     * @param id
+     * @return
+     */
     @DeleteMapping("deleteUser/{id}")
     public WebApiResponse deleteUser(@PathVariable String id) {
-        this.service.delete(id);
-        userauthService.deleteAuthByUserId(id);
-        return WebApiResponse.success("删除成功！");
-    }
-
-    @DeleteMapping("deleteBatchUser")
-    public WebApiResponse deleteBatchUser(@RequestParam String ids) {
         try {
-            this.service.deleteSome(ids);
+            return WebApiResponse.success(this.service.logicUser(id));
         } catch (Exception e) {
             e.printStackTrace();
-            return WebApiResponse.success("批量删除失败！");
+            return WebApiResponse.erro("删除失败");
         }
-        userauthService.deleteBatchAuthByUserId(ids);
-        return WebApiResponse.success("批量删除成功！");
     }
 
+    /**
+     * 批量伪删除人员
+     *
+     * @param ids
+     * @return
+     */
+    @DeleteMapping("deleteBatchUser")
+    public WebApiResponse deleteBatchUser(@RequestParam String ids) {
+        if (!StringUtils.isEmpty(ids)) {
+            String[] id = ids.split(",");
+            for (int i = 0; i < id.length; i++) {
+                try {
+                    this.service.logicUser(id[i]);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return WebApiResponse.erro("删除成功");
+    }
 
+    /**
+     * 修改人员
+     *
+     * @param id
+     * @param user
+     * @param password
+     * @return
+     */
     @PatchMapping("updateUser/{id}/{password}")
     public WebApiResponse updateUser(@PathVariable String id, @ModelAttribute RztSysUser user,
                                      @PathVariable String password) {
-        try {
-            this.service.update(user, id);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return WebApiResponse.success("更新失败！");
-        }
-        userauthService.updateUserAuth(id, password);
-        return WebApiResponse.success("更新成功!");
+        return this.service.updateUser(id, user);
     }
 
     /**
@@ -116,15 +140,15 @@ public class RztSysUserController extends
     /**
      * 人员列表分页查询
      *
-     * @param page 页数
-     * @param size 每页行数
+     * @param page     页数
+     * @param pageSize 每页行数
      * @return
      */
-    @PostMapping("findAllUser")
+    @PostMapping("findAllUser/{page}/{pageSize}")
     @ApiOperation(value = "人员分页查询", notes = "人员分页查询")
-    public WebApiResponse findAllUser(int page, int size) {
+    public WebApiResponse findAllUser(@PathVariable int page, @PathVariable int pageSize) {
         try {
-            return WebApiResponse.success(this.service.findUserList(page, size));
+            return WebApiResponse.success(this.service.findUserList(page, pageSize));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("数据错误");
