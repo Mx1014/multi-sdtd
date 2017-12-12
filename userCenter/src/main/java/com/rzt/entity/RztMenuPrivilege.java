@@ -35,10 +35,10 @@ public class RztMenuPrivilege extends BaseEntity implements Serializable{
    	 @Column(name = "roleid")
      private String roleid;
     	//字段描述: 
-   	 @Column(name = "menuId")
+   	 @Column(name = "menuid")
      private String menuid;
     	//字段描述: 
-   	 @Column(name = "operateId")
+   	 @Column(name = "operateid")
      private String operateid;
     
 	public void setId(String id){

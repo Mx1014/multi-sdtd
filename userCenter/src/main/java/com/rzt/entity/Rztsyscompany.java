@@ -24,7 +24,7 @@ import java.util.UUID;
  * @version        
  */
 @Entity
-@Table(name="rztsyscompany")
+@Table(name="RZTSYSCOMPANY")
 public class Rztsyscompany extends BaseEntity implements Serializable{
 	//字段描述: 
    	 @Id
@@ -32,16 +32,16 @@ public class Rztsyscompany extends BaseEntity implements Serializable{
 	 @GenericGenerator(name = "uuid", strategy = "uuid")
      private String id;
     	//字段描述: 
-   	 @Column(name = "companyName")
+   	 @Column(name = "companyname")
      private String companyname;
     	//字段描述: 存储单位id，以逗号分隔
-   	 @Column(name = "orgId")
+   	 @Column(name = "orgid")
      private String orgid;
     	//字段描述: 
-   	 @Column(name = "createTime")
+   	 @Column(name = "createtime")
      private Date createtime;
     	//字段描述: 
-   	 @Column(name = "updateTime")
+   	 @Column(name = "updatetime")
      private Date updatetime;
     
 	public void setId(String  id){

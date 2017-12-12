@@ -27,6 +27,7 @@ import java.util.UUID;
  * @version        
  */
 @Entity
+@Table(name = "RZTSYSUSER")
 public class RztSysUser extends BaseEntity implements Serializable{
 	//字段描述: 
    	 @Id
@@ -49,10 +50,10 @@ public class RztSysUser extends BaseEntity implements Serializable{
    	 @Column(name = "avatar")
      private String avatar;
     	//字段描述: 部门id
-   	 @Column(name = "deptId")
+   	 @Column(name = "deptid")
      private String deptid;
     	//字段描述: 用户是否删除
-   	 @Column(name = "userDelete")
+   	 @Column(name = "userdelete")
      private int userdelete;
 	//字段描述: 身份证
 	@Column(name = "certificate")
@@ -64,22 +65,22 @@ public class RztSysUser extends BaseEntity implements Serializable{
 	@Column(name = "worktype")
 	private int worktype;
 	//字段描述: 编号
-	@Column(name = "serialNumber")
+	@Column(name = "serialnumber")
 	private String serialnumber;
 	//字段描述: 年龄
 	@Column(name = "age")
 	private int age;
 	//字段描述: 登录状态 0 未登录 1 登录
-   	 @Column(name = "loginStatus")
+   	 @Column(name = "loginstatus")
      private int loginstatus;
     	//字段描述:创建时间
 		@Column(name = "createtime")
      private Date createtime;
 	//用户类型
-	@Column(name = "userType")
+	@Column(name = "usertype")
 	private int userType;
 	//字段描述: 所属班组
-	@Column(name = "className")
+	@Column(name = "classname")
 	private String className;
 
 	public void setId(String id){

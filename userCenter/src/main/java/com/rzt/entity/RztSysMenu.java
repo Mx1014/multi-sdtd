@@ -46,16 +46,16 @@ public class RztSysMenu extends BaseEntity implements Serializable{
 	 @GenericGenerator(name = "uuid", strategy = "uuid")
      private String id;        
     	//字段描述: 
-   	 @Column(name = "menuName")
+   	 @Column(name = "menuname")
      private String menuname;
     	//字段描述: 
-   	 @Column(name = "menuUrl")
+   	 @Column(name = "menuurl")
      private String menuurl;
     	//字段描述: 
-   	 @Column(name = "menuIcon")
+   	 @Column(name = "menuicon")
      private String menuicon;
     	//字段描述: 
-   	 @Column(name = "menuPid")
+   	 @Column(name = "menupid")
      private String menupid;
     	//字段描述: 
    	 @Column(name = "lft")
@@ -70,7 +70,7 @@ public class RztSysMenu extends BaseEntity implements Serializable{
    	 @Column(name = "rgt")
      private int rgt;
     	//字段描述: 
-   	 @Column(name = "menuDesc")
+   	 @Column(name = "menudesc")
      private String menudesc;
 
 	@Column(name = "createtime")

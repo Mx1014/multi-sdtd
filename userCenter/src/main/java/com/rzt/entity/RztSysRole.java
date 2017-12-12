@@ -9,10 +9,7 @@ import com.rzt.entity.BaseEntity;
 import com.rzt.util.excelUtil.ExcelResources;
 import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.UUID;
@@ -28,6 +25,7 @@ import java.util.UUID;
  * @version        
  */
 @Entity
+@Table(name = "RZTSYSROLE")
 public class RztSysRole extends BaseEntity implements Serializable{
 	//字段描述: 
    	 @Id
@@ -35,10 +33,10 @@ public class RztSysRole extends BaseEntity implements Serializable{
 	 @GenericGenerator(name = "uuid", strategy = "uuid")
      private String id;        
     	//字段描述: 
-   	 @Column(name = "roleName")
+   	 @Column(name = "rolename")
      private String rolename;
     	//字段描述: 
-   	 @Column(name = "roleDesc")
+   	 @Column(name = "roledesc")
      private String roledesc;
     	//字段描述: 
    	 @Column(name = "createtime")

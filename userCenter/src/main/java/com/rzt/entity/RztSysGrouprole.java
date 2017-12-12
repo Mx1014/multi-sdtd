@@ -34,10 +34,10 @@ public class RztSysGrouprole extends BaseEntity implements Serializable{
 	 @GenericGenerator(name = "uuid", strategy = "uuid")
      private String id;        
     	//字段描述: 
-   	 @Column(name = "groupId")
+   	 @Column(name = "groupid")
      private String groupid;
     	//字段描述: 
-   	 @Column(name = "roleId")
+   	 @Column(name = "roleid")
      private String roleid;
     
 	public void setId(String id){

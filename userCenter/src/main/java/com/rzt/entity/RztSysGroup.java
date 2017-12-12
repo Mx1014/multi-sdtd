@@ -35,13 +35,13 @@ public class RztSysGroup extends BaseEntity implements Serializable{
 	 @GenericGenerator(name = "uuid", strategy = "uuid")
      private String id;        
     	//字段描述: 
-   	 @Column(name = "groupName")
+   	 @Column(name = "groupname")
      private String groupname;
     	//字段描述: 
-   	 @Column(name = "groupIcon")
+   	 @Column(name = "groupicon")
      private String groupicon;
     	//字段描述: 
-   	 @Column(name = "groupPid")
+   	 @Column(name = "grouppid")
      private String grouppid;
     	//字段描述: 
    	 @Column(name = "lft")
@@ -50,7 +50,7 @@ public class RztSysGroup extends BaseEntity implements Serializable{
    	 @Column(name = "rgt")
      private int rgt;
     	//字段描述: 
-   	 @Column(name = "groupDesc")
+   	 @Column(name = "groupdesc")
      private String groupdesc;
     	//字段描述: 
    	 @Column(name = "createtime")

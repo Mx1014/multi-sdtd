@@ -34,10 +34,10 @@ public class RztSysOperate extends BaseEntity implements Serializable{
 	 @GenericGenerator(name = "uuid", strategy = "uuid")
      private String id;        
     	//字段描述: 
-   	 @Column(name = "operateNum")
+   	 @Column(name = "operatenum")
      private String operatenum;
     	//字段描述: 
-   	 @Column(name = "operateName")
+   	 @Column(name = "operatename")
      private String operatename;
     
 	public void setId(String id){

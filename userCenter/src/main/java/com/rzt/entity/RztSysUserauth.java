@@ -25,6 +25,7 @@ import java.util.UUID;
  * @version        
  */
 @Entity
+@Table(name = "RZTSYSUSERAUTH")
 public class RztSysUserauth extends BaseEntity implements Serializable{
 	//字段描述: 
    	 @Id
@@ -32,13 +33,13 @@ public class RztSysUserauth extends BaseEntity implements Serializable{
 	 @GenericGenerator(name = "uuid", strategy = "uuid")
      private String id;        
     	//字段描述: 
-   	 @Column(name = "userId")
+   	 @Column(name = "userid")
      private String userid;
     	//字段描述: 登录标识 0 用户名 1 手机号 2 邮箱 3 QQ 4 微信 5 微博
    	 @Column(name = "identifier")
      private int identifier;
     	//字段描述: 登录类型：手机号 邮箱 用户名 微信 微博
-   	 @Column(name = "identityType")
+   	 @Column(name = "identitytype")
      private String identitytype;
     	//字段描述: 密码或第三方凭证
    	 @Column(name = "password")
@@ -47,10 +48,10 @@ public class RztSysUserauth extends BaseEntity implements Serializable{
    	 @Column(name = "createtime")
      private Date createtime;
     	//字段描述: 最后一次登录时间
-   	 @Column(name = "lastLoginTime")
+   	 @Column(name = "lastlogintime")
      private Date lastlogintime;
     	//字段描述: 最后一次登录ip
-   	 @Column(name = "lastLoginIp")
+   	 @Column(name = "lastloginip")
      private String lastloginip;
     
 	public void setId(String id){
