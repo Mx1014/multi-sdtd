@@ -33,7 +33,7 @@ security:
     enabled: true
   user:
     name: sdtd27
-    password: sdtd275d
+    password: sdtd27
 
 #      mysql:
 #        type: com.alibaba.druid.pool.DruidDataSource

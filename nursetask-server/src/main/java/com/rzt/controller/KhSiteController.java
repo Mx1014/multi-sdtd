@@ -53,49 +53,7 @@ public class KhSiteController extends
 	@ResponseBody
 	@Transactional
 	public WebApiResponse saveYh(KhYhHistory yh) {
-		try {
-			yh.setYhdm("未定级");
-			yh.setYhzt("0");//隐患未消除
-			yhservice.add(yh);
-            KhSite task = new KhSite();
-            String taskName = yh.getVtype()+yh.getLineName()+yh.getStartTower()+"-"+yh.getEndTower()+"号杆塔看护任务";
-            task.setCreateTime(new Date());
-            task.setVtype(yh.getVtype());
-            task.setLineName(yh.getLineName());
-            task.setTdywOrg(yh.getTdywOrg());
-            task.setTaskName(taskName);
-            task.setStatus("1");// 未派发
-            task.setTaskTimes("0");//生成任务次数0
-            task.setYhId(yh.getId());
-            task.setCreateTime(new Date());
-            this.service.add(task);
-            CheckLiveTask check = new CheckLiveTask();
-            check.setCheckType("0"); //0为 看护类型稽查
-            check.setTaskId(task.getId());
-            check.setTaskType("1");// 1 为正常稽查
-            check.setStatus("0");  // 0 为未派发
-            check.setTdwhOrg(yh.getTdywOrg());
-            check.setCreateTime(new Date());
-            check.setCheckDept("0"); // 0为属地公司
-            check.setCheckCycle("1");// 1 为周期1天
-            check.setTaskName(yh.getVtype()+yh.getLineName()+yh.getStartTower()+"-"+yh.getEndTower()+"号杆塔稽查任务");
-            checkService.add(check);
-			CheckLiveTask check1 = new CheckLiveTask();
-			check1.setCheckType("0"); //0为 看护类型稽查
-			check1.setTaskId(task.getId());
-			check1.setTaskType("1");// 1 为正常稽查
-			check1.setStatus("0");  // 0 为未派发
-			check1.setTdwhOrg(yh.getTdywOrg());
-			check1.setCreateTime(new Date());
-			check1.setCheckDept("1"); // 1为北京公司
-            check1.setCheckCycle("3"); // 周期为3天
-			check1.setTaskName(check.getTaskName());
-			checkService.add(check1);
-			return WebApiResponse.success("保存成功");
-		} catch (Exception e) {
-			e.printStackTrace();
-			return WebApiResponse.erro("数据查询失败" + e.getMessage());
-		}
+		return this.service.saveYh(yh);
 	}
 
 	/**
@@ -119,7 +77,7 @@ public class KhSiteController extends
 			task.setTaskName(taskName);
 			task.setStatus("0");//隐患未消除
 			task.setStatus("0");//未停用
-			task.setTaskTimes("0");//生成任务次数0
+			task.setTaskTimes(0);//生成任务次数0
 			task.setYhId(yh.getId());
 			task.setCreateTime(new Date());
 			this.service.add(task);
@@ -206,6 +164,9 @@ public class KhSiteController extends
                     task.setGroupFlag(groupFlag+"2");
 				}
 				int count = taskService.getCount(id, task.getUserId());
+				KhSite site1 = new KhSite();
+				site1.setTaskTimes(count);
+				this.update(id,site1);
 				task.setCount(count);
 				task.setCreateTime(new Date());
 				task.setStatus("已派发");

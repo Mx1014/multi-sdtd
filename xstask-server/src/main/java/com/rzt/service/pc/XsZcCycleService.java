@@ -6,10 +6,12 @@
  */
 package com.rzt.service.pc;
 
+import com.rzt.entity.app.XSZCTASK;
 import com.rzt.entity.pc.XsZcCycle;
 import com.rzt.entity.pc.XsZcCycleLineTower;
 import com.rzt.repository.pc.XsZcCycleRepository;
 import com.rzt.service.CurdService;
+import com.rzt.service.app.XSZCTASKService;
 import com.rzt.util.WebApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.Modifying;
@@ -28,13 +30,14 @@ import java.util.Map;
  * 修改人：张虎成    
  * 修改时间：2017/12/07 07:50:10    
  * 修改备注：    
- * @version        
+ **-0* @version
  */
 @Service
 @Transactional
 public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository> {
 
-
+    @Autowired
+    private XSZCTASKService xszctaskService;
     @Autowired
     private XsZcCycleLineTowerService xsZcCycleLineTowerService;
     /***
@@ -78,5 +81,35 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
     }
 
 
+    public Object addPlan(XSZCTASK xszctask) {
+        try {
+            //拿到周期相关的信息
+            Long xsZcCycleId = xszctask.getXsZcCycleId();
+            String sql = "select task_name,section,plan_xs_num,cycle,total_task_num from xs_zc_cycle where id = ?1";
+            List<Map<String, Object>> xsZcCycles = this.execSql(sql, xsZcCycleId);
+            if(xsZcCycles.isEmpty()) {
+                return WebApiResponse.erro("没有这个周期");
+            } else {
+                Map<String, Object> xsZcCycle = xsZcCycles.get(0);
+                String taskName = xsZcCycle.get("TASK_NAME").toString();
+                Integer planXsNum = Integer.parseInt(xsZcCycle.get("PLAN_XS_NUM").toString());
 
+                xszctask.setId();
+                xszctask.setTaskName(taskName);
+                xszctask.setPlanXsNum(planXsNum);
+                xszctask.setTaskNumInCycle(0);
+
+                xszctaskService.add(xszctask);
+            }
+
+
+            return WebApiResponse.success("数据保存成功!");
+        } catch (Exception var3) {
+            return WebApiResponse.erro("数据保存失败" + var3.getMessage());
+        }
+    }
+
+    private void buyaode() {
+
+    }
 }
