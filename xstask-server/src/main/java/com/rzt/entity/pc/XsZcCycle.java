@@ -33,7 +33,7 @@ public class XsZcCycle implements Serializable{
 	//字段描述: 
    	 @Id
      private Long id;
-    	//字段描述: 电压等级 0 1 2 3
+	//字段描述: 电压等级 0 1 2 3
    	 @Column(name = "V_LEVEL")
      private Integer vLevel;
     	//字段描述: 线路id
