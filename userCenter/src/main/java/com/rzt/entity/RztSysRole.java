@@ -33,13 +33,13 @@ public class RztSysRole extends BaseEntity implements Serializable{
 	 @GenericGenerator(name = "uuid", strategy = "uuid")
      private String id;        
     	//字段描述: 
-   	 @Column(name = "rolename")
+   	 @Column(name = "ROLENAME")
      private String rolename;
     	//字段描述: 
-   	 @Column(name = "roledesc")
+   	 @Column(name = "ROLEDESC")
      private String roledesc;
     	//字段描述: 
-   	 @Column(name = "createtime")
+   	 @Column(name = "CREATETIME")
      private Date createtime;
     
 	public void setId(String id){

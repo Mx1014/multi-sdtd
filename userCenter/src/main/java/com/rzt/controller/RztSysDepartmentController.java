@@ -9,6 +9,8 @@ package com.rzt.controller;
 import com.rzt.controller.CurdController;
 import com.rzt.entity.RztSysDepartment;
 import com.rzt.service.RztSysDepartmentService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,13 +30,16 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("RztSysDepartment")
+@Api(value = "ningweize")
 public class RztSysDepartmentController extends
 		CurdController<RztSysDepartment,RztSysDepartmentService> {
 
 	//新增子节点
 	@ResponseBody
 	@RequestMapping(value = "addSonNode",method = RequestMethod.POST)
-	public RztSysDepartment addSonNode(@RequestParam(required = false) String id, @ModelAttribute RztSysDepartment rztSysDepartment){
+	@ApiOperation(value = "新增子节点",notes = "新增子节点")
+	public RztSysDepartment addSonNode(@RequestParam(required = false) String nodeId, @ModelAttribute RztSysDepartment rztSysDepartment){
+		String id = nodeId;
 		if (StringUtils.isEmpty(id))
 			id = this.service.getRootId();
 		return this.service.addSonNode(id,rztSysDepartment);
@@ -50,6 +55,7 @@ public class RztSysDepartmentController extends
 	//新增同级节点
 	@ResponseBody
 	@RequestMapping(value = "addNode/{id}",method = RequestMethod.POST)
+	@ApiOperation(value = "新增同级节点",notes = "新增同级节点")
 	public RztSysDepartment addNode(@PathVariable String id, @ModelAttribute RztSysDepartment rztSysDepartment){
 		return this.service.addNode(id,rztSysDepartment);
 	}
@@ -63,6 +69,7 @@ public class RztSysDepartmentController extends
 	//根据父节点的id查询子孙节点
 	@RequestMapping(value = "findDeptListByPid",method = RequestMethod.GET)
 	@ResponseBody
+	@ApiOperation(value = "根据父节点的id查询子孙节点",notes = "根据父节点的id查询子孙节点")
 	public List<Map<String, Object>> findDeptListByPid(@RequestParam(required = false) String id){
 		if (StringUtils.isEmpty(id))
 			id = this.service.getRootId();
@@ -72,6 +79,7 @@ public class RztSysDepartmentController extends
 	//根据父节点id查询所有子节点
 	@RequestMapping(value = "findByDeptPid/{id}",method = RequestMethod.GET)
 	@ResponseBody
+	@ApiOperation(value = "根据父节点id查询所有子节点",notes = "根据父节点id查询所有子节点")
 	public List<RztSysDepartment> findByDeptPid(@PathVariable("id") String menuPid){
 		return this.service.findByDeptPid(menuPid);
 	}

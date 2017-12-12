@@ -33,25 +33,25 @@ public class RztSysUserauth extends BaseEntity implements Serializable{
 	 @GenericGenerator(name = "uuid", strategy = "uuid")
      private String id;        
     	//字段描述: 
-   	 @Column(name = "userid")
+   	 @Column(name = "USERID")
      private String userid;
     	//字段描述: 登录标识 0 用户名 1 手机号 2 邮箱 3 QQ 4 微信 5 微博
-   	 @Column(name = "identifier")
+   	 @Column(name = "IDENTIFIER")
      private int identifier;
     	//字段描述: 登录类型：手机号 邮箱 用户名 微信 微博
-   	 @Column(name = "identitytype")
+   	 @Column(name = "IDENTITYTYPE")
      private String identitytype;
     	//字段描述: 密码或第三方凭证
-   	 @Column(name = "password")
+   	 @Column(name = "PASSWORD")
      private String password;
     	//字段描述: 创建时间
-   	 @Column(name = "createtime")
+   	 @Column(name = "CREATETIME")
      private Date createtime;
     	//字段描述: 最后一次登录时间
-   	 @Column(name = "lastlogintime")
+   	 @Column(name = "LASTLOGINTIME")
      private Date lastlogintime;
     	//字段描述: 最后一次登录ip
-   	 @Column(name = "lastloginip")
+   	 @Column(name = "LASTLOGINIP")
      private String lastloginip;
     
 	public void setId(String id){

@@ -25,6 +25,7 @@ import java.util.UUID;
  * @version        
  */
 @Entity
+@Table(name = "RZTSYSMENU")
 public class RztSysMenu extends BaseEntity implements Serializable{
 
 	public RztSysMenu() {
@@ -46,22 +47,22 @@ public class RztSysMenu extends BaseEntity implements Serializable{
 	 @GenericGenerator(name = "uuid", strategy = "uuid")
      private String id;        
     	//字段描述: 
-   	 @Column(name = "menuname")
+   	 @Column(name = "MENUNAME")
      private String menuname;
     	//字段描述: 
-   	 @Column(name = "menuurl")
+   	 @Column(name = "MENUURL")
      private String menuurl;
     	//字段描述: 
-   	 @Column(name = "menuicon")
+   	 @Column(name = "MENUICON")
      private String menuicon;
     	//字段描述: 
-   	 @Column(name = "menupid")
+   	 @Column(name = "MENUPID")
      private String menupid;
     	//字段描述: 
    	 @Column(name = "lft")
      private int lft;
 	//字段描述: 菜单类型 1 列表类型 2 页内tab
-	@Column(name = "menutype")
+	@Column(name = "MENUTYPE")
 	private int menutype;
 	//字段描述: 类别 1 PC 2 APP
 	@Column(name = "type")
@@ -70,10 +71,10 @@ public class RztSysMenu extends BaseEntity implements Serializable{
    	 @Column(name = "rgt")
      private int rgt;
     	//字段描述: 
-   	 @Column(name = "menudesc")
+   	 @Column(name = "MENUDESC")
      private String menudesc;
 
-	@Column(name = "createtime")
+	@Column(name = "CREATETIME")
 	private Date createtime;
     
 	public void setId(String id){

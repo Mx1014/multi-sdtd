@@ -32,10 +32,10 @@ public class RztSysUsergroup extends BaseEntity implements Serializable{
 	 @GenericGenerator(name = "uuid", strategy = "uuid")
      private String id;        
     	//字段描述: 
-   	 @Column(name = "userid")
+   	 @Column(name = "USERID")
      private String userid;
     	//字段描述: 
-   	 @Column(name = "groupid")
+   	 @Column(name = "GROUPID")
      private String groupid;
     
 	public void setId(String id){
