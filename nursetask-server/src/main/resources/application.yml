@@ -23,7 +23,12 @@ spring:
     connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
   jpa:
      show-sql: true
-
+  application:
+    name: api-gateway
+eureka:
+  client:
+    serviceUrl:
+      defaultZone:http://localhost:7002/eureka
 #spring:
 #  datasource:
 #    type: com.alibaba.druid.pool.DruidDataSource

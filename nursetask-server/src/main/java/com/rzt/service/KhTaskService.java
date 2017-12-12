@@ -33,7 +33,7 @@ public class KhTaskService extends CurdService<KhTask,KhTaskRepository> {
     
     public Object listAllKhTask(KhTask task, Pageable pageable) {
         task = timeUtil(task);
-        String result = "k.id as id, k.task_name as taskName,k.tdyw_org as yworg,k.CREATE_TIME as createTime,k.plan_start_time as startTime,k.plan_end_time as endTime,k.status as status,u.user_name as userName,u.class as class";
+        String result = "k.id as id, k.task_name as taskName,k.tdyw_org as yworg,k.CREATE_TIME as createTime,k.plan_start_time as startTime,k.plan_end_time as endTime,k.status as status,u.realname as userName,u.classname as class";
         List params = new ArrayList<>();
         StringBuffer buffer = new StringBuffer();
         buffer.append(" where k.create_time between to_date(?,'YYYY-MM-DD hh24:mi') and to_date(?,'YYYY-MM-DD hh24:mi') ");
@@ -55,13 +55,13 @@ public class KhTaskService extends CurdService<KhTask,KhTaskRepository> {
          }
           if (task.getUserId() != null && !task.getUserId().equals("")){
              task.setUserId("%"+task.getUserId()+"%");
-             buffer.append(" and u.user_name like ?");
+             buffer.append(" and u.realname like ?");
              params.add(task.getUserId());
          }
          //此处加分页 人员表换成真实表
          buffer.append(" order by k.create_time desc ");
         String sql = "select "+result+" from kh_task k " +
-               " left join cm_user u on u.id = k.user_id "+ buffer.toString();
+               " left join rztsysuser u on u.id = k.user_id "+ buffer.toString();
         Page<Map<String, Object>> maps = execSqlPage(pageable, sql, params.toArray());
         List<Map<String, Object>> content1 = maps.getContent();
         for (Map map:content1) {
@@ -96,12 +96,12 @@ public class KhTaskService extends CurdService<KhTask,KhTaskRepository> {
 //    }
 
     public List<Map<String,Object>> getKhTaskById(long id) {
-        String result=" k.task_name as taskName,y.yhms as yhms,y.yhjb as yhjb,u.user_name as userName,u.phone_num as phone ";
-        String sql = "select "+result+" from kh_task k left join kh_yh_history y on k.yh_id=y.id left join cm_user u on u.id=k.user_id  where k.id=?";
+        String result=" k.task_name as taskName,y.yhms as yhms,y.yhjb as yhjb,u.realname as userName,u.phone as phone ";
+        String sql = "select "+result+" from kh_task k left join kh_yh_history y on k.yh_id=y.id left join rztsysuser u on u.id=k.user_id  where k.id=?";
         return   this.execSql(sql,id);
     }
 
-    public int getCount(long id, long userId) {
+    public int getCount(long id, String userId) {
          return this.reposiotry.getCount(id,userId);
     }
 
@@ -122,17 +122,17 @@ public class KhTaskService extends CurdService<KhTask,KhTaskRepository> {
     }
 
     public void updateTaskById(KhSite site, String id) {
-        KhSite one = siteRepository.findOne(id);
-        if (site.getKhfzrId1()== 0){
+        KhSite one = siteRepository.find(Long.parseLong(id));
+        if (site.getKhfzrId1()== null){
             site.setKhfzrId1(one.getKhfzrId1());
         }
-        if (site.getKhfzrId2()== 0){
+        if (site.getKhfzrId2()== null){
             site.setKhfzrId2(one.getKhfzrId2());
         }
-        if (site.getKhdyId1()== 0){
+        if (site.getKhdyId1()== null){
             site.setKhdyId1(one.getKhdyId1());
         }
-        if (site.getKhdyId2()== 0){
+        if (site.getKhdyId2()== null){
             site.setKhdyId2(one.getKhdyId2());
         }
         this.reposiotry.updateTaskById(Long.parseLong(id),site.getKhfzrId1(),site.getKhfzrId2(),site.getKhdyId1(),site.getKhdyId2());
