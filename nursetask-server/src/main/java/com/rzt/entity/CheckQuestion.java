@@ -31,6 +31,10 @@ public class CheckQuestion implements Serializable{
      private String question;
     	//字段描述: 
    	 @Id
+/*1	张三	班组一	13313331313
+2	李四	班组二	15515551555
+3	王五	班组三	18333888383
+4	赵六	班组四	17717177171*/
      private Long id;
     
 	public void setQuestion(String question){

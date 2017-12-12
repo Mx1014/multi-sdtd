@@ -72,13 +72,17 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
         int count = this.reposiotry.getCount(task.getStatus());
         JSONObject jsonObject = new JSONObject();
         Page<Map<String, Object>> maps1 = this.execSqlPage(pageable, sql, params.toArray());
+        List<Map<String, Object>> content1 = maps1.getContent();
+        for (Map map:content1) {
+            map.put("ID",map.get("ID")+"");
+        }
        return maps1;
     }
 
-    public void updateQxTask(String id) {
+    public void updateQxTask(long id) {
         this.reposiotry.updateQxTask(id,new Date());
         this.reposiotry.updateDoingTask(id,new Date());
-        KhSite site = this.findOne(id);
+        KhSite site = this.reposiotry.find(id);
         this.reposiotry.updateYH(site.getYhId(),new Date());
         //将带稽查 已完成稽查的看护任务状态修改
         this.reposiotry.updateCheckTask(id,new Date());
@@ -92,11 +96,12 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
 
     public void paifaTask(String id,KhSite site) {
         //将看护人信息保存到表中
-        this.reposiotry.updateSite(id,site.getKhfzrId1(),site.getKhdyId1(),site.getKhfzrId2(),site.getKhdyId2());
+
+        this.reposiotry.updateSite(Long.parseLong(id),site.getKhfzrId1(),site.getKhdyId1(),site.getKhfzrId2(),site.getKhdyId2());
 
     }
 
-    public List listKhtaskByid(String id) {
+    public List listKhtaskByid(long id) {
         String sql ="select k.task_name,y.yhms as ms,y.yhjb as jb,a.name as khfzr1,b.name as khfzr2,c.name as khdy1,d.name as khdy2 from kh_site k left join " +
                 " (select u.user_name as name,k1.id from kh_site k1 left join cm_user u on u.id =k1.khfzr_id1) a " +
                 " on a.id=k.id left join " +
@@ -114,6 +119,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
         try {
             yh.setYhdm("未定级");
             yh.setYhzt("0");//隐患未消除
+            yh.setId(0L);
             yhservice.add(yh);
             KhSite task = new KhSite();
             String taskName = yh.getVtype()+yh.getLineName()+yh.getStartTower()+"-"+yh.getEndTower()+"号杆塔看护任务";
@@ -122,10 +128,11 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             task.setLineName(yh.getLineName());
             task.setTdywOrg(yh.getTdywOrg());
             task.setTaskName(taskName);
-            task.setStatus("1");// 未派发
+            task.setStatus(1);// 未派发
             task.setTaskTimes(0);//生成任务次数0
             task.setYhId(yh.getId());
             task.setCreateTime(new Date());
+            task.setId(0L);
             this.add(task);
             CheckLiveTask check = new CheckLiveTask();
             check.setCheckType("0"); //0为 看护类型稽查
@@ -137,6 +144,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             check.setCheckDept("0"); // 0为属地公司
             check.setYhId(yh.getId());
             check.setCheckCycle("1");// 1 为周期1天
+            check.setId(0L);
             check.setTaskName(yh.getVtype()+yh.getLineName()+yh.getStartTower()+"-"+yh.getEndTower()+"号杆塔稽查任务");
             checkService.add(check);
             CheckLiveTask check1 = new CheckLiveTask();
@@ -150,6 +158,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             check1.setCheckCycle("3"); // 周期为3天
             check1.setTaskName(check.getTaskName());
             check1.setYhId(yh.getId());
+            check1.setId(0L);
             checkService.add(check1);
             return WebApiResponse.success("保存成功");
         } catch (Exception e) {

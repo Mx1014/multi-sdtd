@@ -34,19 +34,20 @@ public class AppKhTaskController extends
     @GetMapping("/updateTaskTime.do")
     @ResponseBody
     public void updateTaskTime(String step, Date time, String id){
+
         if (step.equals("1")){
             //设置到达现场时间
-            this.service.updateDDTime(time,id);
+            this.service.updateDDTime(time,Long.parseLong(id));
         }else if(step.equals("2")){
             //设置身份确认时间
-            this.service.updateSFQRTime(time,id);
+            this.service.updateSFQRTime(time,Long.parseLong(id));
         }else if(step.equals("3")){
             //设置物品确认时间
-            this.service.updateWPQRTime(time,id);
+            this.service.updateWPQRTime(time,Long.parseLong(id));
         }
         else if(step.equals("4")){
             //设置实际开始时间 修改看护任务状态
-            this.service.updateRealStartTime(time,id);
+            this.service.updateRealStartTime(time,Long.parseLong(id));
         }else{
             //交接班,设置世界结束时间
 

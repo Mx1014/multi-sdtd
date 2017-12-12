@@ -79,7 +79,7 @@ public class KhTaskController extends
 	@ResponseBody
 	public WebApiResponse listKhTaskById(String id){
 		try {
-			List<Map<String, Object>> maps = this.service.getKhTaskById(id);
+			List<Map<String, Object>> maps = this.service.getKhTaskById(Long.parseLong(id));
 			return WebApiResponse.success(maps);
 		} catch (Exception e) {
 			e.printStackTrace();
