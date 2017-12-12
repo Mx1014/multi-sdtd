@@ -33,13 +33,13 @@ public class RztSysDepartment extends BaseEntity implements Serializable{
 	 @GenericGenerator(name = "uuid", strategy = "uuid")
      private String id;        
     	//字段描述: 
-   	 @Column(name = "deptName")
+   	 @Column(name = "deptname")
      private String deptname;
     	//字段描述: 
-   	 @Column(name = "deptIcon")
+   	 @Column(name = "depticon")
      private String depticon;
     	//字段描述: 
-   	 @Column(name = "deptPid")
+   	 @Column(name = "deptpid")
      private String deptpid;
     	//字段描述: 
    	 @Column(name = "lft")
@@ -48,7 +48,7 @@ public class RztSysDepartment extends BaseEntity implements Serializable{
    	 @Column(name = "rgt")
      private int rgt;
     	//字段描述: 
-   	 @Column(name = "deptDesc")
+   	 @Column(name = "deptdesc")
      private String deptdesc;
     	//字段描述: 
    	 @Column(name = "createtime")
