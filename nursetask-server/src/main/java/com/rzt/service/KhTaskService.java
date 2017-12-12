@@ -63,11 +63,10 @@ public class KhTaskService extends CurdService<KhTask,KhTaskRepository> {
         String sql = "select "+result+" from kh_task k " +
                " left join cm_user u on u.id = k.user_id "+ buffer.toString();
         Page<Map<String, Object>> maps = execSqlPage(pageable, sql, params.toArray());
-        long count = this.reposiotry.count();
-        //int count = this.reposiotry.getcount();
-       /* Map<String, Object> map = new HashMap<>();
-        map.put("COUNT",count);
-        maps.add(map);*/
+        List<Map<String, Object>> content1 = maps.getContent();
+        for (Map map:content1) {
+            map.put("ID",map.get("ID")+"");
+        }
         return maps;
     }
 
@@ -96,47 +95,47 @@ public class KhTaskService extends CurdService<KhTask,KhTaskRepository> {
 //        System.out.println(mon);
 //    }
 
-    public List<Map<String,Object>> getKhTaskById(String id) {
+    public List<Map<String,Object>> getKhTaskById(long id) {
         String result=" k.task_name as taskName,y.yhms as yhms,y.yhjb as yhjb,u.user_name as userName,u.phone_num as phone ";
         String sql = "select "+result+" from kh_task k left join kh_yh_history y on k.yh_id=y.id left join cm_user u on u.id=k.user_id  where k.id=?";
         return   this.execSql(sql,id);
     }
 
-    public int getCount(String id, String userId) {
+    public int getCount(long id, long userId) {
          return this.reposiotry.getCount(id,userId);
     }
 
-    public void updateDDTime(Date time, String id) {
+    public void updateDDTime(Date time, long id) {
         this.reposiotry.updateDDTime(time,id);
     }
 
-    public void updateSFQRTime(Date time, String id) {
+    public void updateSFQRTime(Date time, long id) {
         this.reposiotry.updateSFQRTime(time,id);
     }
 
-    public void updateWPQRTime(Date time, String id) {
+    public void updateWPQRTime(Date time, long id) {
         this.reposiotry.updateWPQRTime(time,id);
     }
 
-    public void updateRealStartTime(Date time, String id) {
+    public void updateRealStartTime(Date time, long id) {
         this.reposiotry.updateRealStartTime(time,id);
     }
 
     public void updateTaskById(KhSite site, String id) {
         KhSite one = siteRepository.findOne(id);
-        if (site.getKhfzrId1()==null){
+        if (site.getKhfzrId1()== 0){
             site.setKhfzrId1(one.getKhfzrId1());
         }
-        if (site.getKhfzrId2()==null){
+        if (site.getKhfzrId2()== 0){
             site.setKhfzrId2(one.getKhfzrId2());
         }
-        if (site.getKhdyId1()==null){
+        if (site.getKhdyId1()== 0){
             site.setKhdyId1(one.getKhdyId1());
         }
-        if (site.getKhdyId2()==null){
+        if (site.getKhdyId2()== 0){
             site.setKhdyId2(one.getKhdyId2());
         }
-        this.reposiotry.updateTaskById(id,site.getKhfzrId1(),site.getKhfzrId2(),site.getKhdyId1(),site.getKhdyId2());
+        this.reposiotry.updateTaskById(Long.parseLong(id),site.getKhfzrId1(),site.getKhfzrId2(),site.getKhdyId1(),site.getKhdyId2());
 
     }
 

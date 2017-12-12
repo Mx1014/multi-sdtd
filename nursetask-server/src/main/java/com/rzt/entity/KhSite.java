@@ -5,6 +5,8 @@
  * Copyright 融智通科技(北京)股份有限公司 版权所有    
  */
 package com.rzt.entity;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.rzt.entity.BaseEntity;
 import com.rzt.util.excelUtil.ExcelResources;
 import com.rzt.utils.SnowflakeIdWorker;
@@ -32,7 +34,8 @@ import java.util.UUID;
 public class KhSite  implements Serializable{
 	//字段描述: 主任务id
 	@Id
-	private Long id;
+	@JsonSerialize(using = ToStringSerializer.class)
+	private long id;
 	//字段描述: 电压等级 0 1 2 3
 	@Column(name = "VTYPE")
 	private String vtype;
@@ -44,13 +47,13 @@ public class KhSite  implements Serializable{
 	private String section;
 	//字段描述: 隐患状态（0未消除 1消除）
 	@Column(name = "STATUS")
-	private String status;
+	private int status;
 	//字段描述: 任务名称
 	@Column(name = "TASK_NAME")
 	private String taskName;
 	//字段描述: 看护负责人1
 	@Column(name = "KHFZR_ID1")
-	private String khfzrId1;
+	private long khfzrId1;
 	//字段描述: 通道运维单位
 	@Column(name = "TDYW_ORG")
 	private String tdywOrg;
@@ -62,7 +65,7 @@ public class KhSite  implements Serializable{
 	private int taskTimes;
 	//字段描述: 线路id
 	@Column(name = "LINE_ID")
-	private String lineId;
+	private long lineId;
 	//字段描述: 隐患id
 	@Column(name = "YH_ID")
 	private Long yhId;
@@ -71,16 +74,16 @@ public class KhSite  implements Serializable{
 	private String khRange;
 	//字段描述: 看护队员1
 	@Column(name = "KHDY_ID1")
-	private String khdyId1;
+	private long khdyId1;
 	//字段描述: 看护负责人2
 	@Column(name = "KHFZR_ID2")
-	private String khfzrId2;
+	private long khfzrId2;
 	//字段描述: 看护队员2
 	@Column(name = "KHDY_ID2")
-	private String khdyId2;
+	private long khdyId2;
 	//字段描述: 任务消缺时间
 	@Column(name = "KHXQ_TIME")
-	private String khxqTime;
+	private Date khxqTime;
 	@Column(name = "CREATE_TIME")
 	private Date createTime;
 
@@ -88,7 +91,7 @@ public class KhSite  implements Serializable{
 		this.id =   Long.valueOf(new SnowflakeIdWorker(0,0).nextId());
 	}
 	@ExcelResources(title="",order=1)
-	public Long getId(){
+	public long getId(){
 		return this.id;
 	}
 
@@ -116,11 +119,11 @@ public class KhSite  implements Serializable{
 		return this.section;
 	}
 
-	public void setStatus(String status){
+	public void setStatus(int status){
 		this.status = status;
 	}
 	@ExcelResources(title="隐患状态（0未消除 1消除）",order=5)
-	public String getStatus(){
+	public int getStatus(){
 		return this.status;
 	}
 
@@ -132,11 +135,11 @@ public class KhSite  implements Serializable{
 		return this.taskName;
 	}
 
-	public void setKhfzrId1(String khfzrId1){
+	public void setKhfzrId1(long khfzrId1){
 		this.khfzrId1 = khfzrId1;
 	}
 	@ExcelResources(title="看护负责人1",order=9)
-	public String getKhfzrId1(){
+	public long getKhfzrId1(){
 		return this.khfzrId1;
 	}
 
@@ -156,11 +159,11 @@ public class KhSite  implements Serializable{
 		return this.taskTimes;
 	}
 
-	public void setLineId(String lineId){
+	public void setLineId(long lineId){
 		this.lineId = lineId;
 	}
 	@ExcelResources(title="线路id",order=14)
-	public String getLineId(){
+	public long getLineId(){
 		return this.lineId;
 	}
 
@@ -180,35 +183,35 @@ public class KhSite  implements Serializable{
 		return this.khRange;
 	}
 
-	public void setKhdyId1(String khdyId1){
+	public void setKhdyId1(long khdyId1){
 		this.khdyId1 = khdyId1;
 	}
 	@ExcelResources(title="看护队员1",order=17)
-	public String getKhdyId1(){
+	public long getKhdyId1(){
 		return this.khdyId1;
 	}
 
-	public void setKhfzrId2(String khfzrId2){
+	public void setKhfzrId2(long khfzrId2){
 		this.khfzrId2 = khfzrId2;
 	}
 	@ExcelResources(title="看护负责人2",order=18)
-	public String getKhfzrId2(){
+	public long getKhfzrId2(){
 		return this.khfzrId2;
 	}
 
-	public void setKhdyId2(String khdyId2){
+	public void setKhdyId2(long khdyId2){
 		this.khdyId2 = khdyId2;
 	}
 	@ExcelResources(title="看护队员2",order=19)
-	public String getKhdyId2(){
+	public long getKhdyId2(){
 		return this.khdyId2;
 	}
 
-	public void setKhxqTime(String khxqTime){
+	public void setKhxqTime(Date khxqTime){
 		this.khxqTime = khxqTime;
 	}
 	@ExcelResources(title="任务消缺时间",order=20)
-	public String getKhxqTime(){
+	public Date getKhxqTime(){
 		return this.khxqTime;
 	}
 	@ExcelResources(title="任务创建时间",order=21)

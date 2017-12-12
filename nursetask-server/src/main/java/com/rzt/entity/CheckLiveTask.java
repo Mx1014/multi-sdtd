@@ -5,7 +5,10 @@
  * Copyright 融智通科技(北京)股份有限公司 版权所有    
  */
 package com.rzt.entity;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.rzt.util.excelUtil.ExcelResources;
+import com.rzt.utils.SnowflakeIdWorker;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -28,9 +31,7 @@ import java.util.UUID;
 public class CheckLiveTask implements Serializable{
 	//字段描述:
 	@Id
-	@GeneratedValue(generator = "uuid")
-	@GenericGenerator(name = "uuid", strategy = "uuid")
-	private String id;
+	private Long id;
 	//字段描述: 被稽查的任务id
 	@Column(name = "TASK_ID")
 	private Long taskId;
@@ -51,7 +52,7 @@ public class CheckLiveTask implements Serializable{
 	private String taskName;
 	//字段描述: 稽查人id
 	@Column(name = "USER_ID")
-	private String userId;
+	private Long userId;
 	//字段描述: 任务派发状态  0未派发  1已派发  2已消缺
 	@Column(name = "STATUS")
 	private String status;
@@ -90,13 +91,17 @@ public class CheckLiveTask implements Serializable{
 	private Date ddxcTime;
 	//字段描述: 周期id
 	@Column(name = "CYCLE_ID")
-	private String cycleId;
+	private Long cycleId;
 
-	public void setId(String id){
-		this.id = UUID.randomUUID().toString();
+	public void setId(Long id){
+		if(id==null||id==0){
+			this.id = new SnowflakeIdWorker(0,0).nextId();
+		}else{
+			this.id = id;
+		}
 	}
 	@ExcelResources(title="",order=1)
-	public String getId(){
+	public Long getId(){
 		return this.id;
 	}
 
@@ -148,11 +153,11 @@ public class CheckLiveTask implements Serializable{
 		return this.taskName;
 	}
 
-	public void setUserId(String userId){
+	public void setUserId(Long userId){
 		this.userId = userId;
 	}
 	@ExcelResources(title="稽查人id",order=8)
-	public String getUserId(){
+	public Long getUserId(){
 		return this.userId;
 	}
 
@@ -252,11 +257,11 @@ public class CheckLiveTask implements Serializable{
 		return this.ddxcTime;
 	}
 
-	public void setCycleId(String cycleId){
+	public void setCycleId(Long cycleId){
 		this.cycleId = cycleId;
 	}
 	@ExcelResources(title="周期id",order=21)
-	public String getCycleId(){
+	public Long getCycleId(){
 		return this.cycleId;
 	}
 
