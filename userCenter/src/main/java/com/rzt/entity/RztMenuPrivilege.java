@@ -9,10 +9,7 @@ import com.rzt.entity.BaseEntity;
 import com.rzt.util.excelUtil.ExcelResources;
 import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.UUID;
 
@@ -27,6 +24,7 @@ import java.util.UUID;
  * @version        
  */
 @Entity
+@Table(name = "RZTMENUPRIVILEGE")
 public class RztMenuPrivilege extends BaseEntity implements Serializable{
 	//字段描述: 
    	 @Id

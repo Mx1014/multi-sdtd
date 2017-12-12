@@ -25,6 +25,7 @@ import java.util.UUID;
  * @version        
  */
 @Entity
+@Table(name="RZTSYSDEPARTMENT")
 public class RztSysDepartment extends BaseEntity implements Serializable{
 	//字段描述: 
    	 @Id
