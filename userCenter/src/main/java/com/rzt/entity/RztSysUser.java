@@ -27,6 +27,7 @@ import java.util.UUID;
  * @version        
  */
 @Entity
+@Table(name = "RZTSYSUSER")
 public class RztSysUser extends BaseEntity implements Serializable{
 	//字段描述: 
    	 @Id
@@ -34,52 +35,52 @@ public class RztSysUser extends BaseEntity implements Serializable{
 	 @GenericGenerator(name = "uuid", strategy = "uuid")
      private String id;        
     	//字段描述: 登录账号
-   	 @Column(name = "username")
+   	 @Column(name = "USERNAME")
      private String username;
     	//字段描述: 真实姓名
-   	 @Column(name = "realname")
+   	 @Column(name = "REALNAME")
      private String realname;
     	//字段描述: 
-   	 @Column(name = "email")
+   	 @Column(name = "EMAIL")
      private String email;
     	//字段描述: 
-   	 @Column(name = "phone")
+   	 @Column(name = "PHONE")
      private String phone;
     	//字段描述: 头像路径
-   	 @Column(name = "avatar")
+   	 @Column(name = "AVATAR")
      private String avatar;
     	//字段描述: 部门id
-   	 @Column(name = "deptId")
+   	 @Column(name = "DEPTID")
      private String deptid;
     	//字段描述: 用户是否删除
-   	 @Column(name = "userDelete")
+   	 @Column(name = "USERDELETE")
      private int userdelete;
 	//字段描述: 身份证
-	@Column(name = "certificate")
+	@Column(name = "CERTIFICATE")
 	private String certificate;
 	//字段描述: 从业年限
-	@Column(name = "workyear")
+	@Column(name = "WORKYEAR")
 	private int workyear;
 	//字段描述: 工作性质
-	@Column(name = "worktype")
+	@Column(name = "WORKTYPE")
 	private int worktype;
 	//字段描述: 编号
-	@Column(name = "serialNumber")
+	@Column(name = "SERIALNUMBER")
 	private String serialnumber;
 	//字段描述: 年龄
-	@Column(name = "age")
+	@Column(name = "AGE")
 	private int age;
 	//字段描述: 登录状态 0 未登录 1 登录
-   	 @Column(name = "loginStatus")
+   	 @Column(name = "LOGINSTATUS")
      private int loginstatus;
     	//字段描述:创建时间
-		@Column(name = "createtime")
+		@Column(name = "CREATETIME")
      private Date createtime;
 	//用户类型
-	@Column(name = "userType")
+	@Column(name = "USERTYPE")
 	private int userType;
 	//字段描述: 所属班组
-	@Column(name = "className")
+	@Column(name = "CLASSNAME")
 	private String className;
 
 	public void setId(String id){

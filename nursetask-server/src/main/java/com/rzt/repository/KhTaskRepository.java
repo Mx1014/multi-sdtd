@@ -34,23 +34,23 @@ public interface KhTaskRepository extends JpaRepository<KhTask,String> {
     int getcount();
 
     @Query(value = "SELECT COUNT(*) FROM kh_task where site_id=?1 and user_id=?2",nativeQuery = true)
-    int getCount(String id, String userId);
+    int getCount(long id, long userId);
 
     @Modifying
     @Query(value = "update kh_task set ddxc_time = ?1 where id = ?2",nativeQuery = true)
-    void updateDDTime(Date time, String id);
+    void updateDDTime(Date time, long id);
 
     @Modifying
     @Query(value = "update kh_task set sfqr_time = ?1 where id = ?2",nativeQuery = true)
-    void updateSFQRTime(Date time, String id);
+    void updateSFQRTime(Date time, long id);
 
     @Modifying
     @Query(value = "update kh_task set wpqr_time = ?1 where id = ?2",nativeQuery = true)
-    void updateWPQRTime(Date time, String id);
+    void updateWPQRTime(Date time, long id);
 
     @Modifying
     @Query(value = "update kh_task set real_start_time = ?1 where id = ?2",nativeQuery = true)
-    void updateRealStartTime(Date time, String id);
+    void updateRealStartTime(Date time, long id);
 
     @Query(value = "SELECT COUNT(*) FROM kh_task where status = 1",nativeQuery = true)
     int getCount2();
@@ -58,5 +58,5 @@ public interface KhTaskRepository extends JpaRepository<KhTask,String> {
     @Modifying
     @Transactional
     @Query(value = "update kh_site set khfzr_id1 = ?2, khfzr_id2 = ?3,khdy_id1 = ?4,khdy_id2 = ?5 where id = ?1",nativeQuery = true)
-    void updateTaskById(String id, String khfzrId1, String khfzrId2, String khdyId1, String khdyId2);
+    void updateTaskById(long id, long khfzrId1, long khfzrId2, long khdyId1, long khdyId2);
 }

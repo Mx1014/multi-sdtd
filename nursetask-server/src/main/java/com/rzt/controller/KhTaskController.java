@@ -49,24 +49,6 @@ public class KhTaskController extends
 			return WebApiResponse.erro("数据查询失败" + e.getMessage());
 		}
 	}
-
-	/***
-	 * 获取 已安排的看护任务
-	 * @return
-	 */
-	@GetMapping("/listAllTaskDoing.do")
-	@ResponseBody
-	public WebApiResponse listAllTaskDoing(KhTask task, Pageable pageable, String userName) {
-		try {
-			//分页参数 page size
-			List list = this.service.listAllTaskDoing(task, pageable, userName);
-			return WebApiResponse.success(list);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return WebApiResponse.erro("数据查询失败" + e.getMessage());
-		}
-	}
-
 	/**
 	 * 修改已安排任务
 	 */
@@ -97,7 +79,7 @@ public class KhTaskController extends
 	@ResponseBody
 	public WebApiResponse listKhTaskById(String id){
 		try {
-			List<Map<String, Object>> maps = this.service.getKhTaskById(id);
+			List<Map<String, Object>> maps = this.service.getKhTaskById(Long.parseLong(id));
 			return WebApiResponse.success(maps);
 		} catch (Exception e) {
 			e.printStackTrace();

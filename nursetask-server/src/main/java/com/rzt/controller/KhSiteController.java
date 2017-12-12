@@ -53,49 +53,7 @@ public class KhSiteController extends
 	@ResponseBody
 	@Transactional
 	public WebApiResponse saveYh(KhYhHistory yh) {
-		try {
-			yh.setYhdm("未定级");
-			yh.setYhzt("0");//隐患未消除
-			yhservice.add(yh);
-            KhSite task = new KhSite();
-            String taskName = yh.getVtype()+yh.getLineName()+yh.getStartTower()+"-"+yh.getEndTower()+"号杆塔看护任务";
-            task.setCreateTime(new Date());
-            task.setVtype(yh.getVtype());
-            task.setLineName(yh.getLineName());
-            task.setTdywOrg(yh.getTdywOrg());
-            task.setTaskName(taskName);
-            task.setStatus("1");// 未派发
-            task.setTaskTimes("0");//生成任务次数0
-            task.setYhId(yh.getId());
-            task.setCreateTime(new Date());
-            this.service.add(task);
-            CheckLiveTask check = new CheckLiveTask();
-            check.setCheckType("0"); //0为 看护类型稽查
-            check.setTaskId(task.getId());
-            check.setTaskType("1");// 1 为正常稽查
-            check.setStatus("0");  // 0 为未派发
-            check.setTdwhOrg(yh.getTdywOrg());
-            check.setCreateTime(new Date());
-            check.setCheckDept("0"); // 0为属地公司
-            check.setCheckCycle("1");// 1 为周期1天
-            check.setTaskName(yh.getVtype()+yh.getLineName()+yh.getStartTower()+"-"+yh.getEndTower()+"号杆塔稽查任务");
-            checkService.add(check);
-			CheckLiveTask check1 = new CheckLiveTask();
-			check1.setCheckType("0"); //0为 看护类型稽查
-			check1.setTaskId(task.getId());
-			check1.setTaskType("1");// 1 为正常稽查
-			check1.setStatus("0");  // 0 为未派发
-			check1.setTdwhOrg(yh.getTdywOrg());
-			check1.setCreateTime(new Date());
-			check1.setCheckDept("1"); // 1为北京公司
-            check1.setCheckCycle("3"); // 周期为3天
-			check1.setTaskName(check.getTaskName());
-			checkService.add(check1);
-			return WebApiResponse.success("保存成功");
-		} catch (Exception e) {
-			e.printStackTrace();
-			return WebApiResponse.erro("数据查询失败" + e.getMessage());
-		}
+		return this.service.saveYh(yh);
 	}
 
 	/**
@@ -117,14 +75,14 @@ public class KhSiteController extends
 			task.setLineName(yh.getLineName());
 			task.setTdywOrg(yh.getTdywOrg());
 			task.setTaskName(taskName);
-			task.setStatus("0");//隐患未消除
-			task.setStatus("0");//未停用
-			task.setTaskTimes("0");//生成任务次数0
+			task.setStatus(0);//隐患未消除
+			task.setStatus(0);//未停用
+			task.setTaskTimes(0);//生成任务次数0
 			task.setYhId(yh.getId());
 			task.setCreateTime(new Date());
 			this.service.add(task);
 			yh1.setYhdm("已定级");
-			yh1.setTaskId(task.getId());
+			//yh1.setTaskId(task.getId());
 			yhservice.update(yh1,id);
 			return WebApiResponse.success("保存成功");
 		} catch (Exception e) {
@@ -158,7 +116,7 @@ public class KhSiteController extends
 	@Transactional
 	public WebApiResponse updateQxTask(String id){
 		try {
-			this.service.updateQxTask(id);
+			this.service.updateQxTask(Long.parseLong(id));
 			return WebApiResponse.success("任务消缺成功");
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -169,14 +127,13 @@ public class KhSiteController extends
 	@ResponseBody
 	public WebApiResponse listKhtaskByid(String id){
 		try {
-			List list = this.service.listKhtaskByid(id);
+			List list = this.service.listKhtaskByid(Long.parseLong(id));
 			return WebApiResponse.success(list);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return WebApiResponse.erro("数据查询失败" + e.getMessage());
 		}
 	}
-
 	/**
 	 * 删除待安排任务  请求方式 DELETE  删除看护点
 	 */
@@ -192,24 +149,28 @@ public class KhSiteController extends
 			//生成多条看护任务
 			String groupFlag = System.currentTimeMillis()+"";
 			for (KhTask task:taskList) {
-				if (site.getKhfzrId1()==null&&task.getCaptain().equals("01")){
-					site.setKhfzrId1(task.getUserId());
+				long UserId = Long.parseLong(task.getUserId());
+				if (site.getKhfzrId1() == 0&&task.getCaptain() .equals(01)){
+					site.setKhfzrId1(UserId);
 					task.setGroupFlag(groupFlag+"1");
-				}else if (site.getKhfzrId2()==null&&task.getCaptain().equals("02")){
-					site.setKhfzrId2(task.getUserId());
+				}else if (site.getKhfzrId2()== 0&&task.getCaptain().equals(02)){
+					site.setKhfzrId2(UserId);
                     task.setGroupFlag(groupFlag+"2");
-				}else if(site.getKhdyId1()==null&&task.getCaptain().equals("11")){
-					site.setKhdyId1(task.getUserId());
+				}else if(site.getKhdyId1()== 0&&task.getCaptain().equals(11)){
+					site.setKhdyId1(UserId);
                     task.setGroupFlag(groupFlag+"1");
-				}else if(site.getKhdyId2()==null&&task.getCaptain().equals("12")){
-					site.setKhdyId2(task.getUserId());
+				}else if(site.getKhdyId2()== 0&&task.getCaptain().equals(12)){
+					site.setKhdyId2(UserId);
                     task.setGroupFlag(groupFlag+"2");
 				}
-				int count = taskService.getCount(id, task.getUserId());
+				int count = taskService.getCount(Long.parseLong(id), UserId);
+				KhSite site1 = new KhSite();
+				site1.setTaskTimes(count);
+				this.update(id,site1);
 				task.setCount(count);
 				task.setCreateTime(new Date());
 				task.setStatus("已派发");
-				task.setSiteId(id);
+				task.setSiteId(Long.parseLong(id));
 				task.setYhId(site.getYhId());
 				task.setTaskName(site.getTaskName());
 				task.setStatus("0");

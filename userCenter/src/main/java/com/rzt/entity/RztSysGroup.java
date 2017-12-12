@@ -8,11 +8,9 @@ package com.rzt.entity;
 import com.rzt.entity.BaseEntity;
 import com.rzt.util.excelUtil.ExcelResources;
 import org.hibernate.annotations.GenericGenerator;
+import org.springframework.data.annotation.TypeAlias;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.UUID;
@@ -28,6 +26,7 @@ import java.util.UUID;
  * @version        
  */
 @Entity
+@Table(name = "RZTSYSGROUP" )
 public class RztSysGroup extends BaseEntity implements Serializable{
 	//字段描述: 
    	 @Id
@@ -35,13 +34,13 @@ public class RztSysGroup extends BaseEntity implements Serializable{
 	 @GenericGenerator(name = "uuid", strategy = "uuid")
      private String id;        
     	//字段描述: 
-   	 @Column(name = "groupName")
+   	 @Column(name = "groupname")
      private String groupname;
     	//字段描述: 
-   	 @Column(name = "groupIcon")
+   	 @Column(name = "groupicon")
      private String groupicon;
     	//字段描述: 
-   	 @Column(name = "groupPid")
+   	 @Column(name = "grouppid")
      private String grouppid;
     	//字段描述: 
    	 @Column(name = "lft")
@@ -50,7 +49,7 @@ public class RztSysGroup extends BaseEntity implements Serializable{
    	 @Column(name = "rgt")
      private int rgt;
     	//字段描述: 
-   	 @Column(name = "groupDesc")
+   	 @Column(name = "groupdesc")
      private String groupdesc;
     	//字段描述: 
    	 @Column(name = "createtime")

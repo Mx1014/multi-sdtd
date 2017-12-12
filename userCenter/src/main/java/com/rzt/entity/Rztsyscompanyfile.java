@@ -23,7 +23,7 @@ import java.util.UUID;
  * @version        
  */
 @Entity
-@Table(name="rztsyscompanyfile")
+@Table(name="RZTSYSCOMPANYFILE")
 public class Rztsyscompanyfile extends BaseEntity implements Serializable{
 	//字段描述: 
    	 @Id
@@ -31,13 +31,13 @@ public class Rztsyscompanyfile extends BaseEntity implements Serializable{
 	 @GenericGenerator(name = "uuid", strategy = "uuid")
      private String id;
     	//字段描述: 1 中标通知书 2 营业执照 
-   	 @Column(name = "fileType")
+   	 @Column(name = "filetype")
      private int filetype;
     	//字段描述: 
-   	 @Column(name = "fileName")
+   	 @Column(name = "filename")
      private String filename;
     	//字段描述: 
-   	 @Column(name = "companyId")
+   	 @Column(name = "companyid")
      private String companyid;
     
 	public void setId(String id){

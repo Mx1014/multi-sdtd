@@ -58,13 +58,13 @@ public class KhTask implements Serializable{
 	private String ddxcTime;
 	//字段描述: 周期内第多少次任务
 	@Column(name = "TASK_NUM_IN_CYCLE")
-	private String taskNumInCycle;
+	private int taskNumInCycle;
 	//字段描述: 外协单位
 	@Column(name = "WX_ORG")
 	private String wxOrg;
 	//字段描述: 看护点（主任务）ID
 	@Column(name = "SITE_ID")
-	private String siteId;
+	private Long siteId;
 	//字段描述: 看护人ID
 	@Column(name = "USER_ID")
 	private String userId;
@@ -161,11 +161,11 @@ public class KhTask implements Serializable{
 		return this.ddxcTime;
 	}
 
-	public void setTaskNumInCycle(String taskNumInCycle){
+	public void setTaskNumInCycle(int taskNumInCycle){
 		this.taskNumInCycle = taskNumInCycle;
 	}
 	@ExcelResources(title="周期内第多少次任务",order=10)
-	public String getTaskNumInCycle(){
+	public int getTaskNumInCycle(){
 		return this.taskNumInCycle;
 	}
 
@@ -177,11 +177,11 @@ public class KhTask implements Serializable{
 		return this.wxOrg;
 	}
 
-	public void setSiteId(String siteId){
+	public void setSiteId(Long siteId){
 		this.siteId = siteId;
 	}
 	@ExcelResources(title="看护点（主任务）ID",order=12)
-	public String getSiteId(){
+	public Long getSiteId(){
 		return this.siteId;
 	}
 
@@ -229,7 +229,7 @@ public class KhTask implements Serializable{
 		this.createTime = createTime;
 	}
 	@ExcelResources(title="看护任务派发时间",order=18)
-	public Date getCreateTime(){
+	public Date  getCreateTime(){
 		return this.createTime;
 	}
 

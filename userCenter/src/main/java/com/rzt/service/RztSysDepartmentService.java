@@ -67,7 +67,7 @@ public class RztSysDepartmentService extends CurdService<RztSysDepartment,RztSys
 		rztSysDepartment.setLft(rgt + 1);
 		rztSysDepartment.setRgt(rgt + 2);
 		rztSysDepartment.setDeptpid(tongji.getDeptpid());
-		this.reposiotry.save(rztSysDepartment);
+		this.add(rztSysDepartment);
 		return rztSysDepartment;
 	}
 

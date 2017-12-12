@@ -1,5 +1,8 @@
 package com.rzt.websocket.service;
 
+import com.rzt.entity.websocket;
+import com.rzt.repository.websocketRepository;
+import com.rzt.service.CurdService;
 import com.rzt.websocket.serverendpoint.AlarmSituationServerEndpoint;
 import org.hibernate.SQLQuery;
 import org.hibernate.transform.Transformers;
@@ -14,6 +17,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.websocket.Session;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -24,7 +28,7 @@ import java.util.Map;
  * 告警情况展示service
  */
 @Service
-public class AlarmSituationPushService {
+public class AlarmSituationPushService extends CurdService<websocket, websocketRepository> {
 
     private static Logger LOGGER = LoggerFactory.getLogger(AlarmSituationPushService.class);
 
@@ -48,20 +52,17 @@ public class AlarmSituationPushService {
         /**
          * normalinspection 正常巡视当天未按时开始任务的
          */
-        String normalinspection = "select count(*) from xs_zc_task where trunc(plan_start_time) = trunc(sysdate) and trunc(plan_start_time) <nvl(real_start_time ,sysdate)";
+        String normalinspection = "select count(id) from xs_zc_task where trunc(plan_start_time) = trunc(sysdate) and trunc(plan_start_time) <nvl(real_start_time ,sysdate)";
         /**
          * touroverdue 巡视超期
          */
         String touroverdue = "select count(id) from xs_txbd_task where  (stauts = 0 or stauts = 1) and  trunc(plan_end_time) <trunc(sysdate)";
         //遍历Map取出通道单位id用于数据库查询权限
         sendMsg.forEach((sessionId, session) -> {
-            Query q = this.entityManager.createNativeQuery("SELECT ((" + notstarttime + ")+(" + normalinspection + ")) as notstarttime,(" + touroverdue + ") as touroverdue FROM DUAL");
-//            if (session.get("orgid") != null) {
-//                q.setParameter(1, session.get("orgid"));
-//            }
-            ((SQLQuery) q.unwrap(SQLQuery.class)).setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP);
+            String sql = "SELECT ((" + notstarttime + ")+(" + normalinspection + ")) as notstarttime,(" + touroverdue + ") as touroverdue FROM DUAL";
+            List<Map<String, Object>> execSql = this.execSql(sql);
             try {
-                alarmSituationServerEndpoint.sendText((Session) session.get("session"), q.getResultList().toString());
+                alarmSituationServerEndpoint.sendText((Session) session.get("session"), execSql.toString());
             } catch (Exception e) {
                 LOGGER.error("Error: The user closes the browser , Session Does Not Exist", e);
             }

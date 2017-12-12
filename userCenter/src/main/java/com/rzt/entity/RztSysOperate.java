@@ -9,10 +9,7 @@ import com.rzt.entity.BaseEntity;
 import com.rzt.util.excelUtil.ExcelResources;
 import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.UUID;
 
@@ -27,6 +24,7 @@ import java.util.UUID;
  * @version        
  */
 @Entity
+@Table(name = "RZTSYSOPERATE")
 public class RztSysOperate extends BaseEntity implements Serializable{
 	//字段描述: 
    	 @Id
@@ -34,10 +32,10 @@ public class RztSysOperate extends BaseEntity implements Serializable{
 	 @GenericGenerator(name = "uuid", strategy = "uuid")
      private String id;        
     	//字段描述: 
-   	 @Column(name = "operateNum")
+   	 @Column(name = "OPERATENUM")
      private String operatenum;
     	//字段描述: 
-   	 @Column(name = "operateName")
+   	 @Column(name = "OPERATENAME")
      private String operatename;
     
 	public void setId(String id){
