@@ -1,0 +1,23 @@
+##Token expiretime
+token:
+  expiretime: 300000000
+server:
+  port: 8090
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:7002/eureka/
+spring:
+  application:
+    name: authentication
+  redis:
+    database: 0
+    host: 168.130.1.31
+    port: 31662
+    password:
+    pool:
+      max-active: 8
+      max-wait: -1
+      max-idle: 8
+      min-idle: 0
+    timeout: 0
