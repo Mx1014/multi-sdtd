@@ -120,7 +120,7 @@ public class RztSysUserController extends
      * @param size 每页行数
      * @return
      */
-    @GetMapping("findAllUser")
+    @PostMapping("findAllUser")
     @ApiOperation(value = "人员分页查询", notes = "人员分页查询")
     public WebApiResponse findAllUser(int page, int size) {
         try {
