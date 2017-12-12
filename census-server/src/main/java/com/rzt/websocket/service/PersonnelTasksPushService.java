@@ -33,8 +33,6 @@ public class PersonnelTasksPushService extends CurdService<websocket, websocketR
 
     @Autowired
     PersonnelTasksServerEndpoint personnelTasksServerEndpoint;
-    @PersistenceContext
-    EntityManager entityManager;
 
     /**
      * 定时查询数据推送消息
@@ -47,15 +45,39 @@ public class PersonnelTasksPushService extends CurdService<websocket, websocketR
         /**
          * zxUser 在线人员
          */
-        String zxUser = "SELECT count(id) FROM RZTSYSUSER WHERE LOGINSTATUS = 1";
+        String zxUser = "SELECT count(id) FROM RZTSYSUSER WHERE LOGINSTATUS = 1 AND USERDELETE = 1";
         /**
          * lxUser 离线人员
          */
-        String lxUser = "SELECT count(id) FROM RZTSYSUSER WHERE LOGINSTATUS = 0";
+        String lxUser = "SELECT count(id) FROM RZTSYSUSER WHERE LOGINSTATUS = 0 AND USERDELETE = 1";
+        /**
+         * 巡视在线人员
+         */
+        String xsZxUser = " SELECT count(id) FROM RZTSYSUSER WHERE LOGINSTATUS = 1 AND WORKTYPE = 1 AND USERDELETE = 1 ";
+        /**
+         * 巡视离线人员
+         */
+        String xsLxUser = " SELECT count(id) FROM RZTSYSUSER WHERE LOGINSTATUS = 0 AND WORKTYPE = 1 AND USERDELETE = 1 ";
+        /**
+         * 看护在线人员
+         */
+        String khZxUser = " SELECT count(id) FROM RZTSYSUSER WHERE LOGINSTATUS = 1 AND WORKTYPE = 0 AND USERDELETE = 1 ";
+        /**
+         * 看护离线人员
+         */
+        String khLxUser = " SELECT count(id) FROM RZTSYSUSER WHERE LOGINSTATUS = 0 AND WORKTYPE = 0 AND USERDELETE = 1 ";
         //遍历Map取出通道单位id用于数据库查询权限
         sendMsg.forEach((sessionId, session) -> {
+            String sql = "SELECT " +
+                    "(" + zxUser + ") as zxUser," +
+                    "(" + lxUser + ") as lxUser," +
+                    "(" + xsZxUser + ") as xsZxUser," +
+                    "(" + xsLxUser + ") as xsLxUser," +
+                    "(" + khZxUser + ") as khZxUser," +
+                    "(" + khLxUser + ") as khLxUser " +
+                    " FROM dual";
             try {
-                personnelTasksServerEndpoint.sendText((Session) session.get("session"), this.execSql(lxUser).toString());
+                personnelTasksServerEndpoint.sendText((Session) session.get("session"), this.execSql(sql).toString());
             } catch (Exception e) {
                 LOGGER.error("Error: The user closes the browser , Session Does Not Exist", e);
             }
