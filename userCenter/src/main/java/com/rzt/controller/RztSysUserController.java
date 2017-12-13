@@ -140,15 +140,15 @@ public class RztSysUserController extends
     /**
      * 人员列表分页查询
      *
-     * @param page     页数
-     * @param pageSize 每页行数
+     * @param page 页数
+     * @param size 每页行数
      * @return
      */
-    @PostMapping("findAllUser/{page}/{pageSize}")
+    @PostMapping("findAllUser/{page}/{size}")
     @ApiOperation(value = "人员分页查询", notes = "人员分页查询")
-    public WebApiResponse findAllUser(@PathVariable int page, @PathVariable int pageSize) {
+    public WebApiResponse findAllUser(@PathVariable int page, @PathVariable int size) {
         try {
-            return WebApiResponse.success(this.service.findUserList(page, pageSize));
+            return WebApiResponse.success(this.service.findUserList(page, size));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("数据错误");
