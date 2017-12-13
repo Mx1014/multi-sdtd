@@ -53,7 +53,7 @@ public class KhSite  implements Serializable{
 	private String taskName;
 	//字段描述: 看护负责人1
 	@Column(name = "KHFZR_ID1")
-	private long khfzrId1;
+	private String khfzrId1;
 	//字段描述: 通道运维单位
 	@Column(name = "TDYW_ORG")
 	private String tdywOrg;
@@ -74,13 +74,13 @@ public class KhSite  implements Serializable{
 	private String khRange;
 	//字段描述: 看护队员1
 	@Column(name = "KHDY_ID1")
-	private long khdyId1;
+	private String khdyId1;
 	//字段描述: 看护负责人2
 	@Column(name = "KHFZR_ID2")
-	private long khfzrId2;
+	private String khfzrId2;
 	//字段描述: 看护队员2
 	@Column(name = "KHDY_ID2")
-	private long khdyId2;
+	private String khdyId2;
 	//字段描述: 任务消缺时间
 	@Column(name = "KHXQ_TIME")
 	private Date khxqTime;
@@ -135,11 +135,11 @@ public class KhSite  implements Serializable{
 		return this.taskName;
 	}
 
-	public void setKhfzrId1(long khfzrId1){
+	public void setKhfzrId1(String khfzrId1){
 		this.khfzrId1 = khfzrId1;
 	}
 	@ExcelResources(title="看护负责人1",order=9)
-	public long getKhfzrId1(){
+	public String getKhfzrId1(){
 		return this.khfzrId1;
 	}
 
@@ -183,27 +183,27 @@ public class KhSite  implements Serializable{
 		return this.khRange;
 	}
 
-	public void setKhdyId1(long khdyId1){
+	public void setKhdyId1(String khdyId1){
 		this.khdyId1 = khdyId1;
 	}
 	@ExcelResources(title="看护队员1",order=17)
-	public long getKhdyId1(){
+	public String getKhdyId1(){
 		return this.khdyId1;
 	}
 
-	public void setKhfzrId2(long khfzrId2){
+	public void setKhfzrId2(String khfzrId2){
 		this.khfzrId2 = khfzrId2;
 	}
 	@ExcelResources(title="看护负责人2",order=18)
-	public long getKhfzrId2(){
+	public String getKhfzrId2(){
 		return this.khfzrId2;
 	}
 
-	public void setKhdyId2(long khdyId2){
+	public void setKhdyId2(String khdyId2){
 		this.khdyId2 = khdyId2;
 	}
 	@ExcelResources(title="看护队员2",order=19)
-	public long getKhdyId2(){
+	public String getKhdyId2(){
 		return this.khdyId2;
 	}
 

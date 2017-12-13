@@ -6,11 +6,9 @@
  */
 package com.rzt.service;
 
-import com.rzt.service.CurdService;
 import com.rzt.entity.RztSysUser;
 import com.rzt.repository.RztSysUserRepository;
-import com.rzt.utils.DbUtil;
-import com.rzt.utils.PageUtil;
+import com.rzt.util.WebApiResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,7 +18,6 @@ import org.springframework.util.StringUtils;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -47,7 +44,7 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
         }
     }
 
-    public Page<Map<String, Object>> findUserList(int page, int size) {
+    public Page<Map<String, Object>> findUserList(Integer page, Integer size) {
 //		StringBuilder builder = new StringBuilder();
 //		builder.append("SELECT GROUP_CONCAT(r.id) roleid,GROUP_CONCAT(r.roleName) roleName,u.* from " +
 //				"rztsysuser u LEFT JOIN rztsysuserrole l ON u.id = " +
@@ -56,7 +53,7 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
 //		return DbUtil.list(entityManager,builder.toString());
         Pageable pageable = new PageRequest(page, size);
         String sql = "SELECT " +
-                "  wm_concat(r.ID) AS roleid," +
+                "  wm_concat(r.ID) AS roleid,u.id," +
                 "  wm_concat(R.roleName) AS roleName," +
                 "  U.REALNAME, " +
                 "  U.USERNAME, " +
@@ -70,15 +67,52 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
                 "  U.SERIALNUMBER, " +
                 "  U.AGE, " +
                 "  U.USERTYPE, " +
-                "  U.AVATAR AS file " +
-                "FROM rztsysuser u LEFT JOIN rztsysuserrole l ON u.id = l.userId " +
-                "  LEFT JOIN rztsysrole r ON l.roleId = r.id " +
-                "GROUP BY u.REALNAME, U.REALNAME,U.USERNAME,U.EMAIL,U.PHONE,U.DEPTID,U.CLASSNAME,U.CERTIFICATE,U.WORKYEAR,U.WORKTYPE,U.SERIALNUMBER,U.AGE,U.USERTYPE,U.AVATAR";
+                "  U.AVATAR  " +
+                " FROM rztsysuser u LEFT JOIN rztsysuserrole l ON u.id = l.userId " +
+                "  LEFT JOIN rztsysrole r ON l.roleId = r.id WHERE USERDELETE = 1  " +
+                "GROUP BY u.REALNAME, U.REALNAME,U.USERNAME,U.EMAIL,U.PHONE,U.DEPTID,U.CLASSNAME,U.CERTIFICATE,U.WORKYEAR,U.WORKTYPE,U.SERIALNUMBER,U.AGE,U.USERTYPE,U.AVATAR,u.id";
         return this.execSqlPage(pageable, sql);
     }
 
     public RztSysUser findByUsernameAndDeptid(String username, String deptid) {
         return this.reposiotry.findByUsernameAndDeptid(username, deptid);
+    }
+
+    /**
+     * 伪删除和批量伪删除人员
+     *
+     * @param id 人员ID
+     * @return
+     */
+    public int logicUser(String id) {
+        return this.reposiotry.logicUser(id);
+    }
+
+    /**
+     * 修改人员
+     *
+     * @param id
+     * @param user
+     * @return
+     */
+    public WebApiResponse updateUser(String id, RztSysUser user) {
+        int age = user.getAge();
+        String certificate = user.getCertificate();
+        String deptid = user.getDeptid();
+        String email = user.getEmail();
+        String phone = user.getPhone();
+        String realname = user.getRealname();
+        String serialnumber = user.getSerialnumber();
+        int userType = user.getUserType();
+        String username = user.getUsername();
+        int worktype = user.getWorktype();
+        int workyear = user.getWorkyear();
+        try {
+            return WebApiResponse.success(this.reposiotry.updateUser(age, certificate, deptid, email, phone, realname, serialnumber, userType, username, worktype, workyear, id));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.success("修改失败");
+        }
     }
 
 }

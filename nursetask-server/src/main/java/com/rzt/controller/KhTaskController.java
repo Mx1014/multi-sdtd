@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 
@@ -84,6 +86,14 @@ public class KhTaskController extends
 		} catch (Exception e) {
 			e.printStackTrace();
 			return WebApiResponse.erro("数据获取失败" + e.getMessage());
+		}
+	}
+	@GetMapping("/exportKhTask.do")
+	public void exportNursePlan(HttpServletRequest request, HttpServletResponse response){
+		try {
+			this.service.exportExcel(response);
+		}catch (Exception e){
+			e.printStackTrace();
 		}
 	}
 

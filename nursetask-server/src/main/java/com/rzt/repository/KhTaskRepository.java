@@ -34,7 +34,7 @@ public interface KhTaskRepository extends JpaRepository<KhTask,String> {
     int getcount();
 
     @Query(value = "SELECT COUNT(*) FROM kh_task where site_id=?1 and user_id=?2",nativeQuery = true)
-    int getCount(long id, long userId);
+    int getCount(long id, String userId);
 
     @Modifying
     @Query(value = "update kh_task set ddxc_time = ?1 where id = ?2",nativeQuery = true)
@@ -58,5 +58,5 @@ public interface KhTaskRepository extends JpaRepository<KhTask,String> {
     @Modifying
     @Transactional
     @Query(value = "update kh_site set khfzr_id1 = ?2, khfzr_id2 = ?3,khdy_id1 = ?4,khdy_id2 = ?5 where id = ?1",nativeQuery = true)
-    void updateTaskById(long id, long khfzrId1, long khfzrId2, long khdyId1, long khdyId2);
+    void updateTaskById(long id, String khfzrId1, String khfzrId2, String khdyId1, String khdyId2);
 }
