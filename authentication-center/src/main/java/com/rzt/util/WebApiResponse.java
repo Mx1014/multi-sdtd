@@ -38,10 +38,10 @@ public class WebApiResponse<T> {
         return response;
     }
 
-    public static <T> WebApiResponse<T> erro(T data){
+    public static <T> WebApiResponse<T> erro(String errorMessage){
         WebApiResponse<T> response = new WebApiResponse<T>();
         response.setSuccess(false);
-        response.setData(data);
+        response.setError(errorMessage);
         return response;
     }
 }

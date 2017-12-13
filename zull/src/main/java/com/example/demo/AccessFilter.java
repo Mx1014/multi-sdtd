@@ -18,10 +18,9 @@ import javax.servlet.http.HttpServletRequest;
  * Created by 张虎成 on 2017/5/23.
  */
 public class AccessFilter extends ZuulFilter {
-    @Value("${auth.url}")
-    private String auth_url;
     @Autowired
-    private RestTemplate restTemplate;
+    private Authentication authentication;
+
     @Override
     //filterType 过滤器类型 决定过滤器在请求的哪个周期中执行
     public String filterType() {
@@ -46,9 +45,10 @@ public class AccessFilter extends ZuulFilter {
         HttpServletRequest request = ctx.getRequest();
         HttpHeaders requestHeaders = new HttpHeaders();
         String accessToken = request.getHeader("Authorization");
-        requestHeaders.add("Authorization", accessToken);
-        HttpEntity<String> requestEntity = new HttpEntity<String>(accessToken,requestHeaders);
-        String resultStr = this.restTemplate.exchange(auth_url, HttpMethod.POST,requestEntity, String.class).getBody();
+        /*requestHeaders.add("Authorization", accessToken);*/
+//        HttpEntity<String> requestEntity = new HttpEntity<String>(accessToken,requestHeaders);
+//        String resultStr = this.restTemplate.exchange(auth_url, HttpMethod.POST,requestEntity, String.class).getBody();
+        String resultStr = authentication.auth();
         JSONObject resultObj = JSONObject.parseObject(resultStr);
         if(Boolean.parseBoolean(resultObj.get("success").toString())||request.getRequestURI().contains("login")||request.getRequestURI().contains("export")) {// 如果请求的参数不为空，且值为chhliu时，则通过
             ctx.setSendZuulResponse(true);// 对该请求进行路由

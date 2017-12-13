@@ -60,17 +60,11 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             params.add(task.getTaskName());
         }
         if (userName != null){
-            buffer.append(" and u.user_name like ? ");
+            buffer.append(" and u.realname like ? ");
             params.add(userName);
         }
-        //params.add(pageable.getPageNumber()*pageable.getPageSize());
-       // params.add((pageable.getPageNumber()+1)*pageable.getPageSize());
         buffer.append(" order by k.create_time desc ");
-        //buffer.append(" where b.rn>? and b.rn <=?");
         String sql = "select "+result+" from kh_site k left join kh_yh_history y on k.yh_id = y.id" + buffer.toString();
-        //List<Map<String, Object>> maps = execSql(sql, params.toArray());
-        int count = this.reposiotry.getCount(task.getStatus());
-        JSONObject jsonObject = new JSONObject();
         Page<Map<String, Object>> maps1 = this.execSqlPage(pageable, sql, params.toArray());
         List<Map<String, Object>> content1 = maps1.getContent();
         for (Map map:content1) {
@@ -103,13 +97,13 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
 
     public List listKhtaskByid(long id) {
         String sql ="select k.task_name,y.yhms as ms,y.yhjb as jb,a.name as khfzr1,b.name as khfzr2,c.name as khdy1,d.name as khdy2 from kh_site k left join " +
-                " (select u.user_name as name,k1.id from kh_site k1 left join cm_user u on u.id =k1.khfzr_id1) a " +
+                " (select u.realname as name,k1.id from kh_site k1 left join rztsysuser u on u.id =k1.khfzr_id1) a " +
                 " on a.id=k.id left join " +
-                " (select u.user_name as name,k1.id from kh_site k1 left join cm_user u on u.id =k1.khfzr_id2) b " +
+                " (select u.realname as name,k1.id from kh_site k1 left join rztsysuser u on u.id =k1.khfzr_id2) b " +
                 " on b.id=k.id left join  " +
-                " (select u.user_name as name,k1.id from kh_site k1 left join cm_user u on u.id =k1.khdy_id1) c " +
+                " (select u.realname as name,k1.id from kh_site k1 left join rztsysuser u on u.id =k1.khdy_id1) c " +
                 " on c.id=k.id left join " +
-                " (select u.user_name as name,k1.id from kh_site k1 left join cm_user u on u.id =k1.khdy_id2) d " +
+                " (select u.realname as name,k1.id from kh_site k1 left join rztsysuser u on u.id =k1.khdy_id2) d " +
                 " on d.id=k.id " +
                 " left join kh_yh_history y on k.yh_id = y.id  where k.id=? " ;
         return this.execSql(sql,id);

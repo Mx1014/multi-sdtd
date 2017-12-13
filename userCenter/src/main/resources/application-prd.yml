@@ -1,6 +1,7 @@
 server:
     port: 8098
     context-path: /userCenter
+
 spring:
     datasource:
       type: com.alibaba.druid.pool.DruidDataSource
@@ -27,7 +28,12 @@ spring:
       hibernate:
         ddl-auto: none
       show-sql: true
-
+  application:
+    name: userCenter
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:7002/eureka/
 logging:
   config: classpath:logback-spring.xml
 

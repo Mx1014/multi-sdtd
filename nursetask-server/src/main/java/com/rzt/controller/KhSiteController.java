@@ -123,7 +123,7 @@ public class KhSiteController extends
 			return WebApiResponse.erro("任务消缺失败" + e.getMessage());
 		}
 	}
-	@GetMapping("/listKhtaskByid.do")
+	@GetMapping("/listKhtaskById.do")
 	@ResponseBody
 	public WebApiResponse listKhtaskByid(String id){
 		try {
@@ -149,17 +149,17 @@ public class KhSiteController extends
 			//生成多条看护任务
 			String groupFlag = System.currentTimeMillis()+"";
 			for (KhTask task:taskList) {
-				long UserId = Long.parseLong(task.getUserId());
-				if (site.getKhfzrId1() == 0&&task.getCaptain() .equals(01)){
+				String UserId = task.getUserId();
+				if (site.getKhfzrId1() != null&&task.getCaptain() .equals(01)){
 					site.setKhfzrId1(UserId);
 					task.setGroupFlag(groupFlag+"1");
-				}else if (site.getKhfzrId2()== 0&&task.getCaptain().equals(02)){
+				}else if (site.getKhfzrId2()!= null&&task.getCaptain().equals(02)){
 					site.setKhfzrId2(UserId);
                     task.setGroupFlag(groupFlag+"2");
-				}else if(site.getKhdyId1()== 0&&task.getCaptain().equals(11)){
+				}else if(site.getKhdyId1()!= null&&task.getCaptain().equals(11)){
 					site.setKhdyId1(UserId);
                     task.setGroupFlag(groupFlag+"1");
-				}else if(site.getKhdyId2()== 0&&task.getCaptain().equals(12)){
+				}else if(site.getKhdyId2()!= null&&task.getCaptain().equals(12)){
 					site.setKhdyId2(UserId);
                     task.setGroupFlag(groupFlag+"2");
 				}

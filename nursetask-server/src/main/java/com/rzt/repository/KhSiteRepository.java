@@ -36,7 +36,7 @@ public interface KhSiteRepository extends JpaRepository<KhSite,String> {
 
     @Modifying
     @Query(value = "update kh_site set khfzr_id1=?2,khdy_id1=?3,khfzr_id2=?4,khdy_id2=?5 where id= ?1",nativeQuery = true)
-    void updateSite(long id, long khfzrId1, long khdyId1, long khfzrId2, long khdyId2);
+    void updateSite(long id, String khfzrId1, String khdyId1, String khfzrId2, String khdyId2);
 
     @Modifying
     @Query(value ="update kh_yh_history set yhzt=1,update_time=?2 where id=?1",nativeQuery = true)
