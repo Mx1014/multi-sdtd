@@ -1,7 +1,6 @@
 server:
     port: 8098
     context-path: /userCenter
-
 spring:
     datasource:
       type: com.alibaba.druid.pool.DruidDataSource
@@ -28,24 +27,11 @@ spring:
       hibernate:
         ddl-auto: none
       show-sql: true
-  application:
-    name: userCenter
+    application:
+      name: userCenter
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:7002/eureka/
 logging:
   config: classpath:logback-spring.xml
-
-
-#      mysql:
-#        type: com.alibaba.druid.pool.DruidDataSource
-#        url: jdbc:mysql://192.168.1.246:3306/repair?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT
-#        username: root
-#        password: 123456
-#        driver-class-name: com.mysql.cj.jdbc.Driver
-#        validationQuery: SELECT 1
-#        testWhileIdle: true
-
-#    aop:
-#      auto: true
