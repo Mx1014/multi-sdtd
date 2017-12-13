@@ -1,16 +1,16 @@
-/**    
+/**
  * 文件名：RztSysDepartmentController
- * 版本信息：    
- * 日期：2017/10/10 10:26:33    
- * Copyright 融智通科技(北京)股份有限公司 版权所有    
+ * 版本信息：
+ * 日期：2017/10/10 10:26:33
+ * Copyright 融智通科技(北京)股份有限公司 版权所有
  */
 package com.rzt.controller;
 
-import com.rzt.controller.CurdController;
 import com.rzt.entity.RztSysDepartment;
 import com.rzt.service.RztSysDepartmentService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.hibernate.annotations.Parameter;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,62 +25,61 @@ import java.util.Map;
  * 修改人：张虎成
  * 修改时间：2017/10/10 10:26:33
  * 修改备注：
- * @version
- * 部门表
+ *
+ * @version 部门表
  */
 @RestController
 @RequestMapping("RztSysDepartment")
 @Api(value = "ningweize")
 public class RztSysDepartmentController extends
-		CurdController<RztSysDepartment,RztSysDepartmentService> {
+        CurdController<RztSysDepartment, RztSysDepartmentService> {
 
-	//新增子节点
-	@ResponseBody
-	@RequestMapping(value = "addSonNode",method = RequestMethod.POST)
-	@ApiOperation(value = "新增子节点",notes = "新增子节点")
-	public RztSysDepartment addSonNode(@RequestParam(required = false) String nodeId, @ModelAttribute RztSysDepartment rztSysDepartment){
-		String id = nodeId;
-		if (StringUtils.isEmpty(id))
-			id = this.service.getRootId();
-		return this.service.addSonNode(id,rztSysDepartment);
-	}
+    //新增子节点
+    @ApiOperation(value = "新增子节点", notes = "新增子节点")
+    @GetMapping("addSonNode")
+    public RztSysDepartment addSonNode(String nodeId, RztSysDepartment rztSysDepartment) {
+//        String id = nodeId;
+//        if (StringUtils.isEmpty(id))
+//            id = this.service.getRootId();
+        return this.service.addSonNode(nodeId, rztSysDepartment);
+    }
 
-	//新增子节点
-	@ResponseBody
-	@GetMapping("findAll")
-	public List<RztSysDepartment> findAll(){
-		return this.service.findAll();
-	}
+    //新增子节点
+    @GetMapping("findAll")
+    public List<RztSysDepartment> findAll() {
+        return this.service.findAll();
+    }
 
-	//新增同级节点
-	@ResponseBody
-	@RequestMapping(value = "addNode/{id}",method = RequestMethod.POST)
-	@ApiOperation(value = "新增同级节点",notes = "新增同级节点")
-	public RztSysDepartment addNode(@PathVariable String id, @ModelAttribute RztSysDepartment rztSysDepartment){
-		return this.service.addNode(id,rztSysDepartment);
-	}
+    //新增同级节点
 
-	//删除节点
-	@RequestMapping(value = "deleteNode/{id}",method = RequestMethod.DELETE)
-	public void deleteNode(@PathVariable String id){
-		this.service.deleteNode(id);
-	}
+    /**
+     * 接不到值
+     */
+    @PostMapping(value = "addNode")
+    @ApiOperation(value = "新增同级节点", notes = "新增同级节点")
+    public RztSysDepartment addNode(@RequestParam(required = false) String id, @ModelAttribute RztSysDepartment rztSysDepartment) {
+        return this.service.addNode(id, rztSysDepartment);
+    }
 
-	//根据父节点的id查询子孙节点
-	@RequestMapping(value = "findDeptListByPid",method = RequestMethod.GET)
-	@ResponseBody
-	@ApiOperation(value = "根据父节点的id查询子孙节点",notes = "根据父节点的id查询子孙节点")
-	public List<Map<String, Object>> findDeptListByPid(@RequestParam(required = false) String id){
-		if (StringUtils.isEmpty(id))
-			id = this.service.getRootId();
-		return this.service.findDeptListByPid(0,0,id);
-	}
+    //删除节点
+    @RequestMapping(value = "deleteNode/{id}", method = RequestMethod.DELETE)
+    public void deleteNode(@PathVariable String id) {
+        this.service.deleteNode(id);
+    }
 
-	//根据父节点id查询所有子节点
-	@RequestMapping(value = "findByDeptPid/{id}",method = RequestMethod.GET)
-	@ResponseBody
-	@ApiOperation(value = "根据父节点id查询所有子节点",notes = "根据父节点id查询所有子节点")
-	public List<RztSysDepartment> findByDeptPid(@PathVariable("id") String menuPid){
-		return this.service.findByDeptPid(menuPid);
-	}
+    //根据父节点的id查询子孙节点
+    @RequestMapping(value = "findDeptListByPid", method = RequestMethod.GET)
+    @ApiOperation(value = "根据父节点的id查询子孙节点", notes = "根据父节点的id查询子孙节点")
+    public List<Map<String, Object>> findDeptListByPid(@RequestParam(required = false) String id) {
+        if (StringUtils.isEmpty(id))
+            id = this.service.getRootId();
+        return this.service.findDeptListByPid(0, 0, id);
+    }
+
+    //根据父节点id查询所有子节点
+    @RequestMapping(value = "findByDeptPid/{id}", method = RequestMethod.GET)
+    @ApiOperation(value = "根据父节点id查询所有子节点", notes = "根据父节点id查询所有子节点")
+    public List<RztSysDepartment> findByDeptPid(@PathVariable("id") String menuPid) {
+        return this.service.findByDeptPid(menuPid);
+    }
 }
