@@ -18,6 +18,8 @@ import org.springframework.util.StringUtils;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -44,14 +46,26 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
         }
     }
 
-    public Page<Map<String, Object>> findUserList(Integer page, Integer size) {
-//		StringBuilder builder = new StringBuilder();
-//		builder.append("SELECT GROUP_CONCAT(r.id) roleid,GROUP_CONCAT(r.roleName) roleName,u.* from " +
-//				"rztsysuser u LEFT JOIN rztsysuserrole l ON u.id = " +
-//				"l.userId LEFT JOIN rztsysrole r on l.roleId = r.id GROUP BY u.id");
-//		builder.append(PageUtil.getLimit(page,size));
-//		return DbUtil.list(entityManager,builder.toString());
+    public Page<Map<String, Object>> findUserList(Integer page, Integer size, String DEPTID, String REALNAME, String CLASSNAME, String WORKTYPE) {
+        ArrayList<String> arrayList = new ArrayList<>();
         Pageable pageable = new PageRequest(page, size);
+        StringBuffer stringBuffer = new StringBuffer();
+        if (!StringUtils.isEmpty(DEPTID)) {
+            arrayList.add(DEPTID);
+            stringBuffer.append(" AND DEPTID = ?" + arrayList.size());
+        }
+        if (!StringUtils.isEmpty(REALNAME)) {
+            arrayList.add(REALNAME);
+            stringBuffer.append(" AND REALNAME LIKE '?" + arrayList.size() + "%' ");
+        }
+        if (!StringUtils.isEmpty(CLASSNAME)) {
+            arrayList.add(CLASSNAME);
+            stringBuffer.append(" AND CLASSNAME = ? " + arrayList.size());
+        }
+        if (!StringUtils.isEmpty(WORKTYPE)) {
+            arrayList.add(WORKTYPE);
+            stringBuffer.append(" AND WORKTYPE = ? " + arrayList.size());
+        }
         String sql = "SELECT " +
                 "  wm_concat(r.ID) AS roleid,u.id," +
                 "  wm_concat(R.roleName) AS roleName," +
@@ -69,9 +83,9 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
                 "  U.USERTYPE, " +
                 "  U.AVATAR  " +
                 " FROM rztsysuser u LEFT JOIN rztsysuserrole l ON u.id = l.userId " +
-                "  LEFT JOIN rztsysrole r ON l.roleId = r.id WHERE USERDELETE = 1  " +
+                "  LEFT JOIN rztsysrole r ON l.roleId = r.id WHERE USERDELETE = 1  " + stringBuffer +
                 "GROUP BY u.REALNAME, U.REALNAME,U.USERNAME,U.EMAIL,U.PHONE,U.DEPTID,U.CLASSNAME,U.CERTIFICATE,U.WORKYEAR,U.WORKTYPE,U.SERIALNUMBER,U.AGE,U.USERTYPE,U.AVATAR,u.id";
-        return this.execSqlPage(pageable, sql);
+        return this.execSqlPage(pageable, sql, arrayList.toArray());
     }
 
     public RztSysUser findByUsernameAndDeptid(String username, String deptid) {

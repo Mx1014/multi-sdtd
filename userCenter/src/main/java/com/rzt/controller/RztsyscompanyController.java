@@ -88,14 +88,14 @@ public class RztsyscompanyController extends
      * @return
      */
     @GetMapping("queryRztsyscompany")
-    public WebApiResponse queryRztsyscompany(String a,
-                                             Integer page,
-                                             Integer size) {
+    public WebApiResponse queryRztsyscompany(
+            Integer page,
+            Integer size) {
         try {
             return WebApiResponse.success(this.service.queryRztsyscompany(page, size));
         } catch (Exception e) {
             e.printStackTrace();
-            return WebApiResponse.erro("数据错误");
+            return WebApiResponse.erro("Data Error");
         }
     }
 
@@ -112,12 +112,48 @@ public class RztsyscompanyController extends
     public WebApiResponse addRztsyscompany(String filename, String filetype, String cmpanyname, String orgid) {
         int one = 1;
         String id = UUID.randomUUID().toString().replaceAll("-", "");
-        String fid = UUID.randomUUID().toString().replaceAll("-", "");
-        int addRztsyscompany = this.service.addRztsyscompany(id, fid, filename, filetype, cmpanyname, orgid);
+        int addRztsyscompany = this.service.addRztsyscompany(id, filename, filetype, cmpanyname, orgid);
         if (addRztsyscompany == one) {
-            return WebApiResponse.success("数据添加成功");
+            return WebApiResponse.success("Note[Data addition success]");
         }
-        return WebApiResponse.erro("数据添加失败");
+        return WebApiResponse.erro("Note[Data addition failure]");
     }
 
+    /**
+     * 修改外协单位
+     *
+     * @param cmpanyname 外协队伍名称
+     * @param orgid      通道单位id
+     * @param id         外协队伍ID
+     * @param filetype   文件名称
+     * @param filename   文件类型
+     * @return
+     */
+    @PatchMapping("updateRztsyscompany")
+    public WebApiResponse updateRztsyscompany(String cmpanyname, String orgid, String id, String filetype, String filename) {
+        int one = 1;
+        int updateRztsyscompany = this.service.updateRztsyscompany(cmpanyname, orgid, id, filetype, filename);
+        if (updateRztsyscompany == one) {
+            return WebApiResponse.success("Note[Data modification success]");
+        } else {
+            return WebApiResponse.erro("Note[Data modification failure]");
+        }
+    }
+
+    /**
+     * 外协队伍删除
+     *
+     * @param id 外协队伍ID
+     * @return
+     */
+    @DeleteMapping("deleteRztsyscompany")
+    public WebApiResponse deleteRztsyscompany(String id) {
+        int deleteRztsyscompany = this.service.deleteRztsyscompany(id);
+        int one = 1;
+        if (deleteRztsyscompany == one) {
+            return WebApiResponse.success("Note[Data deleted successfully]");
+        } else {
+            return WebApiResponse.erro("Note[Data deletion failed]");
+        }
+    }
 }

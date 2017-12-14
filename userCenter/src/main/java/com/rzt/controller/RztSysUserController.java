@@ -14,22 +14,14 @@ import com.rzt.service.RztSysUserauthService;
 import com.rzt.util.WebApiResponse;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.websocket.server.PathParam;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
-import java.util.List;
-import java.util.Map;
 
 /**
  * 类名称：RztSysUserController
@@ -47,12 +39,8 @@ public class RztSysUserController extends
     @Autowired
     private RztSysUserauthService userauthService;
 
-    @PostMapping("addUser/{password}")
-    /**
-     * 文件上传先注释掉等前台调好
-     */
-
-    public WebApiResponse addUser(MultipartFile file, @PathVariable String password, @ModelAttribute RztSysUser user) {
+    @PostMapping("addUser")
+    public WebApiResponse addUser(MultipartFile file, String password, RztSysUser user) {
         String filePath = "";
         if (!StringUtils.isEmpty(file)) {
             // 获取文件名
@@ -67,12 +55,18 @@ public class RztSysUserController extends
             }
         }
         user.setAvatar(filePath);
+        /**
+         * 验证
+         */
         String flag = userauthService.findByUserName(user);
         if (!flag.equals("1")) {
             return WebApiResponse.erro(flag);
         }
         user.setCreatetime(new Date());
         user.setUserdelete(1);
+        /**
+         * 添加
+         */
         this.service.add(user);
         userauthService.addUserAuth(user, password);
         return WebApiResponse.success("添加成功！");
@@ -123,9 +117,8 @@ public class RztSysUserController extends
      * @param password
      * @return
      */
-    @PatchMapping("updateUser/{id}/{password}")
-    public WebApiResponse updateUser(@PathVariable String id, @ModelAttribute RztSysUser user,
-                                     @PathVariable String password) {
+    @PatchMapping("updateUser")
+    public WebApiResponse updateUser(String id, RztSysUser user, String password) {
         return this.service.updateUser(id, user);
     }
 
@@ -146,9 +139,9 @@ public class RztSysUserController extends
      */
     @PostMapping("findAllUser/{page}/{size}")
     @ApiOperation(value = "人员分页查询", notes = "人员分页查询")
-    public WebApiResponse findAllUser(@PathVariable int page, @PathVariable int size) {
+    public WebApiResponse findAllUser(@PathVariable int page, @PathVariable int size, String deptid, String realname, String classname, String worktype) {
         try {
-            return WebApiResponse.success(this.service.findUserList(page, size));
+            return WebApiResponse.success(this.service.findUserList(page, size, deptid, realname, classname, worktype));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("数据错误");
