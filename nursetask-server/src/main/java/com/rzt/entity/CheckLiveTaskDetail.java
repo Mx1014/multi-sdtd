@@ -1,149 +1,218 @@
+/**
+ * 文件名：CHECKLIVETASKDETAIL
+ * 版本信息：
+ * 日期：2017/12/13 17:32:33
+ * Copyright 融智通科技(北京)股份有限公司 版权所有
+ */
 package com.rzt.entity;
-import com.rzt.util.excelUtil.ExcelResources;
 import com.rzt.utils.SnowflakeIdWorker;
-import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.Date;
-import java.util.UUID;
+import com.rzt.util.excelUtil.ExcelResources;
 /**
- * Created by admin on 2017/12/5.
+ * 类名称：CHECKLIVETASKDETAIL
+ * 类描述：${table.comment}
+ * 创建人：张虎成
+ * 创建时间：2017/12/13 17:32:33
+ * 修改人：张虎成
+ * 修改时间：2017/12/13 17:32:33
+ * 修改备注：
+ * @version
  */
 @Entity
-@Table(name="CHENK_LIVE_TASK_CYCLE")
-public class CheckLiveTaskDetail implements Serializable{
-    //字段描述:
-    @Id
-    private Long id;
-    //字段描述: 稽查主任务id
-    @Column(name = "TASK_ID")
-    private Long taskId;
-    //字段描述: 稽查人id
-    @Column(name = "USER_ID")
-    private Long userId;
-    //字段描述: 稽查任务名称
-    @Column(name = "TASK_NAME")
-    private String taskName;
-    //字段描述: 稽查任务派发时间
-    @Column(name = "CREATE_TIME")
-    private String createTime;
-    //字段描述: 稽查任务计划开始时间
-    @Column(name = "PLAN_START_TIME")
-    private String planStartTime;
-    //字段描述: 稽查任务计划结束时间
-    @Column(name = "PLAN_END_TIME")
-    private String planEndTime;
-    //字段描述: 任务状态  0 待稽查 1进行中 2已稽查 3已过期
-    @Column(name = "STATUS")
-    private String status;
-    //字段描述: 稽查任务类型（0 看护 1巡视）
-    @Column(name = "CHECK_TYPE")
-    private String checkType;
-    //字段描述: 稽查部门（0 属地公司 1北京公司）
-    @Column(name = "CHECK_DEPT")
-    private String checkDept;
-    //字段描述: 稽查周期
-    @Column(name = "CHECK_CYCLE")
-    private String checkCycle;
-    //字段描述: 到达现场时间
-    @Column(name = "DDXC_TIME")
-    private String ddxcTime;
+@Table(name="CHECK_LIVE_TASK_DETAIL")
+public class CheckLiveTaskDetail  implements Serializable{
+	//字段描述:
+   	 @Id
+     private Long id;
+    	//字段描述: 稽查父任务id(check_live_task_exec表id)
+   	 @Column(name = "EXEC_ID")
+     private Long execId;
+    	//字段描述: 稽查任务id（check_live_task表）
+   	 @Column(name = "TASK_ID")
+     private Long taskId;
+    	//字段描述: 计划开始时间
+   	 @Column(name = "PLAN_START_TIME")
+     private Date planStartTime;
+    	//字段描述: 计划结束时间
+   	 @Column(name = "PLAN_END_TIME")
+     private Date planEndTime;
+    	//字段描述: 实际开始时间
+   	 @Column(name = "REAL_START_TIME")
+     private Date realStartTime;
+    	//字段描述: 实际结束时间
+   	 @Column(name = "REAL_END_TIME")
+     private Date realEndTime;
+    	//字段描述: 执行情况 0未开始 1进行中 2已完成 3已超期
+   	 @Column(name = "STATUS")
+     private String status;
+    	//字段描述: 达到现场时间
+   	 @Column(name = "DDXC_TIME")
+     private Date ddxcTime;
+    	//字段描述: 周期内第多少次任务
+   	 @Column(name = "COUNT")
+     private Long count;
+    	//字段描述: 是否在岗(0是 1否)
+   	 @Column(name = "SFZG")
+     private String sfzg;
+    	//字段描述: 现场APP人员是否一直（0是 1否）
+   	 @Column(name = "RYYZ")
+     private String ryyz;
+    	//字段描述: 是否清楚段落电压等级等（0是 1否）
+   	 @Column(name = "DYDJ")
+     private String dydj;
+    	//字段描述: 是否掌握现场隐患信息（0是 1否）
+   	 @Column(name = "YHXX")
+     private String yhxx;
+    	//字段描述: 是否清楚隐患处置方案（0 是 1否）
+   	 @Column(name = "CZFA")
+     private String czfa;
+    	//字段描述: 是否存在其他问题（0 是 1否）
+   	 @Column(name = "QTWT")
+     private String qtwt;
+    	//字段描述: 创建时间
+   	 @Column(name = "CREATE_TIME")
+     private Date createTime;
 
-    public void setId(Long id){
-        this.id =Long.valueOf(new SnowflakeIdWorker(0,0).nextId());
-    }
-    @ExcelResources(title="",order=1)
-    public Long getId(){
-        return this.id;
-    }
+	public void setId(){
+		this.id =   Long.valueOf(new SnowflakeIdWorker(0,0).nextId());
+	}
+	@ExcelResources(title="",order=1)
+	public Long getId(){
+		return this.id;
+	}
 
-    public void setTaskId(Long taskId){
-        this.taskId = taskId;
-    }
-    @ExcelResources(title="稽查主任务id",order=2)
-    public Long getTaskId(){
-        return this.taskId;
-    }
+	public void setExecId(Long execId){
+		this.execId = execId;
+	}
+	@ExcelResources(title="稽查父任务id(check_live_task_exec表id)",order=2)
+	public Long getExecId(){
+		return this.execId;
+	}
 
-    public void setUserId(Long userId){
-        this.userId = userId;
-    }
-    @ExcelResources(title="稽查人id",order=3)
-    public Long getUserId(){
-        return this.userId;
-    }
+	public void setTaskId(Long taskId){
+		this.taskId = taskId;
+	}
+	@ExcelResources(title="稽查任务id（check_live_task表）",order=3)
+	public Long getTaskId(){
+		return this.taskId;
+	}
 
-    public void setTaskName(String taskName){
-        this.taskName = taskName;
-    }
-    @ExcelResources(title="稽查任务名称",order=4)
-    public String getTaskName(){
-        return this.taskName;
-    }
+	public void setPlanStartTime(Date planStartTime){
+		this.planStartTime = planStartTime;
+	}
+	@ExcelResources(title="计划开始时间",order=4)
+	public Date getPlanStartTime(){
+		return this.planStartTime;
+	}
 
-    public void setCreateTime(String createTime){
-        this.createTime = createTime;
-    }
-    @ExcelResources(title="稽查任务派发时间",order=5)
-    public String getCreateTime(){
-        return this.createTime;
-    }
+	public void setPlanEndTime(Date planEndTime){
+		this.planEndTime = planEndTime;
+	}
+	@ExcelResources(title="计划结束时间",order=5)
+	public Date getPlanEndTime(){
+		return this.planEndTime;
+	}
 
-    public void setPlanStartTime(String planStartTime){
-        this.planStartTime = planStartTime;
-    }
-    @ExcelResources(title="稽查任务计划开始时间",order=6)
-    public String getPlanStartTime(){
-        return this.planStartTime;
-    }
+	public void setRealStartTime(Date realStartTime){
+		this.realStartTime = realStartTime;
+	}
+	@ExcelResources(title="实际开始时间",order=6)
+	public Date getRealStartTime(){
+		return this.realStartTime;
+	}
 
-    public void setPlanEndTime(String planEndTime){
-        this.planEndTime = planEndTime;
-    }
-    @ExcelResources(title="稽查任务计划结束时间",order=7)
-    public String getPlanEndTime(){
-        return this.planEndTime;
-    }
+	public void setRealEndTime(Date realEndTime){
+		this.realEndTime = realEndTime;
+	}
+	@ExcelResources(title="实际结束时间",order=7)
+	public Date getRealEndTime(){
+		return this.realEndTime;
+	}
 
-    public void setStatus(String status){
-        this.status = status;
-    }
-    @ExcelResources(title="任务状态  0 待稽查 1进行中 2已稽查 3已过期",order=8)
-    public String getStatus(){
-        return this.status;
-    }
+	public void setStatus(String status){
+		this.status = status;
+	}
+	@ExcelResources(title="执行情况 0未开始 1进行中 2已完成 3已超期",order=8)
+	public String getStatus(){
+		return this.status;
+	}
 
-    public void setCheckType(String checkType){
-        this.checkType = checkType;
-    }
-    @ExcelResources(title="稽查任务类型（0 看护 1巡视）",order=9)
-    public String getCheckType(){
-        return this.checkType;
-    }
+	public void setDdxcTime(Date ddxcTime){
+		this.ddxcTime = ddxcTime;
+	}
+	@ExcelResources(title="达到现场时间",order=9)
+	public Date getDdxcTime(){
+		return this.ddxcTime;
+	}
 
-    public void setCheckDept(String checkDept){
-        this.checkDept = checkDept;
-    }
-    @ExcelResources(title="稽查部门（0 属地公司 1北京公司）",order=10)
-    public String getCheckDept(){
-        return this.checkDept;
-    }
+	public void setCount(Long count){
+		this.count = count;
+	}
+	@ExcelResources(title="周期内第多少次任务",order=10)
+	public Long getCount(){
+		return this.count;
+	}
 
-    public void setCheckCycle(String checkCycle){
-        this.checkCycle = checkCycle;
-    }
-    @ExcelResources(title="稽查周期",order=11)
-    public String getCheckCycle(){
-        return this.checkCycle;
-    }
+	public void setSfzg(String sfzg){
+		this.sfzg = sfzg;
+	}
+	@ExcelResources(title="是否在岗(0是 1否)",order=11)
+	public String getSfzg(){
+		return this.sfzg;
+	}
 
-    public void setDdxcTime(String ddxcTime){
-        this.ddxcTime = ddxcTime;
-    }
-    @ExcelResources(title="到达现场时间",order=12)
-    public String getDdxcTime(){
-        return this.ddxcTime;
-    }
+	public void setRyyz(String ryyz){
+		this.ryyz = ryyz;
+	}
+	@ExcelResources(title="现场APP人员是否一直（0是 1否）",order=12)
+	public String getRyyz(){
+		return this.ryyz;
+	}
+
+	public void setDydj(String dydj){
+		this.dydj = dydj;
+	}
+	@ExcelResources(title="是否清楚段落电压等级等（0是 1否）",order=13)
+	public String getDydj(){
+		return this.dydj;
+	}
+
+	public void setYhxx(String yhxx){
+		this.yhxx = yhxx;
+	}
+	@ExcelResources(title="是否掌握现场隐患信息（0是 1否）",order=14)
+	public String getYhxx(){
+		return this.yhxx;
+	}
+
+	public void setCzfa(String czfa){
+		this.czfa = czfa;
+	}
+	@ExcelResources(title="是否清楚隐患处置方案（0 是 1否）",order=15)
+	public String getCzfa(){
+		return this.czfa;
+	}
+
+	public void setQtwt(String qtwt){
+		this.qtwt = qtwt;
+	}
+	@ExcelResources(title="是否存在其他问题（0 是 1否）",order=16)
+	public String getQtwt(){
+		return this.qtwt;
+	}
+
+	public void setCreateTime(Date createTime){
+		this.createTime = createTime;
+	}
+	@ExcelResources(title="创建时间",order=17)
+	public Date getCreateTime(){
+		return this.createTime;
+	}
 
 }
