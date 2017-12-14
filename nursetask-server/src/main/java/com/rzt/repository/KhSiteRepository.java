@@ -51,4 +51,11 @@ public interface KhSiteRepository extends JpaRepository<KhSite,String> {
 
     @Query(value = "select * from kh_site where id = ?",nativeQuery = true)
     KhSite find(long id);
+
+    @Modifying
+    @Query(value ="DELETE FROM KH_SITE  where id=?1",nativeQuery = true)
+    void deleteById(long id);
+
+    @Query(value ="SELECT * FROM KH_SITE  where id=?1",nativeQuery = true)
+    KhSite findSite(long id);
 }

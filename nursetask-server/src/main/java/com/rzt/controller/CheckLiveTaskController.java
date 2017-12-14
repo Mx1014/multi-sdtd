@@ -10,6 +10,7 @@ import com.rzt.entity.CheckLiveTaskDetail;
 import com.rzt.entity.KhTask;
 import com.rzt.entity.model.CheckLiveTaskDetailModel;
 import com.rzt.entity.model.CheckLiveTasks;
+import com.rzt.entity.model.KhTaskModel;
 import com.rzt.service.CheckLiveTaskDetailService;
 import com.rzt.service.CheckLiveTaskService;
 import com.rzt.util.WebApiResponse;
@@ -43,7 +44,7 @@ public class CheckLiveTaskController extends
 
 	@GetMapping("/listAllCheckTask.do")
 //	@ResponseBody
-    public WebApiResponse listAllCheckTask(KhTask task, Pageable pageable){
+    public WebApiResponse listAllCheckTask(KhTaskModel task, Pageable pageable){
 		try{
 			List list = this.service.listAllCheckTask(task, pageable);
 			return WebApiResponse.success(list);

@@ -6,6 +6,7 @@
  */
 package com.rzt.service;
 import com.rzt.entity.KhSite;
+import com.rzt.entity.model.KhTaskModel;
 import com.rzt.repository.KhSiteRepository;
 import com.rzt.repository.KhTaskRepository;
 import com.rzt.entity.KhTask;
@@ -31,7 +32,7 @@ public class KhTaskService extends CurdService<KhTask,KhTaskRepository> {
     @Autowired
     private KhSiteRepository siteRepository;
     
-    public Object listAllKhTask(KhTask task, Pageable pageable) {
+    public Object listAllKhTask(KhTaskModel task, Pageable pageable) {
         task = timeUtil(task);
         String result = "k.id as id, k.task_name as taskName,k.tdyw_org as yworg,k.CREATE_TIME as createTime,k.plan_start_time as startTime,k.plan_end_time as endTime,k.status as status,u.realname as userName,u.classname as class";
         List params = new ArrayList<>();
@@ -70,7 +71,7 @@ public class KhTaskService extends CurdService<KhTask,KhTaskRepository> {
         return maps;
     }
 
-    public KhTask timeUtil(KhTask task){
+    public KhTaskModel timeUtil(KhTaskModel task){
         if (task.getPlanStartTime() == null||task.getPlanStartTime().equals("")){
             SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
             Calendar c = Calendar.getInstance();

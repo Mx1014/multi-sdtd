@@ -5,6 +5,8 @@
  * Copyright 融智通科技(北京)股份有限公司 版权所有    
  */
 package com.rzt.controller;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.CheckLiveTask;
 import com.rzt.entity.KhSite;
 import com.rzt.entity.KhTask;
@@ -23,8 +25,10 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 类名称：KhCycleController
@@ -77,11 +81,11 @@ public class KhSiteController extends
 			task.setTaskName(taskName);
 			task.setStatus(0);//隐患未消除
 			task.setStatus(0);//未停用
-			task.setTaskTimes(0);//生成任务次数0
+			task.setCount(0);//生成任务次数0
 			task.setYhId(yh.getId());
 			task.setCreateTime(new Date());
 			this.service.add(task);
-			yh1.setYhdm("已定级");
+		//	yh1.setYhdm("已定级");
 			//yh1.setTaskId(task.getId());
 			yhservice.update(yh1,id);
 			return WebApiResponse.success("保存成功");
@@ -96,10 +100,8 @@ public class KhSiteController extends
 	 */
 	@GetMapping("/listAllTaskNotDo.do")
 	@ResponseBody
-	public WebApiResponse listAllTaskNotDo(HttpServletResponse response,KhTask task, Pageable pageable, String userName) {
+	public WebApiResponse listAllTaskNotDo(HttpServletResponse response,KhTaskModel task, Pageable pageable, String userName) {
 		try {
-		/*	response.setHeader("Access-Control-Allow-Origin","*");
-			response.setHeader("Access-Control-Allow-Methods","*");*/
 			//分页参数 page size
 			Page list = this.service.listAllTaskNotDo(task, pageable, userName);
 			return WebApiResponse.success(list);
@@ -111,12 +113,17 @@ public class KhSiteController extends
 	/**
 	 * 消缺待安排任务   同时将隐患状态修改？
 	 */
-	@GetMapping("/xiaoQueTask.do")
+	@PatchMapping("/xiaoQueTask.do")
 	@ResponseBody
 	@Transactional
 	public WebApiResponse updateQxTask(String id){
 		try {
-			this.service.updateQxTask(Long.parseLong(id));
+			String[] split = id.split(",");
+			if (split.length>0){
+				for (int i = 0; i<split.length;i++){
+					this.service.updateQxTask(Long.parseLong(split[i]));
+				}
+			}
 			return WebApiResponse.success("任务消缺成功");
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -137,45 +144,60 @@ public class KhSiteController extends
 	/**
 	 * 删除待安排任务  请求方式 DELETE  删除看护点
 	 */
+	@DeleteMapping("/deleteById/{id}")
+	@ResponseBody
+	public WebApiResponse deleteById(@PathVariable("id")String id){
+		return this.service.deleteById(id);
+	}
 
 	//派发任务  参数传递taskList[0].planStartTime
-	@PostMapping("/paifaTask.do")
+	@GetMapping("/paifaTask.do")
 	@ResponseBody
 	@Transactional
-	public WebApiResponse paifaTask(String id, KhTaskModel model){
+	public WebApiResponse paifaTask(String id,String tasks,KhTaskModel model){
+		List<Map<Object, String>> list = (List<Map<Object, String>>) JSONObject.parse(tasks);
 		try {
-			KhSite site = this.service.findOne(id);
-			List<KhTask> taskList = model.getTaskList();
-			//生成多条看护任务
+			KhSite site = this.service.findSite(id);
 			String groupFlag = System.currentTimeMillis()+"";
-			for (KhTask task:taskList) {
-				String UserId = task.getUserId();
-				if (site.getKhfzrId1() != null&&task.getCaptain() .equals(01)){
+			for (Map map:list) {
+				KhTask task = new KhTask();
+				String capatain = map.get("capatain").toString();
+				String UserId = map.get("userId").toString();
+				if (site.getKhfzrId1() == null&&capatain.equals("01")){
 					site.setKhfzrId1(UserId);
 					task.setGroupFlag(groupFlag+"1");
-				}else if (site.getKhfzrId2()!= null&&task.getCaptain().equals(02)){
-					site.setKhfzrId2(UserId);
-                    task.setGroupFlag(groupFlag+"2");
-				}else if(site.getKhdyId1()!= null&&task.getCaptain().equals(11)){
+				} if (site.getKhdyId1()== null&&capatain.equals("02")){
 					site.setKhdyId1(UserId);
-                    task.setGroupFlag(groupFlag+"1");
-				}else if(site.getKhdyId2()!= null&&task.getCaptain().equals(12)){
-					site.setKhdyId2(UserId);
                     task.setGroupFlag(groupFlag+"2");
+				}if(site.getKhfzrId2() == null&&capatain.equals("11")){
+					site.setKhfzrId2(UserId);
+                    task.setGroupFlag(groupFlag+"11");
+				}if(site.getKhdyId2() == null&&capatain.equals("12")){
+					site.setKhdyId2(UserId);
+                    task.setGroupFlag(groupFlag+"12");
 				}
 				int count = taskService.getCount(Long.parseLong(id), UserId);
-				KhSite site1 = new KhSite();
-				site1.setTaskTimes(count);
-				this.update(id,site1);
 				task.setCount(count);
+				task.setCaptain(capatain);
+				SimpleDateFormat formatter=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+				Date planStartTime=formatter.parse(map.get("planStartTime").toString());
+				Date planEndTime = formatter.parse(map.get("planEndTime").toString());
+				task.setPlanStartTime(planStartTime);
+				task.setPlanEndTime(planEndTime);
+				task.setUserId(UserId);
+				task.setCount(count);
+				task.setWxOrg("无");
+				task.setTdywOrg(site.getTdywOrg());
 				task.setCreateTime(new Date());
-				task.setStatus("已派发");
+				task.setStatus("未开始");
 				task.setSiteId(Long.parseLong(id));
 				task.setYhId(site.getYhId());
 				task.setTaskName(site.getTaskName());
-				task.setStatus("0");
+				task.setId();
 				taskService.add(task);
 			}
+			site.setCount(site.getCount()+1);
+			site.setStatus(1);
 			this.service.paifaTask(id,site);
 			return WebApiResponse.success("任务派发成功");
 		} catch (Exception e) {

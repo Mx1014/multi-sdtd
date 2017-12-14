@@ -8,6 +8,7 @@ package com.rzt.service;
 import com.rzt.entity.CheckLiveTask;
 import com.rzt.entity.CheckLiveTaskDetail;
 import com.rzt.entity.KhTask;
+import com.rzt.entity.model.KhTaskModel;
 import com.rzt.repository.CheckLiveTaskRepository;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -31,7 +32,7 @@ import java.util.*;
 public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTaskRepository> {
 
 
-    public List listAllCheckTask(KhTask task, Pageable pageable) {
+    public List listAllCheckTask(KhTaskModel task, Pageable pageable) {
         task = timeUtil(task);
         String result = " c.task_name as taskName,u.user_name as userName,u.class as class,k.tdtw_org as yworg,c.create_time as createTime,c.plan_start_time as startTime,c.plan_end_time as endTime,c.status as status";
         StringBuffer buffer = new StringBuffer();
@@ -89,7 +90,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
 
     
 
-    public KhTask timeUtil(KhTask task){
+    public KhTaskModel timeUtil(KhTaskModel task){
         if (task.getPlanStartTime() == null||task.getPlanStartTime().length()==0){
             SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
             Calendar c = Calendar.getInstance();

@@ -34,10 +34,10 @@ public class KhTask implements Serializable{
 	private Long id;
 	//字段描述: 计划开始时间
 	@Column(name = "PLAN_START_TIME")
-	private String planStartTime;
+	private Date planStartTime;
 	//字段描述: 计划结束时间
 	@Column(name = "PLAN_END_TIME")
-	private String planEndTime;
+	private Date planEndTime;
 	//字段描述: 第几次执行该任务
 	@Column(name = "COUNT")
 	private int count;
@@ -89,7 +89,7 @@ public class KhTask implements Serializable{
 	//字段描述: 任务状态 0未开始 1进行中 2已完成
 	@Column(name = "STATUS")
 	private String status;
-	public void setId(Long id){
+	public void setId(){
 		this.id =   Long.valueOf(new SnowflakeIdWorker(0,0).nextId());
 	}
 	@ExcelResources(title="",order=1)
@@ -97,19 +97,19 @@ public class KhTask implements Serializable{
 		return this.id;
 	}
 
-	public void setPlanStartTime(String planStartTime){
+	public void setPlanStartTime(Date planStartTime){
 		this.planStartTime = planStartTime;
 	}
 	@ExcelResources(title="计划开始时间",order=2)
-	public String getPlanStartTime(){
+	public Date getPlanStartTime(){
 		return this.planStartTime;
 	}
 
-	public void setPlanEndTime(String planEndTime){
+	public void setPlanEndTime(Date planEndTime){
 		this.planEndTime = planEndTime;
 	}
 	@ExcelResources(title="计划结束时间",order=3)
-	public String getPlanEndTime(){
+	public Date getPlanEndTime(){
 		return this.planEndTime;
 	}
 

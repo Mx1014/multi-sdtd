@@ -62,7 +62,7 @@ public class KhSite  implements Serializable{
 	private String inUse;*/
 	//字段描述: 生成任务总次数
 	@Column(name = "COUNT")
-	private int taskTimes;
+	private int count;
 	//字段描述: 线路id
 	@Column(name = "LINE_ID")
 	private long lineId;
@@ -151,12 +151,12 @@ public class KhSite  implements Serializable{
 		return this.tdywOrg;
 	}
 
-	public void setTaskTimes(int taskTimes){
-		this.taskTimes = taskTimes;
+	public void setCount(int taskTimes){
+		this.count = taskTimes;
 	}
 	@ExcelResources(title="生成任务总次数",order=12)
-	public int getTaskTimes(){
-		return this.taskTimes;
+	public int getCount(){
+		return this.count;
 	}
 
 	public void setLineId(long lineId){
