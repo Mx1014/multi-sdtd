@@ -10,6 +10,7 @@ import com.rzt.entity.CheckLiveTask;
 import com.rzt.entity.KhSite;
 import com.rzt.entity.KhTask;
 import com.rzt.entity.KhYhHistory;
+import com.rzt.entity.model.KhTaskModel;
 import com.rzt.repository.KhSiteRepository;
 import com.rzt.repository.KhTaskRepository;
 import com.rzt.util.WebApiResponse;
@@ -42,7 +43,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
     @Autowired
     private CheckLiveTaskService checkService;
 
-    public Page listAllTaskNotDo(KhTask task, Pageable pageable, String userName) {
+    public Page listAllTaskNotDo(KhTaskModel task, Pageable pageable, String userName) {
         // task = timeUtil(task);
         String result = " k.id as id,k.task_name as taskName,k.tdyw_org as yworg,y.yhms as ms,y.yhjb as jb,k.create_time as createTime,k.COUNT as COUNT ";
         StringBuffer buffer = new StringBuffer();
@@ -111,7 +112,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
 
     public WebApiResponse saveYh(KhYhHistory yh) {
         try {
-            yh.setYhdm("未定级");
+            yh.setSFDJ("未定级");
             yh.setYhzt("0");//隐患未消除
             yh.setId(0L);
             yhservice.add(yh);
@@ -122,13 +123,13 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             task.setLineName(yh.getLineName());
             task.setTdywOrg(yh.getTdywOrg());
             task.setTaskName(taskName);
-            task.setStatus(1);// 未派发
-            task.setTaskTimes(0);//生成任务次数0
+            task.setStatus(0);// 未派发
+            task.setCount(0);//生成任务次数0
             task.setYhId(yh.getId());
             task.setCreateTime(new Date());
             task.setId(0L);
             this.add(task);
-            CheckLiveTask check = new CheckLiveTask();
+           /* CheckLiveTask check = new CheckLiveTask();
             check.setCheckType("0"); //0为 看护类型稽查
             check.setTaskId(task.getId());
             check.setTaskType("1");// 1 为正常稽查
@@ -153,11 +154,32 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             check1.setTaskName(check.getTaskName());
             check1.setYhId(yh.getId());
             check1.setId(0L);
-            checkService.add(check1);
+            checkService.add(check1);*/
             return WebApiResponse.success("保存成功");
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("数据查询失败" + e.getMessage());
         }
+    }
+
+    public WebApiResponse deleteById(String id) {
+        try {
+            String[] split = id.split(",");
+            if (split.length>0){
+                for (int i = 0;i < split.length;i++) {
+                    this.reposiotry.deleteById(Long.parseLong(split[i].toString()));
+                }
+            }else{
+                this.reposiotry.deleteById(Long.parseLong(id));
+            }
+            return WebApiResponse.success("删除成功");
+        }catch (Exception e){
+            e.printStackTrace();
+            return WebApiResponse.erro("删除失败");
+        }
+    }
+
+    public KhSite findSite(String id) {
+        return this.reposiotry.findSite(Long.parseLong(id));
     }
 }

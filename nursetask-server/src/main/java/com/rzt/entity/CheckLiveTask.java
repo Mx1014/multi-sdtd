@@ -5,11 +5,10 @@
  * Copyright 融智通科技(北京)股份有限公司 版权所有    
  */
 package com.rzt.entity;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.rzt.util.excelUtil.ExcelResources;
 import com.rzt.utils.SnowflakeIdWorker;
 import org.hibernate.annotations.GenericGenerator;
+import org.omg.PortableInterceptor.INACTIVE;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -28,7 +27,7 @@ import java.util.UUID;
  */
 @Entity
 @Table(name="CHECK_LIVE_TASK")
-public class CheckLiveTask implements Serializable{
+public class CheckLiveTask  implements Serializable{
 	//字段描述:
 	@Id
 	private Long id;
@@ -52,7 +51,7 @@ public class CheckLiveTask implements Serializable{
 	private String taskName;
 	//字段描述: 稽查人id
 	@Column(name = "USER_ID")
-	private Long userId;
+	private String userId;
 	//字段描述: 任务派发状态  0未派发  1已派发  2已消缺
 	@Column(name = "STATUS")
 	private String status;
@@ -71,34 +70,15 @@ public class CheckLiveTask implements Serializable{
 	//字段描述: 隐患id
 	@Column(name = "YH_ID")
 	private Long yhId;
-	//字段描述: 任务状态  0 待稽查 1进行中 2已稽查 3已过期
-	@Column(name = "TASK_STATUS")
-	private String taskStatus;
-	//字段描述: 计划开始时间
-	@Column(name = "PLAN_START_TIME")
-	private Date planStartTime;
-	//字段描述: 计划结束时间
-	@Column(name = "PLAN_END_TIME")
-	private Date planEndTime;
-	//字段描述: 实际开始时间
-	@Column(name = "REAL_START_TIME")
-	private Date realStartTime;
-	//字段描述: 实际结束时间
-	@Column(name = "REAL_END_TIME")
-	private Date realEndTime;
-	//字段描述: 到达现场时间
-	@Column(name = "DDXC_TIME")
-	private Date ddxcTime;
+	//字段描述: 是否设置了电子围栏（0是 1否）
+	@Column(name = "DZWL")
+	private String dzwl;
 	//字段描述: 周期id
 	@Column(name = "CYCLE_ID")
 	private Long cycleId;
 
 	public void setId(Long id){
-		if(id==null||id==0){
-			this.id = new SnowflakeIdWorker(0,0).nextId();
-		}else{
-			this.id = id;
-		}
+		this.id =   Long.valueOf(new SnowflakeIdWorker(0,0).nextId());
 	}
 	@ExcelResources(title="",order=1)
 	public Long getId(){
@@ -153,11 +133,11 @@ public class CheckLiveTask implements Serializable{
 		return this.taskName;
 	}
 
-	public void setUserId(Long userId){
+	public void setUserId(String userId){
 		this.userId = userId;
 	}
 	@ExcelResources(title="稽查人id",order=8)
-	public Long getUserId(){
+	public String getUserId(){
 		return this.userId;
 	}
 
@@ -209,58 +189,18 @@ public class CheckLiveTask implements Serializable{
 		return this.yhId;
 	}
 
-	public void setTaskStatus(String taskStatus){
-		this.taskStatus = taskStatus;
+	public void setDzwl(String dzwl){
+		this.dzwl = dzwl;
 	}
-	@ExcelResources(title="任务状态  0 待稽查 1进行中 2已稽查 3已过期",order=15)
-	public String getTaskStatus(){
-		return this.taskStatus;
-	}
-
-	public void setPlanStartTime(Date planStartTime){
-		this.planStartTime = planStartTime;
-	}
-	@ExcelResources(title="计划开始时间",order=16)
-	public Date getPlanStartTime(){
-		return this.planStartTime;
-	}
-
-	public void setPlanEndTime(Date planEndTime){
-		this.planEndTime = planEndTime;
-	}
-	@ExcelResources(title="计划结束时间",order=17)
-	public Date getPlanEndTime(){
-		return this.planEndTime;
-	}
-
-	public void setRealStartTime(Date realStartTime){
-		this.realStartTime = realStartTime;
-	}
-	@ExcelResources(title="实际开始时间",order=18)
-	public Date getRealStartTime(){
-		return this.realStartTime;
-	}
-
-	public void setRealEndTime(Date realEndTime){
-		this.realEndTime = realEndTime;
-	}
-	@ExcelResources(title="实际结束时间",order=19)
-	public Date getRealEndTime(){
-		return this.realEndTime;
-	}
-
-	public void setDdxcTime(Date ddxcTime){
-		this.ddxcTime = ddxcTime;
-	}
-	@ExcelResources(title="到达现场时间",order=20)
-	public Date getDdxcTime(){
-		return this.ddxcTime;
+	@ExcelResources(title="是否设置了电子围栏（0是 1否）",order=15)
+	public String getDzwl(){
+		return this.dzwl;
 	}
 
 	public void setCycleId(Long cycleId){
 		this.cycleId = cycleId;
 	}
-	@ExcelResources(title="周期id",order=21)
+	@ExcelResources(title="周期id",order=16)
 	public Long getCycleId(){
 		return this.cycleId;
 	}

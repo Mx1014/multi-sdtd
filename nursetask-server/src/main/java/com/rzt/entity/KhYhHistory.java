@@ -170,9 +170,9 @@ public class KhYhHistory implements Serializable{
 	//字段描述: 隐患描述
 	@Column(name = "YHMS")
 	private String yhms;
-	//字段描述: 隐患代码
-	@Column(name = "YHDM")
-	private String yhdm;
+	//字段描述: 隐患类型
+	@Column(name = "YHLX")
+	private String yhlx;
 	//字段描述: 隐患级别
 	@Column(name = "YHJB")
 	private String yhjb;
@@ -182,7 +182,12 @@ public class KhYhHistory implements Serializable{
 	//字段描述: 维护单位id（orgid）
 	@Column(name = "TDYW_ORGID")
 	private String tdywOrgid;
-	//字段描述: 输电平台id
+	//字段描述: 线路重要程度
+	@Column(name = "XLZYCD")
+	private String xlzycd;
+	//字段描述: 是否定级
+	@Column(name ="SFDJ")
+	private String sfdj;
 
 	public void setCreateTime(String createTime){
 		this.createTime = createTime;
@@ -552,12 +557,12 @@ public class KhYhHistory implements Serializable{
 		return this.yhms;
 	}
 
-	public void setYhdm(String yhdm){
-		this.yhdm = yhdm;
+	public void setYhlx(String yhlx){
+		this.yhlx = yhlx;
 	}
 	@ExcelResources(title="隐患代码",order=47)
-	public String getYhdm(){
-		return this.yhdm;
+	public String getYhlx(){
+		return this.yhlx;
 	}
 
 	public void setYhjb(String yhjb){
@@ -596,4 +601,19 @@ public class KhYhHistory implements Serializable{
 		return this.id;
 	}
 
+	public void setXlzycd(String xlzycd) {
+		this.xlzycd = xlzycd;
+	}
+
+	public String getXlzycd() {
+		return xlzycd;
+	}
+
+	public String getSFDJ() {
+		return sfdj;
+	}
+
+	public void setSFDJ(String SFDJ) {
+		this.sfdj = SFDJ;
+	}
 }

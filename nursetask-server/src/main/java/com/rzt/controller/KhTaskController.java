@@ -7,6 +7,7 @@
 package com.rzt.controller;
 import com.rzt.entity.KhSite;
 import com.rzt.entity.KhTask;
+import com.rzt.entity.model.KhTaskModel;
 import com.rzt.service.KhTaskService;
 import com.rzt.service.KhYhHistoryService;
 import com.rzt.util.WebApiResponse;
@@ -41,7 +42,7 @@ public class KhTaskController extends
 	 */
 	@GetMapping("/listAllKhTask.do")
 	@ResponseBody
-	public WebApiResponse listAllKhTask(KhTask task, Pageable pageable) {
+	public WebApiResponse listAllKhTask(KhTaskModel task, Pageable pageable) {
 		try {
 			//分页参数 page size
 			Object o = this.service.listAllKhTask(task, pageable);
@@ -54,7 +55,7 @@ public class KhTaskController extends
 	/**
 	 * 修改已安排任务
 	 */
-	@GetMapping("/updateTaskById")
+	@PatchMapping("/updateTaskById")
 	@ResponseBody
 	public WebApiResponse updateTaskById(KhSite site,String id){
 	// 提交申请给 管理员  如何提交待定  还是说没有修改功能
