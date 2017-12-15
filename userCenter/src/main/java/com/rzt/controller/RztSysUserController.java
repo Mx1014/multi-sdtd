@@ -224,4 +224,20 @@ public class RztSysUserController extends
         return WebApiResponse.success("退出成功！");
     }
 
+    /**
+     * 人员查询
+     *
+     * @param classname 班组ID
+     * @param realname  人员姓名模糊查询不是必须
+     * @return
+     */
+        @GetMapping("userQuery")
+    public WebApiResponse userQuery(String classname, String realname) {
+        try {
+            return WebApiResponse.success(this.service.userQuery(classname, realname));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("[Data Request Failed]");
+        }
+    }
 }

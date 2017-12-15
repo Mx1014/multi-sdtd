@@ -8,6 +8,7 @@ package com.rzt.controller;
 
 import com.rzt.entity.RztSysDepartment;
 import com.rzt.service.RztSysDepartmentService;
+import com.rzt.util.WebApiResponse;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.hibernate.annotations.Parameter;
@@ -74,5 +75,32 @@ public class RztSysDepartmentController extends
     @ApiOperation(value = "根据父节点id查询所有子节点", notes = "根据父节点id查询所有子节点")
     public List<RztSysDepartment> findByDeptPid(@PathVariable("id") String menuPid) {
         return this.service.findByDeptPid(menuPid);
+    }
+
+    /**
+     * 查询班组单位传ID
+     *
+     * @return
+     */
+    @GetMapping("departmentQuery")
+    public WebApiResponse departmentQuery(String deptpid) {
+        try {
+            return WebApiResponse.success(this.service.departmentQuery(deptpid));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("[Data Request Failed]");
+        }
+    }
+
+    /**
+     * 修改单位班组名称
+     *
+     * @param deptname 单位名
+     * @param id       单位ID
+     * @return
+     */
+    @PatchMapping("updateByDeptName")
+    public WebApiResponse updateByDeptName(String deptname, String id) {
+        return this.service.updateByDeptName(deptname, id);
     }
 }

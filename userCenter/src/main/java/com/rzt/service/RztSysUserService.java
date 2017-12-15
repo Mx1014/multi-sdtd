@@ -129,4 +129,20 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
         }
     }
 
+    /**
+     * 人员查询
+     *
+     * @return
+     */
+    public List<Map<String, Object>> userQuery(String classname, String realname) {
+        ArrayList arrayList = new ArrayList();
+        String s = "";
+        arrayList.add(classname);
+        if (!StringUtils.isEmpty(realname)) {
+            arrayList.add("%" + realname + "%");
+            s += " AND REALNAME LIKE  ?" + arrayList.size();
+        }
+        String sql = " SELECT ID,USERNAME FROM RZTSYSUSER WHERE CLASSNAME = ?1 AND USERDELETE = 1 " + s;
+        return this.execSql(sql, arrayList.toArray());
+    }
 }

@@ -9,6 +9,7 @@ package com.rzt.service;
 import com.rzt.service.CurdService;
 import com.rzt.entity.RztSysDepartment;
 import com.rzt.repository.RztSysDepartmentRepository;
+import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DbUtil;
 import com.rzt.utils.PageUtil;
 import org.springframework.stereotype.Service;
@@ -21,14 +22,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 类名称：RztSysDepartmentService    
- * 类描述：InnoDB free: 537600 kB    
- * 创建人：张虎成   
- * 创建时间：2017/10/10 10:26:33 
- * 修改人：张虎成    
- * 修改时间：2017/10/10 10:26:33    
- * 修改备注：    
- * @version
+ * 类名称：RztSysDepartmentService
+ * 类描述：InnoDB free: 537600 kB
+ * 创建人：张虎成
+ * 创建时间：2017/10/10 10:26:33
+ * 修改人：张虎成
+ * 修改时间：2017/10/10 10:26:33
+ * 修改备注：
  */
 @Service
 @Transactional
@@ -75,11 +75,11 @@ public class RztSysDepartmentService extends CurdService<RztSysDepartment, RztSy
     public List<Map<String, Object>> findDeptListByPid(int page, int size, String id) {
         RztSysDepartment rztSysDepartment = this.reposiotry.getOne(id);
         StringBuilder buffer = new StringBuilder();
-        buffer.append("SELECT node.id ,node.deptName ,node.lft,node.rgt,node.deptPid ");
+        buffer.append("SELECT node.id ,node.deptName ,node.lft,node.rgt,node.deptPid,node.lastnode ");
         buffer.append("FROM RztSysDepartment node,RztSysDepartment parent WHERE node.lft BETWEEN parent.lft AND parent.rgt ");
         buffer.append("AND node.lft > " + rztSysDepartment.getLft());
         buffer.append(" AND node.rgt <" + rztSysDepartment.getRgt() + " ");
-        buffer.append("GROUP BY node.id,node.lft,node.deptName,node.rgt,node.deptPid ");
+        buffer.append("GROUP BY node.id,node.lft,node.deptName,node.rgt,node.deptPid,node.lastnode ");
         buffer.append("ORDER BY node.lft");
         if (size != 0)
             buffer.append(PageUtil.getLimit(page, size));
@@ -107,4 +107,30 @@ public class RztSysDepartmentService extends CurdService<RztSysDepartment, RztSy
         this.reposiotry.updateNodelft(rztSysDepartment.getLft(), width);
     }
 
+    /**
+     * 查询单位队伍
+     *
+     * @return
+     */
+    public List<Map<String, Object>> departmentQuery(String deptpid) {
+//        String sql="SELECT ID,DEPTNAME,LASTNODE FROM RZTSYSDEPARTMENT WHERE DEPTPID = ?1 ";
+        String sql = "SELECT ID,DEPTNAME,LASTNODE FROM RZTSYSDEPARTMENT WHERE DEPTPID = '402881e6603a69b801603a6ab1d70000'";
+        return this.execSql(sql);
+    }
+
+    /**
+     * 修改单位班组名称
+     *
+     * @param deptname 单位名
+     * @param id       单位ID
+     * @return
+     */
+    public WebApiResponse updateByDeptName(String deptname, String id) {
+        try {
+            return WebApiResponse.success(this.reposiotry.updateByDeptName(deptname, id));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("数据修改失败");
+        }
+    }
 }
