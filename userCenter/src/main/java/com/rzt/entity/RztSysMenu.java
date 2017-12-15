@@ -31,6 +31,22 @@ public class RztSysMenu extends BaseEntity implements Serializable{
 	public RztSysMenu() {
 	}
 
+	public int getMenutype() {
+		return menutype;
+	}
+
+	public void setMenutype(int menutype) {
+		this.menutype = menutype;
+	}
+
+	public int getType() {
+		return type;
+	}
+
+	public void setType(int type) {
+		this.type = type;
+	}
+
 	public RztSysMenu(String menuname, String menuurl, String menupid, int lft, int rgt, String id) {
 		this.id = id;
 		this.menuname = menuname;
@@ -38,6 +54,7 @@ public class RztSysMenu extends BaseEntity implements Serializable{
 		this.menuicon = menuicon;
 		this.menupid = menupid;
 		this.lft = lft;
+
 		this.rgt = rgt;
 	}
 

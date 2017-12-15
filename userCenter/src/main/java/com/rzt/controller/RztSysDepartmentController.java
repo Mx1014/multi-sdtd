@@ -36,11 +36,8 @@ public class RztSysDepartmentController extends
 
     //新增子节点
     @ApiOperation(value = "新增子节点", notes = "新增子节点")
-    @GetMapping("addSonNode")
+    @PostMapping("addSonNode")
     public RztSysDepartment addSonNode(String nodeId, RztSysDepartment rztSysDepartment) {
-//        String id = nodeId;
-//        if (StringUtils.isEmpty(id))
-//            id = this.service.getRootId();
         return this.service.addSonNode(nodeId, rztSysDepartment);
     }
 
@@ -51,10 +48,6 @@ public class RztSysDepartmentController extends
     }
 
     //新增同级节点
-
-    /**
-     * 接不到值
-     */
     @PostMapping(value = "addNode")
     @ApiOperation(value = "新增同级节点", notes = "新增同级节点")
     public RztSysDepartment addNode(@RequestParam(required = false) String id, @ModelAttribute RztSysDepartment rztSysDepartment) {

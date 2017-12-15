@@ -49,22 +49,22 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
     public Page<Map<String, Object>> findUserList(Integer page, Integer size, String DEPTID, String REALNAME, String CLASSNAME, String WORKTYPE) {
         ArrayList<String> arrayList = new ArrayList<>();
         Pageable pageable = new PageRequest(page, size);
-        StringBuffer stringBuffer = new StringBuffer();
+        String s = "";
         if (!StringUtils.isEmpty(DEPTID)) {
             arrayList.add(DEPTID);
-            stringBuffer.append(" AND DEPTID = ?" + arrayList.size());
+            s += " AND DEPTID = ?" + arrayList.size();
         }
         if (!StringUtils.isEmpty(REALNAME)) {
-            arrayList.add(REALNAME);
-            stringBuffer.append(" AND REALNAME LIKE '?" + arrayList.size() + "%' ");
+            arrayList.add(REALNAME + "%");
+            s += " AND REALNAME LIKE ?" + arrayList.size();
         }
         if (!StringUtils.isEmpty(CLASSNAME)) {
             arrayList.add(CLASSNAME);
-            stringBuffer.append(" AND CLASSNAME = ? " + arrayList.size());
+            s += " AND CLASSNAME = ?" + arrayList.size();
         }
         if (!StringUtils.isEmpty(WORKTYPE)) {
             arrayList.add(WORKTYPE);
-            stringBuffer.append(" AND WORKTYPE = ? " + arrayList.size());
+            s += " AND WORKTYPE = ?" + arrayList.size();
         }
         String sql = "SELECT " +
                 "  wm_concat(r.ID) AS roleid,u.id," +
@@ -83,8 +83,8 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
                 "  U.USERTYPE, " +
                 "  U.AVATAR  " +
                 " FROM rztsysuser u LEFT JOIN rztsysuserrole l ON u.id = l.userId " +
-                "  LEFT JOIN rztsysrole r ON l.roleId = r.id WHERE USERDELETE = 1  " + stringBuffer +
-                "GROUP BY u.REALNAME, U.REALNAME,U.USERNAME,U.EMAIL,U.PHONE,U.DEPTID,U.CLASSNAME,U.CERTIFICATE,U.WORKYEAR,U.WORKTYPE,U.SERIALNUMBER,U.AGE,U.USERTYPE,U.AVATAR,u.id";
+                "  LEFT JOIN rztsysrole r ON l.roleId = r.id WHERE USERDELETE = 1  " + s +
+                " GROUP BY u.REALNAME, U.REALNAME,U.USERNAME,U.EMAIL,U.PHONE,U.DEPTID,U.CLASSNAME,U.CERTIFICATE,U.WORKYEAR,U.WORKTYPE,U.SERIALNUMBER,U.AGE,U.USERTYPE,U.AVATAR,u.id";
         return this.execSqlPage(pageable, sql, arrayList.toArray());
     }
 

@@ -137,7 +137,7 @@ public class RztSysUserController extends
      * @param size 每页行数
      * @return
      */
-    @PostMapping("findAllUser/{page}/{size}")
+    @GetMapping("findAllUser/{page}/{size}")
     @ApiOperation(value = "人员分页查询", notes = "人员分页查询")
     public WebApiResponse findAllUser(@PathVariable int page, @PathVariable int size, String deptid, String realname, String classname, String worktype) {
         try {

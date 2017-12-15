@@ -1,8 +1,8 @@
-/**    
- * 文件名：RztSysDepartmentRepository           
- * 版本信息：    
- * 日期：2017/10/10 10:26:33    
- * Copyright 融智通科技(北京)股份有限公司 版权所有    
+/**
+ * 文件名：RztSysDepartmentRepository
+ * 版本信息：
+ * 日期：2017/10/10 10:26:33
+ * Copyright 融智通科技(北京)股份有限公司 版权所有
  */
 package com.rzt.repository;
 import com.rzt.entity.RztSysDepartment;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-/**      
+/**
  * 类名称：RztSysDepartmentRepository    
  * 类描述：    
  * 创建人：张虎成   
@@ -21,7 +21,7 @@ import java.util.List;
  * 修改人：张虎成    
  * 修改时间：2017/10/10 10:26:33    
  * 修改备注：    
- * @version        
+ * @version
  */
  @Repository
 public interface RztSysDepartmentRepository extends JpaRepository<RztSysDepartment,String> {
