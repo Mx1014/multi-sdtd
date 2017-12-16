@@ -55,20 +55,4 @@ public class CensusServerApplication {
     public PersonnelTasksServerEndpoint PersonnelTasks() {
         return new PersonnelTasksServerEndpoint();
     }
-
-    @Bean
-    public HttpMessageConverters fastJsonHttpMessageConverters() {
-        //创建封装对象
-        FastJsonHttpMessageConverter converter = new FastJsonHttpMessageConverter();
-        FastJsonConfig fastJsonConfig = new FastJsonConfig();
-        fastJsonConfig.setSerializerFeatures(SerializerFeature.WriteDateUseDateFormat);
-        fastJsonConfig.setSerializerFeatures(SerializerFeature.WriteMapNullValue);
-
-        //处理中文乱码问题(不然出现中文乱码)
-        List<MediaType> fastMediaTypes = new ArrayList<MediaType>();
-        fastMediaTypes.add(MediaType.APPLICATION_JSON_UTF8);
-        converter.setSupportedMediaTypes(fastMediaTypes);
-        converter.setFastJsonConfig(fastJsonConfig);
-        return new HttpMessageConverters(converter);
-    }
 }
