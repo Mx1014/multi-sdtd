@@ -46,11 +46,11 @@ public class CheckLiveTaskDetailService extends CurdService<CheckLiveTaskDetail,
             params.add(task.getPlanStartTime());
             params.add(task.getPlanEndTime());
         }
-        if (task.getTaskName() != null){  //线路名查询
+       /* if (task.getTaskName() != null){  //线路名查询
             task.setTaskName("%"+task.getTaskName()+"%");
             buffer.append(" and c.task_name like ? ");
             params.add(task.getTaskName());
-        }
+        }*/
        /* if (task.getStatus() != null){
        少根据稽查人筛选的条件
             buffer.append(" and c.status = ? ");

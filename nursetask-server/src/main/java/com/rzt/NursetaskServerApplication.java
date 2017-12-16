@@ -23,11 +23,11 @@ public class NursetaskServerApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(NursetaskServerApplication.class, args);
 	}
-	@Bean
+	/*@Bean
 	public HttpMessageConverters fastJsonHttpMessageConverters() {
 		//创建封装对象
 		FastJsonHttpMessageConverter converter = new FastJsonHttpMessageConverter();
 		converter.setFeatures(SerializerFeature.WriteDateUseDateFormat, SerializerFeature.WriteMapNullValue);
 		return new HttpMessageConverters(converter);
-	}
+	}*/
 }

@@ -43,7 +43,7 @@ public interface KhSiteRepository extends JpaRepository<KhSite,String> {
     void updateYH(Long id, Date date);
 
     @Modifying
-    @Query(value ="update check_live_task set status=1,update_time=?2 where task_id=?1",nativeQuery = true)
+    @Query(value ="update check_live_task set status=2,update_time=?2 where task_id=?1",nativeQuery = true)
     void updateCheckTask(long id, Date date);
 
     @Query(value ="select count(*) from kh_site where status = ?1 ",nativeQuery = true)

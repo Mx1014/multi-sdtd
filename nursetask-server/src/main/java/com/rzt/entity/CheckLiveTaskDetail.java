@@ -78,6 +78,8 @@ public class CheckLiveTaskDetail  implements Serializable{
     	//字段描述: 创建时间
    	 @Column(name = "CREATE_TIME")
      private Date createTime;
+	@Column(name = "KH_TASK_ID")
+	private Long KhTaskId;
 
 	public void setId(){
 		this.id =   Long.valueOf(new SnowflakeIdWorker(0,0).nextId());
@@ -215,4 +217,11 @@ public class CheckLiveTaskDetail  implements Serializable{
 		return this.createTime;
 	}
 
+	public Long getKhTaskId() {
+		return KhTaskId;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
 }
