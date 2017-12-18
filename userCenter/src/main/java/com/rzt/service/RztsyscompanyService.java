@@ -8,6 +8,7 @@ package com.rzt.service;
 
 import com.rzt.repository.RztsyscompanyRepository;
 import com.rzt.entity.Rztsyscompany;
+import com.rzt.util.WebApiResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -96,6 +97,16 @@ public class RztsyscompanyService extends CurdService<Rztsyscompany, Rztsyscompa
         } catch (Exception e) {
             e.printStackTrace();
             return zero;
+        }
+    }
+
+    public WebApiResponse queryCompanyname() {
+        String sql = "SELECT ID,COMPANYNAME,ORGID FROM RZTSYSCOMPANY";
+        try {
+            return WebApiResponse.success(this.execSql(sql));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("数据请求错误");
         }
     }
 }

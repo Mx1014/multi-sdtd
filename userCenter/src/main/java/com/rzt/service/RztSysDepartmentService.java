@@ -113,9 +113,9 @@ public class RztSysDepartmentService extends CurdService<RztSysDepartment, RztSy
      * @return
      */
     public List<Map<String, Object>> departmentQuery(String deptpid) {
-//        String sql="SELECT ID,DEPTNAME,LASTNODE FROM RZTSYSDEPARTMENT WHERE DEPTPID = ?1 ";
-        String sql = "SELECT ID,DEPTNAME,LASTNODE FROM RZTSYSDEPARTMENT WHERE DEPTPID = '402881e6603a69b801603a6ab1d70000'";
-        return this.execSql(sql);
+        String sql = "SELECT ID,DEPTNAME,LASTNODE FROM RZTSYSDEPARTMENT WHERE DEPTPID = ?1 ";
+//        String sql = "SELECT ID,DEPTNAME,LASTNODE FROM RZTSYSDEPARTMENT WHERE DEPTPID = '402881e6603a69b801603a6ab1d70000'";
+        return this.execSql(sql, deptpid);
     }
 
     /**
@@ -128,6 +128,16 @@ public class RztSysDepartmentService extends CurdService<RztSysDepartment, RztSy
     public WebApiResponse updateByDeptName(String deptname, String id) {
         try {
             return WebApiResponse.success(this.reposiotry.updateByDeptName(deptname, id));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("数据修改失败");
+        }
+    }
+
+    public WebApiResponse queryOrgName() {
+        String sql = "SELECT * FROM RZTSYSDEPARTMENT WHERE DEPTPID='402881e6603a69b801603a6ab1d70000'";
+        try {
+            return WebApiResponse.success(this.execSql(sql));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("数据修改失败");

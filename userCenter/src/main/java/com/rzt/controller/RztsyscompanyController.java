@@ -157,4 +157,8 @@ public class RztsyscompanyController extends
         }
     }
 
+    @GetMapping("queryCompanyname")
+    public WebApiResponse queryCompanyname() {
+        return this.service.queryCompanyname();
+    }
 }

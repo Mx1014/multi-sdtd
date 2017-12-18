@@ -1,8 +1,8 @@
-/**    
+/**
  * 文件名：RztSysRoleController
- * 版本信息：    
- * 日期：2017/10/11 18:51:02    
- * Copyright 融智通科技(北京)股份有限公司 版权所有    
+ * 版本信息：
+ * 日期：2017/10/11 18:51:02
+ * Copyright 融智通科技(北京)股份有限公司 版权所有
  */
 package com.rzt.controller;
 
@@ -29,61 +29,61 @@ import java.util.List;
  * 修改人：张虎成    
  * 修改时间：2017/10/11 18:51:02    
  * 修改备注：    
- * @version        
+ * @version
  */
 @RestController
 @RequestMapping("RztSysRole")
 public class RztSysRoleController extends
-		CurdController<RztSysRole,RztSysRoleService> {
-	@Autowired
-	private RztMenuPrivilegeService privilegeService;
+        CurdController<RztSysRole, RztSysRoleService> {
+    @Autowired
+    private RztMenuPrivilegeService privilegeService;
 
-	@PostMapping("addRole")
-    public WebApiResponse addRole(@ModelAttribute RztSysRole sysRole){
-		sysRole.setCreatetime(new Date());
-		this.service.add(sysRole);
+    @PostMapping("addRole")
+    public WebApiResponse addRole(@ModelAttribute RztSysRole sysRole) {
+        sysRole.setCreatetime(new Date());
+        this.service.add(sysRole);
 //		privilegeService.addAll(menuPrivilege);
-		return WebApiResponse.success("创建成功！");
-	}
+        return WebApiResponse.success("创建成功！");
+    }
 
-	@PatchMapping("updateRole/{id}")
-	public WebApiResponse updateRole(@PathVariable String id,@ModelAttribute RztSysRole sysRole){
-		try {
-			RztSysRole role = this.service.findOne(id);
-			role.setRoledesc(sysRole.getRoledesc());
-			role.setRolename(sysRole.getRolename());
-			this.service.update(role,id);
+    @PatchMapping("updateRole/{id}")
+    public WebApiResponse updateRole(@PathVariable String id, @ModelAttribute RztSysRole sysRole) {
+        try {
+            RztSysRole role = this.service.findOne(id);
+            role.setRoledesc(sysRole.getRoledesc());
+            role.setRolename(sysRole.getRolename());
+            this.service.update(role, id);
 			/*privilegeService.deleteByroleId(sysRole.getId());
 			privilegeService.addAll(menuPrivilege);*/
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return WebApiResponse.success("更新成功！");
-	}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return WebApiResponse.success("更新成功！");
+    }
 
-	@GetMapping("findRoleList/{page}/{size}")
-	public Page<RztSysRole> findRoleList(@PathVariable int page, @PathVariable int size, @RequestParam(required=false)
-	String name){
-		Pageable pageable = new PageRequest(page,size);
-		Page<RztSysRole> pageList = this.service.findByName(name,pageable);
-		return pageList;
-	}
+    @GetMapping("findRoleList/{page}/{size}")
+    public Page<RztSysRole> findRoleList(@PathVariable int page, @PathVariable int size, @RequestParam(required = false)
+            String name) {
+        Pageable pageable = new PageRequest(page, size);
+        Page<RztSysRole> pageList = this.service.findByName(name, pageable);
+        return pageList;
+    }
 
-	@GetMapping("findAllRole")
-	@ResponseBody
-	public List<RztSysRole> findAllRole(){
-		return this.service.findAllRole();
-	}
+    @GetMapping("findAllRole")
+    @ResponseBody
+    public List<RztSysRole> findAllRole() {
+        return this.service.findAllRole();
+    }
 
-	@DeleteMapping("deleteRole/{id}")
-	public WebApiResponse deleteRole(@PathVariable String id){
-		try {
-			this.service.delete(id);
-			privilegeService.deleteByroleId(id);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return WebApiResponse.success("删除成功！");
-	}
-	
+    @DeleteMapping("deleteRole/{id}")
+    public WebApiResponse deleteRole(@PathVariable String id) {
+        try {
+            this.service.delete(id);
+            privilegeService.deleteByroleId(id);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return WebApiResponse.success("删除成功！");
+    }
+
 }

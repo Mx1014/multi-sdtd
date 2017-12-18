@@ -9,17 +9,17 @@ package com.rzt.service;
 import com.rzt.service.CurdService;
 import com.rzt.entity.RztSysMenu;
 import com.rzt.repository.RztSysMenuRepository;
+import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DbUtil;
 import com.rzt.utils.PageUtil;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * shiguodong
@@ -67,7 +67,7 @@ public class RztSysMenuService extends CurdService<RztSysMenu, RztSysMenuReposit
         buffer.append("AND node.lft > " + rztSysMenu.getLft());
         buffer.append(" AND node.rgt <" + rztSysMenu.getRgt() + " ");
         buffer.append("GROUP BY node.id,node.lft,node.menuName,node.rgt,node.menuUrl,node.menuPid ");
-        buffer.append("ORDER BY node.lft");
+        buffer.append("ORDER BY node.rgt");
         if (size != 0)
             buffer.append(PageUtil.getLimit(page, size));
 //		Query queryentityManager.createNativeQuery(buffer.toString());
@@ -101,5 +101,64 @@ public class RztSysMenuService extends CurdService<RztSysMenu, RztSysMenuReposit
     public List<Map<String, Object>> findAllMenu() {
         return this.execSql(" SELECT * FROM RZTSYSMENU ");
     }
+
+    /**
+     * pc权限
+     * Type 1PC 2App
+     *
+     * @return
+     */
+    public List<Map<String, Object>> queryMenuPc() {
+        return this.execSql(" SELECT * FROM RZTSYSMENU WHERE TYPE = 1 AND MENUTYPE!=3 ");
+    }
+
+    /**
+     * App权限
+     * Type 1PC 2App
+     *
+     * @return
+     */
+    public List<Map<String, Object>> queryMenuApp() {
+        return this.execSql(" SELECT * FROM RZTSYSMENU WHERE TYPE = 2 ");
+    }
+
+    /**
+     * 按钮查询
+     *
+     * @param id 菜单表ID
+     * @return
+     */
+    public WebApiResponse queryListMenu(String id) {
+        String sql = "SELECT * FROM RZTSYSMENU WHERE TYPE = 1 AND MENUTYPE = 3 AND MENUPID = ?1 ";
+        try {
+            return WebApiResponse.success(this.execSql(sql, id));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("数据返回错误");
+        }
+    }
+
+    public List<Map<String, Object>> treeQuery(String deptpid) {
+        String sql = " select id as \"value\",DEPTNAME as \"label\",DEPTPID,ID from RZTSYSDEPARTMENT start with deptpid= ?1 CONNECT by prior id=  DEPTPID ";
+        List<Map<String, Object>> list = this.execSql(sql, deptpid);
+        List list1 = treeOrgList(list, list.get(0).get("ID").toString());
+        return list1;
+
+    }
+
+    public List treeOrgList(List<Map<String, Object>> orgList, String parentId) {
+        List childOrg = new ArrayList<>();
+        for (Map<String, Object> map : orgList) {
+            String menuId = String.valueOf(map.get("ID"));
+            String pid = String.valueOf(map.get("DEPTPID"));
+            if (parentId.equals(pid)) {
+                List c_node = treeOrgList(orgList, menuId);
+                map.put("children", c_node);
+                childOrg.add(map);
+            }
+        }
+        return childOrg;
+    }
+
 
 }

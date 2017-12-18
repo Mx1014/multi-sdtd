@@ -142,7 +142,7 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
             arrayList.add("%" + realname + "%");
             s += " AND REALNAME LIKE  ?" + arrayList.size();
         }
-        String sql = " SELECT ID,USERNAME FROM RZTSYSUSER WHERE CLASSNAME = ?1 AND USERDELETE = 1 " + s;
+        String sql = " SELECT ID,REALNAME FROM RZTSYSUSER WHERE CLASSNAME = ?1 AND USERDELETE = 1 " + s;
         return this.execSql(sql, arrayList.toArray());
     }
 }

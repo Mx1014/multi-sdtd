@@ -103,4 +103,9 @@ public class RztSysDepartmentController extends
     public WebApiResponse updateByDeptName(String deptname, String id) {
         return this.service.updateByDeptName(deptname, id);
     }
+
+    @GetMapping("queryOrgName")
+    public WebApiResponse queryOrgName() {
+        return this.service.queryOrgName();
+    }
 }

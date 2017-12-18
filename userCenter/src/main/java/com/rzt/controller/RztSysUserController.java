@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 类名称：RztSysUserController
@@ -231,7 +232,7 @@ public class RztSysUserController extends
      * @param realname  人员姓名模糊查询不是必须
      * @return
      */
-        @GetMapping("userQuery")
+    @GetMapping("userQuery")
     public WebApiResponse userQuery(String classname, String realname) {
         try {
             return WebApiResponse.success(this.service.userQuery(classname, realname));

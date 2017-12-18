@@ -34,17 +34,17 @@ public class RztSysMenuController extends
 
     //新增子节点
     @ResponseBody
-    @GetMapping("addSonNode")
+    @PostMapping("addSonNode")
     public RztSysMenu addSonNode(@RequestParam(required = false) String id, @ModelAttribute RztSysMenu rztSysMenu) {
-//		if (StringUtils.isEmpty(id))
-//			id = this.service.getRootId();
+        if (StringUtils.isEmpty(id))
+            id = this.service.getRootId();
         return this.service.addSonNode(id, rztSysMenu);
     }
 
     //新增同级节点
     @ResponseBody
-    @PostMapping("addNode/{id}")
-    public RztSysMenu addNode(@PathVariable String id, @ModelAttribute RztSysMenu rztSysMenu) {
+    @PostMapping("addNode")
+    public RztSysMenu addNode(String id, @ModelAttribute RztSysMenu rztSysMenu) {
         return this.service.addNode(id, rztSysMenu);
     }
 
@@ -93,4 +93,49 @@ public class RztSysMenuController extends
         return this.service.findAllMenu();
     }
 
+    /**
+     * pc 菜单列表
+     *
+     * @return
+     */
+    @GetMapping("queryMenuPc")
+    public WebApiResponse queryMenuPc() {
+        try {
+            return WebApiResponse.success(this.service.queryMenuPc());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("数据返回失败");
+        }
+    }
+
+    /**
+     * App 菜单列表
+     *
+     * @return
+     */
+    @GetMapping("queryMenuApp")
+    public WebApiResponse queryMenuApp() {
+        try {
+            return WebApiResponse.success(this.service.queryMenuApp());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("数据返回失败");
+        }
+    }
+
+    /**
+     * 按钮查询
+     *
+     * @param id 菜单表ID
+     * @return
+     */
+    @GetMapping("queryListMenu")
+    public WebApiResponse queryListMenu(String id) {
+        return this.service.queryListMenu(id);
+    }
+
+    @GetMapping("treeQuery")
+    public List<Map<String, Object>> treeQuery(String id) {
+        return this.service.treeQuery(id);
+    }
 }

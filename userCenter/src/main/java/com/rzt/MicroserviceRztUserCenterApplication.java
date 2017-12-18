@@ -28,15 +28,4 @@ public class MicroserviceRztUserCenterApplication {
 		SpringApplication.run(MicroserviceRztUserCenterApplication.class, args);
         Logger logger = LoggerFactory.getLogger(MicroserviceRztUserCenterApplication.class);
 	}
-
-	@Bean
-	public HttpMessageConverters fastJsonHttpMessageConverters(){
-		//创建封装对象
-		FastJsonHttpMessageConverter converter = new FastJsonHttpMessageConverter();
-		FastJsonConfig config = new FastJsonConfig();
-		config.setSerializerFeatures(SerializerFeature.WriteDateUseDateFormat,SerializerFeature.WriteMapNullValue);
-		converter.setFastJsonConfig(config);
-		return new HttpMessageConverters(converter);
-	}
-
 }
