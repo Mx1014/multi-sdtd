@@ -140,17 +140,6 @@ public class KhTaskService extends CurdService<KhTask,KhTaskRepository> {
 
     }
 
-    public Page<Map<String,Object>> appKhTask(int dbyb, Pageable pageable, String userId) {
-        String result = " id,plan_start_time as startTime,plan_end_time as endTime,task_name as taskName,status ";
-        StringBuffer buffer = new StringBuffer();
-        if (dbyb == 1) {
-            buffer.append("where (status like '未开始' or status like '进行中')");
-        } else if (dbyb == 2) {
-            buffer.append(" where status like '已完成'");
-        }
-        String sql = "select " + result + "from kh_task " + buffer.toString() + " and user_id = ?";
-        return this.execSqlPage(pageable, sql, userId);
-        //WHERE (stauts = 0 OR stauts = 1) AND trunc(plan_start_time) = trunc(sysdate) and cm_user_id = ?1
-    }
+
 }
 

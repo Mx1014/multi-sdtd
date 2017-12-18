@@ -32,37 +32,107 @@ public class KhYhHistory implements Serializable {
     //字段描述: 输电平台id
     @Id
     private Long id;
-    //字段描述: 维护单位id（orgid）
-    //字段描述: 数据创建时间
-    @Column(name = "CREATE_TIME")
-    private Date createTime;
-    //字段描述: 照片修改时间
-    @Column(name = "ZPXGSJ")
-    private String zpxgsj;
+
+    //字段描述：区段
+    @Column(name = "SECTION")
+    private String section;
+
     //字段描述: 电压等级
     @Column(name = "VTYPE")
     private String vtype;
-    //字段描述: 设备维护单位
-    @Column(name = "SBYW_ORG")
-    private String sbywOrg;
+
     //字段描述: 涉及线路名称
     @Column(name = "LINE_NAME")
     private String lineName;
-    //字段描述: 终止杆塔号
-    @Column(name = "END_TOWER")
-    private String endTower;
-    //字段描述: 起始杆塔号
-    @Column(name = "START_TOWER")
-    private String startTower;
-    //字段描述: 更新时间
-    @Column(name = "UPDATE_TIME")
-    private Date updateTime;
-    //字段描述: 0：pc 1：手机 2:excel导入
-    @Column(name = "SDGS")
-    private String sdgs;
+
     //字段描述: 关联线路id
     @Column(name = "LINE_ID")
     private String lineId;
+
+    //字段描述: 起始杆塔号
+    @Column(name = "START_TOWER")
+    private String startTower;
+
+
+    //字段描述: 终止杆塔号
+    @Column(name = "END_TOWER")
+    private String endTower;
+
+    //字段描述: 线路重要程度
+    @Column(name = "XLZYCD")
+    private String xlzycd;
+
+    //字段描述: 危急程度
+    @Column(name = "YHJB")
+    private String yhjb;
+
+    //字段描述：隐患级别
+    @Column(name = "YHJB1")
+    private String yhjb1;
+
+    //字段描述：隐患类别
+    @Column(name = "YHLB")
+    private String yhlb;
+
+    //字段描述: 隐患形成原因
+    @Column(name = "YHXCYY")
+    private String yhxcyy;
+
+    //字段描述: 隐患描述
+    @Column(name = "YHMS")
+    private String yhms;
+
+    //字段描述: 隐患发现时间
+    @Column(name = "YHFXSJ")
+    private Date yhfxsj;
+    //字段描述: 隐患地点(村)
+    @Column(name = "YHTDC")
+    private String yhtdc;
+    //字段描述: 隐患地点(乡镇街道)
+    @Column(name = "YHTDXZJD")
+    private String yhtdxzjd;
+    //字段描述: 隐患地点(区县)
+    @Column(name = "YHTDQX")
+    private String yhtdqx;
+    //字段描述: 隐患责任单位电话
+    @Column(name = "YHZRDWDH")
+    private String yhzrdwdh;
+    //字段描述: 隐患责任单位联系人
+    @Column(name = "YHZRDWLXR")
+    private String yhzrdwlxr;
+    //字段描述: 隐患责任单位
+    @Column(name = "YHZRDW")
+    private String yhzrdw;
+    //字段描述: 管控措施
+    @Column(name = "GKCS")
+    private String gkcs;
+    //字段描述: 维护单位（通道单位）
+    @Column(name = "TDYW_ORG")
+    private String tdywOrg;
+    //字段描述: 通道外协单位
+    @Column(name = "TDWX_ORG")
+    private String tdwxOrg;
+    //字段描述: 设备维护单位
+    @Column(name = "SBYW_ORG")
+    private String sbywOrg;
+    //字段描述: 是否定级
+    @Column(name = "SFDJ")
+    private String sfdj;
+    //字段描述: 数据创建时间
+    @Column(name = "CREATE_TIME")
+    private Date createTime;
+    //字段描述: 0：pc 1：手机 2:excel导入
+    @Column(name = "SDGS")
+    private String sdgs;
+    //字段描述: 隐患状态(0未消除1消除)
+    @Column(name = "YHZT")
+    private String yhzt;
+    //字段描述: 看护任务id
+    @Column(name = "TASK_ID")
+    private String taskId;
+    //字段描述: 更新时间
+    @Column(name = "UPDATE_TIME")
+    private Date updateTime;
     //字段描述: 导线对隐患净空距离
     @Column(name = "DXDYHSPJL")
     private String dxdyhspjl;
@@ -72,10 +142,7 @@ public class KhYhHistory implements Serializable {
     //字段描述: 导线对隐患垂直距离
     @Column(name = "XDXYHJKJL")
     private String xdxyhjkjl;
-    //字段描述: 隐患形成原因
-    @Column(name = "YHXCYY")
-    private String yhxcyy;
-    //字段描述: 管控措施
+    //字段描述: 树木管控措施
     @Column(name = "SMGKCS")
     private String smgkcs;
     //字段描述: 停电处理完成时间
@@ -87,9 +154,6 @@ public class KhYhHistory implements Serializable {
     //字段描述: 经度
     @Column(name = "JD")
     private String jd;
-    //字段描述: 隐患状态(0未消除1消除)
-    @Column(name = "YHZT")
-    private String yhzt;
     //字段描述: 填报时间
     @Column(name = "TBSJ")
     private String tbsj;
@@ -120,9 +184,6 @@ public class KhYhHistory implements Serializable {
     //字段描述: 技防措施
     @Column(name = "JFCS")
     private String jfcs;
-    //字段描述: 管控措施
-    @Column(name = "GKCS")
-    private String gkcs;
     //字段描述: 派出所电话
     @Column(name = "PCSDH")
     private String pcsdh;
@@ -141,58 +202,12 @@ public class KhYhHistory implements Serializable {
     //字段描述: 定级时间
     @Column(name = "DJSJ")
     private String djsj;
-    //字段描述: 隐患发现时间
-    @Column(name = "YHFXSJ")
-    private Date yhfxsj;
-    //字段描述: 看护任务id
-    @Column(name = "TASK_ID")
-    private String taskId;
     //字段描述: 隐患责任单位上级主管部门(空闲)
     @Column(name = "YHZRDWSJZRBM")
     private String yhzrdwsjzrbm;
-    //字段描述: 隐患责任单位电话
-    @Column(name = "YHZRDWDH")
-    private String yhzrdwdh;
-    //字段描述: 隐患责任单位联系人
-    @Column(name = "YHZRDWLXR")
-    private String yhzrdwlxr;
-    //字段描述: 隐患责任单位
-    @Column(name = "YHZRDW")
-    private String yhzrdw;
-    //字段描述: 隐患地点(村)
-    @Column(name = "YHTDC")
-    private String yhtdc;
-    //字段描述: 隐患地点(乡镇街道)
-    @Column(name = "YHTDXZJD")
-    private String yhtdxzjd;
-    //字段描述: 隐患地点(区县)
-    @Column(name = "YHTDQX")
-    private String yhtdqx;
-    //字段描述: 隐患描述
-    @Column(name = "YHMS")
-    private String yhms;
-    //字段描述: 隐患类型
-    @Column(name = "YHLX")
-    private String yhlx;
-    //字段描述: 隐患级别
-    @Column(name = "YHJB")
-    private String yhjb;
-    //字段描述: 维护单位（通道单位）
-    @Column(name = "TDYW_ORG")
-    private String tdywOrg;
-    //字段描述: 通道外协单位
-    @Column(name = "TDWX_ORG")
-    private String tdwxOrg;
-    //字段描述: 线路重要程度
-    @Column(name = "XLZYCD")
-    private String xlzycd;
-    //字段描述: 是否定级
-    @Column(name = "SFDJ")
-    private String sfdj;
-    //字段描述：区段
-    @Column(name = "SECTION")
-    private String section;
-
+    //字段描述: 照片修改时间
+    @Column(name = "ZPXGSJ")
+    private String zpxgsj;
 
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
@@ -594,6 +609,8 @@ public class KhYhHistory implements Serializable {
         this.yhtdqx = yhtdqx;
     }
 
+
+
     @ExcelResources(title = "隐患地点(区县)", order = 45)
     public String getYhtdqx() {
         return this.yhtdqx;
@@ -608,20 +625,11 @@ public class KhYhHistory implements Serializable {
         return this.yhms;
     }
 
-    public void setYhlx(String yhlx) {
-        this.yhlx = yhlx;
-    }
-
-    @ExcelResources(title = "隐患代码", order = 47)
-    public String getYhlx() {
-        return this.yhlx;
-    }
-
     public void setYhjb(String yhjb) {
         this.yhjb = yhjb;
     }
 
-    @ExcelResources(title = "隐患级别", order = 48)
+    @ExcelResources(title = "危机程度", order = 48)
     public String getYhjb() {
         return this.yhjb;
     }
@@ -679,5 +687,20 @@ public class KhYhHistory implements Serializable {
 
     public void setSection(String section) {
         this.section = section;
+    }
+    public String getYhjb1() {
+        return yhjb1;
+    }
+
+    public void setYhjb1(String yhjb1) {
+        this.yhjb1 = yhjb1;
+    }
+
+    public String getYhlb() {
+        return yhlb;
+    }
+
+    public void setYhlb(String yhlb) {
+        this.yhlb = yhlb;
     }
 }

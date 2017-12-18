@@ -28,7 +28,7 @@ import java.util.Map;
  * @version
  */
 @RestController
-//@RequestMapping("CheckLiveTaskCycle")
+@RequestMapping("CheckLiveTaskCycle")
 public class CheckLiveTaskCycleController extends
         CurdController<CheckLiveTaskCycle, CheckLiveTaskCycleService> {
 

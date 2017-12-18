@@ -35,7 +35,7 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
      * @param dbyb   1 代办 2已办
      * @return
      */
-    public Page<Map<String, Object>> xsTask(int page, int size, Long userid, int dbyb) {
+    public Page<Map<String, Object>> xsTask(int page, int size, String userid, int dbyb) {
         Pageable pageable = new PageRequest(page, size, null);
         int one = 1;
         int two = 2;

@@ -5,8 +5,8 @@ server:
   port: 9091
 #expireTime: 30000000
 #log
-logging:
-  config: classpath:logback.xml
+#logging:
+#  config: classpath:logback.xml
 
 spring:
   application:
@@ -45,7 +45,7 @@ spring:
       poolPreparedStatements: true
       maxPoolPreparedStatementPerConnectionSize: 20
 #监控统计用的filter:stat 日志用的filter:log4j 防御sql注入的filter:wall
-      filters: stat,log4j
+#      filters: stat,log4j
   jpa:
     hibernate:
       ddl-auto: none

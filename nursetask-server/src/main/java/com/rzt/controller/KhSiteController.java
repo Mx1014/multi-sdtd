@@ -13,6 +13,8 @@ import com.rzt.entity.KhSite;
 import com.rzt.entity.KhTask;
 import com.rzt.entity.KhYhHistory;
 import com.rzt.entity.model.KhTaskModel;
+import com.rzt.eureka.LineData;
+import com.rzt.eureka.UserCenter;
 import com.rzt.service.CheckLiveTaskService;
 import com.rzt.service.KhSiteService;
 import com.rzt.service.KhTaskService;
@@ -51,6 +53,34 @@ public class KhSiteController extends
     private KhTaskService taskService;
     @Autowired
     private CheckLiveTaskService checkService;
+    @Autowired
+    private UserCenter userCenter;
+    @Autowired
+    private LineData line;
+
+    @GetMapping("/getLineInfoCommOptions")
+    public WebApiResponse getLineInfoCommOptions(String kv){
+        return line.getLine(kv);
+    }
+
+    @GetMapping("/getTowerInfoCommOptions")
+    public WebApiResponse getTowerInfoCommOptions(String LineId){
+        return line.getTower(LineId);
+    }
+    @GetMapping("/userCenter")
+    public WebApiResponse userCenter(String classname, String realname){
+        return userCenter.userQuery(classname,realname);
+    }
+    //外协单位
+    @GetMapping("/queryOrgName")
+    public WebApiResponse queryOrgName(){
+        return userCenter.queryOrgName();
+    }
+    //通道单位
+    @GetMapping("/queryCompanyname")
+    public WebApiResponse queryCompanyname(){
+        return userCenter.queryCompanyname();
+    }
 
 
     //  数据没有设置完成  稽查任务实体类有部分修改
