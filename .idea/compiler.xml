@@ -1,22 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <resourceExtensions />
     <wildcardResourcePatterns />
     <annotationProcessing>
-      <profile default="true" name="Default" enabled="false">
-        <processorPath useClasspath="true" />
-      </profile>
-      <profile default="false" name="Maven default annotation processors profile" enabled="true">
+      <profile name="Maven default annotation processors profile" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="true" />
         <module name="authentication-center" />
         <module name="census-server" />
         <module name="eureka-server" />
         <module name="examserver" />
         <module name="fileserver" />
+        <module name="linedata-server" />
         <module name="nursetask-server" />
         <module name="userCenter" />
         <module name="xstask-server" />
@@ -29,6 +25,7 @@
       <module name="eureka-server" target="1.8" />
       <module name="examserver" target="1.8" />
       <module name="fileserver" target="1.8" />
+      <module name="linedata-server" target="1.8" />
       <module name="multi-sdtd" target="1.8" />
       <module name="nursetask-server" target="1.8" />
       <module name="sdtd2-task" target="1.8" />

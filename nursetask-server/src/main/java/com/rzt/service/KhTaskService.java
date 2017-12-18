@@ -48,7 +48,7 @@ public class KhTaskService extends CurdService<KhTask,KhTaskRepository> {
             buffer.append(" and k.task_name like ? ");
             params.add(task.getTaskName());
         }
- //此处的状态要改
+         //此处的状态要改
          if (task.getStatus() != null && !task.getStatus().equals("")){
             task.setStatus("%"+task.getStatus()+"%");
             buffer.append(" and k.status like ? ");
@@ -85,17 +85,6 @@ public class KhTaskService extends CurdService<KhTask,KhTaskRepository> {
         return task;
     }
 
-
-//    public static void main(String[] args) {
-//        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-//        Calendar c = Calendar.getInstance();
-//        c.setTime(new Date());
-//        c.add(Calendar.DAY_OF_MONTH, -7);
-//        Date m = c.getTime();
-//        String mon = df.format(m);
-//        System.out.println(mon);
-//    }
-
     public List<Map<String,Object>> getKhTaskById(long id) {
         String result=" k.task_name as taskName,y.yhms as yhms,y.yhjb as yhjb,u.realname as userName,u.phone as phone ";
         String sql = "select "+result+" from kh_task k left join kh_yh_history y on k.yh_id=y.id left join rztsysuser u on u.id=k.user_id  where k.id=?";
@@ -106,13 +95,13 @@ public class KhTaskService extends CurdService<KhTask,KhTaskRepository> {
          return this.reposiotry.getCount(id,userId);
     }
 
-    public void updateDDTime(Date time, long id) {
+    /*public void updateDDTime(Date time, long id) {
         this.reposiotry.updateDDTime(time,id);
     }
 
     public void updateSFQRTime(Date time, long id) {
         this.reposiotry.updateSFQRTime(time,id);
-    }
+    }*/
 
     public void updateWPQRTime(Date time, long id) {
         this.reposiotry.updateWPQRTime(time,id);
@@ -140,17 +129,6 @@ public class KhTaskService extends CurdService<KhTask,KhTaskRepository> {
 
     }
 
-    public Page<Map<String,Object>> appKhTask(int dbyb, Pageable pageable, String userId) {
-        String result = " id,plan_start_time as startTime,plan_end_time as endTime,task_name as taskName,status ";
-        StringBuffer buffer = new StringBuffer();
-        if (dbyb == 1) {
-            buffer.append("where (status like '未开始' or status like '进行中')");
-        } else if (dbyb == 2) {
-            buffer.append(" where status like '已完成'");
-        }
-        String sql = "select " + result + "from kh_task " + buffer.toString() + " and user_id = ?";
-        return this.execSqlPage(pageable, sql, userId);
-        //WHERE (stauts = 0 OR stauts = 1) AND trunc(plan_start_time) = trunc(sysdate) and cm_user_id = ?1
-    }
+
 }
 
