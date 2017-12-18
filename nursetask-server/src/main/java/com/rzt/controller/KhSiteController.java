@@ -67,8 +67,13 @@ public class KhSiteController extends
     public WebApiResponse getTowerInfoCommOptions(String LineId){
         return line.getTower(LineId);
     }
-    @GetMapping("/userCenter")
-    public WebApiResponse userCenter(String classname, String realname){
+    @GetMapping("/treeQuery")
+    public List userCenter(String id){
+        return userCenter.treeQuery(id);
+    }
+
+    @GetMapping("/userQuery")
+    public WebApiResponse userQuery(@RequestParam("classname") String classname,@RequestParam(value = "realname",required = false)String realname){
         return userCenter.userQuery(classname,realname);
     }
     //外协单位
@@ -181,6 +186,7 @@ public class KhSiteController extends
      */
     @DeleteMapping("/deleteById/{id}")
     @ResponseBody
+    @Transactional
     public WebApiResponse deleteById(@PathVariable("id") String id) {
         return this.service.deleteById(id);
     }

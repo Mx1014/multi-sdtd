@@ -14,8 +14,11 @@ import java.util.Map;
 @FeignClient("USERCENTER")
 public interface UserCenter {
 
+    @GetMapping(value = "/userCenter/RztSysMenu/treeQuery")
+    List treeQuery(@RequestParam("id") String id);
+
     @GetMapping(value = "/userCenter/RztSysUser/userQuery")
-    WebApiResponse userQuery(@RequestParam("classname") String classname, @RequestParam("realname") String realname);
+    WebApiResponse userQuery(@RequestParam("classname") String classname,@RequestParam("realname") String realname);
 
     @GetMapping(value = "/userCenter/RztSysDepartment/queryOrgName")
     WebApiResponse queryOrgName();

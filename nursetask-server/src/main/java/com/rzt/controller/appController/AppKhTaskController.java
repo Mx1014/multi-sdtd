@@ -9,6 +9,7 @@ import com.rzt.service.app.AppKhTaskService;
 import com.rzt.util.WebApiResponse;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Date;
+import java.util.Map;
 
 /**
  * Created by admin on 2017/12/8.
@@ -27,13 +29,12 @@ public class AppKhTaskController extends
 
 
 
-    @ApiOperation(value = "看护任务展示", notes = "查看当前用户的已办和待办的任务  ")
+    @ApiOperation(value = "看护任务展示", notes = "查看当前用户的已办和待办的任务 1 未办 进行中 2  ")
     @GetMapping("/appListkhTask.do")
     @ResponseBody
     public WebApiResponse appListkhTask(int dbyb, Pageable pageable,String userId){
         try {
-            this.service.appListkhTask(dbyb,pageable,userId);
-            return WebApiResponse.success("");
+            return WebApiResponse.success(this.service.appListkhTask(dbyb, pageable, userId));
         }catch (Exception e){
             return WebApiResponse.erro("数据获取失败");
         }
@@ -50,19 +51,19 @@ public class AppKhTaskController extends
     @ApiOperation(value = "人员信息收集", notes = "身份确认接口  ")
     @GetMapping("/appListUserInfoById")
     @ResponseBody
-    public WebApiResponse appListUserInfoById(String userId){
-        return this.service.appListUserInfoById(userId);
+    public WebApiResponse appListUserInfoById(String userId,String taskId){
+        return this.service.appListUserInfoById(userId,taskId);
     }
 
     //人员收集  → 物品提示  图片信息 未完成！！！！！！！
     @ApiOperation(value = "物品提示", notes = "收集看护人照片信息  ")
     @GetMapping("/appSavePhoto")
     @ResponseBody
-    public WebApiResponse appSavePhoto(String userId){
-        return this.service.appSavePhoto(userId);
+    public WebApiResponse appSavePhoto(String userId,String taskId){
+        return this.service.appSavePhoto(userId,taskId);
     }
 
-    //物品提示 → 看护提醒
+    //物品提示 → 看护提醒   目前施工进度从哪里来
     @ApiOperation(value = "物品提示", notes = "收集看护人照片信息  ")
     @GetMapping("/appSaveWpzt")
     @ResponseBody
@@ -70,6 +71,13 @@ public class AppKhTaskController extends
         return this.service.appSaveWpzt(task);
     }
 
+    //到达现场 → 开始看护
+    @ApiOperation(value = "物品提示", notes = "收集看护人照片信息  ")
+    @GetMapping("/appDdcx")
+    @ResponseBody
+    public WebApiResponse appDdcx(String taskId){
+        return this.service.appDdcx(taskId);
+    }
    /* @GetMapping("/updateTaskTime.do")
     @ResponseBody
     public void updateTaskTime(String step, Date time, String id){
@@ -89,8 +97,6 @@ public class AppKhTaskController extends
             this.service.updateRealStartTime(time,Long.parseLong(id));
         }else{
             //交接班,设置世界结束时间
-
         }
-
     }*/
 }
