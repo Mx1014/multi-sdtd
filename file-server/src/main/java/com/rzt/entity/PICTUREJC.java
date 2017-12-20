@@ -1,8 +1,8 @@
-/**
- * 文件名：PICTURETOUR           
+/**    
+ * 文件名：PICTUREJC           
  * 版本信息：    
- * 日期：2017/12/13 14:22:19
- * Copyright 融智通科技(北京)股份有限公司 版权所有
+ * 日期：2017/12/19 15:31:04    
+ * Copyright 融智通科技(北京)股份有限公司 版权所有    
  */
 package com.rzt.entity;
 
@@ -16,18 +16,18 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * 类名称：PICTURETOUR
- * 类描述：${table.comment}
- * 创建人：张虎成
- * 创建时间：2017/12/13 14:22:19
- * 修改人：张虎成
- * 修改时间：2017/12/13 14:22:19
- * 修改备注：
- * @version
+ * 类名称：PICTUREJC    
+ * 类描述：${table.comment}    
+ * 创建人：张虎成   
+ * 创建时间：2017/12/19 15:31:04 
+ * 修改人：张虎成    
+ * 修改时间：2017/12/19 15:31:04    
+ * 修改备注：    
+ * @version        
  */
 @Entity
-@Table(name="PICTURE_TOUR")
-public class PICTURETOUR implements Serializable{
+@Table(name="PICTURE_JC")
+public class PICTUREJC implements Serializable{
 	//字段描述: 流程步骤名称
 	@Column(name = "PROCESS_NAME")
 	private String processName;
@@ -121,7 +121,7 @@ public class PICTURETOUR implements Serializable{
 
 	public void setId(Long id){
 		if(id==null||id==0){
-			this.id = new SnowflakeIdWorker(0,0).nextId();
+			this.id = new SnowflakeIdWorker(5,1).nextId();
 		}else{
 			this.id = id;
 		}

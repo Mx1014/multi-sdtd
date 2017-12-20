@@ -58,14 +58,7 @@ spring:
       max-file-size: 50Mb
       max-request-size: 50Mb
 
-#文件上传路径,必须以/结尾
-#my-defined:
-#   mapProps:
-#    upload-dir: F:/sdtd/test/
-#    thum-height: 50
-#    thum-width: 50
-#file:
-#  upload-dir: F:/sdtd/test/
-#  thum:
-#    height: 50
-#    width: 50
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://168.130.1.31:31814/eureka/
