@@ -5,9 +5,9 @@
  * Copyright 融智通科技(北京)股份有限公司 版权所有    
  */
 package com.rzt.repository;
+import com.rzt.entity.PICTURETOUR;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import com.rzt.entity.PICTURETOUR;
 
 import java.util.List;
 
@@ -24,5 +24,9 @@ import java.util.List;
  @Repository
 public interface PICTURETOURRepository extends JpaRepository<PICTURETOUR,String> {
 
-    List<PICTURETOUR> findBytaskId(String taskId);
+    List<PICTURETOUR> findBytaskId(Long taskId);
+
+    PICTURETOUR findById(Long id);
+
+    void deleteById(Long id);
 }

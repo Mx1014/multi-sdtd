@@ -60,4 +60,19 @@ public class CMLINETOWERController extends
 		Page<Map<String, Object>> maps = service.execSqlPage(pageable, sql,list.toArray());
 		return WebApiResponse.success(maps);
 	}
+
+	@ApiOperation(value = "公共接口--下拉框线路杆塔",notes = "根据lineId获取杆塔信息")
+	@GetMapping("getTowerInfoCommOptions")
+	public WebApiResponse getTowerInfoCommOptions(String lineId){
+		List<String> list = new ArrayList<>();
+		String sql = "select tower_id,tower_name from cm_line_tower where 1=1 ";
+		if(lineId!=null&&!"".equals(lineId.trim())){
+			list.add(lineId);
+			sql += " and line_id= ?" + list.size();
+		}
+		sql += " ORDER BY sort";
+		List<Map<String, Object>> maps = service.execSql(sql,list.toArray());
+		return WebApiResponse.success(maps);
+	}
+
 }

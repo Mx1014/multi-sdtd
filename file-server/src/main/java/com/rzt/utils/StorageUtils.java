@@ -162,6 +162,19 @@ public class StorageUtils {
 
     }
 
+    /**
+     * 删除图片
+     * @param suffixPath
+     */
+    public static boolean deleteImg(String suffixPath) {
+
+        String deltePath = picDir + suffixPath;
+        File file = new File(deltePath);
+        return file.delete();
+
+    }
+
+
     //设定配置参数
     static{
 

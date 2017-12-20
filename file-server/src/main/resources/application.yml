@@ -3,14 +3,14 @@
 ########################################################
 server:
   port: 9091
+#  context-path: jicha
 #expireTime: 30000000
 #log
 logging:
   config: classpath:logback.xml
-
 spring:
   application:
-    name: microservice-rzt-exam
+    name: microservice-file-server
   primary:
     datasource:
 #      url: jdbc:mysql://localhost:3306/micro_service_exam?useUnicode=true&characterEncoding=utf-8
@@ -20,6 +20,7 @@ spring:
 #      type: com.alibaba.druid.pool.DruidDataSource
       #oracle数据库配置
       driverClassName: oracle.jdbc.driver.OracleDriver
+#      url: jdbc:mysql://168.130.1.31:30624/sdtd27?useUnicode=true&characterEncoding=utf8
       url: jdbc:oracle:thin:@47.92.67.90:1521/orcl
       username: sdtd27
       password: sdtd27
@@ -45,7 +46,7 @@ spring:
       filters: stat,log4j
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     show: true
   #文件上传
   http:
@@ -54,12 +55,24 @@ spring:
     multipart:
       max-file-size: 50Mb
       max-request-size: 50Mb
+  datasource:
+    platform: oracle
+    type: com.alibaba.druid.pool.DruidDataSource
 
 #文件上传路径,必须以/结尾
 my-defined:
    mapProps:
-    file-dir: F:/sdtd/
-    pic-dir: F:/sdtd/test/
+    file-dir: /usr/share/nginx/html/
+    pic-dir: /usr/share/nginx/html/
+#    file-dir: F:/sdtd/
+#    pic-dir: F:/sdtd/
     thum-height: 50
     thum-width: 50
 
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://168.130.1.31:31814/eureka/
+  instance:
+    status-page-url: http://localhost:${server.port}/swagger-ui.html
+    # ${server.port}为该服务的端口号

@@ -1,6 +1,8 @@
 server:
     port: 8098
     context-path: /userCenter
+token:
+  expiretime: 300000000
 spring:
     datasource:
       type: com.alibaba.druid.pool.DruidDataSource
@@ -29,6 +31,17 @@ spring:
       show-sql: true
     application:
       name: userCenter
+    redis:
+        database: 0
+        host: 168.130.1.31
+        port: 31662
+        password:
+        pool:
+          max-active: 8
+          max-wait: -1
+          max-idle: 8
+          min-idle: 0
+        timeout: 0
 eureka:
   client:
     service-url:

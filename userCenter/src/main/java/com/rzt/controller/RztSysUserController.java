@@ -9,11 +9,17 @@ package com.rzt.controller;
 import com.rzt.controller.CurdController;
 import com.rzt.entity.RztSysUser;
 import com.rzt.entity.RztSysUserauth;
+import com.rzt.security.JwtHelper;
+import com.rzt.security.TokenProp;
+import com.rzt.service.RztMenuPrivilegeService;
 import com.rzt.service.RztSysUserService;
 import com.rzt.service.RztSysUserauthService;
 import com.rzt.util.WebApiResponse;
+import com.rzt.utils.Constances;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 类名称：RztSysUserController
@@ -39,6 +46,14 @@ public class RztSysUserController extends
         CurdController<RztSysUser, RztSysUserService> {
     @Autowired
     private RztSysUserauthService userauthService;
+	@Autowired
+	private RedisTemplate<String,Object> redisTemplate;
+	@Autowired
+	private RztMenuPrivilegeService privilegeService;
+	@Autowired
+	private TokenProp tokenProp;
+	@Autowired
+	private StringRedisTemplate stringRedisTemplate;
 
     @PostMapping("addUser")
     public WebApiResponse addUser(MultipartFile file, String password, RztSysUser user) {
@@ -170,21 +185,27 @@ public class RztSysUserController extends
 
         RztSysUserauth userauth = userauthService.findByIdentifierAndIdentityTypeAndPassword(flag, account, password);
         RztSysUser sysUser = null;
+		String access_token = null;
+		Map<String,Object> map = null;
         if (userauth != null) {
             sysUser = this.service.findOne(userauth.getUserid());
             sysUser.setLoginstatus(1);
             try {
-                this.service.update(sysUser, sysUser.getId());
-            } catch (Exception e) {
+				map = this.service.getUserinfoByUserId(sysUser.getId());
+				redisTemplate.opsForHash().put(Constances.USER_OBJ,sysUser.getId(),map);
+				access_token = JwtHelper.createJWT(map,
+						tokenProp.getExpireTime()).getAccess_token();
+				stringRedisTemplate.opsForValue().set("user:" + map.get("USERNAME"), access_token);
+				this.service.update(sysUser, sysUser.getId());
+			} catch (Exception e) {
                 e.printStackTrace();
             }
             userauthService.updateLoginIp(request.getRemoteAddr(), sysUser.getId(), flag);
         } else {
             return WebApiResponse.erro("用户名或密码不正确！");
         }
-        request.getSession().setAttribute("user", sysUser);
 
-        return WebApiResponse.success(sysUser);
+        return WebApiResponse.success(access_token);
     }
 
     @GetMapping("login/{flag}")

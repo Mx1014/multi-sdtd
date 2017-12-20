@@ -532,6 +532,7 @@ public class DateUtil {
 //        System.out.println(format(dateTime.toDate()));
 //
 //        System.out.println(format(dateTime1.toDate()));
+		System.out.println("123456".substring(0,2));
 		System.out.println(format(new Date(),"MM/dd"));
 	}
 

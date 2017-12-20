@@ -42,12 +42,15 @@ import java.util.regex.Pattern;
 public class AuthenticationController{
     @Autowired
     private RedisTemplate redisTemplate;
+	@Autowired
+	private UserCenter userCenter;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+
 	@RequestMapping(value = "/auth")
 	public
 	@ResponseBody
-	WebApiResponse<ResultMsg> authentication(HttpServletRequest request) throws IOException, ServletException {
+	WebApiResponse authentication(HttpServletRequest request) throws IOException, ServletException {
 		ResultMsg resultMsg;
 		HttpServletRequest httpRequest = (HttpServletRequest) request;
 		String auth = httpRequest.getHeader("access_token");

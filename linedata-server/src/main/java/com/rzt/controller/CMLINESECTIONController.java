@@ -60,10 +60,46 @@ public class CMLINESECTIONController extends
 		return WebApiResponse.success(maps);
 	}
 
+	@ApiOperation(value = "公共接口--获取属地单位线路信息",notes = "根据电压等级、通道单位id获取线路信息")
+	@GetMapping("getLineInfoComm")
+	public WebApiResponse getLineInfoComm(String tdOrg, String kv){
+		List<String> list = new ArrayList<>();
+		Object[] objects = list.toArray();
+		String sql = "select * from cm_line_section where is_del=0 ";
+		if(tdOrg!=null&&!"".equals(tdOrg.trim())){
+			list.add(tdOrg);
+			sql += " and td_org= ?" + list.size();
+		}
+		if(kv!=null&&!"".equals(kv.trim())){
+			list.add(kv);
+			sql += " and v_level= ?" + list.size();
+		}
+		List<Map<String, Object>> maps = service.execSql(sql,list.toArray());
+		return WebApiResponse.success(maps);
+	}
+
+	@ApiOperation(value = "公共接口--线路下拉框",notes = "根据电压等级、通道单位id获取线路信息")
+	@GetMapping("getLineInfoCommOptions")
+	public WebApiResponse getLineInfoCommOptions(String tdOrg, String kv){
+		List<String> list = new ArrayList<>();
+		String sql = "select line_id,line_name,line_jb from cm_line_section where is_del=0 ";
+		if(tdOrg!=null&&!"".equals(tdOrg.trim())){
+			list.add(tdOrg);
+			sql += " and td_org= ?" + list.size();
+		}
+		if(kv!=null&&!"".equals(kv.trim())){
+			list.add(kv);
+			sql += " and v_level= ?" + list.size();
+		}
+		sql += " ORDER BY NLSSORT(line_name,'NLS_SORT = SCHINESE_PINYIN_M')";
+		List<Map<String, Object>> maps = service.execSql(sql,list.toArray());
+		return WebApiResponse.success(maps);
+	}
+
 	@ApiOperation(value = "获取通道单位列表",notes = "获取各通道单位列表")
 	@GetMapping("getTdOrg")
 	public WebApiResponse getTdOrg(){
-		List<Map<String, Object>> maps = service.execSql("select id,deptname from rztsysdepartment start with deptname='通道运维单位' connect by prior id=deptpid");
+		List<Map<String, Object>> maps = service.execSql("select id,deptname from rztsysdepartment where deptpid=(select id from rztsysdepartment where deptname='通道运维单位') ");
 		return WebApiResponse.success(maps);
 	}
 

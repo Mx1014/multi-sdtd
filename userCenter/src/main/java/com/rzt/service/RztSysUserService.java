@@ -19,6 +19,7 @@ import org.springframework.util.StringUtils;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -145,4 +146,16 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
         String sql = " SELECT ID,REALNAME FROM RZTSYSUSER WHERE CLASSNAME = ?1 AND USERDELETE = 1 " + s;
         return this.execSql(sql, arrayList.toArray());
     }
+
+	public Map<String,Object> getUserinfoByUserId(String userid){
+		String sql = "select * from userinfo where id = ?1";
+		Map<String,Object> map = null;
+		try {
+			map =  this.execSqlSingleResult(sql,userid);
+		} catch (Exception e) {
+			e.printStackTrace();
+			map = new HashMap<>();
+		}
+		return map;
+	}
 }

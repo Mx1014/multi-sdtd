@@ -28,6 +28,14 @@ public interface AppKhTaskRepository extends JpaRepository<KhTask, String> {
     @Modifying
     @Query(value = "update kh_task set sfqr_time = ?1 where id = ?2",nativeQuery = true)
     void updateSFQRTime(Date time, long id);
+
+    @Modifying
+    @Query(value = "select count(*) from KH_TASK WHERE STATUS LIKE '未开始' OR  status like '进行中'",nativeQuery = true)
+    int getdbCount();
+
+    @Modifying
+    @Query(value = "select count(*) from KH_TASK WHERE STATUS LIKE '已完成'",nativeQuery = true)
+    int getybCount();
     /*@Query(value = "",nativeQuery = true)
     void query();*/
 }

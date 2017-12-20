@@ -24,7 +24,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service
-@Transactional
 public class KhTaskService extends CurdService<KhTask,KhTaskRepository> {
 
     @PersistenceContext

@@ -6,32 +6,23 @@
  */
 package com.rzt.controller;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.PICTURETOUR;
 import com.rzt.service.PICTURETOURService;
 import com.rzt.utils.DateUtil;
 import com.rzt.utils.SnowflakeIdWorker;
 import com.rzt.utils.StorageUtils;
 import com.rzt.utils.YmlConfigUtil;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -46,98 +37,55 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @RestController
 @RequestMapping("PICTURETOUR")
+@Api(description = "巡视照片类")
 public class PICTURETOURController extends
 		CurdController<PICTURETOUR,PICTURETOURService> {
 
     protected static Logger LOGGER = LoggerFactory.getLogger(PICTURETOURController.class);
 
     @ApiOperation(
-            value = "文件上传",
-            notes = "上传文件信息及参数"
+            value = "单个文件上传",
+            notes = "上传文件信息及参数。taskId  userId processId processName lat lon，这些是必须的"
     )
     @PostMapping("fileUpload")
-    public Map<String, Object> fileUpload(MultipartFile file,String jsonStr) {
-
-        JSONObject jsonObject = JSON.parseObject(jsonStr);
-        String taskId = getJsonObjectValue(jsonStr,"taskId");
-
-        Map<String, Object> result = new HashMap<>();
-
-        PICTURETOUR picturetour = new PICTURETOUR();
-        //判断taskId是否为空
-        if(taskId== null||"".equals(taskId)){
-            //return;
-            // TODO: 2017/12/1 压力测试用
-            taskId = "taskId";
-        }
-
-        try {
-            Map<String, Object> map = StorageUtils.resizeDefault(file, taskId);
-            if("true".equals(map.get("success").toString())){
-
-                String targetPath = map.get("picPath").toString();
-                String thumPath = map.get("thumPath").toString();
-                String picName = map.get("picName").toString();
-                picturetour.setId(null);
-                picturetour.setCreateTime(new Date(System.currentTimeMillis()));
-                picturetour.setFileName(picName);
-                picturetour.setFilePath(targetPath);
-                picturetour.setFileSmallPath(thumPath);
-                picturetour.setFileType("1");
-                picturetour.setTaskId(taskId);
-                picturetour.setUserId(getJsonObjectValue(jsonStr,"userId"));
-                picturetour.setProcessId(getJsonObjectValue(jsonStr,"processId"));
-                picturetour.setProcessName(getJsonObjectValue(jsonStr,"processName"));
-                picturetour.setLat(getJsonObjectValue(jsonStr,"lat"));
-                picturetour.setLon(getJsonObjectValue(jsonStr,"lon"));
-
-                service.add(picturetour);
-                result.put("success",true);
-                result.put("thumPath",thumPath);
-                System.out.println(targetPath);
-                System.out.println(thumPath);
-                System.out.println(picName);
-            }
-
-        } catch (IOException e) {
-            LOGGER.error("上传文件失败！",e);
-            result.put("success",false);
-        }
-
-        return result;
-
+    public Map<String, Object> fileUpload(MultipartFile multipartFile, PICTURETOUR picturetour) {
+        return service.fileUpload(multipartFile,picturetour);
     }
 
-    private String getJsonObjectValue(String jsonStr,String key){
-        if(jsonStr==null||"".equals(jsonStr)){
-            LOGGER.error("jsonStr为空！");
-            return null;
-        }
-        JSONObject jsonObject = JSON.parseObject(jsonStr);
-        if(jsonObject.containsKey(key)){
-            return jsonObject.getString(key);
-        }else{
-            LOGGER.error("json对象中没有此key！" +
-                    "\n json对象为："+jsonStr+
-                    "\n key="+key);
-        }
-        return null;
+    @ApiOperation(
+            value = "根据Id删除照片",
+            notes = "根据Id删除照片，同时删除文件及数据"
+    )
+    @DeleteMapping("deleteImgsById")
+    public Map<String, Object> deleteImgsById(Long id) {
+        return service.deleteImgsById(id);
     }
 
     @ApiOperation(
             value = "获取巡视任务照片",
             notes = "根据taskId获取某条任务的所有照片，返回List<PICTURETOUR>"
     )
-    @GetMapping("getTourImgsBytaskId")
-    public Map<String, Object> getTourImgsBytaskId(String taskId) {
+    @GetMapping("getImgsBytaskId")
+    public Map<String, Object> getImgsBytaskId(Long taskId) {
+        return service.getImgsBytaskId( taskId);
+    }
 
-        Map<String, Object> result = new HashMap<>();
-        List<PICTURETOUR> list = service.findBytaskId(taskId);
-        result.put("success",true);
-        result.put("object",list);
+    @ApiOperation(
+            value = "获取某一步骤的照片",
+            notes = "根据taskId,processId获取某一步骤的照片"
+    )
+    @GetMapping("getImgsBytaskIdAndProcessId")
+    public Map<String, Object> getImgsBytaskIdAndProcessId(String taskId,String processId) {
+        return service.getImgsBytaskIdAndProcessId(taskId,processId);
+    }
 
-        return result;
-
+    @ApiOperation(
+            value = "根据id获取照片",
+            notes = "根据id获取照片"
+    )
+    @GetMapping("getImgById")
+    public Map<String, Object> getImgById(Long id) {
+        return service.getImgById(id);
     }
 
     @ApiOperation(
@@ -179,7 +127,7 @@ public class PICTURETOURController extends
                 file.transferTo(targetFile);
                 picturetour.setId(null);
                 picturetour.setFileName("");
-                picturetour.setCreateTime(new Date(new java.util.Date().getTime()));
+                picturetour.setCreateTime(new Date());
                 result.put("success",true);
             } catch (IOException e) {
                 result.put("success",false);
@@ -190,16 +138,16 @@ public class PICTURETOURController extends
 
     }
 
-    @Scheduled(cron = "0/2 * * * * *")
+/*    @Scheduled(cron = "0/2 * * * * *")
     public void timerTask(){
         SnowflakeIdWorker idWorker = new SnowflakeIdWorker(0, 0);
-        String dirStr = YmlConfigUtil.getConfigByKey("upload-dir");
+        String dirStr = YmlConfigUtil.getConfigByKey("file-dir");
         System.out.println(dirStr);
         File dir = new File(dirStr);
         File[] files = dir.listFiles();
 
 
-    }
+    }*/
 
     @ApiOperation(
             value = "SnowFlake测试",

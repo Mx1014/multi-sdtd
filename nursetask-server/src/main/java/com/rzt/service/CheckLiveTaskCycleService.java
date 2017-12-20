@@ -32,7 +32,6 @@ import java.util.Map;
  * @version
  */
 @Service
-@Transactional
 public class CheckLiveTaskCycleService extends CurdService<CheckLiveTaskCycle, CheckLiveTaskCycleRepository> {
 
     @PersistenceContext
