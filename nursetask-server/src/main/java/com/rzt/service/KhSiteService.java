@@ -34,7 +34,6 @@ import java.util.*;
  * 修改备注：
  */
 @Service
-@Transactional
 public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
 
     @Autowired

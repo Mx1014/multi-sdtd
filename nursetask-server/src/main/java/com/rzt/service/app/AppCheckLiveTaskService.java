@@ -18,7 +18,6 @@ import java.util.Map;
  * Created by admin on 2017/12/13.
  */
 @Service
-@Transactional
 public class AppCheckLiveTaskService extends CurdService<CheckLiveTaskDetail, AppCheckLiveTaskRepository> {
 
     //查询该用户的所有父任务
