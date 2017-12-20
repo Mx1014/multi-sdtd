@@ -24,7 +24,6 @@ import org.springframework.util.StringUtils;
  * @version        
  */
 @Service
-@Transactional
 public class RztSysUserroleService extends CurdService<RztSysUserrole,RztSysUserroleRepository> {
 
 

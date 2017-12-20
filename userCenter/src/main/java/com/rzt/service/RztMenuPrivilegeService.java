@@ -31,11 +31,11 @@ import java.util.Map;
  * @version        
  */
 @Service
-@Transactional
+
 public class RztMenuPrivilegeService extends CurdService<RztMenuPrivilege,RztMenuPrivilegeRepository> {
 	@PersistenceContext
 	private EntityManager entityManager;
-
+	@Transactional
 	public void  deleteByroleId(String roleId){
 		this.reposiotry.deleteByRoleid(roleId);
 	}

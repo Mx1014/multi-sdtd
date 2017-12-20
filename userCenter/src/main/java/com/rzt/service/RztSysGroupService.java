@@ -26,9 +26,10 @@ import java.util.List;
  * @version        
  */
 @Service
-@Transactional
+
 public class RztSysGroupService extends CurdService<RztSysGroup,RztSysGroupRepository> {
 	//添加子节点
+	@Transactional
 	public RztSysGroup addSonNode(String id, RztSysGroup rztSysGroup){
 		rztSysGroup.setCreatetime(new Date());
 		int lft = this.reposiotry.getLftById(id);
@@ -41,6 +42,7 @@ public class RztSysGroupService extends CurdService<RztSysGroup,RztSysGroupRepos
 	}
 
 	//添加节点
+	@Transactional
 	public RztSysGroup addNode(String id,RztSysGroup rztSysGroup){
 		rztSysGroup.setCreatetime(new Date());
 		int rgt = this.reposiotry.getRgtById(id);
@@ -68,7 +70,7 @@ public class RztSysGroupService extends CurdService<RztSysGroup,RztSysGroupRepos
 		RztSysGroup rztSysGroup = this.reposiotry.getOne(id);
 		return this.reposiotry.findByLftLessThanAndRgtGreaterThan(rztSysGroup.getLft(),rztSysGroup.getRgt());
 	}
-
+	@Transactional
 	public void deleteNode(String id){
 		RztSysGroup rztSysGroup = this.reposiotry.getOne(id);
 		this.reposiotry.deleteByLftBetween(rztSysGroup.getLft(),rztSysGroup.getRgt());

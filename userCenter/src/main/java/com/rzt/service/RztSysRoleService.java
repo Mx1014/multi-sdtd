@@ -28,7 +28,6 @@ import java.util.List;
  * @version        
  */
 @Service
-@Transactional
 public class RztSysRoleService extends CurdService<RztSysRole,RztSysRoleRepository> {
 
 	public List<RztSysRole> findAllRole(){

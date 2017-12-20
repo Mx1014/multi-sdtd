@@ -33,7 +33,6 @@ import java.util.Map;
  * 修改备注：
  */
 @Service
-@Transactional
 public class RztSysUserService extends CurdService<RztSysUser, RztSysUserRepository> {
     @PersistenceContext
     private EntityManager entityManager;
@@ -99,6 +98,7 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
      * @param id 人员ID
      * @return
      */
+    @Transactional
     public int logicUser(String id) {
         return this.reposiotry.logicUser(id);
     }
@@ -110,6 +110,7 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
      * @param user
      * @return
      */
+    @Transactional
     public WebApiResponse updateUser(String id, RztSysUser user) {
         int age = user.getAge();
         String certificate = user.getCertificate();
