@@ -9,18 +9,19 @@ package com.rzt.service.pc;
 import com.rzt.entity.app.XSZCTASK;
 import com.rzt.entity.pc.XsZcCycle;
 import com.rzt.entity.pc.XsZcCycleLineTower;
+import com.rzt.entity.sch.XsTaskSCh;
 import com.rzt.repository.pc.XsZcCycleRepository;
 import com.rzt.service.CurdService;
 import com.rzt.service.app.XSZCTASKService;
 import com.rzt.util.WebApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**      
  * 类名称：XsZcCycleService    
@@ -109,7 +110,94 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
         }
     }
 
-    private void buyaode() {
 
+    /***
+    * @Method cycleList
+    * @Description 巡视任务周期列表
+    * @param [pageable, xsTaskSch]
+    * @return java.lang.Object
+    * @date 2017/12/14 10:34
+    * @author nwz
+    */
+    public Object cycleList(Pageable pageable, XsTaskSCh xsTaskSch) throws Exception {
+        StringBuffer sqlBuffer = new StringBuffer();
+        ArrayList arrList = new ArrayList();
+        sqlBuffer.append("SELECT id,plan_xs_num xspl,v_level \"vLevel\",task_name \"taskName\",section,cycle,tdyw_org \"tdywOrg\",in_use \"inUse\",total_task_num \"totalTaskNum\",create_time \"createTime\" FROM xs_zc_cycle where 1 = 1 and is_delete = 0");
+        Date startDate = xsTaskSch.getStartDate();
+        Date endDate = xsTaskSch.getEndDate();
+        if(startDate != null && endDate != null) {
+            sqlBuffer.append("and create_time between ? and ?");
+            arrList.add(startDate);
+            arrList.add(endDate);
+        }
+        try{
+            Integer status = xsTaskSch.getStatus();
+            if(status != null) {
+                sqlBuffer.append("and in_use = ?");
+                arrList.add(status);
+
+            }
+        }catch (Exception var4) {
+            var4.printStackTrace();
+        }
+
+
+        Page<Map<String, Object>> maps = this.execSqlPage(pageable,sqlBuffer.toString(), arrList.toArray());
+        return maps;
+    }
+
+    /**
+    * @Method logicalDelete
+    * @Description 逻辑删除
+    * @param [ids]
+    * @return java.lang.Object
+    * @date 2017/12/14 14:09
+    * @author nwz
+    */
+    public Object logicalDelete(Long[] ids) {
+        List<Long> longs = Arrays.asList(ids);
+        return this.reposiotry.logicalDelete(longs);
+    }
+    /**
+    * @Method listPlan
+    * @Description 任务列表
+    * @param [pageable, xsTaskSch]
+    * @return java.lang.Object
+    * @date 2017/12/14 14:17
+    * @author nwz
+    */
+    public Object listPlan(Pageable pageable, XsTaskSCh xsTaskSch) {
+        StringBuffer sqlBuffer = new StringBuffer();
+        ArrayList arrList = new ArrayList();
+        sqlBuffer.append("SELECT * FROM xs_zc_task where 1 = 1");
+        Date startDate = xsTaskSch.getStartDate();
+        Date endDate = xsTaskSch.getEndDate();
+        if (startDate != null && endDate != null) {
+            sqlBuffer.append("and plan_start_time between ? and ?");
+            arrList.add(startDate);
+            arrList.add(endDate);
+        }
+        Integer status = xsTaskSch.getStatus();
+        if (status != null) {
+            sqlBuffer.append("and status = ?");
+            arrList.add(status);
+
+        }
+        Page<Map<String, Object>> maps = this.execSqlPage(pageable, sqlBuffer.toString(), arrList.toArray());
+        return maps;
+    }
+
+    /***
+    * @Method getCycle
+    * @Description 查看周期
+    * @param [id]
+    * @return java.lang.Object
+    * @date 2017/12/15 16:56
+    * @author nwz
+    */
+    public Object getCycle(Long id) throws Exception{
+        String sql = "select * from xs_zc_cycle where id = ?";
+        Map<String, Object> cycle = this.execSqlSingleResult(sql, id);
+        return cycle;
     }
 }

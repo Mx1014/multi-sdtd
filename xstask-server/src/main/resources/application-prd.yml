@@ -1,5 +1,5 @@
 server:
-    port: 1234
+    port: 12345
     context-path: /xsTask
 
 
@@ -24,17 +24,32 @@ spring:
       maxPoolPreparedStatementPerConnectionSize: 20
       filters: stat,wall,log4j
       connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMill
+    redis:
+          database: 0
+          host: 168.130.1.31
+          password: 'sdtd275d'
+          pool:
+              max-active: 200
+              max-idle: 8
+              max-wait: -1
+              min-idle: 2
+          port: 30809
+          timeout: 0
+
+
 logging:
   config: classpath:logback-spring.xml
 #url加密  用于swagger模块
 security:
   basic:
-    path: /swagger-ui.html
+    path: /xsTask/swagger-ui.html
     enabled: true
   user:
     name: sdtd27
     password: sdtd27
 
+
+#解决时差的问题
 #      mysql:
 #        type: com.alibaba.druid.pool.DruidDataSource
 #        url: jdbc:mysql://192.168.1.246:3306/repair?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT

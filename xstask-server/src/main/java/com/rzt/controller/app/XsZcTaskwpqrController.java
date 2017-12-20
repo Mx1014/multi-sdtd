@@ -3,15 +3,15 @@ package com.rzt.controller.app;
 import com.rzt.controller.CurdController;
 import com.rzt.entity.app.XsZcTaskwpqr;
 import com.rzt.service.app.XsZcTaskwpqrService;
+import com.rzt.util.WebApiResponse;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
-import java.util.HashMap;
+import java.util.Date;
 
 /**
  * @ProjectName: sdtd2-task
@@ -21,9 +21,9 @@ import java.util.HashMap;
  */
 @RestController
 @RequestMapping("xsAppChange")
-@EnableSwagger2
 @Api(value = "巡视任务app修改接口")
 public class XsZcTaskwpqrController extends CurdController<XsZcTaskwpqr, XsZcTaskwpqrService> {
+
     /**
      * xslx 巡视类型 1 正常巡视 2 保电巡视 ID 任务id
      * 身份确认修改时间
@@ -32,18 +32,57 @@ public class XsZcTaskwpqrController extends CurdController<XsZcTaskwpqr, XsZcTas
      * @param id
      * @return
      */
-    @ApiOperation(value = "身份确认修改时间", notes = "xslx 巡视类型 1 正常巡视 2 保电巡视 ID 任务id")
-    @PostMapping("updateSfqrTime")
-    public HashMap updateSfqrTime(int xslx, Long id) {
-        int updateSfqrTime = this.service.updateSfqrTime(id, xslx);
-        int one = 1;
-        HashMap<String, Boolean> hashMap = new HashMap(0);
-        if (updateSfqrTime == one) {
-            hashMap.put("success", true);
-            return hashMap;
+    @ApiOperation(value = "接单修改时间", notes = "接单修改时间")
+    @PatchMapping("updateJdTime")
+    public Object updateJdTime(Integer xslx, Long id) {
+        try {
+            this.service.updateJdTime(id, xslx);
+            return WebApiResponse.success("数据保存成功!");
+        } catch (Exception var3) {
+            return WebApiResponse.erro("数据保存失败" + var3.getMessage());
         }
-        hashMap.put("success", false);
-        return hashMap;
+
+    }
+
+    /**
+     * xslx 巡视类型 1 正常巡视 2 保电巡视 ID 任务id
+     * 身份确认修改时间
+     *
+     * @param xslx
+     * @param id
+     * @return
+     */
+    @ApiOperation(value = "身份确认修改时间", notes = "身份确认修改时间")
+    @PatchMapping("updateSfqrTime")
+    public Object updateSfqrTime(Integer xslx, Long id) {
+        try {
+            this.service.updateSfqrTime(id, xslx);
+            return WebApiResponse.success("数据保存成功!");
+        } catch (Exception var3) {
+            return WebApiResponse.erro("数据保存失败" + var3.getMessage());
+        }
+
+    }
+
+
+
+    /**
+     * 物品提醒
+     *
+     * @param xslx   巡视类型 0 特巡 1 保电 2 正常巡视
+     * @param taskId 任务ID
+     * @param wpZt   选择物品状态
+     * @return
+     */
+    @PatchMapping("articlesUpdate")
+    @ApiOperation(value = "物品提醒", notes = "物品提醒")
+    public Object articlesUpdate(Integer xslx, Long id, String wpZt,Date wptxTime ) {
+        try {
+            this.service.articlesReminding(id, wpZt, xslx,wptxTime);
+            return WebApiResponse.success("数据保存成功!");
+        } catch (Exception var3) {
+            return WebApiResponse.erro("数据保存失败" + var3.getMessage());
+        }
     }
 
     /**
@@ -54,43 +93,118 @@ public class XsZcTaskwpqrController extends CurdController<XsZcTaskwpqr, XsZcTas
      * @param id
      * @return
      */
-    @ApiOperation(value = "到达现场时间修改", notes = "xslx 巡视类型 1 正常巡视 2 保电巡视 ID 任务id")
-    @RequestMapping("reachSpot")
-    public HashMap reachSpot(int xslx, Long id) {
-        int reachSpot = this.service.reachSpot(xslx, id);
-        int one = 1;
-        int zero = 0;
-        HashMap<String, Boolean> hashMap = new HashMap(0);
-        if (reachSpot == one) {
-            hashMap.put("success", true);
-        } else if (zero == 0) {
-            hashMap.put("success", false);
+    @ApiOperation(value = "到达现场时间修改", notes = "到达现场时间修改")
+    @PatchMapping("reachSpot")
+    public Object reachSpot(Integer xslx, Long id) {
+        try {
+            Object o = this.service.reachSpot(xslx, id);
+            return WebApiResponse.success(o);
+        } catch (Exception var3) {
+            return WebApiResponse.erro("数据保存失败" + var3.getMessage());
         }
-        return hashMap;
+    }
+
+
+
+
+    /**
+     * xslx 巡视类型 1 正常巡视 2 保电巡视 ID 任务id
+     * 到达现场时间修改
+     *
+     * @param xslx
+     * @param taskId
+     * @return
+     */
+    @ApiOperation(value = "插入轮数据", notes = "插入轮数据")
+    @PostMapping("insertExec")
+    public Object insertExe(Integer xslx,Long taskId,Integer repeatNum) {
+        try {
+            this.service.insertExec(xslx, taskId,repeatNum);
+            return WebApiResponse.success("数据保存成功");
+        } catch (Exception var3) {
+            return WebApiResponse.erro("数据保存失败" + var3.getMessage());
+        }
     }
 
     /**
-     * 物品提醒
+     * xslx 巡视类型 1 正常巡视 2 保电巡视 ID 任务id
+     * 到达现场时间修改
      *
-     * @param xslx   巡视类型 0 特巡 1 保电 2 正常巡视
-     * @param taskId 任务ID
-     * @param wpZt   选择物品状态
+     * @param xslx
+     * @param taskId
      * @return
      */
-    @GetMapping("articlesUpdate")
-    @ApiOperation(value = "物品提醒", notes = " xslx   巡视类型 0 特巡 1 保电 2 正常巡视  taskId 任务ID  wpZt 返回 true false")
-    public HashMap articlesUpdate(int xslx, Long taskId, String wpZt) {
-        int one = 1;
-        int zero = 0;
-        HashMap<String, Boolean> hashMap = new HashMap(0);
-        int articlesReminding = this.service.articlesReminding(taskId, wpZt, xslx);
-        if (articlesReminding == zero) {
-            hashMap.put("success", true);
-            return hashMap;
-        } else if (articlesReminding == one) {
-            hashMap.put("success", false);
-            return hashMap;
+    @ApiOperation(value = "更新轮数据", notes = "更新轮数据")
+    @PatchMapping("updateExec")
+    public Object updateExec(Integer xslx,Long execId,Integer status) {
+        try {
+            this.service.updateExec(xslx, execId,status);
+            return WebApiResponse.success("数据保存成功");
+        } catch (Exception var3) {
+            return WebApiResponse.erro("数据保存失败" + var3.getMessage());
         }
-        return hashMap;
     }
+
+
+    /**
+     * xslx 巡视类型 1 正常巡视 2 保电巡视 ID 任务id
+     * 到达现场时间修改
+     *
+     * @param xslx
+     * @param id
+     * @return
+     */
+    @ApiOperation(value = "插入轮详情数据", notes = "插入轮详情数据")
+    @PostMapping("insertExecDetail")
+    public Object insertExecDetail(Integer xslx,Long execId,String gznr,Long startTowerId,Long endTowerId) {
+        try {
+            Object o = this.service.insertExecDetail(xslx, execId,gznr,startTowerId,endTowerId);
+            return WebApiResponse.success(o);
+        } catch (Exception var3) {
+            return WebApiResponse.erro("数据保存失败" + var3.getMessage());
+        }
+    }
+
+
+    /**
+     * xslx 巡视类型
+     * 到达现场时间修改
+     *
+     * @param xslx  巡视类型
+     * @param sfdw 是否到位
+     * @param reason 不到位原因
+     * @param execDetailId 轮详情id
+     * @return
+     */
+    @ApiOperation(value = "更新轮详情数据", notes = "更新轮详情数据 ")
+    @PatchMapping("updateExecDetail")
+    public Object updateExecDetail(Integer xslx,Integer sfdw,String reason,Long execDetailId) {
+        try {
+            this.service.updateExecDetail(xslx,sfdw, reason,execDetailId);
+            return WebApiResponse.success("数据更新成功");
+        } catch (Exception var3) {
+            return WebApiResponse.erro("数据更新失败" + var3.getMessage());
+        }
+    }
+
+
+    /**
+     * xslx 巡视类型
+     * 到达现场时间修改
+     *
+     * @param xslx  巡视类型
+     * @param id 任务id
+     * @return
+     */
+    @ApiOperation(value = "更新任务状态", notes = "更新任务状态 ")
+    @PatchMapping("finishTask")
+    public Object updateTaskStatus(Integer xslx,Long id) {
+        try {
+            this.service.updateTaskStatus(xslx,id);
+            return WebApiResponse.success("数据更新成功");
+        } catch (Exception var3) {
+            return WebApiResponse.erro("数据更新失败" + var3.getMessage());
+        }
+    }
+
 }

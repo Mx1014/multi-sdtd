@@ -1,141 +1,63 @@
 server:
-    port: 9094
-    context-path:
+    port: 12345
+    context-path: /xsTask
+
 
 spring:
     datasource:
-        type: com.alibaba.druid.pool.xa.DruidXADataSource
-        druid:
-          # WebStatFilter配置，说明请参考Druid Wiki，配置_配置WebStatFilter
-          web-stat-filter:
-            enabled: true
-            urlPattern:
-            exclusions:
-            sessionStatMaxCount:
-            sessionStatEnable:
-            principalSessionName:
-            principalCookieName:
-            profileEnable:
-          # StatViewServlet配置，说明请参考Druid Wiki，配置_StatViewServlet配置
-          stat-view-servlet:
-            enabled: true
-            urlPattern:
-            resetEnable: false
-            loginUsername: admin
-            loginPassword: 123456
-            allow: 127.0.0.1
-            deny:
-         # Spring监控配置，说明请参考Druid Github Wiki，配置_Druid和Spring关联监控配置
-         # Spring监控AOP切入点，如x.y.z.service.*,配置多个英文逗号分隔
-          aop-patterns:
-            - com.chint.springboot.atomikos.*.service.**
+      type: com.alibaba.druid.pool.DruidDataSource
+      url: jdbc:mysql://168.130.1.31:30624/sdtd27?useUnicode=true&characterEncoding=utf8
+      username: sdtd27
+      password: sdtd27
+      driver-class-name: oracle.jdbc.driver.OracleDriver
+      minIdle: 10
+      maxActive: 200
+      initialSize: 5
+      maxWait: 60000
+      timeBetweenEvictionRunsMillis: 3000
+      minEvictableIdleTimeMillis: 300000
+      validationQuery: SELECT 1 FROM DUAL
+      testWhileIdle: true
+      testOnBorrow: false
+      testOnReturn: false
+      poolPreparedStatements: true
+      maxPoolPreparedStatementPerConnectionSize: 20
+      filters: stat,wall,log4j
+      connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMill
+    redis:
+          database: 0
+          host: 168.130.1.31
+          password: 'sdtd275d'
+          pool:
+              max-active: 200
+              max-idle: 8
+              max-wait: -1
+              min-idle: 2
+          port: 30809
+          timeout: 0
 
-          repairService:
-            name: repairService
-            url: jdbc:oracle:thin:@168.130.7.81:1521:sdtd
-            username: sdtd27
-            password: sdtd27
-            # 下面为连接池的补充设置，应用到上面所有数据源中
-            # 初始化大小，最小，最大
-            initialSize: 5
-            minIdle: 5
-            maxActive: 20
-            # 配置获取连接等待超时的时间
-            maxWait: 60000
-            # 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
-            timeBetweenEvictionRunsMillis: 60000
-            # 配置一个连接在池中最小生存的时间，单位是毫秒
-            minEvictableIdleTimeMillis: 30
-            validationQuery: SELECT 1
-            validationQueryTimeout: 10000
-            testWhileIdle: true
-            testOnBorrow: false
-            testOnReturn: false
-            # 打开PSCache，并且指定每个连接上PSCache的大小
-            poolPreparedStatements: true
-            maxPoolPreparedStatementPerConnectionSize: 20
-            filters: stat,wall
-            # 通过connectProperties属性来打开mergeSql功能；慢SQL记录
-            connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
-            # 合并多个DruidDataSource的监控数据
-            useGlobalDataSourceStat: true
 
-          station:
-            name: station
-            url: jdbc:mysql://192.168.1.246:3306/servingStation?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT&pinGlobalTxToPhysicalConnection=true
-            username: root
-            password: 123456
-            # 下面为连接池的补充设置，应用到上面所有数据源中
-            # 初始化大小，最小，最大
-            initialSize: 5
-            minIdle: 5
-            maxActive: 20
-            # 配置获取连接等待超时的时间
-            maxWait: 60000
-            # 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
-            timeBetweenEvictionRunsMillis: 60000
-            # 配置一个连接在池中最小生存的时间，单位是毫秒
-            minEvictableIdleTimeMillis: 30
-            validationQuery: SELECT 1
-            validationQueryTimeout: 10000
-            testWhileIdle: true
-            testOnBorrow: false
-            testOnReturn: false
-            # 打开PSCache，并且指定每个连接上PSCache的大小
-            poolPreparedStatements: true
-            maxPoolPreparedStatementPerConnectionSize: 20
-            filters: stat,wall
-            # 通过connectProperties属性来打开mergeSql功能；慢SQL记录
-            connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
-            # 合并多个DruidDataSource的监控数据
-            useGlobalDataSourceStat: true
-#    datasource:
-##      hikari:
-##        maxLifetime: 1765000 #一个连接的生命时长（毫秒），超时而且没被使用则被释放（retired），缺省:30分钟，建议设置比数据库超时时长少30秒以上
-##        maximumPoolSize: 15 #连接池中允许的最大连接数。缺省值：10；推荐的公式：((core_count * 2) + effective_spindle_count)
-#      repair:
-#        service:
-#          type: com.alibaba.druid.pool.xa.DruidXADataSource
-#          url: jdbc:mysql://192.168.1.246:3306/repair?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT&pinGlobalTxToPhysicalConnection=true
-#          username: root
-#          password: 123456
-#          driverClassName: com.mysql.cj.jdbc.Driver
-#          validationQuery: SELECT 1
-#          testWhileIdle: true
-#          minPoolSize: 5
-#          maxPoolSize: 20
-#          maxLifetime: 20000
-#          borrowConnectionTimeout: 30
-#          loginTimeout: 30
-#          maintenanceInterval: 60
-#          maxIdleTime: 60
-#        station:
-#          type: com.alibaba.druid.pool.xa.DruidXADataSource
-#          url: jdbc:mysql://192.168.1.246:3306/servingStation?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT&pinGlobalTxToPhysicalConnection=true
-#          username: root
-#          password: 123456
-#          driverClassName: com.mysql.cj.jdbc.Driver
-#          validationQuery: SELECT 1
-#          testWhileIdle: true
-#          minPoolSize: 5
-#          maxPoolSize: 20
-#          maxLifetime: 20000
-#          borrowConnectionTimeout: 30
-#          loginTimeout: 30
-#          maintenanceInterval: 60
-#          maxIdleTime: 60
+logging:
+  config: classpath:logback-spring.xml
+#url加密  用于swagger模块
+security:
+  basic:
+    path: /xsTask/swagger-ui.html
+    enabled: true
+  user:
+    name: sdtd27
+    password: sdtd27
 
-    aop:
-      auto: true
-    rabbitmq:
-        host: 192.168.1.248
-        port: 5672
-        username: raja
-        password: 123456
-        cache:
-          channel:
-            size: 50
-   #jta相关参数配置
-    jta:
-      log-dir: classpath:tx-logs
-      transaction-manager-id: txManager
+
+#解决时差的问题
+#      mysql:
+#        type: com.alibaba.druid.pool.DruidDataSource
+#        url: jdbc:mysql://192.168.1.246:3306/repair?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT
+#        username: root
+#        password: 123456
+#        driver-class-name: com.mysql.cj.jdbc.Driver
+#        validationQuery: SELECT 1
+#        testWhileIdle: true
+
+#    aop:
+#      auto: true

@@ -76,7 +76,7 @@ public class PrimaryDataSource {
         datasource.setUrl(dbUrlMy);
         datasource.setUsername(usernameMy);
         datasource.setPassword(passwordMy);
-        datasource.setDriverClassName(driverClassNameMy);
+//        datasource.setDriverClassName(driverClassNameMy);
 
         //configuration
         datasource.setInitialSize(initialSizeMy);

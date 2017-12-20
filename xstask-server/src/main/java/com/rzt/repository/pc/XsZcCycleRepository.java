@@ -8,7 +8,13 @@ package com.rzt.repository.pc;
 
 import com.rzt.entity.pc.XsZcCycle;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import javax.transaction.Transactional;
+import java.util.List;
+
 /**
  * 类名称：XsZcCycleRepository    
  * 类描述：    
@@ -21,4 +27,8 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface XsZcCycleRepository extends JpaRepository<XsZcCycle,String> {
+    @Modifying
+    @Transactional
+    @Query(value = "update xs_zc_cycle set is_delte = 0 where id= in (?1)", nativeQuery = true)
+    Object logicalDelete(List<Long> longs);
 }

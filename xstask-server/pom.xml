@@ -68,29 +68,23 @@
         </dependency>
 
         <!-- oracle数据库驱动 -->
-        <!--<dependency>
-            <groupId>ojdbc</groupId>
-            <artifactId>ojdbc</artifactId>
-            <version>ojdbc14-10.2.0.2</version>
-        </dependency>-->
-
-        <!--<dependency>-->
-        <!--<groupId>com.oracle</groupId>-->
-        <!--<artifactId>ojdbc14</artifactId>-->
-        <!--<version>10.2.0.4.0</version>-->
-        <!--</dependency>-->
-        <!-- https://mvnrepository.com/artifact/com.oracle/ojdbc6 -->
         <dependency>
             <groupId>com.oracle</groupId>
             <artifactId>ojdbc6</artifactId>
             <version>11.1.0.7.0</version>
         </dependency>
 
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>5.1.31</version>
+        </dependency>
+
         <!--公司自己的东西-->
         <dependency>
             <groupId>com.rzt.base</groupId>
             <artifactId>Rzt-base</artifactId>
-            <version>1.1.7-SNAPSHOT</version>
+            <version>1.1.8-SNAPSHOT</version>
         </dependency>
 
         <!--线程安全的时间插件jar包-->
@@ -110,6 +104,14 @@
             <artifactId>springfox-swagger-ui</artifactId>
             <version>${springfox.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-redis</artifactId>
+            <version>2.0.2.RELEASE</version>
+        </dependency>
+
+
     </dependencies>
 
         <build>

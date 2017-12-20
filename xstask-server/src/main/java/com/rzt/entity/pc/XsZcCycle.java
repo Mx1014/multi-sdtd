@@ -68,13 +68,18 @@ public class XsZcCycle implements Serializable{
      private String tdywOrg;
     	//字段描述: 是否停用 0 不停用 1 停用
    	 @Column(name = "IN_USE")
-     private Integer inUse;
+     private Integer inUse = 0;
     	//字段描述: 
    	 @Column(name = "TOTAL_TASK_NUM")
-     private Integer totalTaskNum;
+     private Integer totalTaskNum = 0;
         //字段描述
    	 @Column(name = "CREATE_TIME")
     private Date createTime;
+	//字段描述
+	@Column(name = "is_delete")
+	private Integer isDelete = 0;
+
+
 	public void setId(){
 		this.id = Long.valueOf(new SnowflakeIdWorker(0,0).nextId());
 	}
@@ -182,7 +187,6 @@ public class XsZcCycle implements Serializable{
 	public void setTotalTaskNum(Integer totalTaskNum){
 		this.totalTaskNum = totalTaskNum;
 	}
-	@ExcelResources(title="",order=14)
 	public Integer getTotalTaskNum(){
 		return this.totalTaskNum;
 	}
@@ -190,8 +194,15 @@ public class XsZcCycle implements Serializable{
     public Date getCreateTime() {
         return createTime;
     }
-
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
     }
+
+	public Integer getIsDelete() {
+		return isDelete;
+	}
+
+	public void setIsDelete(Integer isDelete) {
+		this.isDelete = isDelete;
+	}
 }

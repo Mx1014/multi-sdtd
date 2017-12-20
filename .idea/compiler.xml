@@ -11,6 +11,7 @@
         <module name="census-server" />
         <module name="eureka-server" />
         <module name="examserver" />
+        <module name="file-server" />
         <module name="fileserver" />
         <module name="linedata-server" />
         <module name="nursetask-server" />
@@ -24,6 +25,7 @@
       <module name="census-server" target="1.8" />
       <module name="eureka-server" target="1.8" />
       <module name="examserver" target="1.8" />
+      <module name="file-server" target="1.8" />
       <module name="fileserver" target="1.8" />
       <module name="linedata-server" target="1.8" />
       <module name="multi-sdtd" target="1.8" />
