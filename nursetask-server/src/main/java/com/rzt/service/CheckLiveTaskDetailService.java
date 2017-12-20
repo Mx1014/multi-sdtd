@@ -25,7 +25,6 @@ import java.util.List;
  * @version
  */
 @Service
-@Transactional
 public class CheckLiveTaskDetailService extends CurdService<CheckLiveTaskDetail,CheckLiveTaskDetailRepository> {
 
 

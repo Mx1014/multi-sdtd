@@ -21,7 +21,6 @@ import java.util.Map;
  * Created by admin on 2017/12/17.
  */
 @Service
-@Transactional
 public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
 
     @Autowired
@@ -85,7 +84,17 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
 
     public WebApiResponse appDdcx(String taskId) {
         try {
+            //保存现场照片
             this.reposiotry.updateDDTime(DateUtil.dateNow(),Long.parseLong(taskId));
+            return WebApiResponse.success("");
+        } catch (Exception e) {
+            return WebApiResponse.erro("数据获取成功");
+        }
+    }
+
+    public WebApiResponse appExchange(String taskId) {
+        try {
+            //保存现场照片
             return WebApiResponse.success("");
         } catch (Exception e) {
             return WebApiResponse.erro("数据获取成功");

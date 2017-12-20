@@ -71,12 +71,21 @@ public class AppKhTaskController extends
         return this.service.appSaveWpzt(task);
     }
 
-    //到达现场 → 开始看护
+    //到达现场 → 开始看护   现场照片信息
     @ApiOperation(value = "物品提示", notes = "收集看护人照片信息  ")
     @GetMapping("/appDdcx")
     @ResponseBody
     public WebApiResponse appDdcx(String taskId){
         return this.service.appDdcx(taskId);
+    }
+
+    // 开始看护 →  交接班   现场环境照片保存
+    // 问题：上报的危机信息保存到哪里 现场工况采集如何保存
+    @ApiOperation(value = "开始看护", notes = "收集现场环境照片、工况、危机信息  ")
+    @GetMapping("/appExchange ")
+    @ResponseBody
+    public WebApiResponse appExchange(String taskId){
+        return this.service.appExchange(taskId);
     }
    /* @GetMapping("/updateTaskTime.do")
     @ResponseBody
