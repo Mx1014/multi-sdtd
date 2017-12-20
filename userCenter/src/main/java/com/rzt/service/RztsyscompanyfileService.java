@@ -23,7 +23,6 @@ import com.rzt.service.CurdService;
  * @version        
  */
 @Service
-@Transactional
 public class RztsyscompanyfileService extends CurdService<Rztsyscompanyfile,RztsyscompanyfileRepository> {
 
 

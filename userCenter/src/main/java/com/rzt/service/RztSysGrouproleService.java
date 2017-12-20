@@ -23,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
  * @version        
  */
 @Service
-@Transactional
 public class RztSysGrouproleService extends CurdService<RztSysGrouprole,RztSysGrouproleRepository> {
 
 

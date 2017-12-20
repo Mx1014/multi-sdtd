@@ -26,7 +26,6 @@ import java.util.Date;
  * 修改备注：
  */
 @Service
-@Transactional
 public class RztSysUserauthService extends CurdService<RztSysUserauth, RztSysUserauthRepository> {
 
     public String findByUserName(RztSysUser user) {
@@ -42,7 +41,7 @@ public class RztSysUserauthService extends CurdService<RztSysUserauth, RztSysUse
             flag = "该手机号已存在";
         return flag;
     }
-
+    @Transactional
     public void addUserAuth(RztSysUser user, String password) {
         RztSysUserauth userauth = new RztSysUserauth();
         userauth.setCreatetime(new Date());

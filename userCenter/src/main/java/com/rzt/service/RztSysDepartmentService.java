@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -31,12 +32,13 @@ import java.util.Map;
  * 修改备注：
  */
 @Service
-@Transactional
+
 public class RztSysDepartmentService extends CurdService<RztSysDepartment, RztSysDepartmentRepository> {
     @PersistenceContext
     private EntityManager entityManager;
 
     //添加子节点
+    @Transactional
     public RztSysDepartment addSonNode(String id, RztSysDepartment rztSysDepartment) {
         rztSysDepartment.setCreatetime(new Date());
         int lft = this.reposiotry.getLftById(id).getLft();
@@ -58,6 +60,7 @@ public class RztSysDepartmentService extends CurdService<RztSysDepartment, RztSy
     }
 
     //添加节点
+    @Transactional
     public RztSysDepartment addNode(String id, RztSysDepartment rztSysDepartment) {
         rztSysDepartment.setCreatetime(new Date());
         RztSysDepartment tongji = this.reposiotry.getRgtById(id);
@@ -98,7 +101,7 @@ public class RztSysDepartmentService extends CurdService<RztSysDepartment, RztSy
         RztSysDepartment rztSysDepartment = this.reposiotry.getOne(id);
         return this.reposiotry.findByLftLessThanAndRgtGreaterThan(rztSysDepartment.getLft(), rztSysDepartment.getRgt());
     }
-
+    @Transactional
     public void deleteNode(String id) {
         RztSysDepartment rztSysDepartment = this.reposiotry.getOne(id);
         int width = rztSysDepartment.getRgt() - rztSysDepartment.getLft() + 1;
@@ -125,6 +128,7 @@ public class RztSysDepartmentService extends CurdService<RztSysDepartment, RztSy
      * @param id       单位ID
      * @return
      */
+    @Transactional
     public WebApiResponse updateByDeptName(String deptname, String id) {
         try {
             return WebApiResponse.success(this.reposiotry.updateByDeptName(deptname, id));
