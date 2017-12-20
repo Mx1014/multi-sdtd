@@ -1,47 +1,45 @@
 package com.rzt.util;
 
-/**
- * Created by 张虎成 on 2016/12/23.
- */
-public class WebApiResponse<T> {
+public class WebApiResponse {
+	private boolean success;
+	private String error;
+	private Object Data;
 
-    private  boolean success;
-    private  String error;
+	public WebApiResponse() {
+	}
 
-    public boolean isSuccess() {
-        return success;
-    }
+	public boolean isSuccess() {
+		return this.success;
+	}
 
-    public void setSuccess(boolean success) {
-        this.success = success;
-    }
+	public void setSuccess(boolean success) {
+		this.success = success;
+	}
 
+	public void setError(String error) {
+		this.error = error;
+	}
 
-    public void setError(String error) {
-        this.error = error;
-    }
+	public Object getData() {
+		return this.Data;
+	}
 
-    public T getData() {
-        return Data;
-    }
+	public void setData(Object data) {
+		this.Data = data;
+	}
 
-    public void setData(T data) {
-        Data = data;
-    }
+	public static WebApiResponse success(Object data) {
+		WebApiResponse response = new WebApiResponse();
+		response.setSuccess(true);
+		response.setData(data);
+		return response;
+	}
 
-    private  T Data;
-
-    public static <T> WebApiResponse<T> success(T data){
-        WebApiResponse<T> response = new WebApiResponse<T>();
-        response.setSuccess(true);
-        response.setData(data);
-        return response;
-    }
-
-    public static <T> WebApiResponse<T> erro(String errorMessage){
-        WebApiResponse<T> response = new WebApiResponse<T>();
-        response.setSuccess(false);
-        response.setError(errorMessage);
-        return response;
-    }
+	public static WebApiResponse erro(String errorMessage) {
+		WebApiResponse response = new WebApiResponse();
+		response.setSuccess(false);
+		response.setData(errorMessage);
+		response.setError(errorMessage);
+		return response;
+	}
 }

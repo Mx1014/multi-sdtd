@@ -1,5 +1,6 @@
 package com.rzt.controller;
 
+import com.rzt.util.WebApiResponse;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 

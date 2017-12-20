@@ -191,13 +191,13 @@ public class RztSysUserController extends
             sysUser = this.service.findOne(userauth.getUserid());
             sysUser.setLoginstatus(1);
             try {
-                this.service.update(sysUser, sysUser.getId());
 				map = this.service.getUserinfoByUserId(sysUser.getId());
 				redisTemplate.opsForHash().put(Constances.USER_OBJ,sysUser.getId(),map);
 				access_token = JwtHelper.createJWT(map,
 						tokenProp.getExpireTime()).getAccess_token();
-				stringRedisTemplate.opsForValue().set("user:" + map.get("username"), access_token);
-            } catch (Exception e) {
+				stringRedisTemplate.opsForValue().set("user:" + map.get("USERNAME"), access_token);
+				this.service.update(sysUser, sysUser.getId());
+			} catch (Exception e) {
                 e.printStackTrace();
             }
             userauthService.updateLoginIp(request.getRemoteAddr(), sysUser.getId(), flag);

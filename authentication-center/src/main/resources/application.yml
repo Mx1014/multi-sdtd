@@ -6,7 +6,7 @@ server:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:7002/eureka/
+      defaultZone: http://168.130.1.31:31814/eureka/
 spring:
   application:
     name: authentication

@@ -41,28 +41,6 @@ public class AccessFilter extends ZuulFilter {
 
     @Override
     public Object run() {
-        RequestContext ctx = RequestContext.getCurrentContext();
-        HttpServletRequest request = ctx.getRequest();
-        HttpHeaders requestHeaders = new HttpHeaders();
-        String accessToken = request.getHeader("Authorization");
-        /*requestHeaders.add("Authorization", accessToken);*/
-//        HttpEntity<String> requestEntity = new HttpEntity<String>(accessToken,requestHeaders);
-//        String resultStr = this.restTemplate.exchange(auth_url, HttpMethod.POST,requestEntity, String.class).getBody();
-        String resultStr = authentication.auth();
-        JSONObject resultObj = JSONObject.parseObject(resultStr);
-        if(Boolean.parseBoolean(resultObj.get("success").toString())||request.getRequestURI().contains("login")||request.getRequestURI().contains("export")) {// 如果请求的参数不为空，且值为chhliu时，则通过
-            ctx.setSendZuulResponse(true);// 对该请求进行路由
-            ctx.setResponseStatusCode(200);
-            ctx.set("isSuccess", true);// 设值，让下一个Filter看到上一个Filter的状态
-            return null;
-        }else{
-            ctx.getResponse().setCharacterEncoding("utf-8");
-            ctx.setSendZuulResponse(false);// 过滤该请求，不对其进行路由
-            ctx.setResponseStatusCode(401);// 返回错误码
-            ctx.setResponseBody(resultStr);// 返回错误内容
-            ctx.set("isSuccess", false);
-            return null;
-        }
-
+        return null;
     }
 }

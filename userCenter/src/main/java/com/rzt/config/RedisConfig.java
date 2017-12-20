@@ -1,5 +1,7 @@
 package com.rzt.config;
 
+import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonRedisSerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -34,6 +36,10 @@ public class RedisConfig {
 
 	@Bean
 	public RedisTemplate<String, Object> redisHashTemplate(){
+		FastJsonRedisSerializer fastJsonRedisSerializer = new FastJsonRedisSerializer(Object.class);
+		FastJsonConfig jsonConfig = new FastJsonConfig();
+		jsonConfig.setSerializerFeatures(SerializerFeature.WriteMapNullValue);
+		fastJsonRedisSerializer.setFastJsonConfig(jsonConfig);
 		RedisTemplate<String,Object> template = new RedisTemplate<>();
 		template.setConnectionFactory(jedisConnectionFactory());
 		template.setKeySerializer(new StringRedisSerializer());
