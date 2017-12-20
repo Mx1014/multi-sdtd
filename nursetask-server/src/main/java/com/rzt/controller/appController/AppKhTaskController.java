@@ -39,6 +39,11 @@ public class AppKhTaskController extends
             return WebApiResponse.erro("数据获取失败");
         }
     }
+    @GetMapping("/getYbCount")
+    @ResponseBody
+    public WebApiResponse getYbCount(){
+        return this.service.getYbCount();
+    }
 
     @ApiOperation(value = "看护任务详情", notes = "查看当前看护任务的详细信息  ")
     @GetMapping("/appListkhTaskById")
