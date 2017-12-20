@@ -4,6 +4,8 @@ server:
 
 
 spring:
+    application:
+          name: xsTask
     datasource:
       type: com.alibaba.druid.pool.DruidDataSource
       url: jdbc:oracle:thin:@47.92.67.90:1521:orcl
@@ -35,7 +37,8 @@ spring:
               min-idle: 2
           port: 30809
           timeout: 0
-
+jpa:
+  database: Oracle
 
 logging:
   config: classpath:logback-spring.xml
@@ -47,7 +50,10 @@ security:
   user:
     name: sdtd27
     password: sdtd27
-
+eureka:
+  client:
+    service-url:
+      defaultZone: http://168.130.1.31:31814/eureka/
 
 #解决时差的问题
 #      mysql:

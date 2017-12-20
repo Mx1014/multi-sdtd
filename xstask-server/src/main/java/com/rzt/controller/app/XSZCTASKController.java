@@ -139,10 +139,23 @@ public class XSZCTASKController extends
 
     @GetMapping("xsTowerList")
     @ApiOperation(value = "巡视页面", notes = "xslx 0 特殊 1 保电 2 正常")
-    @DataEncode(includes = {"ID","TOWER_NAME"})
+//    @DataEncode(includes = {"ID","TOWER_NAME"})
     public WebApiResponse xsTowerList(Integer xslx, Long id) {
         try {
             return WebApiResponse.success(this.service.xsTowerList(xslx, id));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("数据库请求失败");
+        }
+    }
+
+
+    @GetMapping("historyXsTowerList")
+    @ApiOperation(value = "巡视页面", notes = "xslx 0 特殊 1 保电 2 正常")
+//    @DataEncode(includes = {"ID","TOWER_NAME"})
+    public WebApiResponse historyXsTowerList(Integer xslx, Long execId) {
+        try {
+            return WebApiResponse.success(this.service.historyXsTowerList(xslx, execId));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("数据库请求失败");

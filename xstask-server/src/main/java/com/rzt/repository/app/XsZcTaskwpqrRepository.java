@@ -410,7 +410,7 @@ public interface XsZcTaskwpqrRepository extends JpaRepository<XsZcTaskwpqr, Stri
      */
     @Modifying
     @Transactional
-    @Query(value = "UPDATE xs_txbd_task SET status = 2 and real_end_time = sysdate WHERE id =?1", nativeQuery = true)
+    @Query(value = "UPDATE xs_txbd_task SET stauts = 2,real_end_time = sysdate WHERE id =?1", nativeQuery = true)
     void updateTxbdTaskToOff(Long id);
 
     /***
@@ -423,6 +423,6 @@ public interface XsZcTaskwpqrRepository extends JpaRepository<XsZcTaskwpqr, Stri
      */
     @Modifying
     @Transactional
-    @Query(value = "UPDATE xs_zc_task SET status = 2 and real_end_time = sysdate WHERE id =?1", nativeQuery = true)
+    @Query(value = "UPDATE xs_zc_task SET stauts = 2,real_end_time = sysdate WHERE id =?1", nativeQuery = true)
     void updateZcxsTaskToOff(Long id);
 }
