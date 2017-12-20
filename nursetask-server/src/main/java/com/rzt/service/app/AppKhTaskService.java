@@ -21,13 +21,12 @@ import java.util.Map;
  * Created by admin on 2017/12/17.
  */
 @Service
-@Transactional
 public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
 
     @Autowired
     private KhTaskWpqrService wpqrService;
 
-    public List<Map<String,Object>> appListkhTask(int dbyb, Pageable pageable, String userId) {
+    public Page<Map<String,Object>> appListkhTask(int dbyb, Pageable pageable, String userId) {
         String result = " k.id as taskId,k.plan_start_time as startTime,k.task_name as taskName,k.status as status,u.realname as name";
         StringBuffer buffer = new StringBuffer();
         if (dbyb == 1) {
@@ -36,7 +35,7 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
             buffer.append(" where status like '已完成'");
         }
         String sql = "select " + result + " from kh_task k left join rztsysuser u on u.id = k.user_id " + buffer.toString() + " and user_id = ?";
-        return this.execSql(sql, userId);
+        return this.execSqlPage(pageable,sql, userId);
     }
 
     public WebApiResponse appListkhTaskById(String taskId) {
@@ -85,7 +84,27 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
 
     public WebApiResponse appDdcx(String taskId) {
         try {
+            //保存现场照片
             this.reposiotry.updateDDTime(DateUtil.dateNow(),Long.parseLong(taskId));
+            return WebApiResponse.success("");
+        } catch (Exception e) {
+            return WebApiResponse.erro("数据获取成功");
+        }
+    }
+
+    public WebApiResponse appExchange(String taskId) {
+        try {
+            //保存现场照片
+            return WebApiResponse.success("");
+        } catch (Exception e) {
+            return WebApiResponse.erro("数据获取成功");
+        }
+    }
+
+    public WebApiResponse getYbCount() {
+        try {
+            //保存现场照片
+            this.reposiotry.getybCount();
             return WebApiResponse.success("");
         } catch (Exception e) {
             return WebApiResponse.erro("数据获取成功");

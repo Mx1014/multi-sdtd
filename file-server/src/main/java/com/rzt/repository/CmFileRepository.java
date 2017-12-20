@@ -5,10 +5,13 @@
  * Copyright 融智通科技(北京)股份有限公司 版权所有    
  */
 package com.rzt.repository;
+import com.rzt.entity.CmFile;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import com.rzt.entity.CmFile;
-/**      
+
+import java.util.List;
+
+/**
  * 类名称：CmFileRepository    
  * 类描述：    
  * 创建人：张虎成   
@@ -20,4 +23,7 @@ import com.rzt.entity.CmFile;
  */
  @Repository
 public interface CmFileRepository extends JpaRepository<CmFile,String> {
+    List<CmFile> findByFkId(Long fkid);
+
+    CmFile findById(Long id);
 }

@@ -28,7 +28,6 @@ import java.util.*;
  * @version        
  */
 @Service
-@Transactional
 public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTaskRepository> {
 
     @PersistenceContext

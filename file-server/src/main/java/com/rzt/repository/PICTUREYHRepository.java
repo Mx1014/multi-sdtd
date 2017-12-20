@@ -1,32 +1,31 @@
 /**    
- * 文件名：PICTURETOURRepository           
+ * 文件名：PICTUREYHRepository           
  * 版本信息：    
- * 日期：2017/11/29 09:35:42    
+ * 日期：2017/12/19 15:31:04    
  * Copyright 融智通科技(北京)股份有限公司 版权所有    
  */
 package com.rzt.repository;
-import com.rzt.entity.PICTURETOUR;
+import com.rzt.entity.PICTUREYH;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-/**
- * 类名称：PICTURETOURRepository    
+/**      
+ * 类名称：PICTUREYHRepository    
  * 类描述：    
  * 创建人：张虎成   
- * 创建时间：2017/11/29 09:35:42 
+ * 创建时间：2017/12/19 15:31:04 
  * 修改人：张虎成    
- * 修改时间：2017/11/29 09:35:42    
+ * 修改时间：2017/12/19 15:31:04    
  * 修改备注：    
  * @version        
  */
  @Repository
-public interface PICTURETOURRepository extends JpaRepository<PICTURETOUR,String> {
+public interface PICTUREYHRepository extends JpaRepository<PICTUREYH,String> {
+    List<PICTUREYH> findBytaskId(Long taskId);
 
-    List<PICTURETOUR> findBytaskId(Long taskId);
-
-    PICTURETOUR findById(Long id);
+    PICTUREYH findById(Long id);
 
     void deleteById(Long id);
 }

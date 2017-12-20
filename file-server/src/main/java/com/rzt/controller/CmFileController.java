@@ -7,18 +7,15 @@
 package com.rzt.controller;
 import com.rzt.entity.CmFile;
 import com.rzt.service.CmFileService;
-import com.rzt.utils.StorageUtils;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.sql.Date;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -37,36 +34,24 @@ public class CmFileController extends
 		CurdController<CmFile,CmFileService> {
 	protected static Logger LOGGER = LoggerFactory.getLogger(CmFileController.class);
 
-	@ApiOperation(value = "文件档案、头像等公共资源文件的上传",notes = "")
+	@ApiOperation(value = "文件档案、头像等公共资源文件的上传",notes = "文件档案、头像等公共资源文件的上传")
 	@PostMapping("fileUpload")
 	public Map<String,Object> fileUpload(MultipartFile file,Integer flag,Long fkId) {
 
-		HashMap<String, Object> result = new HashMap<>();
-		CmFile cmFile = new CmFile();
-		try {
-			Map<String, Object> map = StorageUtils.storageFiles(file);
-			if("true".equals(map.get("success").toString())){
+		return service.fileUpload( file, flag, fkId);
 
-				String filePath = map.get("filePath").toString();
-				String fileName = map.get("fileName").toString();
-				cmFile.setId(null);
-				cmFile.setCreateTime(new Date(System.currentTimeMillis()));
-				cmFile.setFileName(fileName);
-				cmFile.setFilePath(filePath);
-				cmFile.setFileType(flag);
-				cmFile.setFkId(fkId);
-
-
-				service.add(cmFile);
-				result.put("success",true);
-				result.put("filePath",filePath);
-
-			}
-
-		} catch (IOException e) {
-			LOGGER.error("文件上传失败",e);
-			result.put("success",false);
-		}
-		return result;
 	}
+
+	@ApiOperation(value = "根据fkid获取照片",notes = "根据fkid获取照片")
+	@GetMapping("getImgByFkId")
+	public Map<String,Object> getImgByFkId(Long fkid){
+		return service.getImgByFkId( fkid);
+	}
+
+	@ApiOperation(value = "根据id获取照片",notes = "根据id获取照片")
+	@GetMapping("getImgById")
+	public Map<String,Object> getImgById(Long id){
+		return service.getImgById(id);
+	}
+
 }

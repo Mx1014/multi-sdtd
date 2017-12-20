@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
  * @version
  */
 @Service
-@Transactional
 public class KhYhHistoryBakService extends CurdService<KhYhHistoryBak, KhYhHistoryBakRepository> {
 
 

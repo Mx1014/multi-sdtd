@@ -1,13 +1,13 @@
 /**    
- * 文件名：PICTURETOURService           
+ * 文件名：PICTUREQXService           
  * 版本信息：    
- * 日期：2017/11/29 09:35:42    
+ * 日期：2017/12/19 15:31:04    
  * Copyright 融智通科技(北京)股份有限公司 版权所有    
  */
 package com.rzt.service;
 
-import com.rzt.entity.PICTURETOUR;
-import com.rzt.repository.PICTURETOURRepository;
+import com.rzt.entity.PICTUREQX;
+import com.rzt.repository.PICTUREQXRepository;
 import com.rzt.utils.StorageUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,26 +22,25 @@ import java.util.List;
 import java.util.Map;
 
 /**      
- * 类名称：PICTURETOURService    
+ * 类名称：PICTUREQXService    
  * 类描述：${table.comment}    
  * 创建人：张虎成   
- * 创建时间：2017/11/29 09:35:42 
+ * 创建时间：2017/12/19 15:31:04 
  * 修改人：张虎成    
- * 修改时间：2017/11/29 09:35:42    
+ * 修改时间：2017/12/19 15:31:04    
  * 修改备注：    
  * @version        
  */
 @Service
 @Transactional
-public class PICTURETOURService extends CurdService<PICTURETOUR,PICTURETOURRepository> {
+public class PICTUREQXService extends CurdService<PICTUREQX,PICTUREQXRepository> {
 
-    protected static Logger LOGGER = LoggerFactory.getLogger(PICTURETOURService.class);
+    protected static Logger LOGGER = LoggerFactory.getLogger(PICTUREQXService.class);
 
-    public Map<String,Object> fileUpload(MultipartFile multipartFile, PICTURETOUR picturetour) {
-
+    public Map<String,Object> fileUpload(MultipartFile multipartFile, PICTUREQX pictureqx) {
         Map<String, Object> result = new HashMap<>();
 
-        Long taskId = picturetour.getTaskId();
+        Long taskId = pictureqx.getTaskId();
         //判断taskId是否为空
         if(taskId== null||taskId.equals(0)){
             result.put("success",false);
@@ -58,14 +57,14 @@ public class PICTURETOURService extends CurdService<PICTURETOUR,PICTURETOURRepos
                 String targetPath = map.get("picPath").toString();
                 String thumPath = map.get("thumPath").toString();
                 String picName = map.get("picName").toString();
-                picturetour.setId(null);
-                picturetour.setCreateTime(new Date());
-                picturetour.setFileName(picName);
-                picturetour.setFilePath(targetPath);
-                picturetour.setFileSmallPath(thumPath);
-                picturetour.setFileType("1");
+                pictureqx.setId(null);
+                pictureqx.setCreateTime(new Date());
+                pictureqx.setFileName(picName);
+                pictureqx.setFilePath(targetPath);
+                pictureqx.setFileSmallPath(thumPath);
+                pictureqx.setFileType("1");
 
-                add(picturetour);
+                add(pictureqx);
                 result.put("success",true);
                 result.put("thumPath",thumPath);
                 result.put("picPath",targetPath);
@@ -80,13 +79,13 @@ public class PICTURETOURService extends CurdService<PICTURETOUR,PICTURETOURRepos
         }
 
         return result;
+
     }
 
     public Map<String,Object> deleteImgsById(Long id) {
-
         Map<String, Object> result = new HashMap<>();
         try{
-            PICTURETOUR one = reposiotry.findById(id);
+            PICTUREQX one = reposiotry.findById(id);
             StorageUtils.deleteImg(one.getFilePath());
             StorageUtils.deleteImg(one.getFileSmallPath());
             reposiotry.deleteById(id);
@@ -101,24 +100,26 @@ public class PICTURETOURService extends CurdService<PICTURETOUR,PICTURETOURRepos
 
     public Map<String,Object> getImgsBytaskId(Long taskId) {
         Map<String, Object> result = new HashMap<>();
-        List<PICTURETOUR> list = reposiotry.findBytaskId(taskId);
+        List<PICTUREQX> list = reposiotry.findBytaskId(taskId);
         result.put("success",true);
         result.put("object",list);
+
         return result;
     }
 
-    public Map<String,Object> getImgsBytaskIdAndProcessId(String taskId,String processId) {
+    public Map<String,Object> getImgsBytaskIdAndProcessId(String taskId, String processId) {
         Map<String, Object> result = new HashMap<>();
-        String sql= "select id,file_path,file_small_path from picture_tour where task_id=?1 and process_id=?2";
+        String sql = "select id,file_path,FILE_SMALL_PATH from PICTURE_QX where task_id=?1 and process_id=?2";
         List<Map<String, Object>> maps = execSql(sql, taskId, processId);
         result.put("success",true);
         result.put("object",maps);
+
         return result;
     }
 
     public Map<String,Object> getImgById(Long id) {
         Map<String, Object> result = new HashMap<>();
-        PICTURETOUR byId = reposiotry.findById(id);
+        PICTUREQX byId = reposiotry.findById(id);
         result.put("success",true);
         result.put("object",byId);
         return result;
