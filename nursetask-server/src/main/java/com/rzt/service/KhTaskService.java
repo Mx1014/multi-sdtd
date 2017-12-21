@@ -111,7 +111,7 @@ public class KhTaskService extends CurdService<KhTask,KhTaskRepository> {
     }
 
     public void updateTaskById(KhSite site, String id) {
-        KhSite one = siteRepository.site(Long.parseLong(id));
+        KhSite one = siteRepository.findSite(Long.parseLong(id));
         if (site.getKhfzrId1()== null){
             site.setKhfzrId1(one.getKhfzrId1());
         }

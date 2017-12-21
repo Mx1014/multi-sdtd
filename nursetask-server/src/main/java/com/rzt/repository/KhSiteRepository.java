@@ -49,8 +49,8 @@ public interface KhSiteRepository extends JpaRepository<KhSite,String> {
     @Query(value ="select count(*) from kh_site where status = ?1 ",nativeQuery = true)
     int getCount(String status);
 
-    @Query(value = "select * from kh_site where id = ?",nativeQuery = true)
-    KhSite site(long id);
+    /*@Query(value = "select * from kh_site where id = ?",nativeQuery = true)
+    KhSite site(long id);*/
 
     @Modifying
     @Query(value ="DELETE FROM KH_SITE  where id=?1",nativeQuery = true)

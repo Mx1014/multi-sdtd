@@ -1,3 +1,4 @@
+/*
 package com.rzt.eureka;
 
 import com.rzt.util.WebApiResponse;
@@ -7,9 +8,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 import java.util.Map;
+*/
 /**
  * Created by admin on 2017/12/17.
- */
+ *//*
+
 
 @FeignClient("USERCENTER")
 public interface UserCenter {
@@ -25,4 +28,4 @@ public interface UserCenter {
   //  http://localhost:8098/userCenter/RztSysDepartment/findDeptListByPid
     @GetMapping(value = "/userCenter/Rztsyscompany/queryCompanyname")
     WebApiResponse queryCompanyname();
-}
+}*/
