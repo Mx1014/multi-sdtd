@@ -44,7 +44,8 @@ public class RedisConfig {
 		template.setConnectionFactory(jedisConnectionFactory());
 		template.setKeySerializer(new StringRedisSerializer());
 		template.setHashKeySerializer(new StringRedisSerializer());
-		template.setHashValueSerializer(new FastJsonRedisSerializer<>(Object.class));
+		template.setHashValueSerializer(fastJsonRedisSerializer);
+		template.setValueSerializer(fastJsonRedisSerializer);
 		return template;
 	}
 }
