@@ -1,6 +1,6 @@
 server:
   port: 7011
-  context-path: /nurseTask
+  context-path: /nurseTask/
 spring:
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
@@ -21,7 +21,7 @@ spring:
     testOnReturn: false
     poolPreparedStatements: true
     maxPoolPreparedStatementPerConnectionSize: 20
-    filters: stat,wall,log4j
+    filters: stat,log4j
     connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
   jpa:
      show-sql: true
@@ -31,7 +31,7 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: http://168.130.1.31:31814/eureka/
+      defaultZone: http://168.130.1.30:31814/eureka
 #spring:
 #  profiles:
 #    active: prd

@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * Created by admin on 2017/12/20.
  */
-@FeignClient("MICROSERVICE-FILE-SERVER")
+@FeignClient("FILESERVER")
 public interface PictureCenter {
 
     @GetMapping(value = "/PICTUREJC/getImgsBytaskId")

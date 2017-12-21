@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="EntryPointsManager">
-    <entry_points version="2.0" />
-  </component>
   <component name="FrameworkDetectionExcludesConfiguration">
     <type id="Spring" />
   </component>
@@ -14,11 +11,8 @@
         <option value="$PROJECT_DIR$/exam-server/pom.xml" />
         <option value="$PROJECT_DIR$/file-server/pom.xml" />
         <option value="$PROJECT_DIR$/nursetask-server/pom.xml" />
-        <option value="$PROJECT_DIR$/xstask-server/pom.xml" />
         <option value="$PROJECT_DIR$/eureka-server/pom.xml" />
         <option value="$PROJECT_DIR$/census-server/pom.xml" />
-        <option value="$PROJECT_DIR$/userCenter/pom.xml" />
-        <option value="$PROJECT_DIR$/zull/pom.xml" />
         <option value="$PROJECT_DIR$/authentication-center/pom.xml" />
         <option value="$PROJECT_DIR$/linedata-server/pom.xml" />
       </list>
@@ -53,7 +47,7 @@
       </profile-state>
     </entry>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" assert-keyword="true" jdk-15="true" project-jdk-name="1.8" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" project-jdk-name="1.8" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/out" />
   </component>
   <component name="SvnBranchConfigurationManager">

@@ -81,7 +81,9 @@ public class KhSite  implements Serializable{
 	private String khdyId2;
 	//字段描述: 任务消缺时间
 	@Column(name = "KHXQ_TIME")
+	@Temporal(TemporalType.TIMESTAMP)
 	private Date khxqTime;
+	@Temporal(TemporalType.TIMESTAMP)//(默认年月日时分秒)
 	@Column(name = "CREATE_TIME")
 	private Date createTime;
 
