@@ -50,12 +50,13 @@ public interface KhSiteRepository extends JpaRepository<KhSite,String> {
     int getCount(String status);
 
     @Query(value = "select * from kh_site where id = ?",nativeQuery = true)
-    KhSite find(long id);
+    KhSite site(long id);
 
     @Modifying
     @Query(value ="DELETE FROM KH_SITE  where id=?1",nativeQuery = true)
     void deleteById(long id);
 
     @Query(value ="SELECT * FROM KH_SITE  where id=?1",nativeQuery = true)
+    //SELECT id,VTYPE,LINE_NAME,SECTION,status,line_id,KH_RANGE,to_date(KHXQ_TIME,'yyyy-mm-dd hh24:mi:ss'),to_date(create_time,'yyyy-mm-dd hh24:mi:ss'),KHFZR_ID1,KHFZR_ID2,KHDY_ID1,KHDY_ID2,TDYW_ORG,YH_ID,TASK_NAME,COUNT FROM KH_SITE  where id=?1
     KhSite findSite(long id);
 }

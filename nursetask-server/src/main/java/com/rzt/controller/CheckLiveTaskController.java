@@ -5,11 +5,18 @@
  * Copyright 融智通科技(北京)股份有限公司 版权所有    
  */
 package com.rzt.controller;
+
 import com.rzt.entity.CheckLiveTask;
 import com.rzt.entity.CheckLiveTaskCycle;
+import com.rzt.entity.CheckLiveTaskDetail;
+import com.rzt.entity.CheckLiveTaskExec;
+import com.rzt.entity.model.CheckLiveTaskCycleModel;
 import com.rzt.service.CheckLiveTaskCycleService;
+import com.rzt.service.CheckLiveTaskDetailService;
+import com.rzt.service.CheckLiveTaskExecService;
 import com.rzt.service.CheckLiveTaskService;
 import com.rzt.util.WebApiResponse;
+import com.rzt.utils.DateUtil;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -18,7 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -36,20 +43,28 @@ import java.util.Map;
 public class CheckLiveTaskController extends CurdController<CheckLiveTask, CheckLiveTaskService> {
 
 	@Autowired
-	private CheckLiveTaskCycleService checkService;
+	private CheckLiveTaskCycleService cycleService;
+
+	@Autowired
+	private CheckLiveTaskExecService execService;
+
+	@Autowired
+	private CheckLiveTaskService liveTaskService;
+
+	@Autowired
+	private CheckLiveTaskDetailService detailService;
+
 
 	@ApiOperation(value = "任务展示",notes = "任务展示分页查询，条件搜索")
 	@GetMapping("/listAllCheckTask.do")
 	public WebApiResponse listAllCheckTask(@RequestParam(value = "page",defaultValue = "0") Integer page,
 											 @RequestParam(value = "size",defaultValue = "15") Integer size,
-											 String startTime, String endTime,String taskName,String status){
+											 String startTime, String endTime,String taskName,Integer status,String userId){
 		try{
-			System.out.println(startTime);
-			System.out.println(endTime);
 			Pageable pageable = new PageRequest(page, size);
-			Page<Map<String, Object>> list = this.service.listAllCheckTask(startTime,endTime,taskName, status,pageable);
+			Page<Map<String, Object>> list = this.service.listAllCheckTask(startTime,endTime,taskName, status,userId,pageable);
 			return WebApiResponse.success(list);
-		}catch (java.lang.Exception e){
+		}catch (Exception e){
 			return WebApiResponse.erro("数据获取失败"+e.getMessage());
 		}
 	}
@@ -61,8 +76,6 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 											@RequestParam(value = "size",defaultValue = "15") Integer size,
 											String startTime, String endTime, String userId,String taskName){
 		try{
-			System.out.println(startTime);
-			System.out.println(endTime);
 			Pageable pageable = new PageRequest(page, size);
 			Page<Map<String, Object>> list = this.service.listpaifaCheckTask(startTime,endTime, userId,taskName, pageable);
 			return WebApiResponse.success(list);
@@ -74,11 +87,9 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 
 	@ApiOperation(value = "稽查子任务详情",notes = "稽查子任务详情查询")
 	@GetMapping("/getCheckTaskById/{id}")
-	public WebApiResponse listPaiFaCheckTask(@PathVariable String id){
-
+	public WebApiResponse getCheckTaskById(@PathVariable String id){
 		try{
-			//这里详情页面查询需不需要连接其他表还不知道
-			CheckLiveTask task =  this.service.findOne(id);
+			List task =  this.service.getCheckTaskById(id);
 			return WebApiResponse.success(task);
 
 		}catch (Exception e){
@@ -87,71 +98,94 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 
 	}
 
-
-	//派发稽查任务  多条派发为1条
-	@GetMapping("/paifaCheckTask.do")
-	@ResponseBody
-	@Transactional
-	public WebApiResponse paifaCheckTask(CheckLiveTaskCycle model,String userId,String [] ids){
+	@ApiOperation(value = "稽查子任务名字",notes = "稽查子任务名字查询")
+	@GetMapping("/getCheckTaskName.do")
+	public WebApiResponse getCheckTaskName(){
 		try{
-			/*//不是第一次派发   修改原来的派发次数
-            if(model.getId()!=null){
-				CheckLiveTaskCycle c = this.checkService.findOne(model.getId().toString());
-				if(c!=null){
-					c.setCount(c.getCount()+1);
-					this.checkService.update(c,model.getId().toString());
-					return WebApiResponse.success("任务派发成功");
-				}
-				return WebApiResponse.success("任务派发失败");
-			}else {*/
+			List task =  this.service.getCheckTaskName();
+			return WebApiResponse.success(task);
 
-		//		model.setId(1L);//稽查周期表id
-				model.setUserId(userId);//稽查人id
-				model.setCreateTime(new Date());//派发时间
-		//		model.setPlanStartTime(model.getPlanStartTime());//任务计划开始时间
-		//		model.setPlanEndTime(model.getPlanEndTime());//任务计划结束时间
-				model.setStatus("0");//未稽查
-				model.setCheckDept(model.getCheckDept());//稽查部名 属地公司一天一次  北京公司3天一次
-				model.setCheckCycle(model.getCheckCycle());//稽查周期
-				//第几次派发稽查任务  定时派发
-				model.setCount(1L);//初始都是第一次
-
-				for (int i = 0; i < ids.length; i++) {
-					CheckLiveTask c = this.service.findOne(ids[i]);
-					if (i == 0) {
-						model.setTaskName(c.getTaskName() + "等");
-					}
-					//设置稽查周期外键
-				//	c.setCycleId(model.getId());
-					//c.setPlanStartTime(model.getPlanStartTime());
-				//	c.setPlanEndTime(model.getPlanEndTime());
-				//	c.setTaskStatus("0");//待稽查
-					c.setCheckCycle(model.getCheckCycle());//稽查周期
-					c.setCheckDept(model.getCheckDept());//稽查部名
-					c.setStatus("1");//已派发
-					c.setUserId(userId);//稽查人id
-
-					//更新稽查任务
-					this.service.update(c, ids[i]);
-
-				}
-				this.checkService.add(model);//保存稽查主任务
-				return WebApiResponse.success("任务派发成功");
-
-		}catch (Exception e) {
-			return WebApiResponse.erro("任务派发失败"+e.getMessage());
+		}catch (Exception e){
+			return WebApiResponse.erro("数据获取失败"+e.getMessage());
 		}
+
+	}
+	@ApiOperation(value = "稽查任务派发",notes = "稽查任务派发")
+	@GetMapping("/paifaCheckTask.do")
+	@Transactional
+	public WebApiResponse paifaCheckTask(CheckLiveTaskCycleModel model){
+		try{
+
+			CheckLiveTaskCycle taskcycle = new CheckLiveTaskCycle();
+
+			String[] values = model.getIds().split(",");//子任务id
+
+			taskcycle.setId();//周期id
+			long count =  this.execService.getCount(model.getUserId());
+			taskcycle.setCount(count+1);//派发几次
+			taskcycle.setUserId(model.getUserId());
+			CheckLiveTask task = this.liveTaskService.findLiveTask(values[0]);
+			taskcycle.setTaskName(task.getTaskName() + "...等");//任务名
+			taskcycle.setCreateTime(DateUtil.dateNow());
+			taskcycle.setPlanStartTime(model.getPlanStartTime());
+			taskcycle.setPlanEndTime(model.getPlanEndTime());
+			taskcycle.setStatus("0");//是否停用 0 不停用
+
+			taskcycle.setCheckDept(model.getCheckDept());
+			taskcycle.setCheckCycle(model.getCheckCycle());
+			taskcycle.setTaskType(model.getTaskType());
+
+			this.cycleService.add(taskcycle);
+
+			//生成exec任务
+			CheckLiveTaskExec exec = new CheckLiveTaskExec();
+			exec.setId();
+			exec.setCycleId(taskcycle.getId());
+			exec.setTaskName(taskcycle.getTaskName());
+			exec.setCount(count+1);
+			exec.setStatus("0");
+			exec.setCreateTime(DateUtil.dateNow());
+			exec.setUserId(model.getUserId());
+			exec.setTaskStatus(0L);
+
+			exec.setTdwhOrg(task.getTdwhOrg()+"等"); // 通道维护通道单位  子任务拼接
+			this.execService.add(exec);//保存主任务
+
+			//生成主任务的子任务   多个
+			for(int i=0;i<values.length;i++){
+				CheckLiveTaskDetail detail = new CheckLiveTaskDetail();
+				detail.setId();
+				detail.setExecId(exec.getId());
+				detail.setTaskId(Long.parseLong(values[i]));
+				detail.setPlanStartTime(taskcycle.getPlanStartTime());
+				detail.setPlanEndTime(taskcycle.getPlanEndTime());
+				detail.setStatus("0");
+				detail.setCount(count+1);
+				detail.setCreateTime(DateUtil.dateNow());
+				//添加到数据库
+				this.detailService.add(detail);
+				//更新稽查子任务
+				CheckLiveTask tt = this.liveTaskService.findLiveTask(values[i]);
+				tt.setStatus("1");
+				tt.setCycleId(taskcycle.getId());
+				this.liveTaskService.updateLiveTask(tt,values[i]);//更新重新写一下
+			}
+
+			return WebApiResponse.success("任务派发成功");
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			return WebApiResponse.erro("任务派发失败" + e.getMessage());
+		}
+
 	}
 
-	/**
-	 * 基本思路        稽查模块还涉及到权限的问题   以后再说
-	 * 稽查任务的派发   页面展示的数据是未派发的任务  点击派发  周期表(相当于一条主任务)插入一条 exec表(主任务表)插入一条   detail插入遍历插入
-	 * 选中多少条子任务  然后再更改字任务的状态  为已派发  还有一些时间的填写
-	 */
 
-
-
-
+	@ApiOperation(value = "稽查任务删除",notes = "稽查任务删除")
+	@DeleteMapping("/deleteCheckLiveTaskById/{id}")
+	public WebApiResponse deleteById(@PathVariable  String id){
+		  return this.service.deleteById(id);
+	}
 
 
 

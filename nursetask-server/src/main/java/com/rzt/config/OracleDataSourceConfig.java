@@ -25,6 +25,7 @@ import java.util.Map;
 @EnableTransactionManagement
 @EnableJpaRepositories(
         entityManagerFactoryRef = "oracleEntityManagerFactory",
+//        enableDefaultTransactions = false,
         transactionManagerRef = "oracleTransactionManager",
         basePackages = {"com.rzt.repository"}) //设置Repository所在位置
 public class OracleDataSourceConfig {

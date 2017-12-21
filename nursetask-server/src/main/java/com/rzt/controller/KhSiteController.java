@@ -89,7 +89,7 @@ public class KhSiteController extends
 
 
     //  数据没有设置完成  稽查任务实体类有部分修改
-    @GetMapping("/saveYh.do")
+    @PostMapping("/saveYh.do")
     @ResponseBody
     @Transactional
     public WebApiResponse saveYh(KhYhHistory yh, String fxtime) {
@@ -171,8 +171,9 @@ public class KhSiteController extends
 
     @GetMapping("/listKhtaskById.do")
     @ResponseBody
-    public WebApiResponse listKhtaskByid(String id) {
+    public WebApiResponse listKhtaskByid(HttpServletResponse response,String id) {
         try {
+            response.setHeader("Access-Control-Allow-Origin","*");
             List list = this.service.listKhtaskByid(Long.parseLong(id));
             return WebApiResponse.success(list);
         } catch (Exception e) {

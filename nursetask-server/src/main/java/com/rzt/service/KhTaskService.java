@@ -33,7 +33,7 @@ public class KhTaskService extends CurdService<KhTask,KhTaskRepository> {
     
     public Object listAllKhTask(KhTaskModel task, Pageable pageable) {
         task = timeUtil(task);
-        String result = "k.id as id, k.task_name as taskName,k.tdyw_org as yworg,k.CREATE_TIME as createTime,k.plan_start_time as startTime,k.plan_end_time as endTime,k.status as status,u.realname as userName,u.classname as class";
+        String result = "k.id as id, k.task_name as taskName,k.tdyw_org as yworg,k.CREATE_TIME as createTime,k.plan_start_time as startTime,k.plan_end_time as endTime,k.status as status,u.realname as userName,d.DEPTNAME as class";
         List params = new ArrayList<>();
         StringBuffer buffer = new StringBuffer();
         buffer.append(" where k.create_time between to_date(?,'YYYY-MM-DD hh24:mi') and to_date(?,'YYYY-MM-DD hh24:mi') ");
@@ -60,8 +60,8 @@ public class KhTaskService extends CurdService<KhTask,KhTaskRepository> {
          }
          //此处加分页 人员表换成真实表
          buffer.append(" order by k.create_time desc ");
-        String sql = "select "+result+" from kh_task k " +
-               " left join rztsysuser u on u.id = k.user_id "+ buffer.toString();
+        String sql = "select "+result+" from kh_task k  left join rztsysuser u on u.id = k.user_id left join RZTSYSDEPARTMENT d on u.classname = d.id "+ buffer.toString();
+        //String sql = "select * from listAllKhTask "+buffer.toString();
         Page<Map<String, Object>> maps = execSqlPage(pageable, sql, params.toArray());
         List<Map<String, Object>> content1 = maps.getContent();
         for (Map map:content1) {
@@ -111,7 +111,7 @@ public class KhTaskService extends CurdService<KhTask,KhTaskRepository> {
     }
 
     public void updateTaskById(KhSite site, String id) {
-        KhSite one = siteRepository.find(Long.parseLong(id));
+        KhSite one = siteRepository.site(Long.parseLong(id));
         if (site.getKhfzrId1()== null){
             site.setKhfzrId1(one.getKhfzrId1());
         }

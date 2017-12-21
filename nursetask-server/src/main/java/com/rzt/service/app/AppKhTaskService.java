@@ -41,30 +41,35 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
     public WebApiResponse appListkhTaskById(String taskId) {
         try {
             String result ="K.TASK_NAME AS TASKNAME,H.YHMS AS MS,H.YHJB AS JB,K.PLAN_START_TIME AS STARTTIME,K.PLAN_END_TIME AS ENDTIME,K.STATUS AS STATUS ";
-            String sql = "SELECT "+result+" FROM KH_TASK k LEFT JOIN KH_YH_HISTORY H WHERE K.ID=?";
+            String sql = "SELECT "+result+" FROM KH_TASK k LEFT JOIN KH_YH_HISTORY H on k.yh_id = h.id WHERE K.ID=?";
             return WebApiResponse.success(this.execSql(sql,Long.parseLong(taskId)));
         } catch (Exception e) {
-            return WebApiResponse.erro("数据获取成功");
+            return WebApiResponse.erro("数据获取失败");
         }
     }
-
     public WebApiResponse appListUserInfoById(String userId,String taskId) {
         try {
-            this.reposiotry.updateRealStartTime(Long.parseLong(taskId), DateUtil.dateNow());
-            String result = "u.realname as name,u.classname as class,u.phone as phone";
-            String sql = "select "+result+" from rztsysuser u";
+            if (taskId!=null) {
+                this.reposiotry.updateRealStartTime(Long.parseLong(taskId), DateUtil.dateNow());
+            }
+            String result = "u.realname as name,d.DEPTNAME as class,u.phone as phone";
+            String sql = "select "+result+" from rztsysuser u left join RZTSYSDEPARTMENT d on u.classname = d.id where u.id=? ";
             return WebApiResponse.success(this.execSql(sql,userId));
         } catch (Exception e) {
-            return WebApiResponse.erro("数据获取成功");
+            e.printStackTrace();
+            return WebApiResponse.erro("数据获取失败");
         }
     }
 
     public WebApiResponse appSavePhoto(String userId,String taskId) {
         try {
-            this.reposiotry.updateSFQRTime(DateUtil.dateNow(),Long.parseLong(taskId));
+            if (taskId!=null) {
+                this.reposiotry.updateSFQRTime(DateUtil.dateNow(), Long.parseLong(taskId));
+            }
             return WebApiResponse.success("");
         } catch (Exception e) {
-            return WebApiResponse.erro("数据获取成功");
+            e.printStackTrace();
+            return WebApiResponse.erro("数据获取失败");
         }
     }
 
@@ -76,9 +81,10 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
             //缺少目前施工进度
             String result = "y.YHMS as ms,y.YHZRDW as DW,Y.YHZRDWLXR AS PEOPLE,Y.YHZRDWDH AS PHONE";
             String sql = "SELECT "+result+"  FROM KH_TASK K LEFT JOIN KH_YH_HISTORY Y ON y.id = k.YH_ID WHERE k.ID = ? ";
-            return WebApiResponse.success("");
+            return WebApiResponse.success(this.execSql(sql,task.getTaskId()));
         } catch (Exception e) {
-            return WebApiResponse.erro("数据获取成功");
+            e.printStackTrace();
+            return WebApiResponse.erro("数据获取失败");
         }
     }
 
@@ -88,7 +94,8 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
             this.reposiotry.updateDDTime(DateUtil.dateNow(),Long.parseLong(taskId));
             return WebApiResponse.success("");
         } catch (Exception e) {
-            return WebApiResponse.erro("数据获取成功");
+            e.printStackTrace();
+            return WebApiResponse.erro("数据获取失败");
         }
     }
 
@@ -97,17 +104,28 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
             //保存现场照片
             return WebApiResponse.success("");
         } catch (Exception e) {
-            return WebApiResponse.erro("数据获取成功");
+            e.printStackTrace();
+            return WebApiResponse.erro("数据获取失败");
         }
     }
-
-    public WebApiResponse getYbCount() {
+    public WebApiResponse getYbCount(String userId) {
         try {
-            //保存现场照片
-            this.reposiotry.getybCount();
+            //保存现场照片 this.reposiotry.getybCount(userId)
             return WebApiResponse.success("");
         } catch (Exception e) {
-            return WebApiResponse.erro("数据获取成功");
+            e.printStackTrace();
+            return WebApiResponse.erro("数据获取失败");
+        }
+    }
+    public WebApiResponse getDbCount(String userId) {
+        try {
+            String sql = "select a.count as db,b.count as yb from (select count(*) as count from KH_TASK WHERE (STATUS LIKE '未开始' OR  status like '进行中') AND USER_ID = ? ) a , (select count(*) as count from KH_TASK WHERE STATUS LIKE '已完成' AND USER_ID=?) b";
+            List<Map<String, Object>> list = this.execSql(sql, userId, userId);
+            //保存现场照片    this.reposiotry.getdbCount(userId)
+            return WebApiResponse.success(list);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("数据获取失败");
         }
     }
 }

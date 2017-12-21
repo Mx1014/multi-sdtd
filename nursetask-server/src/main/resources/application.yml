@@ -1,5 +1,6 @@
 server:
   port: 7011
+  context-path: /nurseTask
 spring:
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource

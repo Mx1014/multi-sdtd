@@ -19,7 +19,7 @@ public class KhTaskWpqr implements Serializable {
     private long taskId;
     //字段说明 物品状态（0未选中 1选中）
     @Column(name = "WP_ZT")
-    private long wpzt;
+    private String wpzt;
 
     public long getId() {
         return id;
@@ -37,11 +37,11 @@ public class KhTaskWpqr implements Serializable {
         this.taskId = taskId;
     }
 
-    public long getWpzt() {
+    public String getWpzt() {
         return wpzt;
     }
 
-    public void setWpzt(long wpzt) {
+    public void setWpzt(String wpzt) {
         this.wpzt = wpzt;
     }
 }

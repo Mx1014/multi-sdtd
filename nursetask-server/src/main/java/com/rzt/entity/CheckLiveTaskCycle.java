@@ -1,12 +1,12 @@
 package com.rzt.entity;
+
 import com.rzt.util.excelUtil.ExcelResources;
 import com.rzt.utils.SnowflakeIdWorker;
-import org.hibernate.annotations.GenericGenerator;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
-import java.util.UUID;
 /**
  * Created by admin on 2017/12/5.
  */
@@ -27,12 +27,15 @@ public class CheckLiveTaskCycle  implements Serializable{
     private String taskName;
     //字段描述: 稽查任务创建时间
     @Column(name = "CREATE_TIME")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date createTime;
     //字段描述: 计划开始时段
     @Column(name = "PLAN_START_TIME")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date planStartTime;
     //字段描述: 计划结束时段
     @Column(name = "PLAN_END_TIME")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date planEndTime;
     //字段描述: 是否停用（0不停用 1停用）
     @Column(name = "STATUS")
@@ -48,7 +51,7 @@ public class CheckLiveTaskCycle  implements Serializable{
     private String checkCycle;
 
     public void setId(){
-        this.id =   Long.valueOf(new SnowflakeIdWorker(0,0).nextId());
+        this.id =   new SnowflakeIdWorker(0,0).nextId();
     }
     @ExcelResources(title="稽查周期id",order=1)
     public Long getId(){
@@ -91,6 +94,7 @@ public class CheckLiveTaskCycle  implements Serializable{
         this.planStartTime = planStartTime;
     }
     @ExcelResources(title="计划开始时段",order=6)
+
     public Date getPlanStartTime(){
         return this.planStartTime;
     }

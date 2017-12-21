@@ -12,13 +12,13 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /***
-* @Class DateUtil
-* @Description         
-* @param 
-* @return 
-* @date 2017/12/6 17:42
-* @author nwz
-*/
+ * @Class DateUtil
+ * @Description
+ * @param
+ * @return
+ * @date 2017/12/6 17:42
+ * @author nwz
+ */
 public class DateUtil {
     private static Logger log = Logger.getLogger(DateUtil.class);
     private static final FastDateFormat SDF = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss");
@@ -59,6 +59,36 @@ public class DateUtil {
     public static String stringNow(){
         return SDF.format(new Date());
     }
+
+    public static Date getPlanStartTime(String startTime){
+        try{
+            Date planStartTime =  parseDate(startTime);
+            String time =  SDF.format(planStartTime);
+            return  DateUtils.parseDate(time,partterns);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        return new Date();
+
+    }
+
+    public static Date getPlanEndTime(String endTime){
+        try{
+            Date planEndTime =  parseDate(endTime);
+            String time =  SDF.format(planEndTime);
+            return  DateUtils.parseDate(time,partterns);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return new Date();
+
+    }
+
+
+
+
+
 
 
 }

@@ -5,6 +5,7 @@
  * Copyright 融智通科技(北京)股份有限公司 版权所有    
  */
 package com.rzt.entity;
+import com.rzt.util.excelUtil.ExcelResources;
 import com.rzt.utils.SnowflakeIdWorker;
 
 import javax.persistence.Column;
@@ -13,7 +14,6 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.Date;
-import com.rzt.util.excelUtil.ExcelResources;
 
 /**
  * 类名称：CHECKLIVETASKEXEC    
@@ -49,8 +49,32 @@ public class CheckLiveTaskExec  implements Serializable{
     	//字段描述: 稽查人id
    	 @Column(name = "USER_ID")
      private String userId;
-    
-	public void setId(String id){
+
+	//字段描述: 稽查任务状态
+	@Column(name = "TASK_STATUS")
+	private Long taskStatus;
+
+	//字段描述: 稽查任务状态
+	@Column(name = "TDWH_ORG")
+	private String tdwhOrg;
+
+	public String getTdwhOrg() {
+		return tdwhOrg;
+	}
+
+	public void setTdwhOrg(String tdwhOrg) {
+		this.tdwhOrg = tdwhOrg;
+	}
+
+	public Long getTaskStatus() {
+		return taskStatus;
+	}
+
+	public void setTaskStatus(Long taskStatus) {
+		this.taskStatus = taskStatus;
+	}
+
+	public void setId(){
 
 		this.id =   Long.valueOf(new SnowflakeIdWorker(0,0).nextId());
 	}
