@@ -35,10 +35,10 @@ spring:
     redis:
         database: 0
         host: 168.130.1.31
-        port: 31662
-        password:
+        port: 30094
+        password: sdtd275d
         pool:
-          max-active: 8
+          max-active: 200
           max-wait: -1
           max-idle: 8
           min-idle: 0
