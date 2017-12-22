@@ -5,7 +5,7 @@
 
 	<groupId>com.example</groupId>
 	<artifactId>zull</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0</version>
 	<packaging>jar</packaging>
 
 	<name>zull</name>
@@ -78,19 +78,13 @@
     
     <build>
 		<plugins>
-			<plugin>
-				<artifactId>maven-jar-plugin</artifactId>
-				<configuration>
-					<archive>
-						<manifest>
-							<addClasspath>true</addClasspath>
-							<classpathPrefix>lib/</classpathPrefix>
-							<useUniqueVersions>false</useUniqueVersions>
-							<mainClass>com.rzt.ZullApplication</mainClass>
-						</manifest>
-					</archive>
-				</configuration>
-			</plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <fork>true</fork>
+                </configuration>
+            </plugin>
 		</plugins>
 	</build> 
 

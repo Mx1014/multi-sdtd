@@ -6,9 +6,26 @@ spring:
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://192.168.1.111:7002/eureka/
+      defaultZone: http://168.130.1.31:31814/eureka/
 zuul:
   routes:
     userCenter:
       path: /userCenter/**
       serviceId: userCenter
+      stripPrefix: false
+    xsTask:
+      path: /xsTask/**
+      serviceId: xsTask
+      stripPrefix: false
+    nurseTask:
+      path: /nurseTask/**
+      serviceId: nurseTask
+      stripPrefix: false
+    linedata:
+      path: /linedata/**
+      serviceId: linedata
+      stripPrefix: false
+    fileServer:
+      path: /fileserver/**
+      url: fileserver
+      stripPrefix: false

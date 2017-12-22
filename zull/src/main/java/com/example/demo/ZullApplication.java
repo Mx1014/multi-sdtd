@@ -38,7 +38,7 @@ public class ZullApplication {
            }
       };
     }*/
-	@Bean
+	/*@Bean
 	public CorsFilter corsFilter() {
 	    final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 	    final CorsConfiguration config = new CorsConfiguration();
@@ -52,9 +52,9 @@ public class ZullApplication {
 	    config.addAllowedMethod("POST");
 	    config.addAllowedMethod("DELETE");
 	    config.addAllowedMethod("PATCH");  
-	    source.registerCorsConfiguration("/**", config);
+	    source.registerCorsConfiguration("*//**", config);
 	    return new CorsFilter(source);
-	}
+	}*/
 	@Bean
 	public RequestInterceptor headerInterceptor() {
 		return new RequestInterceptor() {

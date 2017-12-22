@@ -18,8 +18,6 @@ import javax.servlet.http.HttpServletRequest;
  * Created by 张虎成 on 2017/5/23.
  */
 public class AccessFilter extends ZuulFilter {
-    @Autowired
-    private Authentication authentication;
 
     @Override
     //filterType 过滤器类型 决定过滤器在请求的哪个周期中执行
