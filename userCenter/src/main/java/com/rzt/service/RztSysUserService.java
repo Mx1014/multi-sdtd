@@ -136,7 +136,7 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
      *
      * @return
      */
-    public List<Map<String, Object>> userQuery(String classname, String realname) {
+    public List<Map<String, Object>>    userQuery(String classname, String realname) {
         ArrayList arrayList = new ArrayList();
         String s = "";
         arrayList.add(classname);

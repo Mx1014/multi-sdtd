@@ -32,8 +32,7 @@ public interface RztSysUserauthRepository extends JpaRepository<RztSysUserauth, 
      * @param email
      * @return
      */
-    @Modifying
-    @Query(value = "SELECT * FROM RZTSYSUSER WHERE EMAIL = ?1 AND USERDELETE = 1", nativeQuery = true)
+    @Query(value = "SELECT count(id) FROM RZTSYSUSER WHERE EMAIL = ?1 AND USERDELETE = 1", nativeQuery = true)
     int VerificationEmail(String email);
 
     /**
@@ -42,8 +41,7 @@ public interface RztSysUserauthRepository extends JpaRepository<RztSysUserauth, 
      * @param username
      * @return
      */
-    @Modifying
-    @Query(value = "SELECT * FROM RZTSYSUSER WHERE USERNAME = ?1 AND USERDELETE = 1", nativeQuery = true)
+    @Query(value = "SELECT count(id) FROM RZTSYSUSER WHERE USERNAME = ?1 AND USERDELETE = 1", nativeQuery = true)
     int VerificationUsername(String username);
 
     /**
@@ -52,8 +50,7 @@ public interface RztSysUserauthRepository extends JpaRepository<RztSysUserauth, 
      * @param phone
      * @return
      */
-    @Modifying
-    @Query(value = "SELECT * FROM RZTSYSUSER WHERE PHONE = ?1 AND USERDELETE = 1", nativeQuery = true)
+    @Query(value = "SELECT count(id) FROM RZTSYSUSER WHERE PHONE = ?1 AND USERDELETE = 1", nativeQuery = true)
     int VerificationPhone(String phone);
 
     @Modifying

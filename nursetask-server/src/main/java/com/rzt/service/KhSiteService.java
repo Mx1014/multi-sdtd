@@ -42,6 +42,8 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
     private KhYhHistoryService yhservice;
     @Autowired
     private CheckLiveTaskService checkService;
+    @Autowired
+    private KhSiteRepository siteRepository;
 
     public Page listAllTaskNotDo(KhTaskModel task, Pageable pageable, String userName) {
         // task = timeUtil(task);
@@ -65,7 +67,8 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             params.add(userName);
         }
         buffer.append(" order by k.create_time desc ");
-        String sql = "select " + result + " from kh_site k left join kh_yh_history y on k.yh_id = y.id" + buffer.toString();
+       String sql = "select " + result + " from kh_site k left join kh_yh_history y on k.yh_id = y.id" + buffer.toString();
+       //String sql = "select * from listAllTaskNotDo "+buffer.toString();
         Page<Map<String, Object>> maps1 = this.execSqlPage(pageable, sql, params.toArray());
         List<Map<String, Object>> content1 = maps1.getContent();
         for (Map map : content1) {
@@ -75,12 +78,12 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
     }
 
     public void updateQxTask(long id) {
-        this.reposiotry.updateQxTask(id, new Date());
-        this.reposiotry.updateDoingTask(id, new Date());
-        KhSite site = this.reposiotry.find(id);
-        this.reposiotry.updateYH(site.getYhId(), new Date());
+        this.reposiotry.updateQxTask(id,DateUtil.dateNow());
+        this.reposiotry.updateDoingTask(id,DateUtil.dateNow());
+        KhSite site = siteRepository.findSite(id);
+        this.reposiotry.updateYH(site.getYhId(),DateUtil.dateNow());
         //将带稽查 已完成稽查的看护任务状态修改
-        this.reposiotry.updateCheckTask(id, new Date());
+        this.reposiotry.updateCheckTask(id,DateUtil.dateNow());
     }
 
     public List findAll() {

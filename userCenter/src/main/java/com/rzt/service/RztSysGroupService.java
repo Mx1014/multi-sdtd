@@ -9,6 +9,7 @@ package com.rzt.service;
 import com.rzt.service.CurdService;
 import com.rzt.entity.RztSysGroup;
 import com.rzt.repository.RztSysGroupRepository;
+import com.rzt.utils.DateUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,7 +32,7 @@ public class RztSysGroupService extends CurdService<RztSysGroup,RztSysGroupRepos
 	//添加子节点
 	@Transactional
 	public RztSysGroup addSonNode(String id, RztSysGroup rztSysGroup){
-		rztSysGroup.setCreatetime(new Date());
+		rztSysGroup.setCreatetime(DateUtil.dateNow());
 		int lft = this.reposiotry.getLftById(id);
 		this.reposiotry.updateLft(lft);
 		this.reposiotry.updateRgt(lft);
@@ -44,7 +45,7 @@ public class RztSysGroupService extends CurdService<RztSysGroup,RztSysGroupRepos
 	//添加节点
 	@Transactional
 	public RztSysGroup addNode(String id,RztSysGroup rztSysGroup){
-		rztSysGroup.setCreatetime(new Date());
+		rztSysGroup.setCreatetime(DateUtil.dateNow());
 		int rgt = this.reposiotry.getRgtById(id);
 		this.reposiotry.updateNodeRgt(rgt + 2,rgt);
 		this.reposiotry.updateNodeLft(rgt + 2,rgt);

@@ -5,6 +5,7 @@
  * Copyright 融智通科技(北京)股份有限公司 版权所有
  */
 package com.rzt.entity;
+import com.rzt.util.excelUtil.ExcelResources;
 import com.rzt.utils.SnowflakeIdWorker;
 
 import javax.persistence.Column;
@@ -13,7 +14,6 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.Date;
-import com.rzt.util.excelUtil.ExcelResources;
 /**
  * 类名称：CHECKLIVETASKDETAIL
  * 类描述：${table.comment}
@@ -78,8 +78,6 @@ public class CheckLiveTaskDetail  implements Serializable{
     	//字段描述: 创建时间
    	 @Column(name = "CREATE_TIME")
      private Date createTime;
-	@Column(name = "KH_TASK_ID")
-	private Long KhTaskId;
 
 	public void setId(){
 		this.id =   Long.valueOf(new SnowflakeIdWorker(0,0).nextId());
@@ -217,11 +215,4 @@ public class CheckLiveTaskDetail  implements Serializable{
 		return this.createTime;
 	}
 
-	public Long getKhTaskId() {
-		return KhTaskId;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
 }

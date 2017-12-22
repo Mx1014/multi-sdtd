@@ -104,6 +104,11 @@ public class RztSysDepartmentController extends
         return this.service.updateByDeptName(deptname, id);
     }
 
+    /**
+     * 查询通道运维单位
+     *
+     * @return
+     */
     @GetMapping("queryOrgName")
     public WebApiResponse queryOrgName() {
         return this.service.queryOrgName();

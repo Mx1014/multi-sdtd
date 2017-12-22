@@ -13,6 +13,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.xml.crypto.Data;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -82,4 +84,8 @@ public interface RztSysDepartmentRepository extends JpaRepository<RztSysDepartme
     @Transactional
     @Query(value = " UPDATE RztSysDepartment SET DEPTNAME = ?1 WHERE ID = ?2", nativeQuery = true)
     int updateByDeptName(String deptname, String id);
+
+    @Modifying
+    @Query(value = "insert into rztsysdepartment (createtime, deptdesc, depticon, deptname, deptpid, lastnode, lft, rgt, roleid, id) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", nativeQuery = true)
+    int insRztsysdepartment(Date createtime, String deptdesc, String depticon, String deptname, String deptpid, Integer lastnode, Integer lft, Integer rgt, String roleid, String id);
 }
