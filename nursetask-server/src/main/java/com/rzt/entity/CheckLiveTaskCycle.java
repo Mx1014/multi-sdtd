@@ -39,16 +39,16 @@ public class CheckLiveTaskCycle  implements Serializable{
     private Date planEndTime;
     //字段描述: 是否停用（0不停用 1停用）
     @Column(name = "STATUS")
-    private String status;
+    private Integer status;
     //字段描述: 任务类别（0 看护  1巡视）
     @Column(name = "TASK_TYPE")
-    private String taskType;
+    private Integer taskType;
     //字段描述: 稽查部门（0 属地公司 1北京公司）
     @Column(name = "CHECK_DEPT")
-    private String checkDept;
+    private Integer checkDept;
     //字段描述: 稽查周期
     @Column(name = "CHECK_CYCLE")
-    private String checkCycle;
+    private Integer checkCycle;
 
     public void setId(){
         this.id =   new SnowflakeIdWorker(0,0).nextId();
@@ -107,35 +107,35 @@ public class CheckLiveTaskCycle  implements Serializable{
         return this.planEndTime;
     }
 
-    public void setStatus(String status){
+    public void setStatus(Integer status){
         this.status = status;
     }
     @ExcelResources(title="是否停用（0不停用 1停用）",order=8)
-    public String getStatus(){
+    public Integer getStatus(){
         return this.status;
     }
 
-    public void setTaskType(String taskType){
+    public void setTaskType(Integer taskType){
         this.taskType = taskType;
     }
     @ExcelResources(title="任务类别（0 看护  1巡视）",order=9)
-    public String getTaskType(){
+    public Integer getTaskType(){
         return this.taskType;
     }
 
-    public void setCheckDept(String checkDept){
+    public void setCheckDept(Integer checkDept){
         this.checkDept = checkDept;
     }
     @ExcelResources(title="稽查部门（0 属地公司 1北京公司）",order=10)
-    public String getCheckDept(){
+    public Integer getCheckDept(){
         return this.checkDept;
     }
 
-    public void setCheckCycle(String checkCycle){
+    public void setCheckCycle(Integer checkCycle){
         this.checkCycle = checkCycle;
     }
     @ExcelResources(title="稽查周期",order=11)
-    public String getCheckCycle(){
+    public Integer getCheckCycle(){
         return this.checkCycle;
     }
 
