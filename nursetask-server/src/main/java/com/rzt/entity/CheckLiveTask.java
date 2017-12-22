@@ -7,13 +7,13 @@
 package com.rzt.entity;
 import com.rzt.util.excelUtil.ExcelResources;
 import com.rzt.utils.SnowflakeIdWorker;
-import org.hibernate.annotations.GenericGenerator;
-import org.omg.PortableInterceptor.INACTIVE;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.Date;
-import java.util.UUID;
 
 /**
  * 类名称：CheckLiveTask
@@ -36,10 +36,10 @@ public class CheckLiveTask  implements Serializable{
 	private Long taskId;
 	//字段描述: 稽查任务类别（0新增 1正常 2危机）
 	@Column(name = "TASK_TYPE")
-	private String taskType;
+	private Integer taskType;
 	//字段描述: 稽查任务类型（0 看护  1巡视）
 	@Column(name = "CHECK_TYPE")
-	private String checkType;
+	private Integer checkType;
 	//字段描述: 任务消缺时间
 	@Column(name = "UPDATE_TIME")
 	private Date updateTime;
@@ -54,16 +54,16 @@ public class CheckLiveTask  implements Serializable{
 	private String userId;
 	//字段描述: 任务派发状态  0未派发  1已派发  2已消缺
 	@Column(name = "STATUS")
-	private String status;
+	private Integer status;
 	//字段描述: 通道运维单位
 	@Column(name = "TDWH_ORG")
 	private String tdwhOrg;
 	//字段描述: 稽查人部门（0属地 1北京）
 	@Column(name = "CHECK_DEPT")
-	private String checkDept;
+	private Integer checkDept;
 	//字段描述: 稽查周期
 	@Column(name = "CHECK_CYCLE")
-	private String checkCycle;
+	private Integer checkCycle;
 	//字段描述: 通道外协单位id
 	@Column(name = "TDWX_ORGID")
 	private String tdwxOrgid;
@@ -72,7 +72,7 @@ public class CheckLiveTask  implements Serializable{
 	private Long yhId;
 	//字段描述: 是否设置了电子围栏（0是 1否）
 	@Column(name = "DZWL")
-	private String dzwl;
+	private Integer dzwl;
 	//字段描述: 周期id
 	@Column(name = "CYCLE_ID")
 	private Long cycleId;
@@ -93,19 +93,19 @@ public class CheckLiveTask  implements Serializable{
 		return this.taskId;
 	}
 
-	public void setTaskType(String taskType){
+	public void setTaskType(Integer taskType){
 		this.taskType = taskType;
 	}
 	@ExcelResources(title="稽查任务类别（0新增 1正常 2危机）",order=3)
-	public String getTaskType(){
+	public Integer getTaskType(){
 		return this.taskType;
 	}
 
-	public void setCheckType(String checkType){
+	public void setCheckType(Integer checkType){
 		this.checkType = checkType;
 	}
 	@ExcelResources(title="稽查任务类型（0 看护  1巡视）",order=4)
-	public String getCheckType(){
+	public Integer getCheckType(){
 		return this.checkType;
 	}
 
@@ -141,11 +141,11 @@ public class CheckLiveTask  implements Serializable{
 		return this.userId;
 	}
 
-	public void setStatus(String status){
+	public void setStatus(Integer status){
 		this.status = status;
 	}
 	@ExcelResources(title="任务派发状态  0未派发  1已派发  2已消缺",order=9)
-	public String getStatus(){
+	public Integer getStatus(){
 		return this.status;
 	}
 
@@ -157,19 +157,19 @@ public class CheckLiveTask  implements Serializable{
 		return this.tdwhOrg;
 	}
 
-	public void setCheckDept(String checkDept){
+	public void setCheckDept(Integer checkDept){
 		this.checkDept = checkDept;
 	}
 	@ExcelResources(title="稽查人部门（0属地 1北京）",order=11)
-	public String getCheckDept(){
+	public Integer getCheckDept(){
 		return this.checkDept;
 	}
 
-	public void setCheckCycle(String checkCycle){
+	public void setCheckCycle(Integer checkCycle){
 		this.checkCycle = checkCycle;
 	}
 	@ExcelResources(title="稽查周期",order=12)
-	public String getCheckCycle(){
+	public Integer getCheckCycle(){
 		return this.checkCycle;
 	}
 
@@ -189,11 +189,11 @@ public class CheckLiveTask  implements Serializable{
 		return this.yhId;
 	}
 
-	public void setDzwl(String dzwl){
+	public void setDzwl(Integer dzwl){
 		this.dzwl = dzwl;
 	}
 	@ExcelResources(title="是否设置了电子围栏（0是 1否）",order=15)
-	public String getDzwl(){
+	public Integer getDzwl(){
 		return this.dzwl;
 	}
 

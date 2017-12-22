@@ -9,6 +9,7 @@ package com.rzt.controller;
 import com.rzt.controller.CurdController;
 import com.rzt.entity.RztSysUser;
 import com.rzt.entity.RztSysUserauth;
+import com.rzt.eureka.Cmuserfile;
 import com.rzt.security.JwtHelper;
 import com.rzt.security.TokenProp;
 import com.rzt.service.RztMenuPrivilegeService;
@@ -16,6 +17,7 @@ import com.rzt.service.RztSysUserService;
 import com.rzt.service.RztSysUserauthService;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.Constances;
+import com.rzt.utils.DateUtil;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -30,6 +32,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * 类名称：RztSysUserController
@@ -45,31 +48,23 @@ import java.util.Map;
 public class RztSysUserController extends
         CurdController<RztSysUser, RztSysUserService> {
     @Autowired
+    private Cmuserfile cmuserfile;
+    @Autowired
     private RztSysUserauthService userauthService;
-	@Autowired
-	private RedisTemplate<String,Object> redisTemplate;
-	@Autowired
-	private RztMenuPrivilegeService privilegeService;
-	@Autowired
-	private TokenProp tokenProp;
-	@Autowired
-	private StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+    @Autowired
+    private RztMenuPrivilegeService privilegeService;
+    @Autowired
+    private TokenProp tokenProp;
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+
 
     @PostMapping("addUser")
     public WebApiResponse addUser(MultipartFile file, String password, RztSysUser user) {
         String filePath = "";
-        if (!StringUtils.isEmpty(file)) {
-            // 获取文件名
-            String fileName = file.getOriginalFilename();
-            // 文件上传后的路径
-            filePath = "E://test//" + fileName;
-            File dest = new File(filePath);
-            try {
-                file.transferTo(dest);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        user.setId(UUID.randomUUID().toString().replaceAll("-", ""));
         user.setAvatar(filePath);
         /**
          * 验证
@@ -78,13 +73,16 @@ public class RztSysUserController extends
         if (!flag.equals("1")) {
             return WebApiResponse.erro(flag);
         }
-        user.setCreatetime(new Date());
+        user.setCreatetime(DateUtil.dateNow());
         user.setUserdelete(1);
         /**
          * 添加
          */
         this.service.add(user);
         userauthService.addUserAuth(user, password);
+        if (!StringUtils.isEmpty(file)) {
+//            cmuserfile.userFileUpload(file, 0, 11L);
+        }
         return WebApiResponse.success("添加成功！");
     }
 
@@ -185,19 +183,19 @@ public class RztSysUserController extends
 
         RztSysUserauth userauth = userauthService.findByIdentifierAndIdentityTypeAndPassword(flag, account, password);
         RztSysUser sysUser = null;
-		String access_token = null;
-		Map<String,Object> map = null;
+        String access_token = null;
+        Map<String, Object> map = null;
         if (userauth != null) {
             sysUser = this.service.findOne(userauth.getUserid());
             sysUser.setLoginstatus(1);
             try {
-				map = this.service.getUserinfoByUserId(sysUser.getId());
-				redisTemplate.opsForHash().put(Constances.USER_OBJ,sysUser.getId(),map);
-				access_token = JwtHelper.createJWT(map,
-						tokenProp.getExpireTime()).getAccess_token();
-				stringRedisTemplate.opsForValue().set("user:" + map.get("USERNAME"), access_token);
-				this.service.update(sysUser, sysUser.getId());
-			} catch (Exception e) {
+                map = this.service.getUserinfoByUserId(sysUser.getId());
+                redisTemplate.opsForHash().put(Constances.USER_OBJ, sysUser.getId(), map);
+                access_token = JwtHelper.createJWT(map,
+                        tokenProp.getExpireTime()).getAccess_token();
+                stringRedisTemplate.opsForValue().set("user:" + map.get("USERNAME"), access_token);
+                this.service.update(sysUser, sysUser.getId());
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             userauthService.updateLoginIp(request.getRemoteAddr(), sysUser.getId(), flag);

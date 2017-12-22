@@ -13,8 +13,6 @@ import com.rzt.entity.KhSite;
 import com.rzt.entity.KhTask;
 import com.rzt.entity.KhYhHistory;
 import com.rzt.entity.model.KhTaskModel;
-import com.rzt.eureka.LineData;
-import com.rzt.eureka.UserCenter;
 import com.rzt.service.CheckLiveTaskService;
 import com.rzt.service.KhSiteService;
 import com.rzt.service.KhTaskService;
@@ -53,7 +51,7 @@ public class KhSiteController extends
     private KhTaskService taskService;
     @Autowired
     private CheckLiveTaskService checkService;
-    @Autowired
+   /* @Autowired
     private UserCenter userCenter;
     @Autowired
     private LineData line;
@@ -85,7 +83,7 @@ public class KhSiteController extends
     @GetMapping("/queryCompanyname")
     public WebApiResponse queryCompanyname(){
         return userCenter.queryCompanyname();
-    }
+    }*/
 
 
     //  数据没有设置完成  稽查任务实体类有部分修改
@@ -151,7 +149,7 @@ public class KhSiteController extends
     /**
      * 消缺待安排任务   同时将隐患状态修改？
      */
-    @GetMapping("/xiaoQueTask.do")
+    @PatchMapping("/xiaoQueTask.do")
     @ResponseBody
     @Transactional
     public WebApiResponse updateQxTask(String id) {

@@ -10,6 +10,7 @@ import com.rzt.service.CurdService;
 import com.rzt.entity.RztSysDepartment;
 import com.rzt.repository.RztSysDepartmentRepository;
 import com.rzt.util.WebApiResponse;
+import com.rzt.utils.DateUtil;
 import com.rzt.utils.DbUtil;
 import com.rzt.utils.PageUtil;
 import org.springframework.stereotype.Service;
@@ -40,7 +41,7 @@ public class RztSysDepartmentService extends CurdService<RztSysDepartment, RztSy
     //添加子节点
     @Transactional
     public RztSysDepartment addSonNode(String id, RztSysDepartment rztSysDepartment) {
-        rztSysDepartment.setCreatetime(new Date());
+        rztSysDepartment.setCreatetime(DateUtil.dateNow());
         int lft = this.reposiotry.getLftById(id).getLft();
         this.reposiotry.updateLft(lft);
         this.reposiotry.updateRgt(lft);
@@ -48,6 +49,8 @@ public class RztSysDepartmentService extends CurdService<RztSysDepartment, RztSy
         rztSysDepartment.setRgt(lft + 2);
         rztSysDepartment.setDeptpid(id);
         this.reposiotry.save(rztSysDepartment);
+//        createtime, deptdesc, depticon, deptname, deptpid, lastnode, lft, rgt, roleid, id
+//        this.reposiotry.insRztsysdepartment(rztSysDepartment.getCreatetime(), rztSysDepartment.getDeptdesc(), rztSysDepartment.getDepticon(), rztSysDepartment.getDeptname(), rztSysDepartment.getDeptpid(), rztSysDepartment.getLastnode(), rztSysDepartment.getLft(), rztSysDepartment.getRgt(), rztSysDepartment.getRoleid(), rztSysDepartment.getId());
         return rztSysDepartment;
     }
 
@@ -62,7 +65,7 @@ public class RztSysDepartmentService extends CurdService<RztSysDepartment, RztSy
     //添加节点
     @Transactional
     public RztSysDepartment addNode(String id, RztSysDepartment rztSysDepartment) {
-        rztSysDepartment.setCreatetime(new Date());
+        rztSysDepartment.setCreatetime(DateUtil.dateNow());
         RztSysDepartment tongji = this.reposiotry.getRgtById(id);
         int rgt = tongji.getRgt();
         this.reposiotry.updateLft(rgt);
@@ -84,8 +87,9 @@ public class RztSysDepartmentService extends CurdService<RztSysDepartment, RztSy
         buffer.append(" AND node.rgt <" + rztSysDepartment.getRgt() + " ");
         buffer.append("GROUP BY node.id,node.lft,node.deptName,node.rgt,node.deptPid,node.lastnode ");
         buffer.append("ORDER BY node.lft");
-        if (size != 0)
+        if (size != 0) {
             buffer.append(PageUtil.getLimit(page, size));
+        }
 //		Query queryentityManager.createNativeQuery(buffer.toString());
         List<Map<String, Object>> list = DbUtil.list(entityManager, buffer.toString());
         return list;
@@ -101,6 +105,7 @@ public class RztSysDepartmentService extends CurdService<RztSysDepartment, RztSy
         RztSysDepartment rztSysDepartment = this.reposiotry.getOne(id);
         return this.reposiotry.findByLftLessThanAndRgtGreaterThan(rztSysDepartment.getLft(), rztSysDepartment.getRgt());
     }
+
     @Transactional
     public void deleteNode(String id) {
         RztSysDepartment rztSysDepartment = this.reposiotry.getOne(id);
@@ -138,8 +143,13 @@ public class RztSysDepartmentService extends CurdService<RztSysDepartment, RztSy
         }
     }
 
+    /**
+     * 查询通道运维单位
+     *
+     * @return
+     */
     public WebApiResponse queryOrgName() {
-        String sql = "SELECT * FROM RZTSYSDEPARTMENT WHERE DEPTPID='402881e6603a69b801603a6ab1d70000'";
+        String sql = "SELECT * FROM RZTSYSDEPARTMENT WHERE DEPTPID='402881e6603a69b801603a6ab1d70000' ";
         try {
             return WebApiResponse.success(this.execSql(sql));
         } catch (Exception e) {

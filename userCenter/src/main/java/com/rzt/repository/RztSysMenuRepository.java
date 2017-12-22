@@ -82,14 +82,112 @@ public interface RztSysMenuRepository extends JpaRepository<RztSysMenu, String> 
     public void deleteByLftBetween(int lft, int rgt);
 
     /**
-     * 更新菜单权限表
+     * 菜单数据中间表
      *
-     * @param menuid    菜单ID
-     * @param operateid
-     * @param roleid    角色ID
+     * @param menuid 菜单表ID
+     * @param roleid 角色ID
      * @return
      */
     @Modifying
-    @Query(value = "INSERT INTO RZTMENUPRIVILEGE (ID,MENUID,OPERATEID,ROLEID) VALUES (SYS_GUID(),?1,?2,?3)", nativeQuery = true)
-    int updateRztmenuprivilege(String menuid, String operateid, String roleid);
+    @Query(value = "INSERT INTO RZTMENUPRIVILEGE (ID, MENUID, ROLEID) VALUES (sys_guid(),?1,?2)", nativeQuery = true)
+    int insertRztmenuprivilege(String menuid, String roleid);
+
+    /**
+     * 添加按钮
+     *
+     * @param button      菜单ID
+     * @param privilegeid 中间表ID
+     * @return
+     */
+    @Modifying
+    @Query(value = "INSERT INTO RZTSYSBUTTON (ID, MENUID, PRIVILEGEID) VALUES (sys_guid(),?1,?2)", nativeQuery = true)
+    int insertRztsysbutton(String button, String privilegeid);
+
+    /**
+     * 删除中间表
+     *
+     * @param roleid
+     * @param menuid
+     * @return
+     */
+    @Modifying
+    @Query(value = "DELETE FROM RZTMENUPRIVILEGE WHERE ROLEID=?1 AND MENUID=?2", nativeQuery = true)
+    int deleteRztmenuprivilege(String roleid, String menuid);
+
+    /**
+     * 删除中间表按钮表ID
+     *
+     * @param privilegeid
+     * @return
+     */
+    @Modifying
+    @Query(value = "DELETE FROM RZTSYSBUTTON WHERE PRIVILEGEID=?1", nativeQuery = true)
+    int deleteRztsysbuttonz(String privilegeid);
+
+    /**
+     * 删除按钮表ID
+     *
+     * @param privilegeid
+     * @return
+     */
+    @Modifying
+    @Query(value = "DELETE FROM RZTSYSBUTTON WHERE PRIVILEGEID=?1 AND MENUID=?2", nativeQuery = true)
+    int deleteRztsysbutton(String privilegeid, String buttonid);
+
+    /**
+     * 添加数据权限表
+     *
+     * @param type   权限类型
+     * @param roleid 角色ID
+     * @return
+     */
+    @Modifying
+    @Query(value = "INSERT INTO RZTSYSDATA (ID, TYPE, ROLEID) VALUES (sys_guid(), ?1, ?2)", nativeQuery = true)
+    int insertRztsysdata(String type, String roleid);
+
+    /**
+     * 删除数据权限表
+     *
+     * @param roleid 角色ID
+     * @return
+     */
+    @Modifying
+    @Query(value = "DELETE FROM RZTSYSDATA WHERE ROLEID=?1", nativeQuery = true)
+    int deleteRztsysdata(String roleid);
+
+    /**
+     * app添加
+     *
+     * @param menuid appID
+     * @param roleid 人员ID
+     * @return
+     */
+    @Modifying
+    @Query(value = " INSERT INTO RZTMENUPRIVILEGE (ID, MENUID, ROLEID) VALUES (sys_guid(),?1,?2) ", nativeQuery = true)
+    int insertApp(String menuid, String roleid);
+
+    @Modifying
+    @Query(value = " DELETE FROM RZTMENUPRIVILEGE WHERE MENUID=?1 AND ROLEID=?2 ", nativeQuery = true)
+    int deleteApp(String menuid, String roleid);
+
+    /**
+     * 根据人员删除
+     *
+     * @param roleid 人员ID
+     * @return
+     */
+    @Modifying
+    @Query(value = "DELETE RZTSYSDATA WHERE ROLEID = ?1", nativeQuery = true)
+    int deleteSysData(String roleid);
+
+    /**
+     * 添加角色数据权限
+     *
+     * @param type
+     * @param roleid
+     * @return
+     */
+    @Modifying
+    @Query(value = "INSERT INTO RZTSYSDATA (ID, TYPE, ROLEID) VALUES (sys_guid(), ?1, ?2)", nativeQuery = true)
+    int insertSysData(String type, String roleid);
 }

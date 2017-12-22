@@ -9,8 +9,6 @@ package com.rzt.controller;
 import com.rzt.entity.CheckLiveTaskCycle;
 import com.rzt.entity.CheckLiveTaskExec;
 import com.rzt.entity.model.CheckLiveTaskCycleModel;
-import com.rzt.eureka.PictureCenter;
-import com.rzt.eureka.UserCenter;
 import com.rzt.service.CheckLiveTaskCycleService;
 import com.rzt.service.CheckLiveTaskExecService;
 import com.rzt.util.WebApiResponse;
@@ -43,11 +41,11 @@ import java.util.Map;
 public class CheckLiveTaskCycleController extends
         CurdController<CheckLiveTaskCycle, CheckLiveTaskCycleService> {
 
-    @Autowired
+/*    @Autowired
     private UserCenter userCenter;
 
     @Autowired
-    private PictureCenter pictureCenter;
+    private PictureCenter pictureCenter;*/
 
     @Autowired
     private CheckLiveTaskExecService execService;
@@ -149,7 +147,7 @@ public class CheckLiveTaskCycleController extends
     }
 
 
-    @ApiOperation(value = "用户班组",notes = "用户班组")
+    /*@ApiOperation(value = "用户班组",notes = "用户班组")
     @GetMapping("/treeQuery")
     public List<Map<String,Object>>  treeQuery(String id){
          return userCenter.treeQuery(id);
@@ -163,14 +161,14 @@ public class CheckLiveTaskCycleController extends
     }
 
 
-    /**
+    *//**
      * 测试图片服务
-     */
+     *//*
     @ApiOperation(value = "图片服务",notes = "图片服务")
     @GetMapping("/getImgsBytaskId/{id}")
     public  Map<String, Object> getImgsBytaskId(@PathVariable String id){
         Long taskId = Long.parseLong(id);
         return pictureCenter.getImgsBytaskId(taskId);
-    }
+    }*/
 
 }

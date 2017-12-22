@@ -1,48 +1,111 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration  scan="true" scanPeriod="60 seconds" debug="false">
-    <contextName>logback</contextName>
-    <property name="log.path" value="E:\\test\\logback.log" />
-    <!--输出到控制台-->
-    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
-        <!-- <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-             <level>ERROR</level>
-         </filter>-->
-        <encoder>
-            <pattern>%d{HH:mm:ss.SSS} %contextName [%thread] %-5level %logger{36} - %msg%n</pattern>
-        </encoder>
-    </appender>
+<!--<?xml version="1.0" encoding="UTF-8"?>-->
+<!--<configuration  scan="true" scanPeriod="60 seconds" debug="false">-->
+    <!--<contextName>logback</contextName>-->
+    <!--<property name="log.path" value="E:\\test\\logback.log" />-->
+    <!--&lt;!&ndash;输出到控制台&ndash;&gt;-->
+    <!--<appender name="console" class="ch.qos.logback.core.ConsoleAppender">-->
+        <!--&lt;!&ndash; <filter class="ch.qos.logback.classic.filter.ThresholdFilter">-->
+             <!--<level>ERROR</level>-->
+         <!--</filter>&ndash;&gt;-->
+        <!--<encoder>-->
+            <!--<pattern>%d{HH:mm:ss.SSS} %contextName [%thread] %-5level %logger{36} - %msg%n</pattern>-->
+        <!--</encoder>-->
+    <!--</appender>-->
 
-    <!--输出到文件-->
-    <appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${log.path}</file>
+    <!--&lt;!&ndash;输出到文件&ndash;&gt;-->
+    <!--<appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">-->
+        <!--<file>${log.path}</file>-->
+        <!--<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">-->
+            <!--<fileNamePattern>logback.%d{yyyy-MM-dd}.log</fileNamePattern>-->
+            <!--<maxHistory>3</maxHistory>-->
+            <!--<totalSizeCap>1GB</totalSizeCap>-->
+        <!--</rollingPolicy>-->
+        <!--<encoder>-->
+            <!--<pattern>%d{HH:mm:ss.SSS} %contextName [%thread] %-5level %logger{36} - %msg%n</pattern>-->
+        <!--</encoder>-->
+    <!--</appender>-->
+
+    <!--<root level="info">-->
+        <!--<appender-ref ref="console" />-->
+        <!--&lt;!&ndash;<appender-ref ref="file" />&ndash;&gt;-->
+    <!--</root>-->
+
+    <!--&lt;!&ndash; logback为java中的包 &ndash;&gt;-->
+    <!--&lt;!&ndash;logback.LogbackDemo：类的全路径 &ndash;&gt;-->
+    <!--<logger name="com.rzt" level="error" additivity="false">-->
+        <!--<appender-ref ref="console"/>-->
+        <!--&lt;!&ndash;<appender-ref ref="file" />&ndash;&gt;-->
+    <!--</logger>-->
+
+    <!--&lt;!&ndash; show parameters for hibernate sql 专为 Hibernate 定制 &ndash;&gt;-->
+    <!--<logger name="org.hibernate.type.descriptor.sql.BasicBinder"  level="trace" />-->
+    <!--<logger name="org.hibernate.type.descriptor.sql.BasicExtractor"  level="DEBUG" />-->
+    <!--<logger name="org.hibernate.SQL" level="DEBUG" />-->
+    <!--<logger name="org.hibernate.engine.QueryParameters" level="DEBUG" />-->
+    <!--<logger name="org.hibernate.engine.query.HQLQueryPlan" level="DEBUG" />-->
+
+
+<!--</configuration>-->
+<!-- Logback configuration. See http://logback.qos.ch/manual/index.html -->
+<configuration scan="true" scanPeriod="10 seconds">
+    <include resource="org/springframework/boot/logging/logback/base.xml" />
+
+    <property name="LOG_PATH" value="/rzt/log/" />
+
+    <!--<appender name="INFO_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${LOG_PATH}/info.log</File>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>logback.%d{yyyy-MM-dd}.log</fileNamePattern>
-            <maxHistory>3</maxHistory>
-            <totalSizeCap>1GB</totalSizeCap>
+            <fileNamePattern>${LOG_PATH}/info-%d{yyyyMMdd}.log.%i</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>500MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>2</maxHistory>
         </rollingPolicy>
-        <encoder>
-            <pattern>%d{HH:mm:ss.SSS} %contextName [%thread] %-5level %logger{36} - %msg%n</pattern>
-        </encoder>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} -%msg%n
+            </Pattern>
+        </layout>
+    </appender>-->
+
+    <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+        <File>${LOG_PATH}/error.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/error-%d{yyyyMMdd}.log.%i
+            </fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>50MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>2</maxHistory>
+        </rollingPolicy>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} -%msg%n
+
+            </Pattern>
+        </layout>
     </appender>
 
-    <root level="info">
-        <appender-ref ref="console" />
-        <!--<appender-ref ref="file" />-->
-    </root>
-
-    <!-- logback为java中的包 -->
-    <!--logback.LogbackDemo：类的全路径 -->
-    <logger name="com.rzt" level="error" additivity="false">
-        <appender-ref ref="console"/>
-        <!--<appender-ref ref="file" />-->
-    </logger>
-
-    <!-- show parameters for hibernate sql 专为 Hibernate 定制 -->
-    <logger name="org.hibernate.type.descriptor.sql.BasicBinder"  level="trace" />
-    <logger name="org.hibernate.type.descriptor.sql.BasicExtractor"  level="DEBUG" />
+    <!--TRACE, DEBUG, INFO, WARN, ERROR, ALL 和 OFF-->
+    <!-- hibernate日志输入 -->
+    <logger name="org.hibernate.type.descriptor.sql.BasicBinder"
+            level="DEBUG" />
+    <logger name="org.hibernate.type.descriptor.sql.BasicExtractor"
+            level="DEBUG" />
     <logger name="org.hibernate.SQL" level="DEBUG" />
     <logger name="org.hibernate.engine.QueryParameters" level="DEBUG" />
     <logger name="org.hibernate.engine.query.HQLQueryPlan" level="DEBUG" />
 
+    <!--myibatis log configure-->
+    <!--<logger name="com.apache.ibatis" level="TRACE"/>
+    <logger name="java.sql.Connection" level="DEBUG"/>
+    <logger name="java.sql.Statement" level="DEBUG"/>
+    <logger name="java.sql.PreparedStatement" level="DEBUG"/>-->
+
+    <root level="info">
+        <!--<appender-ref ref="INFO_FILE" />-->
+        <appender-ref ref="ERROR_FILE" />
+    </root>
 
 </configuration>

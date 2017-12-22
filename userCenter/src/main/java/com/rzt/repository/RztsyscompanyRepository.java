@@ -25,16 +25,16 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public interface RztsyscompanyRepository extends JpaRepository<Rztsyscompany, String> {
     @Modifying
-    @Query(value = "INSERT INTO RZTSYSCOMPANY (ID,COMPANYNAME,CREATETIME,ORGID) VALUES (?1,?2,sysdate,?3)", nativeQuery = true)
-    int addRztsyscompany(String id, String cmpanyname, String orgid);
+    @Query(value = "INSERT INTO RZTSYSCOMPANY (ID,COMPANYNAME,CREATETIME,ORGID,ORGNAME) VALUES (?1,?2,sysdate,?3,?4)", nativeQuery = true)
+    int addRztsyscompany(String id, String cmpanyname, String orgid, String orgname);
 
     @Modifying
     @Query(value = "INSERT INTO RZTSYSCOMPANYFILE (ID, COMPANYID, FILENAME, FILETYPE) VALUES (?1,?2,?3,?4)", nativeQuery = true)
     int addpanyFile(String fid, String id, String filename, String filetype);
 
     @Modifying
-    @Query(value = "UPDATE RZTSYSCOMPANY SET COMPANYNAME=?1 ,ORGID=?2 ,UPDATETIME=sysdate WHERE ID=?3", nativeQuery = true)
-    int updateRztsyscompany(String cmpanyname, String orgid, String id);
+    @Query(value = "UPDATE RZTSYSCOMPANY SET COMPANYNAME=?1 ,ORGID=?2 ,ORGNAME=?3,UPDATETIME=sysdate WHERE ID=?4", nativeQuery = true)
+    int updateRztsyscompany(String cmpanyname, String orgid, String orgname,String id);
 
     @Modifying
     @Query(value = "DELETE FROM RZTSYSCOMPANYFILE WHERE COMPANYID=?1", nativeQuery = true)

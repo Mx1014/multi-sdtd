@@ -7,8 +7,6 @@
 package com.rzt.service;
 
 import com.rzt.entity.CheckLiveTaskCycle;
-import com.rzt.eureka.PictureCenter;
-import com.rzt.eureka.UserCenter;
 import com.rzt.repository.CheckLiveTaskCycleRepository;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,11 +35,11 @@ public class CheckLiveTaskCycleService extends CurdService<CheckLiveTaskCycle, C
     @Autowired
     private CheckLiveTaskCycleRepository repository;
 
-    @Autowired
+  /*  @Autowired
     private PictureCenter pictureCenter;
 
     @Autowired
-    private UserCenter userCenter;
+    private UserCenter userCenter;*/
 
     @ApiOperation(value = "稽查维护维护",notes = "稽查维护的分页查询，条件搜索")
     public  Page<Map<String, Object>> listCheckTaskMain(String startTime,String endTime, String userId,String taskName,Pageable pageable) {

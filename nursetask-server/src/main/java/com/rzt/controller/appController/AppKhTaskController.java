@@ -3,7 +3,6 @@ package com.rzt.controller.appController;
 import com.rzt.controller.CurdController;
 import com.rzt.entity.KhTask;
 import com.rzt.entity.KhTaskWpqr;
-import com.rzt.eureka.UserCenter;
 import com.rzt.service.KhTaskService;
 import com.rzt.service.app.AppKhTaskService;
 import com.rzt.util.WebApiResponse;
