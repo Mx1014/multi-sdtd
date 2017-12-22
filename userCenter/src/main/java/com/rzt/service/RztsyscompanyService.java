@@ -39,9 +39,9 @@ public class RztsyscompanyService extends CurdService<Rztsyscompany, Rztsyscompa
                 "  c.CREATETIME, " +
                 "  c.ORGID,c.UPDATETIME, " +
                 "  wm_concat(e.FILENAME) AS FILENAME, " +
-                "  wm_concat(e.FILETYPE) AS FILETYPE " +
+                "  wm_concat(e.FILETYPE) AS FILETYPE,c.ORGNAME " +
                 "FROM RZTSYSCOMPANY c LEFT JOIN RZTSYSCOMPANYFILE e ON c.ID = e.COMPANYID " +
-                "GROUP BY c.ID,c.COMPANYNAME,c.CREATETIME,c.ORGID,c.UPDATETIME";
+                "GROUP BY c.ID,c.COMPANYNAME,c.CREATETIME,c.ORGID,c.UPDATETIME,c.ORGNAME";
         return this.execSqlPage(pageable, sql);
     }
 
@@ -50,7 +50,13 @@ public class RztsyscompanyService extends CurdService<Rztsyscompany, Rztsyscompa
         int one = 1;
         int zero = 0;
         try {
-            this.reposiotry.addRztsyscompany(id, cmpanyname, orgid);
+            String str = "";
+            String[] split = orgid.split(",");
+            for (int i = 0; i < split.length; i++) {
+                String sql = "SELECT DEPTNAME FROM RZTSYSDEPARTMENT WHERE id=?1";
+                str += this.execSqlSingleResult(sql, split[i]).get("DEPTNAME") + ",";
+            }
+            this.reposiotry.addRztsyscompany(id, cmpanyname, orgid, str.substring(0, str.length() - 1));
             if (!StringUtils.isEmpty(filename)) {
                 String[] filenam = filename.split(",");
                 String[] filetyp = filetype.split(",");
@@ -70,7 +76,13 @@ public class RztsyscompanyService extends CurdService<Rztsyscompany, Rztsyscompa
         int one = 1;
         int zero = 0;
         try {
-            this.reposiotry.updateRztsyscompany(cmpanyname, orgid, id);
+            String str = "";
+            String[] split = orgid.split(",");
+            for (int i = 0; i < split.length; i++) {
+                String sql = "SELECT DEPTNAME FROM RZTSYSDEPARTMENT WHERE id=?1";
+                str += this.execSqlSingleResult(sql, split[i]).get("DEPTNAME") + ",";
+            }
+            this.reposiotry.updateRztsyscompany(cmpanyname, orgid, str.substring(0, str.length() - 1), id);
             if (!StringUtils.isEmpty(filename)) {
                 this.reposiotry.deletePanyFile(id);
                 String[] filenam = filename.split(",");
@@ -100,6 +112,11 @@ public class RztsyscompanyService extends CurdService<Rztsyscompany, Rztsyscompa
         }
     }
 
+    /**
+     * 公共的
+     *
+     * @return
+     */
     public WebApiResponse queryCompanyname() {
         String sql = "SELECT ID,COMPANYNAME,ORGID FROM RZTSYSCOMPANY";
         try {
@@ -109,4 +126,44 @@ public class RztsyscompanyService extends CurdService<Rztsyscompany, Rztsyscompa
             return WebApiResponse.erro("数据请求错误");
         }
     }
+
+    /**
+     * 单位id 查外协权限
+     *
+     * @param id
+     * @return
+     */
+    public WebApiResponse queryCompanynameById(String id) {
+        String ids = "%" + id + "%";
+        String sql = "SELECT ID,COMPANYNAME,ORGID FROM RZTSYSCOMPANY where orgid like ?1 ";
+        try {
+            return WebApiResponse.success(this.execSql(sql, ids));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("Erro");
+        }
+    }
+
+//    /**
+//     * 修改查询外协
+//     *
+//     * @param id 外协ID
+//     * @return
+//     */
+//    public WebApiResponse updateComQuery(String id) {
+//        String sql = "SELECT " +
+//                "  c.ID, " +
+//                "  c.COMPANYNAME, " +
+//                "  c.CREATETIME, " +
+//                "  c.ORGID, " +
+//                "  c.UPDATETIME, " +
+//                "  c.ORGNAME " +
+//                "FROM RZTSYSCOMPANY c";
+//        try {
+//            return WebApiResponse.success(this.execSqlSingleResult(sql, id));
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return WebApiResponse.erro("数据请求失败");
+//        }
+//    }
 }

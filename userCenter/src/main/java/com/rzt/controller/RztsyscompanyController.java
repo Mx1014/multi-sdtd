@@ -157,8 +157,35 @@ public class RztsyscompanyController extends
         }
     }
 
+    /**
+     * 公共的
+     *
+     * @return
+     */
     @GetMapping("queryCompanyname")
     public WebApiResponse queryCompanyname() {
         return this.service.queryCompanyname();
     }
+
+    /**
+     * 单位id 查外协权限
+     *
+     * @param id
+     * @return
+     */
+    @GetMapping("queryCompanynameById")
+    public WebApiResponse queryCompanynameById(String id) {
+        return this.service.queryCompanynameById(id);
+    }
+
+//    /**
+//     * 查询ID
+//     *
+//     * @param id 外协DI
+//     * @return
+//     */
+//    @GetMapping("updateComQuery")
+//    public WebApiResponse updateComQuery(String id) {
+//        return this.service.updateComQuery(id);
+//    }
 }

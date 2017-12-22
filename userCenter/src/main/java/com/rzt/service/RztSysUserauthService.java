@@ -10,6 +10,7 @@ import com.rzt.service.CurdService;
 import com.rzt.entity.RztSysUser;
 import com.rzt.entity.RztSysUserauth;
 import com.rzt.repository.RztSysUserauthRepository;
+import com.rzt.utils.DateUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -27,7 +28,6 @@ import java.util.Date;
  */
 @Service
 public class RztSysUserauthService extends CurdService<RztSysUserauth, RztSysUserauthRepository> {
-
     public String findByUserName(RztSysUser user) {
         String flag = "1";
         int userauth = this.reposiotry.VerificationEmail(user.getEmail());
@@ -41,10 +41,11 @@ public class RztSysUserauthService extends CurdService<RztSysUserauth, RztSysUse
             flag = "该手机号已存在";
         return flag;
     }
-    @Transactional
+
+    @Transactional(rollbackFor = Exception.class)
     public void addUserAuth(RztSysUser user, String password) {
         RztSysUserauth userauth = new RztSysUserauth();
-        userauth.setCreatetime(new Date());
+        userauth.setCreatetime(DateUtil.dateNow());
         userauth.setIdentifier(0);
         userauth.setIdentitytype(user.getUsername());
         userauth.setPassword(password);
@@ -52,7 +53,7 @@ public class RztSysUserauthService extends CurdService<RztSysUserauth, RztSysUse
         this.reposiotry.save(userauth);
         if (!StringUtils.isEmpty(user.getPhone())) {
             RztSysUserauth userauth1 = new RztSysUserauth();
-            userauth1.setCreatetime(new Date());
+            userauth1.setCreatetime(DateUtil.dateNow());
             userauth1.setIdentifier(1);
             userauth1.setIdentitytype(user.getPhone());
             userauth1.setPassword(password);
@@ -61,7 +62,7 @@ public class RztSysUserauthService extends CurdService<RztSysUserauth, RztSysUse
         }
         if (!StringUtils.isEmpty(user.getEmail())) {
             RztSysUserauth userauth2 = new RztSysUserauth();
-            userauth2.setCreatetime(new Date());
+            userauth2.setCreatetime(DateUtil.dateNow());
             userauth2.setIdentifier(2);
             userauth2.setIdentitytype(user.getEmail());
             userauth2.setPassword(password);
@@ -70,18 +71,22 @@ public class RztSysUserauthService extends CurdService<RztSysUserauth, RztSysUse
         }
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public void updateLoginIp(String loginId, String userid, int identifier) {
         this.reposiotry.updateLoginIp(loginId, userid, identifier);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public void updateUserAuth(String userid, String password) {
         this.reposiotry.updatePasswordByUserid(userid, password);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public void deleteAuthByUserId(String userId) {
         this.reposiotry.deleteAuthByUserid(userId);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public void deleteBatchAuthByUserId(String ids) {
         this.reposiotry.deleteBatchAuthByUseiId(ids);
     }
