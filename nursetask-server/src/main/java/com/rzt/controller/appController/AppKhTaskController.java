@@ -10,7 +10,6 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -84,7 +83,6 @@ public class AppKhTaskController extends
     //到达现场 → 开始看护   现场照片信息
     @ApiOperation(value = "物品提示", notes = "收集看护人照片信息  ")
     @GetMapping("/appDdcx.do")
-    @Transactional
     public WebApiResponse appDdcx(String taskId){
         return this.service.appDdcx(taskId);
     }

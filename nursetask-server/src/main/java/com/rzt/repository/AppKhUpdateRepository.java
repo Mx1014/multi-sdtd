@@ -1,20 +1,19 @@
 package com.rzt.repository;
 
-import com.rzt.entity.CheckLiveTaskDetail;
 import com.rzt.entity.KhTask;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 
 /**
- * Created by admin on 2017/12/17.
+ * Created by admin on 2017/12/22.
  */
-
-public interface AppKhTaskRepository extends JpaRepository<KhTask, String> {
-
+@Repository
+public interface AppKhUpdateRepository extends JpaRepository<KhTask, String> {
     @Modifying
     @Transactional
     @Query(value = "UPDATE KH_TASK SET REAL_START_TIME = ?2,STATUS ='进行中' where id = ?1",nativeQuery = true)
@@ -45,12 +44,8 @@ public interface AppKhTaskRepository extends JpaRepository<KhTask, String> {
     @Query(value = "UPDATE KH_TASK_WPQR SET WP_ZT =?1 WHERE TASKID =?2",nativeQuery = true)
     void updateWp(String wpzt, long taskId);
 
-
- /*   @Query(value = "select count(*) from KH_TASK WHERE (STATUS LIKE '未开始' OR  status like '进行中') AND user_id = ?",nativeQuery = true)
-    int getdbCount(String userId);
-
-    @Query(value = "select count(*) from KH_TASK WHERE STATUS LIKE '已完成' AND user_id = ?",nativeQuery = true)
-    int getybCount(String userId);*/
-    /*@Query(value = "",nativeQuery = true)
-    void query();*/
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE KH_TASK_WPQR SET CL_ZT =?1 WHERE TASKID =?2",nativeQuery = true)
+    void updateClzt(String clzt, long taskId);
 }

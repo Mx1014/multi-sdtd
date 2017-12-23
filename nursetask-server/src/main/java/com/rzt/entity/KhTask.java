@@ -10,10 +10,7 @@ import com.rzt.util.excelUtil.ExcelResources;
 import com.rzt.utils.SnowflakeIdWorker;
 import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.UUID;
@@ -33,9 +30,11 @@ public class KhTask implements Serializable{
 	@Id
 	private Long id;
 	//字段描述: 计划开始时间
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "PLAN_START_TIME")
 	private Date planStartTime;
 	//字段描述: 计划结束时间
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "PLAN_END_TIME")
 	private Date planEndTime;
 	//字段描述: 第几次执行该任务
@@ -81,6 +80,7 @@ public class KhTask implements Serializable{
 	@Column(name = "TASK_NAME")
 	private String taskName;
 	//字段描述: 看护任务派发时间
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "CREATE_TIME")
 	private Date createTime;
 	//字段描述: 物品确认时间
@@ -89,6 +89,9 @@ public class KhTask implements Serializable{
 	//字段描述: 任务状态 0未开始 1进行中 2已完成
 	@Column(name = "STATUS")
 	private String status;
+
+	@Column(name="ZXYS_NUM")
+	private int zxysNum;
 	public void setId(){
 		this.id =   Long.valueOf(new SnowflakeIdWorker(0,0).nextId());
 	}
@@ -249,4 +252,11 @@ public class KhTask implements Serializable{
 		return this.status;
 	}
 
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public int getZxysNum() {
+		return zxysNum;
+	}
 }

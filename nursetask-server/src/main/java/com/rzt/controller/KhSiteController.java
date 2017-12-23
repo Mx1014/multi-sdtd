@@ -18,6 +18,7 @@ import com.rzt.service.KhSiteService;
 import com.rzt.service.KhTaskService;
 import com.rzt.service.KhYhHistoryService;
 import com.rzt.util.WebApiResponse;
+import com.rzt.utils.DateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -89,7 +90,6 @@ public class KhSiteController extends
     //  数据没有设置完成  稽查任务实体类有部分修改
     @PostMapping("/saveYh.do")
     @ResponseBody
-    @Transactional
     public WebApiResponse saveYh(KhYhHistory yh, String fxtime) {
         return this.service.saveYh(yh, fxtime);
     }
@@ -227,6 +227,9 @@ public class KhSiteController extends
                 Date planEndTime = formatter.parse(map.get("planEndTime").toString());
                 task.setPlanStartTime(planStartTime);
                 task.setPlanEndTime(planEndTime);
+                task.setPlanStartTime(DateUtil.dateNow());
+                task.setPlanEndTime(DateUtil.dateNow());
+                System.out.println(DateUtil.dateNow());
                 task.setUserId(UserId);
                 task.setCount(count);
                 task.setWxOrg("无");
