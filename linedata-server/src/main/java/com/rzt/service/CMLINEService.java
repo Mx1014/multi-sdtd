@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
  * @version        
  */
 @Service
-@Transactional
 public class CMLINEService extends CurdService<CMLINE,CMLINERepository> {
 
 

@@ -36,9 +36,9 @@ public class CmFileController extends
 
 	@ApiOperation(value = "文件档案、头像等公共资源文件的上传",notes = "文件档案、头像等公共资源文件的上传")
 	@PostMapping("fileUpload")
-	public Map<String,Object> fileUpload(MultipartFile file,Integer flag,Long fkId) {
+	public Map<String,Object> fileUpload(MultipartFile file,CmFile cmFile) {
 
-		return service.fileUpload( file, flag, fkId);
+		return service.fileUpload( file, cmFile);
 
 	}
 

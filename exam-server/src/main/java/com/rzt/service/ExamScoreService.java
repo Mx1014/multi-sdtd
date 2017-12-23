@@ -22,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
  * @version        
  */
 @Service
-@Transactional
 public class ExamScoreService extends CurdService<ExamScore,ExamScoreRepository> {
 
 

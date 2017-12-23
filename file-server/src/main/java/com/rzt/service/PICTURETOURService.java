@@ -32,11 +32,11 @@ import java.util.Map;
  * @version        
  */
 @Service
-@Transactional
 public class PICTURETOURService extends CurdService<PICTURETOUR,PICTURETOURRepository> {
 
     protected static Logger LOGGER = LoggerFactory.getLogger(PICTURETOURService.class);
 
+    @Transactional
     public Map<String,Object> fileUpload(MultipartFile multipartFile, PICTURETOUR picturetour) {
 
         Map<String, Object> result = new HashMap<>();
@@ -82,6 +82,7 @@ public class PICTURETOURService extends CurdService<PICTURETOUR,PICTURETOURRepos
         return result;
     }
 
+    @Transactional
     public Map<String,Object> deleteImgsById(Long id) {
 
         Map<String, Object> result = new HashMap<>();

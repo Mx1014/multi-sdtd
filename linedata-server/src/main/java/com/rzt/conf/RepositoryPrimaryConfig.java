@@ -25,6 +25,7 @@ import java.util.Map;
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(
+        enableDefaultTransactions = false,
         entityManagerFactoryRef="entityManagerFactoryPrimary",
         transactionManagerRef="transactionManagerPrimary",
         basePackages= { "com.rzt.repository" })//设置dao（repo）所在位置

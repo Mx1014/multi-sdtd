@@ -8,7 +8,6 @@ package com.rzt.service;
 import com.rzt.entity.CMLINESECTION;
 import com.rzt.repository.CMLINESECTIONRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**      
  * 类名称：CMLINESECTIONService    
@@ -21,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
  * @version        
  */
 @Service
-@Transactional
 public class CMLINESECTIONService extends CurdService<CMLINESECTION,CMLINESECTIONRepository> {
 
 
