@@ -40,7 +40,7 @@ public class XSZCTASK implements Serializable {
     private String classId;
     //字段描述: 正常巡视任务周期id
     @Column(name = "XS_ZC_CYCLE_ID")
-    private Long xsZcCycleId;
+        private Long xsZcCycleId;
     //字段描述: 任务状态0  待办 1进行中 2已完成
     @Column(name = "STAUTS")
     private Integer stauts;
@@ -71,6 +71,10 @@ public class XSZCTASK implements Serializable {
     //字段描述: 实际结束时间
     @Column(name = "REAL_END_TIME")
     private Date realEndTime;
+
+    //字段描述: 派单时间
+    @Column(name = "PD_TIME")
+    private Date pdTime;
     //字段描述: 周期内第多少次任务
     @Column(name = "TASK_NUM_IN_CYCLE")
     private Integer taskNumInCycle;
@@ -95,6 +99,14 @@ public class XSZCTASK implements Serializable {
 
     public void setWxOrg(String wxOrg) {
         this.wxOrg = wxOrg;
+    }
+
+    public Date getPdTime() {
+        return pdTime;
+    }
+
+    public void setPdTime(Date pdTime) {
+        this.pdTime = pdTime;
     }
 
     @ExcelResources(title = "外协单位", order = 2)

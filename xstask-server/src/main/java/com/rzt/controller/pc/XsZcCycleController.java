@@ -16,14 +16,13 @@ import com.rzt.util.WebApiResponse;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * 类名称：XsZcCycleController
@@ -55,7 +54,13 @@ public class XsZcCycleController extends
     @ApiOperation(value = "周期维护 新增周期",notes = "pc端新增周期")
     @PostMapping("addCycle")
     public Object addCycle( XsZcCycle xsZcCycle) {
-		return this.service.addCycle(xsZcCycle);
+		try {
+			xsZcCycle.setTotalTaskNum(0);
+			Object o = this.service.addCycle(xsZcCycle);
+			return WebApiResponse.success("数据新增成功");
+		} catch (Exception var) {
+			return WebApiResponse.erro("数据新增失败" + var.getMessage());
+		}
 	}
 
 	/**
@@ -67,17 +72,17 @@ public class XsZcCycleController extends
 	 * @author nwz
 	 */
 	@ApiOperation(value = "周期维护页面列表",notes = "周期维护页面列表 查询的接口")
-	@GetMapping("listCycle")
-	public Object cycleList(@RequestParam(value = "page",defaultValue = "0") Integer page, @RequestParam(value = "size",defaultValue = "15") Integer size, @RequestParam(value = "sortField",defaultValue = "id") String sortField, @RequestParam(value = "sortDirection",defaultValue = "DESC") String sortDirection, XsTaskSCh xsTaskSch) {
+	@PostMapping("listCycle")
+	public Object cycleList(Pageable pageable,XsTaskSCh xsTaskSCh) {
 		try {
-			Sort sort = new Sort(Sort.Direction.DESC, new String[]{sortField});
-			if (sortDirection.equals("ASC")) {
-				sort = new Sort(Sort.Direction.ASC, new String[]{sortField});
-			}
-
-			Pageable pageable = new PageRequest(page, size, sort);
-//			return WebApiResponse.success(this.service.findAll(pageable));
-            return this.service.cycleList(pageable,xsTaskSch);
+//			Sort sort = new Sort(Sort.Direction.DESC, new String[]{sortField});
+//			if (sortDirection.equals("ASC")) {
+//				sort = new Sort(Sort.Direction.ASC, new String[]{sortField});
+//			}
+//
+//			Pageable pageable = new PageRequest(page, size, sort);
+			Object cycleList = this.service.cycleList(pageable, xsTaskSCh);
+			return WebApiResponse.success(cycleList);
 		} catch (Exception var7) {
 			return WebApiResponse.erro("数据查询失败" + var7.getMessage());
 		}
@@ -88,7 +93,8 @@ public class XsZcCycleController extends
 	@GetMapping("getCycle")
 	public Object getCycle(Long id) {
 		try {
-			return this.service.getCycle(id);
+			Object cycle = this.service.getCycle(id);
+			return WebApiResponse.success(cycle);
 		} catch (Exception var3) {
 			return WebApiResponse.erro("数据查询失败" + var3.getMessage());
 		}
@@ -101,18 +107,19 @@ public class XsZcCycleController extends
     @DeleteMapping("deleteCycle")
     public Object deleteCycle(@RequestParam(value = "ids[]") Long[] ids) {
         try {
-            return this.service.logicalDelete(ids);
+			this.service.logicalDelete(ids);
+            return WebApiResponse.success("数据删除成功");
         } catch (Exception var3) {
-            return WebApiResponse.erro("数据保存失败" + var3.getMessage());
+            return WebApiResponse.erro("数据删除失败" + var3.getMessage());
         }
 
     }
 
     @ApiOperation(value = "周期更新",notes = "周期更新")
     @PatchMapping("updateCycle")
-    public Object updateCycle( XsZcCycle xsZcCycle) {
+		public Object updateCycle(Long id,Integer cycle,Integer inUse,Integer planXsNum,String planStartTime,String planEndTime) {
         try {
-            this.service.add(xsZcCycle);
+            this.service.updateCycle(id,cycle,inUse,planXsNum,planStartTime,planEndTime);
             return WebApiResponse.success("数据保存成功");
         } catch (Exception var3) {
             return WebApiResponse.erro("数据保存失败" + var3.getMessage());
@@ -129,9 +136,8 @@ public class XsZcCycleController extends
 	 * @date 2017/12/7 17:57
 	 * @author nwz
 	 */
-	@ApiOperation(value = "计划制定",notes = "pc端计划制定")
 	@PostMapping("addPlan")
-	public Object addPlan( @RequestBody XSZCTASK xszctask) {
+	public Object addPlan(XSZCTASK xszctask) {
 		return this.service.addPlan(xszctask);
 	}
 
@@ -145,14 +151,14 @@ public class XsZcCycleController extends
 	 */
 	@ApiOperation(value = "pc端任务派发列表",notes = "pc端任务派发列表")
 	@GetMapping("listPlan")
-	public Object listPlan(@RequestParam(value = "page",defaultValue = "0") Integer page, @RequestParam(value = "size",defaultValue = "15") Integer size, @RequestParam(value = "sortField",defaultValue = "id") String sortField, @RequestParam(value = "sortDirection",defaultValue = "DESC") String sortDirection,@RequestBody XsTaskSCh xsTaskSch) {
+	public Object listPlan(Pageable pageable, XsTaskSCh xsTaskSch) {
 		try {
-			Sort sort = new Sort(Sort.Direction.DESC, new String[]{sortField});
-			if (sortDirection.equals("ASC")) {
-				sort = new Sort(Sort.Direction.ASC, new String[]{sortField});
-			}
-
-			Pageable pageable = new PageRequest(page, size, sort);
+//			Sort sort = new Sort(Sort.Direction.DESC, new String[]{sortField});
+//			if (sortDirection.equals("ASC")) {
+//				sort = new Sort(Sort.Direction.ASC, new String[]{sortField});
+//			}
+//
+//			Pageable pageable = new PageRequest(page, size, sort);
 //			return WebApiResponse.success(this.service.findAll(pageable));
 			return this.service.listPlan(pageable,xsTaskSch);
 		} catch (Exception var7) {
@@ -161,5 +167,12 @@ public class XsZcCycleController extends
 
 	}
 
+	@InitBinder
+	public void initBinder(ServletRequestDataBinder binder) {
+		 /*** 自动转换日期类型的字段格式
+		 */SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		 binder.registerCustomEditor(Date.class, new CustomDateEditor(sdf, true));
+
+   }
 
 }

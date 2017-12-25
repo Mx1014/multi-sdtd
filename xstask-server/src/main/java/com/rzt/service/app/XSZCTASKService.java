@@ -263,17 +263,17 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
         List<Map<String, Object>> execDetails = null;
         Map<String,Object> resultMap = new HashMap<String,Object>();
         if(xslx == 0 || xslx == 1) {
-            String execSql = "select * from XS_ZC_TASK_EXEC where XS_ZC_TASK_ID = ? order by XS_REPEAT_NUM desc";
+            String execSql = "select * from XS_txbd_TASK_EXEC where XS_txbd_TASK_ID = ? order by XS_REPEAT_NUM desc";
             execs = this.execSql(execSql, taskId);
             Long execId = Long.parseLong(execs.get(0).get("id").toString());
-            String execDetailId = "select * from XS_ZC_TASK_EXEC_DETAIL where XS_ZC_TASK_EXEC_ID = ? ";
+            String execDetailId = "select t.*,ttt.LONGITUDE,ttt.LATITUDE from (select * from XS_txbd_TASK_EXEC_DETAIL where XS_txbd_TASK_EXEC_ID = ?) t join CM_LINE_TOWER tt on t.START_TOWER_ID = tt.ID join CM_TOWER ttt on tt.TOWER_ID = ttt.id order by t.id ";
             execDetails = this.execSql(execDetailId, execId);
 
         } else {
             String execSql = "select * from XS_ZC_TASK_EXEC where XS_ZC_TASK_ID = ? order by XS_REPEAT_NUM desc";
             execs = this.execSql(execSql, taskId);
             Long execId = Long.parseLong(execs.get(0).get("ID").toString());
-            String execDetailId = "select * from XS_ZC_TASK_EXEC_DETAIL where XS_ZC_TASK_EXEC_ID = ? order by id";
+            String execDetailId = "select t.*,ttt.LONGITUDE,ttt.LATITUDE from (select * from XS_ZC_TASK_EXEC_DETAIL where XS_ZC_TASK_EXEC_ID = ?) t join CM_LINE_TOWER tt on t.START_TOWER_ID = tt.ID join CM_TOWER ttt on tt.TOWER_ID = ttt.id order by t.id";
             execDetails = this.execSql(execDetailId, execId);
         }
         resultMap.put("towerList",xsTowers);

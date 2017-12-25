@@ -227,11 +227,11 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
     * @date 2017/12/18 19:08
     * @author nwz
     */
-    public void updateExecDetail(Integer xslx,Integer sfdw, String reason, Long execDetailId) {
+    public void updateExecDetail(Integer xslx,Integer sfdw, String reason, Long execDetailId,Float longtitude,Float latitude) {
         if(xslx == 0 || xslx == 1) {
             this.reposiotry.updateTxbdExecDetail(sfdw,reason,execDetailId);
         } else {
-            this.reposiotry.updateZcxsExecDetail(sfdw,reason,execDetailId);
+            this.reposiotry.updateZcxsExecDetail(sfdw,reason,execDetailId,longtitude,latitude);
         }
     }
     /***

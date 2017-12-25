@@ -8,7 +8,7 @@ spring:
           name: xsTask
     datasource:
       type: com.alibaba.druid.pool.DruidDataSource
-      url: jdbc:oracle:thin:@47.92.67.90:1521:orcl
+      url: jdbc:oracle:thin:@168.130.1.32:1521:orcl
       username: sdtd27
       password: sdtd27
       driver-class-name: oracle.jdbc.driver.OracleDriver
@@ -29,16 +29,16 @@ spring:
     redis:
           database: 0
           host: 168.130.1.31
-          password: 'sdtd275d'
-          pool:
-              max-active: 200
-              max-idle: 8
-              max-wait: -1
-              min-idle: 2
-          port: 30809
+          port: 30094
+          password:
           timeout: 0
-jpa:
-  database: Oracle
+          pool:
+            max-active: 100
+            max-idle: 8
+            min-idle: 0
+            max-wait: -1
+    jpa:
+      database: Oracle
 
 logging:
   config: classpath:logback-spring.xml
@@ -53,7 +53,13 @@ security:
 eureka:
   client:
     service-url:
-      defaultZone: http://168.130.1.31:31814/eureka/
+      defaultZone: http://127.0.0.1:7002/eureka/
+    healthcheck:
+      enabled: true
+  instance:
+          lease-expiration-duration-in-seconds: 30
+          lease-renewal-interval-in-seconds: 10
+
 
 #解决时差的问题
 #      mysql:
