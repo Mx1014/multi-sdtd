@@ -9,9 +9,12 @@ package com.rzt.service;
 import com.rzt.entity.RztSysUser;
 import com.rzt.repository.RztSysUserRepository;
 import com.rzt.util.WebApiResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -36,6 +39,8 @@ import java.util.Map;
 public class RztSysUserService extends CurdService<RztSysUser, RztSysUserRepository> {
     @PersistenceContext
     private EntityManager entityManager;
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
     public Page<RztSysUser> findByName(String name, Pageable pageable) {
         if (StringUtils.isEmpty(name))
@@ -124,7 +129,15 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
         int worktype = user.getWorktype();
         int workyear = user.getWorkyear();
         try {
-            return WebApiResponse.success(this.reposiotry.updateUser(age, certificate, deptid, email, phone, realname, serialnumber, userType, username, worktype, workyear, id));
+            this.reposiotry.updateUser(age, certificate, deptid, email, phone, realname, serialnumber, userType, username, worktype, workyear, id);
+            /**
+             * 修改Redis人员信息
+             */
+            String sql1 = " SELECT * FROM RZTSYSUSER where id=?1 and USERDELETE = 1 ";
+            Map<String, Object> stringObjectMap = this.execSqlSingleResult(sql1, id);
+            HashOperations hashOperations = redisTemplate.opsForHash();
+            hashOperations.put("UserInformation", id, stringObjectMap);
+            return WebApiResponse.success("修改成功");
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.success("修改失败");

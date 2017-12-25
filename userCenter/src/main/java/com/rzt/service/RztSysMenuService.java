@@ -12,6 +12,9 @@ import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DateUtil;
 import com.rzt.utils.DbUtil;
 import com.rzt.utils.PageUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -29,6 +32,9 @@ public class RztSysMenuService extends CurdService<RztSysMenu, RztSysMenuReposit
 
     @PersistenceContext
     private EntityManager entityManager;
+
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
     //添加子节点
     @Transactional
@@ -152,7 +158,7 @@ public class RztSysMenuService extends CurdService<RztSysMenu, RztSysMenuReposit
     }
 
     public List<Map<String, Object>> treeQuery(String deptpid) {
-        String sql = " select id as \"value\",DEPTNAME as \"label\",DEPTPID,ID from RZTSYSDEPARTMENT start with deptpid= ?1 CONNECT by prior id=  DEPTPID ";
+        String sql = " select id as \"value\",DEPTNAME as \"label\",DEPTPID,ID,ORGTYPE from RZTSYSDEPARTMENT start with id= ?1 CONNECT by prior id=  DEPTPID ";
         List<Map<String, Object>> list = this.execSql(sql, deptpid);
         List list1 = treeOrgList(list, list.get(0).get("ID").toString());
         return list1;
@@ -350,6 +356,12 @@ public class RztSysMenuService extends CurdService<RztSysMenu, RztSysMenuReposit
         try {
             this.reposiotry.deleteSysData(roleid);
             this.reposiotry.insertSysData(type, roleid);
+            String sql = " SELECT * FROM RZTSYSDATA ";
+            List<Map<String, Object>> maps = this.execSql(sql);
+            HashOperations hashOperations = redisTemplate.opsForHash();
+            for (Map map : maps) {
+                hashOperations.put("RZTSYSDATA", map.get("ROLEID"), map);
+            }
             return WebApiResponse.success("yes");
         } catch (Exception e) {
             e.printStackTrace();
