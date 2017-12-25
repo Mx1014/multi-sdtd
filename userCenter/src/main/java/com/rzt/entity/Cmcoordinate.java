@@ -42,8 +42,8 @@ public class Cmcoordinate {
     @Column(name = "CREATETIME")
     private Date createtime;
     //字段描述: 手机串号
-    @Column(name = "IMEI")
-    private String imei;
+    @Column(name = "IMEI2")
+    private String imei2;
 
     public String getId() {
         return id;
@@ -88,11 +88,11 @@ public class Cmcoordinate {
         return this.createtime;
     }
 
-    public String getImei() {
-        return imei;
+    public String getImei2() {
+        return imei2;
     }
 
-    public void setImei(String imei) {
-        this.imei = imei;
+    public void setImei2(String imei2) {
+        this.imei2 = imei2;
     }
 }

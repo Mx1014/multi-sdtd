@@ -136,7 +136,7 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
      *
      * @return
      */
-    public List<Map<String, Object>>    userQuery(String classname, String realname) {
+    public List<Map<String, Object>> userQuery(String classname, String realname) {
         ArrayList arrayList = new ArrayList();
         String s = "";
         arrayList.add(classname);
@@ -148,15 +148,43 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
         return this.execSql(sql, arrayList.toArray());
     }
 
-	public Map<String,Object> getUserinfoByUserId(String userid){
-		String sql = "select * from userinfo where id = ?1";
-		Map<String,Object> map = null;
-		try {
-			map =  this.execSqlSingleResult(sql,userid);
-		} catch (Exception e) {
-			e.printStackTrace();
-			map = new HashMap<>();
-		}
-		return map;
-	}
+    public Map<String, Object> getUserinfoByUserId(String userid) {
+        String sql = "select * from userinfo where id = ?1";
+        Map<String, Object> map = null;
+        try {
+            map = this.execSqlSingleResult(sql, userid);
+        } catch (Exception e) {
+            e.printStackTrace();
+            map = new HashMap<>();
+        }
+        return map;
+    }
+
+    /**
+     * 人员添加角色
+     *
+     * @param roleid 登陆人角色ID
+     * @return
+     */
+    public List<Map<String, Object>> treeRztsysroleQuery(String roleid) {
+        String sql = " SELECT ID as \"value\" ,ROLENAME as \"label\",ROLENODEID,ID FROM RZTSYSROLE START WITH ID=?1 CONNECT BY PRIOR ID=ROLENODEID ";
+        List<Map<String, Object>> list = this.execSql(sql, roleid);
+        List list1 = treeOrgRztsysroleList(list, list.get(0).get("ID").toString());
+        return list1;
+
+    }
+
+    public List treeOrgRztsysroleList(List<Map<String, Object>> orgList, String parentId) {
+        List childOrg = new ArrayList<>();
+        for (Map<String, Object> map : orgList) {
+            String menuId = String.valueOf(map.get("ID"));
+            String pid = String.valueOf(map.get("ROLENODEID"));
+            if (parentId.equals(pid)) {
+                List c_node = treeOrgRztsysroleList(orgList, menuId);
+                map.put("children", c_node);
+                childOrg.add(map);
+            }
+        }
+        return childOrg;
+    }
 }

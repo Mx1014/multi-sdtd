@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.bind.annotation.ModelAttribute;
 
 import java.util.List;
 
@@ -190,4 +191,15 @@ public interface RztSysMenuRepository extends JpaRepository<RztSysMenu, String> 
     @Modifying
     @Query(value = "INSERT INTO RZTSYSDATA (ID, TYPE, ROLEID) VALUES (sys_guid(), ?1, ?2)", nativeQuery = true)
     int insertSysData(String type, String roleid);
+
+    /**
+     * 修改菜单
+     *
+     * @param menuname
+     * @param id
+     * @return
+     */
+    @Modifying
+    @Query(value = " UPDATE RZTSYSMENU SET  MENUNAME = ?1 WHERE ID = ?2 ", nativeQuery = true)
+    int updateNodeById(String menuname, String id);
 }

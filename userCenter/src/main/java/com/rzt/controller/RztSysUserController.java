@@ -22,14 +22,12 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.File;
-import java.io.IOException;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -62,10 +60,12 @@ public class RztSysUserController extends
 
 
     @PostMapping("addUser")
+    @Transactional
     public WebApiResponse addUser(MultipartFile file, String password, RztSysUser user) {
         String filePath = "";
-        user.setId(UUID.randomUUID().toString().replaceAll("-", ""));
-        user.setAvatar(filePath);
+        String id = UUID.randomUUID().toString().replaceAll("-", "");
+        user.setId(id);
+        file.getName();
         /**
          * 验证
          */
@@ -81,7 +81,8 @@ public class RztSysUserController extends
         this.service.add(user);
         userauthService.addUserAuth(user, password);
         if (!StringUtils.isEmpty(file)) {
-//            cmuserfile.userFileUpload(file, 0, 11L);
+            cmuserfile.userFileUpload(file, file.getName(), 0, DateUtil.dateNow(), id);
+            user.setAvatar(filePath);
         }
         return WebApiResponse.success("添加成功！");
     }
@@ -151,9 +152,9 @@ public class RztSysUserController extends
      * @param size 每页行数
      * @return
      */
-    @GetMapping("findAllUser/{page}/{size}")
+    @GetMapping("findAllUser")
     @ApiOperation(value = "人员分页查询", notes = "人员分页查询")
-    public WebApiResponse findAllUser(@PathVariable int page, @PathVariable int size, String deptid, String realname, String classname, String worktype) {
+    public WebApiResponse findAllUser(int page, int size, String deptid, String realname, String classname, String worktype) {
         try {
             return WebApiResponse.success(this.service.findUserList(page, size, deptid, realname, classname, worktype));
         } catch (Exception e) {
@@ -260,4 +261,16 @@ public class RztSysUserController extends
             return WebApiResponse.erro("[Data Request Failed]");
         }
     }
+
+    /**
+     * 人员添加角色
+     *
+     * @param roleid 登陆人角色ID
+     * @return
+     */
+    @GetMapping("treeRztsysroleQuery")
+    public List<Map<String, Object>> treeRztsysroleQuery(String roleid) {
+        return this.service.treeRztsysroleQuery(roleid);
+    }
+
 }

@@ -59,7 +59,7 @@ public class RztSysDepartment extends BaseEntity implements Serializable {
     @Column(name = "lastnode")
     private Integer lastnode;
     @Column(name = "orgtype")
-    private String orgtype;
+    private Integer orgtype;
 
     public Integer getLastnode() {
         return lastnode;
@@ -151,13 +151,11 @@ public class RztSysDepartment extends BaseEntity implements Serializable {
     }
 
     @ExcelResources(title = "", order = 10)
-    public String getOrgtype() {
+    public Integer getOrgtype() {
         return orgtype;
     }
 
-    public void setOrgtype(String orgtype) {
+    public void setOrgtype(Integer orgtype) {
         this.orgtype = orgtype;
     }
-
-
 }

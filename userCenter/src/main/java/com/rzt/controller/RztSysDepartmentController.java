@@ -113,4 +113,43 @@ public class RztSysDepartmentController extends
     public WebApiResponse queryOrgName() {
         return this.service.queryOrgName();
     }
+
+    /**
+     * 查询通道单位还是公司本部
+     *
+     * @param id 登陆人通道单位ID
+     * @return
+     */
+    @GetMapping("getDeptOne")
+    public WebApiResponse getDeptOne(String id) {
+        String sql = " SELECT ID,DEPTNAME FROM RZTSYSDEPARTMENT WHERE ID = ?1";
+        try {
+            return WebApiResponse.success(this.service.execSql(sql, id));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("Query failed");
+        }
+    }
+
+    /**
+     * 查询通道单位
+     *
+     * @param id
+     * @return
+     */
+    @GetMapping("getDeptorgName")
+    public WebApiResponse getDeptorgName(String id) {
+        return this.service.getDeptorgName(id);
+    }
+
+    /**
+     * 单位组 和 队伍
+     *
+     * @param deptpid
+     * @return
+     */
+    @GetMapping("getDeptClass")
+    public WebApiResponse getDeptClass(String deptpid) {
+        return this.service.getDeptClass(deptpid);
+    }
 }

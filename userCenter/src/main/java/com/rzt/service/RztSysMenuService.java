@@ -174,19 +174,6 @@ public class RztSysMenuService extends CurdService<RztSysMenu, RztSysMenuReposit
     }
 
     /**
-     * 人员管理树
-     *
-     * @param id 通道单位ID
-     * @return
-     */
-    public List<Map<String, Object>> userTreeQuery(String id) {
-        String sql = "select id as \"value\",DEPTNAME as \"label\",DEPTPID,ID from RZTSYSDEPARTMENT start with ID= ?1 CONNECT by prior id=  DEPTPID";
-        List<Map<String, Object>> list = this.execSql(sql, id);
-        List list1 = treeOrgList(list, list.get(0).get("ID").toString());
-        return list1;
-    }
-
-    /**
      * 菜单数据中间表
      *
      * @param menuid 菜单表ID
@@ -220,10 +207,13 @@ public class RztSysMenuService extends CurdService<RztSysMenu, RztSysMenuReposit
             String sql = "SELECT id FROM RZTMENUPRIVILEGE WHERE MENUID=?1 AND ROLEID=?2";
             try {
                 Map map = this.execSqlSingleResult(sql, menuid, roleid);
-                this.reposiotry.insertRztsysbutton(buttonid, map.get("ID").toString());
-                return WebApiResponse.success("添加成功");
+                if (map.size() == 1) {
+                    this.reposiotry.insertRztsysbutton(buttonid, map.get("ID").toString());
+                    return WebApiResponse.success("添加成功");
+                } else {
+                    return WebApiResponse.erro("添加失败");
+                }
             } catch (Exception e) {
-                e.printStackTrace();
                 return WebApiResponse.erro("添加失败");
             }
         }
@@ -268,10 +258,13 @@ public class RztSysMenuService extends CurdService<RztSysMenu, RztSysMenuReposit
             String sql = "SELECT id FROM RZTMENUPRIVILEGE WHERE MENUID=?1 AND ROLEID=?2";
             try {
                 Map map = this.execSqlSingleResult(sql, menuid, roleid);
-                this.reposiotry.deleteRztsysbutton(map.get("ID").toString(), buttonid);
-                return WebApiResponse.success("删除成功");
+                if (map.size() == 1) {
+                    this.reposiotry.deleteRztsysbutton(map.get("ID").toString(), buttonid);
+                    return WebApiResponse.success("删除成功");
+                } else {
+                    return WebApiResponse.erro("删除失败");
+                }
             } catch (Exception e) {
-                e.printStackTrace();
                 return WebApiResponse.erro("删除失败");
             }
         }
@@ -288,6 +281,7 @@ public class RztSysMenuService extends CurdService<RztSysMenu, RztSysMenuReposit
     @Transactional
     public WebApiResponse insertApp(String menuid, String roleid) {
         if (!StringUtils.isEmpty(menuid) && !StringUtils.isEmpty(roleid)) {
+            String sql = "";
             try {
                 this.reposiotry.insertApp(menuid, roleid);
                 return WebApiResponse.success("添加成功");
@@ -360,6 +354,23 @@ public class RztSysMenuService extends CurdService<RztSysMenu, RztSysMenuReposit
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("no");
+        }
+    }
+
+    /**
+     * 修改菜单
+     *
+     * @param menuname
+     * @param id
+     * @return
+     */
+    @Transactional
+    public WebApiResponse updateNodeById(String menuname, String id) {
+        try {
+            return WebApiResponse.success(this.reposiotry.updateNodeById(menuname, id));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("fail to edit");
         }
     }
 }

@@ -13,6 +13,7 @@ import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DateUtil;
 import com.rzt.utils.DbUtil;
 import com.rzt.utils.PageUtil;
+import com.sun.org.apache.regexp.internal.RE;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -155,6 +156,38 @@ public class RztSysDepartmentService extends CurdService<RztSysDepartment, RztSy
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("数据修改失败");
+        }
+    }
+
+    /**
+     * 查询通道单位
+     *
+     * @param id
+     * @return
+     */
+    public WebApiResponse getDeptorgName(String id) {
+        String sql = "SELECT ID, DEPTNAME,DEPTPID FROM RZTSYSDEPARTMENT WHERE ID = ?1 ";
+        try {
+            return WebApiResponse.success(this.execSql(sql, id));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("erro");
+        }
+    }
+
+    /**
+     * 单位组 和 队伍
+     *
+     * @param deptpid
+     * @return
+     */
+    public WebApiResponse getDeptClass(String deptpid) {
+        String sql = "SELECT ID, DEPTNAME,DEPTPID FROM RZTSYSDEPARTMENT WHERE  DEPTPID=?1 ";
+        try {
+            return WebApiResponse.success(this.execSql(sql, deptpid));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("erro");
         }
     }
 }

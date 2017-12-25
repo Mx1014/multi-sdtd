@@ -63,9 +63,22 @@ public class RztSysMenuController extends
         return WebApiResponse.success("更新成功！");
     }
 
+    /**
+     * 修改菜单
+     *
+     * @param menuname
+     * @param id
+     * @return
+     */
+    @PatchMapping("updateNodeById")
+    public WebApiResponse updateNodeById(String menuname, String id) {
+        return this.service.updateNodeById(menuname, id);
+    }
+
+
     //删除节点
-    @DeleteMapping("deleteNode/{id}")
-    public void deleteNode(@PathVariable String id) {
+    @DeleteMapping("deleteNode")
+    public void deleteNode(String id) {
         this.service.deleteNode(id);
     }
 
@@ -145,11 +158,6 @@ public class RztSysMenuController extends
         return this.service.treeQuery(id);
     }
 
-    @GetMapping("userTreeQuery")
-    public List<Map<String, Object>> userTreeQuery(String id) {
-        return this.service.userTreeQuery(id);
-    }
-
     /**
      * 菜单数据中间表
      *
@@ -212,7 +220,6 @@ public class RztSysMenuController extends
      */
     @PostMapping("dataByDAndi")
     public WebApiResponse dataByDAndi(String type, String roleid) {
-        int a = 2;
         return this.service.dataByDAndi(type, roleid);
     }
 }
