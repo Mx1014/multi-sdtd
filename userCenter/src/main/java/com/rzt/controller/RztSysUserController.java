@@ -20,6 +20,7 @@ import com.rzt.utils.Constances;
 import com.rzt.utils.DateUtil;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
@@ -65,7 +66,6 @@ public class RztSysUserController extends
         String filePath = "";
         String id = UUID.randomUUID().toString().replaceAll("-", "");
         user.setId(id);
-        file.getName();
         /**
          * 验证
          */
@@ -84,6 +84,15 @@ public class RztSysUserController extends
             cmuserfile.userFileUpload(file, file.getName(), 0, DateUtil.dateNow(), id);
             user.setAvatar(filePath);
         }
+        /**
+         * 人员缓存Redis
+         */
+        String sql = " SELECT * FROM RZTSYSUSER where USERDELETE = 1 ";
+        List<Map<String, Object>> maps = this.service.execSql(sql);
+        HashOperations hashOperations = redisTemplate.opsForHash();
+        for (Map map : maps) {
+            hashOperations.put("UserInformation", map.get("ID"), map);
+        }
         return WebApiResponse.success("添加成功！");
     }
 
@@ -96,7 +105,13 @@ public class RztSysUserController extends
     @DeleteMapping("deleteUser/{id}")
     public WebApiResponse deleteUser(@PathVariable String id) {
         try {
-            return WebApiResponse.success(this.service.logicUser(id));
+            this.service.logicUser(id);
+            /**
+             * 删除人员
+             */
+            HashOperations hashOperations = redisTemplate.opsForHash();
+            hashOperations.delete("UserInformation", id);
+            return WebApiResponse.success("true");
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("删除失败");
@@ -112,14 +127,20 @@ public class RztSysUserController extends
     @DeleteMapping("deleteBatchUser")
     public WebApiResponse deleteBatchUser(@RequestParam String ids) {
         if (!StringUtils.isEmpty(ids)) {
+            HashOperations hashOperations = redisTemplate.opsForHash();
             String[] id = ids.split(",");
             for (int i = 0; i < id.length; i++) {
                 try {
                     this.service.logicUser(id[i]);
+                    /**
+                     * 删除人员Redis
+                     */
+                    hashOperations.delete("UserInformation", id[i]);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
+
         }
         return WebApiResponse.erro("删除成功");
     }
@@ -134,17 +155,10 @@ public class RztSysUserController extends
      */
     @PatchMapping("updateUser")
     public WebApiResponse updateUser(String id, RztSysUser user, String password) {
-        return this.service.updateUser(id, user);
+        this.service.updateUser(id, user);
+        return WebApiResponse.success("修改成功");
     }
 
-    /**
-     * @GetMapping("findAllUser/{page}/{size}") 保存以前的 12-12 2017
-     * public List<Map<String,Object>> findAllUser(@PathVariable int page, @PathVariable int size, @RequestParam(required=false)
-     * String name){
-     * List<Map<String,Object>> pageList = this.service.findUserList(page,size);
-     * return pageList;
-     * }
-     */
     /**
      * 人员列表分页查询
      *
@@ -272,5 +286,4 @@ public class RztSysUserController extends
     public List<Map<String, Object>> treeRztsysroleQuery(String roleid) {
         return this.service.treeRztsysroleQuery(roleid);
     }
-
 }
