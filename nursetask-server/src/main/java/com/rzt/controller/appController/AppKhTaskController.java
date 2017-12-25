@@ -95,6 +95,13 @@ public class AppKhTaskController extends
     public WebApiResponse appExchange(String taskId){
         return this.service.appExchange(taskId);
     }
+
+    @ApiOperation(value = "查看接班人", notes = "查看接班人  ")
+    @GetMapping("/appListjbr.do")
+    @ResponseBody
+    public WebApiResponse appListjbr(String userId,long taskId){
+        return this.service.appListjbr(userId,taskId);
+    }
    /* @GetMapping("/updateTaskTime.do")
     @ResponseBody
     public void updateTaskTime(String step, Date time, String id){

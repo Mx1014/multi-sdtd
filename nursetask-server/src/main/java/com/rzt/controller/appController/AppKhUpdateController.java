@@ -60,6 +60,12 @@ public class AppKhUpdateController  extends
 
     }
 
+    @ApiOperation(value = "交接班", notes = "交接班 ")
+    @PatchMapping("/updateEndTime")
+    @ResponseBody
+    public WebApiResponse updateEndTime(long taskId){
+        return this.service.updateEndTime(taskId);
+    }
   /*  @ApiOperation(value = "开始看护页面", notes = "开始看护页面 ")
     @PatchMapping("/updateClzt")
     @ResponseBody

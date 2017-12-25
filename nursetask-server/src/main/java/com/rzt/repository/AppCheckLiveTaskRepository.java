@@ -17,16 +17,16 @@ public interface AppCheckLiveTaskRepository extends JpaRepository<CheckLiveTaskD
 
     @Modifying
     @Query(value = "UPDATE CHECK_LIVE_TASK_DETAIL SET SFZG = ?1,RYYZ = ?2 WHERE id = ?3", nativeQuery = true)
-    void updateDgdwCheck(String sfzg, String ryyz, Long execId);
+    void updateDgdwCheck(Integer sfzg, Integer ryyz, Long execId);
 
     @Modifying
     @Query(value = "UPDATE CHECK_LIVE_TASK SET DZWL = ?2 WHERE id = ?1", nativeQuery = true)
-    void updateDzwl(Long taskId, String dydj);
+    void updateDzwl(Long taskId, Integer dydj);
 
     /*@Query(value = "", nativeQuery = true)
     void updateDdxcTSSime(String userId, Long taskId, Date date, Long detailId);*/
 
     @Modifying
     @Query(value = "UPDATE CHECK_LIVE_TASK_DETAIL SET DYDJ=?2,YHXX = ?3,CZFA=?4,QTWT=?5,REAL_END_TIME=?6,STATUS=2  WHERE id = ?1", nativeQuery = true)
-    void completeTask(Long taskId, String dydj, String yhxx, String czfa, String qtwt, Date date);
+    void completeTask(Long taskId, Integer dydj, Integer yhxx, Integer czfa, Integer qtwt, Date date);
 }

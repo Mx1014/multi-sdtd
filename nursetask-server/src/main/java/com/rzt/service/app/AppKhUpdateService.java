@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.Map;
 
 /**
@@ -93,6 +94,16 @@ public class AppKhUpdateService extends CurdService<KhTask, AppKhUpdateRepositor
         try {
             this.reposiotry.updateClzt(clzt,taskId);
             this.reposiotry.updateZxnum(6, taskId);//修改执行页数
+            return WebApiResponse.success("修改成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("修改失败");
+        }
+    }
+
+    public WebApiResponse updateEndTime(long taskId) {
+        try {
+            this.reposiotry.updateEndTime(DateUtil.dateNow(),taskId);
             return WebApiResponse.success("修改成功");
         } catch (Exception e) {
             e.printStackTrace();
