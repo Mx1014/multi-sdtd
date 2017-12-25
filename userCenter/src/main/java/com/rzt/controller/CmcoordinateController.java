@@ -86,4 +86,12 @@ public class CmcoordinateController extends
         GeoResults geoResult = geoOperations.geoRadius("location", circle, geoRadiusCommandArgs);
         return geoResult;
     }
+
+    @GetMapping("getUserCoordinate")
+    public List<Point> getUserCoordinate(String userids){
+        String[] str = userids.split(",");
+        GeoOperations geoOperations = redisTemplate.opsForGeo();
+        List<Point> list = geoOperations.geoPos(Constances.LOCATION_OBJ,str);
+        return list;
+    }
 }

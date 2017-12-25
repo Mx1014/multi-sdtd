@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -87,7 +88,7 @@ public class RztSysUserController extends
         /**
          * 人员缓存Redis
          */
-        String sql = " SELECT * FROM RZTSYSUSER where USERDELETE = 1 ";
+        String sql = " SELECT * FROM USERINFO where USERDELETE = 1 ";
         List<Map<String, Object>> maps = this.service.execSql(sql);
         HashOperations hashOperations = redisTemplate.opsForHash();
         for (Map map : maps) {
@@ -285,5 +286,30 @@ public class RztSysUserController extends
     @GetMapping("treeRztsysroleQuery")
     public List<Map<String, Object>> treeRztsysroleQuery(String roleid) {
         return this.service.treeRztsysroleQuery(roleid);
+    }
+
+    /**
+     * 人员登陆
+     *
+     * @param password
+     * @param account
+     * @param loginType
+     * @return
+     */
+    @PostMapping("userLogin")
+    public WebApiResponse userLogin(String password, String account, String loginType, HttpServletRequest request) {
+        return this.service.userLogin(password, account, loginType, request);
+    }
+
+    /**
+     * 退出
+     *
+     * @param id
+     * @param request
+     * @return
+     */
+    @PostMapping("userQuit")
+    public WebApiResponse userQuit(String id, HttpServletRequest request) {
+        return this.service.userQuit(id, request);
     }
 }
