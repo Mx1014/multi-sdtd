@@ -44,7 +44,6 @@ public class CmcoordinateController extends
     @Transactional
     public WebApiResponse addCmcoordinate(Cmcoordinate cmcoordinate) {
         try {
-            cmcoordinate.setImei(cmcoordinate.getImei().split(",")[0]);
             Date date = DateUtil.dateNow();
             cmcoordinate.setId(UUID.randomUUID().toString().replaceAll("-", ""));
             cmcoordinate.setCreatetime(date);
