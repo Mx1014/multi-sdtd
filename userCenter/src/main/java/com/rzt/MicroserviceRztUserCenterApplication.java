@@ -24,16 +24,4 @@ public class MicroserviceRztUserCenterApplication {
         SpringApplication.run(MicroserviceRztUserCenterApplication.class, args);
         Logger logger = LoggerFactory.getLogger(MicroserviceRztUserCenterApplication.class);
     }
-
-    @Bean
-    public MapFormHttpMessageConverter mapFormHttpMessageConverter(MultipartFileHttpMessageConverter multipartFileHttpMessageConverter) {
-        MapFormHttpMessageConverter mapFormHttpMessageConverter = new MapFormHttpMessageConverter();
-        mapFormHttpMessageConverter.addPartConverter(multipartFileHttpMessageConverter);
-        return mapFormHttpMessageConverter;
-    }
-
-    @Bean
-    public MultipartFileHttpMessageConverter multipartFileHttpMessageConverter() {
-        return new MultipartFileHttpMessageConverter();
-    }
 }
