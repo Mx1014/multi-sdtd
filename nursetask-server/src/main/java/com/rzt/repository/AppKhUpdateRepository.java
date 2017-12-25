@@ -48,4 +48,9 @@ public interface AppKhUpdateRepository extends JpaRepository<KhTask, String> {
     @Transactional
     @Query(value = "UPDATE KH_TASK_WPQR SET CL_ZT =?1 WHERE TASKID =?2",nativeQuery = true)
     void updateClzt(String clzt, long taskId);
+
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE KH_TASK SET STATUS ='已完成',real_end_time = ?1 WHERE TASKID =?2",nativeQuery = true)
+    void updateEndTime(Date date, long taskId);
 }

@@ -1,3 +1,4 @@
+/*
 package com.rzt.entity.model;
 
 import com.rzt.entity.CheckLiveTaskCycle;
@@ -6,9 +7,11 @@ import com.rzt.utils.DateUtil;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+*/
 /**
  * Created by admin on 2017/12/18.
- */
+ *//*
+
 public class CheckLiveTaskCycleModel extends CheckLiveTaskCycle{
 
 
@@ -83,3 +86,4 @@ public class CheckLiveTaskCycleModel extends CheckLiveTaskCycle{
         }
     }
 }
+*/

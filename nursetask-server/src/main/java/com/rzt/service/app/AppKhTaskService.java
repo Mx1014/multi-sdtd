@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -119,6 +120,26 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
             List<Map<String, Object>> list = this.execSql(sql, userId, userId);
             //保存现场照片    this.reposiotry.getdbCount(userId)
             return WebApiResponse.success(list);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("数据获取失败");
+        }
+    }
+    public WebApiResponse appListjbr(String userId,long taskId) {
+        try {
+            String sql = "select k.yh_id as yhId,s.group_flag as flag from kh_task k left join kh_site s on s.id = k.site_id where k.id=?";
+            Map<String, Object> map = this.execSqlSingleResult(sql, taskId);
+            String yhId = map.get("YHID").toString();
+            String jbrsql = "select u.id as \"label\",u.realname as \"value\",s.capatain as capatain,s.group_flag as flag from rztsysuser u left join kh_site s on s.user_id = u.id where s.yh_id=?";
+            List<Map<String, Object>> list = this.execSql(jbrsql, yhId);
+            List<Map<String, Object>> list1 = new ArrayList<>();
+            for (Map map1:list) {
+                if (!map.get("FLAG").toString().equals(map1.get("FLAG").toString())){
+                    if (map1.get("CAPATAIN").toString().equals("1"))
+                        list1.add(map1);
+                }
+            }
+            return WebApiResponse.success(list1);
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("数据获取失败");
