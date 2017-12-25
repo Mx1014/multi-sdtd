@@ -191,65 +191,11 @@ public class KhSiteController extends
     }
 
     //派发任务  参数传递taskList[0].planStartTime
-    @GetMapping("/paifaTask.do")
+    @PostMapping("/paifaTask.do")
     @ResponseBody
     @Transactional
     public WebApiResponse paifaTask(String id, String tasks, KhTaskModel model) {
-        try {
-            List<Map<Object, String>> list = (List<Map<Object, String>>) JSONObject.parse(tasks);
-            KhSite site = this.service.findSite(id);
-            String groupFlag = System.currentTimeMillis() + "";
-            for (Map map : list) {
-                KhTask task = new KhTask();
-                String capatain = map.get("capatain").toString();
-                String UserId = map.get("userId").toString();
-                if (site.getKhfzrId1() == null && capatain.equals("01")) {
-                    site.setKhfzrId1(UserId);
-                    task.setGroupFlag(groupFlag + "1");
-                }
-                if (site.getKhdyId1() == null && capatain.equals("02")) {
-                    site.setKhdyId1(UserId);
-                    task.setGroupFlag(groupFlag + "2");
-                }
-                if (site.getKhfzrId2() == null && capatain.equals("11")) {
-                    site.setKhfzrId2(UserId);
-                    task.setGroupFlag(groupFlag + "11");
-                }
-                if (site.getKhdyId2() == null && capatain.equals("12")) {
-                    site.setKhdyId2(UserId);
-                    task.setGroupFlag(groupFlag + "12");
-                }
-                int count = taskService.getCount(Long.parseLong(id), UserId);
-                task.setCount(count);
-                task.setCaptain(capatain);
-                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                Date planStartTime = formatter.parse(map.get("planStartTime").toString());
-                Date planEndTime = formatter.parse(map.get("planEndTime").toString());
-                task.setPlanStartTime(planStartTime);
-                task.setPlanEndTime(planEndTime);
-                task.setPlanStartTime(DateUtil.dateNow());
-                task.setPlanEndTime(DateUtil.dateNow());
-                System.out.println(DateUtil.dateNow());
-                task.setUserId(UserId);
-                task.setCount(count);
-                task.setWxOrg("无");
-                task.setTdywOrg(site.getTdywOrg());
-                task.setCreateTime(new Date());
-                task.setStatus("未开始");
-                task.setSiteId(Long.parseLong(id));
-                task.setYhId(site.getYhId());
-                task.setTaskName(site.getTaskName());
-                task.setId();
-                taskService.add(task);
-            }
-            site.setCount(site.getCount() + 1);
-            site.setStatus(1);
-            this.service.paifaTask(id, site);
-            return WebApiResponse.success("任务派发成功");
-        } catch (Exception e) {
-            e.printStackTrace();
-            return WebApiResponse.erro("任务派发失败" + e.getMessage());
-        }
+        return this.service.paifaTask(id,tasks,model);
     }
 /**
  *

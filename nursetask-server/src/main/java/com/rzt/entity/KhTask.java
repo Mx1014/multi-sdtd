@@ -67,12 +67,6 @@ public class KhTask implements Serializable{
 	//字段描述: 看护人ID
 	@Column(name = "USER_ID")
 	private String userId;
-	//字段描述: 是否为负责人  0为队长 1为队员
-	@Column(name = "CAPTAIN")
-	private String captain;
-	//字段描述: 队伍标识  一样的为一队
-	@Column(name = "GROUP_FLAG")
-	private String groupFlag;
 	//字段描述: 隐患id
 	@Column(name = "YH_ID")
 	private Long yhId;
@@ -194,22 +188,6 @@ public class KhTask implements Serializable{
 	@ExcelResources(title="看护人ID",order=13)
 	public String getUserId(){
 		return this.userId;
-	}
-
-	public void setCaptain(String captain){
-		this.captain = captain;
-	}
-	@ExcelResources(title="是否为负责人  0为队长 1为队员",order=14)
-	public String getCaptain(){
-		return this.captain;
-	}
-
-	public void setGroupFlag(String groupFlag){
-		this.groupFlag = groupFlag;
-	}
-	@ExcelResources(title="队伍标识  一样的为一队",order=15)
-	public String getGroupFlag(){
-		return this.groupFlag;
 	}
 
 	public void setYhId(Long yhId){

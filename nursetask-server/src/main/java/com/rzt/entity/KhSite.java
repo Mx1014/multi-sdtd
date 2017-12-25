@@ -32,8 +32,7 @@ import java.util.UUID;
 public class KhSite  implements Serializable{
 	//字段描述: 主任务id
 	@Id
-	@JsonSerialize(using = ToStringSerializer.class)
-	private long id;
+	private Long id;
 	//字段描述: 电压等级 0 1 2 3
 	@Column(name = "VTYPE")
 	private String vtype;
@@ -43,21 +42,18 @@ public class KhSite  implements Serializable{
 	//字段描述: 段落
 	@Column(name = "SECTION")
 	private String section;
-	//字段描述: 隐患状态（0未消除 1消除）
+	//字段描述: 看护点状态（0未派发 1已派发 2停用）
 	@Column(name = "STATUS")
 	private int status;
 	//字段描述: 任务名称
 	@Column(name = "TASK_NAME")
 	private String taskName;
-	//字段描述: 看护负责人1
-	@Column(name = "KHFZR_ID1")
-	private String khfzrId1;
+	//字段描述: 看护人
+	@Column(name = "USER_ID")
+	private String userid;
 	//字段描述: 通道运维单位
 	@Column(name = "TDYW_ORG")
 	private String tdywOrg;
-	/*//字段描述: 是否停用（消缺） 0 不停用 1停用
-	@Column(name = "IN_USE")
-	private String inUse;*/
 	//字段描述: 生成任务总次数
 	@Column(name = "COUNT")
 	private int count;
@@ -66,160 +62,199 @@ public class KhSite  implements Serializable{
 	private long lineId;
 	//字段描述: 隐患id
 	@Column(name = "YH_ID")
-	private Long yhId;
+	private long yhId;
 	//字段描述: 看护范围
 	@Column(name = "KH_RANGE")
 	private String khRange;
-	//字段描述: 看护队员1
-	@Column(name = "KHDY_ID1")
-	private String khdyId1;
-	//字段描述: 看护负责人2
-	@Column(name = "KHFZR_ID2")
-	private String khfzrId2;
-	//字段描述: 看护队员2
-	@Column(name = "KHDY_ID2")
-	private String khdyId2;
 	//字段描述: 任务消缺时间
 	@Column(name = "KHXQ_TIME")
-	@Temporal(TemporalType.TIMESTAMP)
 	private Date khxqTime;
-	@Temporal(TemporalType.TIMESTAMP)//(默认年月日时分秒)
+	//字段描述: 看护点创建时间
 	@Column(name = "CREATE_TIME")
 	private Date createTime;
+	//字段描述: 几班倒
+	@Column(name = "JBD")
+	private String jbd;
+	//字段描述: 队伍标识
+	@Column(name = "GROUP_FLAG")
+	private String groupFlag;
+	//字段描述: 是否为队长（1是 0否）
+	@Column(name = "CAPATAIN")
+	private int capatain;
+	//字段描述: 计划开始时段
+	@Column(name = "PLAN_START_TIME")
+	private String planStartTime;
+	//字段描述: 计划结束时段
+	@Column(name = "PLAN_END_TIME")
+	private String planEndTime;
 
-	public void setId(Long id){
-		this.id =   Long.valueOf(new SnowflakeIdWorker(0,0).nextId());
+	public void setId(){
+		this.id = new SnowflakeIdWorker(0,0).nextId();
 	}
-	@ExcelResources(title="",order=1)
-	public long getId(){
+	public Long getId(){
 		return this.id;
 	}
+
+
 
 	public void setVtype(String vtype){
 		this.vtype = vtype;
 	}
-	@ExcelResources(title="电压等级 0 1 2 3",order=2)
 	public String getVtype(){
 		return this.vtype;
 	}
 
+
+
 	public void setLineName(String lineName){
 		this.lineName = lineName;
 	}
-	@ExcelResources(title="线路名称",order=3)
 	public String getLineName(){
 		return this.lineName;
 	}
 
+
+
 	public void setSection(String section){
 		this.section = section;
 	}
-	@ExcelResources(title="段落",order=4)
 	public String getSection(){
 		return this.section;
 	}
 
-	public void setStatus(int status){
-		this.status = status;
-	}
-	@ExcelResources(title="隐患状态（0未消除 1消除）",order=5)
-	public int getStatus(){
-		return this.status;
-	}
+
+
+
+
 
 	public void setTaskName(String taskName){
 		this.taskName = taskName;
 	}
-	@ExcelResources(title="任务名称",order=8)
 	public String getTaskName(){
 		return this.taskName;
 	}
 
-	public void setKhfzrId1(String khfzrId1){
-		this.khfzrId1 = khfzrId1;
+
+
+	public void setUserid(String userid){
+		this.userid = userid;
 	}
-	@ExcelResources(title="看护负责人1",order=9)
-	public String getKhfzrId1(){
-		return this.khfzrId1;
+	public String getUserid(){
+		return this.userid;
 	}
+
+
 
 	public void setTdywOrg(String tdywOrg){
 		this.tdywOrg = tdywOrg;
 	}
-	@ExcelResources(title="通道运维单位",order=10)
 	public String getTdywOrg(){
 		return this.tdywOrg;
 	}
 
-	public void setCount(int taskTimes){
-		this.count = taskTimes;
-	}
-	@ExcelResources(title="生成任务总次数",order=12)
-	public int getCount(){
-		return this.count;
-	}
 
-	public void setLineId(long lineId){
-		this.lineId = lineId;
-	}
-	@ExcelResources(title="线路id",order=14)
-	public long getLineId(){
-		return this.lineId;
-	}
 
-	public void setYhId(Long yhId){
-		this.yhId = yhId;
-	}
-	@ExcelResources(title="隐患id",order=15)
-	public Long getYhId(){
-		return this.yhId;
-	}
+
 
 	public void setKhRange(String khRange){
 		this.khRange = khRange;
 	}
-	@ExcelResources(title="看护范围",order=16)
 	public String getKhRange(){
 		return this.khRange;
 	}
 
-	public void setKhdyId1(String khdyId1){
-		this.khdyId1 = khdyId1;
-	}
-	@ExcelResources(title="看护队员1",order=17)
-	public String getKhdyId1(){
-		return this.khdyId1;
-	}
 
-	public void setKhfzrId2(String khfzrId2){
-		this.khfzrId2 = khfzrId2;
-	}
-	@ExcelResources(title="看护负责人2",order=18)
-	public String getKhfzrId2(){
-		return this.khfzrId2;
-	}
-
-	public void setKhdyId2(String khdyId2){
-		this.khdyId2 = khdyId2;
-	}
-	@ExcelResources(title="看护队员2",order=19)
-	public String getKhdyId2(){
-		return this.khdyId2;
-	}
 
 	public void setKhxqTime(Date khxqTime){
 		this.khxqTime = khxqTime;
 	}
-	@ExcelResources(title="任务消缺时间",order=20)
 	public Date getKhxqTime(){
 		return this.khxqTime;
 	}
-	@ExcelResources(title="任务创建时间",order=21)
-	public Date getCreateTime() {
-		return createTime;
+
+
+
+	public void setCreateTime(Date createTime){
+		this.createTime = createTime;
+	}
+	public Date getCreateTime(){
+		return this.createTime;
 	}
 
-	public void setCreateTime(Date createTime) {
-		this.createTime = createTime;
+
+
+
+	public void setGroupFlag(String groupFlag){
+		this.groupFlag = groupFlag;
+	}
+	public String getGroupFlag(){
+		return this.groupFlag;
+	}
+
+
+
+
+	public void setPlanStartTime(String planStartTime){
+		this.planStartTime = planStartTime;
+	}
+	public String getPlanStartTime(){
+		return this.planStartTime;
+	}
+
+
+
+	public void setPlanEndTime(String planEndTime){
+		this.planEndTime = planEndTime;
+	}
+	public String getPlanEndTime(){
+		return this.planEndTime;
+	}
+
+	public int getStatus() {
+		return status;
+	}
+
+	public void setStatus(int status) {
+		this.status = status;
+	}
+
+	public int getCount() {
+		return count;
+	}
+
+	public void setCount(int count) {
+		this.count = count;
+	}
+
+	public long getLineId() {
+		return lineId;
+	}
+
+	public void setLineId(long lineId) {
+		this.lineId = lineId;
+	}
+
+	public long getYhId() {
+		return yhId;
+	}
+
+	public void setYhId(long yhId) {
+		this.yhId = yhId;
+	}
+
+	public String getJbd() {
+		return jbd;
+	}
+
+	public void setJbd(String jbd) {
+		this.jbd = jbd;
+	}
+
+	public int getCapatain() {
+		return capatain;
+	}
+
+	public void setCapatain(int capatain) {
+		this.capatain = capatain;
 	}
 }
