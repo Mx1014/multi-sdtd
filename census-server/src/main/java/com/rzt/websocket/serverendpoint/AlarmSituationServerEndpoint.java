@@ -1,5 +1,9 @@
 package com.rzt.websocket.serverendpoint;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import org.json.JSONArray;
+
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
@@ -16,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Time: 15:11
  * 告警情况展示
  */
-@ServerEndpoint("/serverendpoint/AlarmSituation/{username}/{orgid}")
+@ServerEndpoint("/serverendpoint/AlarmSituation/{username}")
 public class AlarmSituationServerEndpoint {
     /**
      * WebSocket服务器端通过一个线程安全的队列来保持所有客户端的Session
@@ -77,7 +81,8 @@ public class AlarmSituationServerEndpoint {
     public void sendText(Session session, String message) {
         RemoteEndpoint.Basic basic = session.getBasicRemote();
         try {
-            basic.sendText(message);
+            String s = JSONObject.toJSONString(message);
+            basic.sendText(s);
         } catch (IOException e) {
             e.printStackTrace();
         }
