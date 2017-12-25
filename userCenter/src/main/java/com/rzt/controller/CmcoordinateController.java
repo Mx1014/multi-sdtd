@@ -44,17 +44,18 @@ public class CmcoordinateController extends
     @Transactional
     public WebApiResponse addCmcoordinate(Cmcoordinate cmcoordinate) {
         try {
-            cmcoordinate.setImei(cmcoordinate.getImei().split(",")[0]);
+            //处理坐标信息
+        	cmcoordinate.setImei(cmcoordinate.getImei().split(",")[0]);
             Date date = DateUtil.dateNow();
             cmcoordinate.setId(UUID.randomUUID().toString().replaceAll("-", ""));
             cmcoordinate.setCreatetime(date);
-            Point point = new Point(cmcoordinate.getLongitude(), cmcoordinate.getLatitude());
-            GeoOperations geoOperations = redisTemplate.opsForGeo();
-            //添加用户坐标到redis geo,用于范围查询，和最新位置查询。
+			//添加用户坐标到redis geo,用于范围查询，和最新位置查询。
+			Point point = new Point(cmcoordinate.getLongitude(), cmcoordinate.getLatitude());
+			GeoOperations geoOperations = redisTemplate.opsForGeo();
             geoOperations.geoAdd(Constances.LOCATION_OBJ, point, cmcoordinate.getUserid());
-            ZSetOperations setOperations = redisTemplate.opsForZSet();
             //为每个用户每天创建一个key，用于保存当天的坐标。
-            String key = cmcoordinate.getUserid() + "-" + DateUtil.getCurrentDate();
+			ZSetOperations setOperations = redisTemplate.opsForZSet();
+			String key = cmcoordinate.getUserid() + "-" + DateUtil.getCurrentDate();
             setOperations.add(key, cmcoordinate, date.getTime());
             this.service.add(cmcoordinate);
             return WebApiResponse.success("添加成功");
