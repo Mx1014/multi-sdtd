@@ -41,7 +41,7 @@ import java.util.Map;
 public class CheckLiveTaskCycleController extends
         CurdController<CheckLiveTaskCycle, CheckLiveTaskCycleService> {
 
-/*    @Autowired
+   /* @Autowired
     private UserCenter userCenter;
 
     @Autowired
@@ -70,9 +70,9 @@ public class CheckLiveTaskCycleController extends
 
     @ApiOperation(value = "稽查任务详情查询",notes = "稽查任务详情分页查询，条件搜索")
     @GetMapping("/listCheckTaskDetailById/{id}")
-    public WebApiResponse listCheckTaskDetailById(@PathVariable String id){
+    public WebApiResponse listCheckTaskDetailById(@PathVariable String id,String taskType){
         try{
-            List list = this.service.listCheckTaskDetailById(id);
+            List list = this.service.listCheckTaskDetailById(id,taskType);
             return WebApiResponse.success(list);
         }catch (Exception e) {
             return WebApiResponse.erro("数据获取失败"+e.getMessage());
@@ -147,7 +147,7 @@ public class CheckLiveTaskCycleController extends
     }
 
 
-    /*@ApiOperation(value = "用户班组",notes = "用户班组")
+   /* @ApiOperation(value = "用户班组",notes = "用户班组")
     @GetMapping("/treeQuery")
     public List<Map<String,Object>>  treeQuery(String id){
          return userCenter.treeQuery(id);

@@ -7,14 +7,19 @@ import com.rzt.repository.KhTaskWpqrRepository;
 import com.rzt.service.CurdService;
 import com.rzt.service.KhTaskWpqrService;
 import com.rzt.util.WebApiResponse;
+import com.rzt.utils.Constances;
 import com.rzt.utils.DateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.geo.Point;
+import org.springframework.data.redis.core.GeoOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -83,16 +88,6 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
         }
     }
 
-    public WebApiResponse appDdcx(String taskId) {
-        try {
-            //保存现场照片
-
-            return WebApiResponse.success("");
-        } catch (Exception e) {
-            e.printStackTrace();
-            return WebApiResponse.erro("数据获取失败");
-        }
-    }
 
     public WebApiResponse appExchange(String taskId) {
         try {
@@ -125,16 +120,17 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
             return WebApiResponse.erro("数据获取失败");
         }
     }
-    public WebApiResponse appListjbr(String userId,long taskId) {
+
+    public WebApiResponse appListjbr(String userId, long taskId) {
         try {
             String sql = "select k.yh_id as yhId,s.group_flag as flag from kh_task k left join kh_site s on s.id = k.site_id where k.id=?";
             Map<String, Object> map = this.execSqlSingleResult(sql, taskId);
             String yhId = map.get("YHID").toString();
-            String jbrsql = "select u.id as \"label\",u.realname as \"value\",s.capatain as capatain,s.group_flag as flag from rztsysuser u left join kh_site s on s.user_id = u.id where s.yh_id=?";
+            String jbrsql = "select u.id as \"value\",u.realname as \"text\",s.capatain as capatain,s.group_flag as flag from rztsysuser u left join kh_site s on s.user_id = u.id where s.yh_id=?";
             List<Map<String, Object>> list = this.execSql(jbrsql, yhId);
             List<Map<String, Object>> list1 = new ArrayList<>();
-            for (Map map1:list) {
-                if (!map.get("FLAG").toString().equals(map1.get("FLAG").toString())){
+            for (Map map1 : list) {
+                if (!map.get("FLAG").toString().equals(map1.get("FLAG").toString())) {
                     if (map1.get("CAPATAIN").toString().equals("1"))
                         list1.add(map1);
                 }
@@ -144,5 +140,24 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
             e.printStackTrace();
             return WebApiResponse.erro("数据获取失败");
         }
+    }
+
+    //获取中心点坐标  现获取看护点的坐标  如果不存在，就用隐患的坐标
+    public List<Map<String,Object>> getPoint(long taskId) {
+        String sql = "select c.longitude as jd,c.latitude as wd from kh_cycle c left join kh_site s on s.yh_id = c.id left join kh_task k on k.site_id = s.id where k.id = ?";
+        List<Map<String, Object>> list = this.execSql(sql, taskId);
+        if (list.isEmpty()){
+            sql = "select y.jd as jd,y.wd as wd from kh_yh_history y left join kh_task k on y.id = k.yh_id where k.id=?";
+            list = this.execSql(sql,taskId);
+        }
+        for (Map map:list){
+            map.put("ROUND",100);
+            map.put("URL","http://192.168.1.122:7011//nurseTask/AppKhTask/appListjbr");
+        }
+       /* Point point = null;
+        for (Map map : list) {
+            point = new Point(Double.parseDouble(map.get("WD").toString()), Double.parseDouble(map.get("JD").toString()));
+        }*/
+        return list;
     }
 }
