@@ -78,7 +78,7 @@ public class AlarmSituationServerEndpoint {
      * @param session
      * @param message
      */
-    public void sendText(Session session, String message) {
+    public void sendText(Session session, List<Map<String, Object>> message) {
         RemoteEndpoint.Basic basic = session.getBasicRemote();
         try {
             String s = JSONObject.toJSONString(message);

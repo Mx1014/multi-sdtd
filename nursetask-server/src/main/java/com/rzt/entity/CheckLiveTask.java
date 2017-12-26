@@ -1,4 +1,4 @@
-/**    
+/**
  * 文件名：CheckLiveTask
  * 版本信息：    
  * 日期：2017/12/04 15:13:15    
@@ -17,13 +17,13 @@ import java.util.Date;
 
 /**
  * 类名称：CheckLiveTask
- * 类描述：${table.comment}    
- * 创建人：张虎成   
- * 创建时间：2017/12/04 15:13:15 
- * 修改人：张虎成    
- * 修改时间：2017/12/04 15:13:15    
- * 修改备注：    
- * @version        
+ * 类描述：${table.comment}
+ * 创建人：张虎成
+ * 创建时间：2017/12/04 15:13:15
+ * 修改人：张虎成
+ * 修改时间：2017/12/04 15:13:15
+ * 修改备注：
+ * @version
  */
 @Entity
 @Table(name="CHECK_LIVE_TASK")
@@ -60,7 +60,7 @@ public class CheckLiveTask  implements Serializable{
 	private String tdwhOrg;
 	//字段描述: 稽查人部门（0属地 1北京）
 	@Column(name = "CHECK_DEPT")
-	private Integer checkDept;
+	private String checkDept;
 	//字段描述: 稽查周期
 	@Column(name = "CHECK_CYCLE")
 	private Integer checkCycle;
@@ -77,7 +77,10 @@ public class CheckLiveTask  implements Serializable{
 	@Column(name = "CYCLE_ID")
 	private Long cycleId;
 
-	public void setId(Long id){
+
+
+
+	public void setId( ){
 		this.id =   Long.valueOf(new SnowflakeIdWorker(0,0).nextId());
 	}
 	@ExcelResources(title="",order=1)
@@ -157,11 +160,11 @@ public class CheckLiveTask  implements Serializable{
 		return this.tdwhOrg;
 	}
 
-	public void setCheckDept(Integer checkDept){
+	public void setCheckDept(String checkDept){
 		this.checkDept = checkDept;
 	}
 	@ExcelResources(title="稽查人部门（0属地 1北京）",order=11)
-	public Integer getCheckDept(){
+	public String getCheckDept(){
 		return this.checkDept;
 	}
 

@@ -23,7 +23,8 @@ import java.lang.reflect.Method;
  * Created by Administrator on 2017/12/12.
  */
 @Configuration
-public class RedisConfig {
+public class
+RedisConfig {
 
     @Value("${spring.redis.host}")
     private String host;

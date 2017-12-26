@@ -1,6 +1,5 @@
 package com.rzt.websocket.service;
 
-import com.alibaba.fastjson.JSONArray;
 import com.rzt.entity.websocket;
 import com.rzt.repository.websocketRepository;
 import com.rzt.service.CurdService;
@@ -64,7 +63,7 @@ public class AlarmSituationPushService extends CurdService<websocket, websocketR
             String sql = "SELECT ((" + notstarttime + ")+(" + normalinspection + ")) as notstarttime,(" + touroverdue + ") as touroverdue,(" + xsbhg + ") as xsbhg  FROM DUAL";
             List<Map<String, Object>> execSql = this.execSql(sql);
             try {
-                alarmSituationServerEndpoint.sendText((Session) session.get("session"), execSql.toString());
+                alarmSituationServerEndpoint.sendText((Session) session.get("session"), execSql);
             } catch (Exception e) {
                 LOGGER.error("Error: The user closes the browser , Session Does Not Exist", e);
             }
