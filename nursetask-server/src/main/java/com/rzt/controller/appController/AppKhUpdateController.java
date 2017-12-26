@@ -20,15 +20,15 @@ public class AppKhUpdateController  extends
     @ApiOperation(value = "修改实际开始时间", notes = "修改实际开始时间、执行页数 ")
     @PatchMapping("/updateRealTime")
     @ResponseBody
-    public WebApiResponse updateRealTime(long taskId){
-        return this.service.updateRealTime(taskId);
+    public WebApiResponse updateRealTime(String taskId){
+        return this.service.updateRealTime(Long.parseLong(taskId));
     }
 
     @ApiOperation(value = "修改身份确认时间", notes = "修改身份确认时间、执行页数 ")
     @PatchMapping("/updateSfqrTime")
     @ResponseBody
-    public WebApiResponse updateSfqrTime(long taskId){
-        return this.service.updateSfqrTime(taskId);
+    public WebApiResponse updateSfqrTime(String taskId){
+        return this.service.updateSfqrTime(Long.parseLong(taskId));
     }
 
     @ApiOperation(value = "修改物品确认时间", notes = "修改物品确认时间、执行页数 ")
@@ -41,30 +41,30 @@ public class AppKhUpdateController  extends
     @ApiOperation(value = "修改看护提醒执行页数", notes = "修改执行页数 ")
     @PatchMapping("/updateKhtx")
     @ResponseBody
-    public WebApiResponse updateKhtx(long taskId){
-        return this.service.updateKhtx(taskId);
+    public WebApiResponse updateKhtx(String taskId){
+        return this.service.updateKhtx(Long.parseLong(taskId));
     }
 
     @ApiOperation(value = "修改到达现场时间", notes = "修改到达现场时间、执行页数 ")
     @PatchMapping("/updateDdxcTime")
     @ResponseBody
-    public WebApiResponse updateDdxcTime(long taskId){
-        return this.service.updateDdxcTime(taskId);
+    public WebApiResponse updateDdxcTime(String taskId){
+        return this.service.updateDdxcTime(Long.parseLong(taskId));
     }
 
     @ApiOperation(value = "开始看护页面", notes = "开始看护页面 ")
     @PatchMapping("/updateClzt")
     @ResponseBody
-    public WebApiResponse updateClzt(String clzt,long taskId){
-        return this.service.updateClzt(clzt,taskId);
+    public WebApiResponse updateClzt(String clzt,String taskId){
+        return this.service.updateClzt(clzt,Long.parseLong(taskId));
 
     }
 
     @ApiOperation(value = "交接班", notes = "交接班 ")
     @PatchMapping("/updateEndTime")
     @ResponseBody
-    public WebApiResponse updateEndTime(long taskId){
-        return this.service.updateEndTime(taskId);
+    public WebApiResponse updateEndTime(String taskId){
+        return this.service.updateEndTime(Long.parseLong(taskId));
     }
   /*  @ApiOperation(value = "开始看护页面", notes = "开始看护页面 ")
     @PatchMapping("/updateClzt")

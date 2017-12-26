@@ -1,21 +1,28 @@
 package com.rzt.controller.appController;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import com.rzt.controller.CurdController;
 import com.rzt.entity.KhTask;
 import com.rzt.entity.KhTaskWpqr;
 import com.rzt.service.KhTaskService;
 import com.rzt.service.app.AppKhTaskService;
 import com.rzt.util.WebApiResponse;
+import com.rzt.utils.Constances;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.geo.Point;
+import org.springframework.data.redis.core.GeoOperations;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.security.Key;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -25,7 +32,8 @@ import java.util.Map;
 @RequestMapping("AppKhTask")
 public class AppKhTaskController extends
         CurdController<KhTask,AppKhTaskService> {
-
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
 
     @ApiOperation(value = "看护任务展示", notes = "查看当前用户的已办和待办的任务 1 未办 进行中 2  ")
@@ -80,12 +88,6 @@ public class AppKhTaskController extends
         return this.service.appSaveWpzt(task);
     }
 
-    //到达现场 → 开始看护   现场照片信息
-    @ApiOperation(value = "物品提示", notes = "收集看护人照片信息  ")
-    @GetMapping("/appDdcx.do")
-    public WebApiResponse appDdcx(String taskId){
-        return this.service.appDdcx(taskId);
-    }
 
     // 开始看护 →  交接班   现场环境照片保存
     // 问题：上报的危机信息保存到哪里 现场工况采集如何保存
@@ -102,25 +104,27 @@ public class AppKhTaskController extends
     public WebApiResponse appListjbr(String userId,long taskId){
         return this.service.appListjbr(userId,taskId);
     }
-   /* @GetMapping("/updateTaskTime.do")
-    @ResponseBody
-    public void updateTaskTime(String step, Date time, String id){
 
-        if (step.equals("1")){
-            //设置到达现场时间
-            this.service.updateDDTime(time,Long.parseLong(id));
-        }else if(step.equals("2")){
-            //设置身份确认时间
-            this.service.updateSFQRTime(time,Long.parseLong(id));
-        }else if(step.equals("3")){
-            //设置物品确认时间
-            this.service.updateWPQRTime(time,Long.parseLong(id));
-        }
-        else if(step.equals("4")){
-            //设置实际开始时间 修改看护任务状态
-            this.service.updateRealStartTime(time,Long.parseLong(id));
-        }else{
-            //交接班,设置世界结束时间
-        }
+   //前端传回用户id  获取多个用户坐标
+    @GetMapping("/listPoint")
+    public List getUser(String ids,String taskId) {
+        String[] str = ids.split(",");
+        GeoOperations<String, Object> geoOperations = redisTemplate.opsForGeo();
+        List<Point> location = geoOperations.geoPos("location", "liuzeID");
+        // Point point = this.service.getPoint(taskId);();
+        // list.add(point);
+        return location;
+    }
+    //获取中心点坐标
+    @GetMapping("listYhPoint")
+    public List<Map<String,Object>> listYhPoint(String taskId){
+        return this.service.getPoint(Long.parseLong(taskId));
+    }
+
+    //KHOffSet(String userId,long taskId)
+    //获取交接班的
+    /*@GetMapping("listYhPoint")
+    public List<Map<String,Object>> listYhPoint(long taskId){
+        return this.service.getPoint(taskId);
     }*/
 }

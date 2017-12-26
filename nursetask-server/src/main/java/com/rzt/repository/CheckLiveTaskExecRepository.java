@@ -1,23 +1,15 @@
-/**    
- * 文件名：CHECKLIVETASKEXECRepository           
- * 版本信息：    
- * 日期：2017/12/22 14:09:41    
- * Copyright 融智通科技(北京)股份有限公司 版权所有    
- */
 package com.rzt.repository;
+
+
+import com.rzt.entity.CheckLiveTaskExec;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-import com.rzt.entity.CHECKLIVETASKEXEC;
-/**      
- * 类名称：CHECKLIVETASKEXECRepository    
- * 类描述：    
- * 创建人：张虎成   
- * 创建时间：2017/12/22 14:09:41 
- * 修改人：张虎成    
- * 修改时间：2017/12/22 14:09:41    
- * 修改备注：    
- * @version        
- */
- @Repository
-public interface CHECKLIVETASKEXECRepository extends JpaRepository<CHECKLIVETASKEXEC,String> {
+
+@Repository
+public interface CheckLiveTaskExecRepository extends JpaRepository<CheckLiveTaskExec,String> {
+    @Query(value = "SELECT COUNT(*) FROM check_live_task_exec where user_id=?1",nativeQuery = true)
+    long getCount(String userId);
+    @Query(value = "SELECT * FROM check_live_task_exec where id=?1",nativeQuery = true)
+    CheckLiveTaskExec findExec(long id);
 }

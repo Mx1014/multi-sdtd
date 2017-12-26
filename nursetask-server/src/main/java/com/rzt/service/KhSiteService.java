@@ -10,6 +10,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.netflix.discovery.converters.Auto;
 import com.rzt.entity.*;
 import com.rzt.entity.model.KhTaskModel;
+import com.rzt.repository.KhCycleRepository;
 import com.rzt.repository.KhSiteRepository;
 import com.rzt.repository.KhTaskRepository;
 import com.rzt.util.WebApiResponse;
@@ -49,12 +50,15 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
     private KhTaskService taskService;
     @Autowired
     private KhCycleService cycleService;
+    @Autowired
+    private KhCycleRepository cycleRepository;
 
     public Page listAllTaskNotDo(KhTaskModel task, Pageable pageable, String userName, String deptId) {
         List params = new ArrayList<>();
         StringBuffer buffer = new StringBuffer();
         // task = timeUtil(task);
         String result = " k.id as id,k.task_name as taskName,k.tdyw_org as yworg,y.yhms as ms,y.yhjb as jb,k.create_time as createTime,k.COUNT as COUNT,u.realname as username,k.jbd as jbd ";
+        String result1 = " k.id as id,k.task_name as taskName,k.tdyw_org as yworg,y.yhms as ms,y.yhjb as jb,k.create_time as createTime ";
 
 
       /*  Jedis jedis = RedisUtil.getConnection();
@@ -83,7 +87,12 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             params.add(userName);
         }
         buffer.append(" order by k.create_time desc ");
-        String sql = "select " + result + " from kh_site k left join kh_yh_history y on k.yh_id = y.id left join rztsysuser u on u.id = k.user_id" + buffer.toString();
+        String sql  = "";
+        if (task.getStatus().equals("1")) {
+            sql = "select " + result + " from kh_site k left join kh_yh_history y on k.yh_id = y.id left join rztsysuser u on u.id = k.user_id" + buffer.toString();
+        }else {
+            sql = "select "+ result1 +"from kh_cycle k left join kh_yh_history y on k.yh_id = y.id " + buffer.toString();
+        }
         //String sql = "select * from listAllTaskNotDo "+buffer.toString();
         Page<Map<String, Object>> maps1 = this.execSqlPage(pageable, sql, params.toArray());
         List<Map<String, Object>> content1 = maps1.getContent();
@@ -96,7 +105,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
     public void updateQxTask(long id) {
         this.reposiotry.updateQxTask(id, DateUtil.dateNow());
         this.reposiotry.updateDoingTask(id, DateUtil.dateNow());
-        KhCycle site = siteRepository.findSite(id);
+        KhCycle site = this.cycleRepository.findSite(id);
         this.reposiotry.updateYH(site.getYhId(), DateUtil.dateNow());
         this.reposiotry.updateKhCycle(id);
         //将带稽查 已完成稽查的看护任务状态修改
@@ -148,6 +157,8 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             task.setVtype(yh.getVtype());
             task.setLineName(yh.getLineName());
             task.setTdywOrg(yh.getTdywOrg());
+            task.setSection(yh.getSection());
+            task.setLineId(yh.getLineId());
             task.setTaskName(taskName);
             task.setStatus(0);// 未派发
 //            task.setCount(0);//生成任务次数0
@@ -162,10 +173,10 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             check.setStatus(0);  // 0 为未派发
             check.setTdwhOrg(yh.getTdywOrg());
             check.setCreateTime(DateUtil.dateNow());
-            check.setCheckDept(0); // 0为属地公司
+            check.setCheckDept("0"); // 0为属地公司
             check.setYhId(yh.getId());
             check.setCheckCycle(1);// 1 为周期1天
-            check.setId(0L);
+            check.setId();
             check.setDzwl(1);
             check.setTaskName(yh.getVtype() + yh.getLineName() + yh.getStartTower() + "-" + yh.getEndTower() + "号杆塔稽查任务");
             checkService.add(check);
@@ -176,12 +187,12 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             check1.setStatus(0);  // 0 为未派发
             check1.setTdwhOrg(yh.getTdywOrg());
             check1.setCreateTime(DateUtil.dateNow());
-            check1.setCheckDept(1); // 1为北京公司
+            check1.setCheckDept("1"); // 1为北京公司
             check1.setCheckCycle(3); // 周期为3天
             check1.setTaskName(check.getTaskName());
             check1.setYhId(yh.getId());
             check1.setDzwl(1);
-            check1.setId(0L);
+            check1.setId();
             checkService.add(check1);
             return WebApiResponse.success("保存成功");
         } catch (Exception e) {
@@ -210,7 +221,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
     public WebApiResponse paifaTask(String id, String tasks, KhTaskModel model) {
         try {
             List<Map<Object, String>> list = (List<Map<Object, String>>) JSONObject.parse(tasks);
-            KhCycle site = this.reposiotry.findSite(Long.parseLong(id));
+            KhCycle site = this.cycleRepository.findSite(Long.parseLong(id));
             String groupFlag = System.currentTimeMillis() + "";
             for (Map map : list) {
                 KhTask task = new KhTask();
@@ -256,13 +267,14 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                 task.setId();
                 taskService.add(task);
             }
-            this.deleteById(id);  //删除原来的周期  重新生成多个周期
+            this.reposiotry.updateCycleById(id);  // 重新生成多个周期
             return WebApiResponse.success("任务派发成功");
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("任务派发失败" + e.getMessage());
         }
     }
+
 
     public WebApiResponse listJpgById(String taskId) {
         try {

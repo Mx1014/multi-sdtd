@@ -72,5 +72,39 @@ public class DateUtil {
         String date = dt.toString(FORTER_DATE);
         return date;
     }
+    public static Date getPlanStartTime(String startTime){
+        try{
+            Date planStartTime =  parseDate(startTime);
+            String time =  SDF.format(planStartTime);
+            return  DateUtils.parseDate(time,partterns);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
 
+        return new Date();
+
+    }
+
+    public static Date getPlanEndTime(String endTime){
+        try{
+            Date planEndTime =  parseDate(endTime);
+            String time =  SDF.format(planEndTime);
+            return  DateUtils.parseDate(time,partterns);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return new Date();
+
+    }
+    //返回指定格式的时间
+    public static  String getDate(){
+        Date date = new Date();
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+        String d = df.format(date);
+        String s = "";
+        s =  d.substring(0,4)+"年"+d.substring(5,7)+"月"+d.substring(8,10)+"日";
+        return s;
+
+
+    }
 }
