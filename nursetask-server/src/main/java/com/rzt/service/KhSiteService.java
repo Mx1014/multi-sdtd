@@ -153,7 +153,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             yh.setSection(startTowerName+ "-" + endTowerName + " 区段");
             yhservice.add(yh);
             KhCycle task = new KhCycle();
-            String taskName = yh.getVtype() + yh.getLineName() + endTowerName + "-" + endTowerName + " 号杆塔看护任务";
+            String taskName = yh.getVtype() + yh.getLineName() + startTowerName + "-" + endTowerName + " 号杆塔看护任务";
             task.setVtype(yh.getVtype());
             task.setLineName(yh.getLineName());
             task.setTdywOrg(yh.getTdywOrg());
