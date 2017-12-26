@@ -97,7 +97,13 @@ public class KhTaskController extends
 			e.printStackTrace();
 		}
 	}
-
+	/**
+	 *   获取当前
+	 */
+	@GetMapping("/listCurrentTaskByUserId")
+	public WebApiResponse listCurrentTaskByUserId(String userId){
+		return this.service.listCurrentTaskByUserId(userId);
+	}
 }
 
 

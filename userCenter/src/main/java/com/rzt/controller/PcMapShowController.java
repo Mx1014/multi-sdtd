@@ -1,19 +1,12 @@
 package com.rzt.controller;
 
-import com.rzt.entity.Cmcoordinate;
 import com.rzt.entity.MapMenInfo;
 import com.rzt.service.CmcoordinateService;
 import com.rzt.util.WebApiResponse;
-import com.rzt.utils.Constances;
-import com.rzt.utils.DateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.geo.Point;
-import org.springframework.data.redis.core.GeoOperations;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -42,15 +35,13 @@ public class PcMapShowController {
     * @date 2017/12/25 13:59
     * @author nwz
     */
-    @GetMapping("menInMap")
+    @GetMapping("menInMap1")
     public Object menInMap() {
         try {
-//            GeoOperations<String, Object> geoOperations = redisTemplate.opsForGeo();
-//            geoOperations.
 
             List<MapMenInfo> list = new ArrayList<>();
             MapMenInfo mapMenInfo1 = new MapMenInfo("601DB81A3BF4DC35E0501AAC38EF512E","就是这个人",1,116.339782f, 39.912089f ,true);
-            MapMenInfo mapMenInfo2 = new MapMenInfo("id2","看护人员",0, 116.404269f, 39.916927f,true);
+            MapMenInfo mapMenInfo2 = new MapMenInfo("id2","就是这个看护人员",0, 116.404269f, 39.916927f,true);
             MapMenInfo mapMenInfo3 = new MapMenInfo("id3","稽查人员",2, 116.396961f, 39.907249f,true);
             MapMenInfo mapMenInfo11 = new MapMenInfo("id11","巡视人员1",1,116.329782f, 39.912089f ,false);
             MapMenInfo mapMenInfo22 = new MapMenInfo("id22","看护人员1",0, 116.424269f, 39.916927f,false);
@@ -76,16 +67,12 @@ public class PcMapShowController {
      * @date 2017/12/25 13:59
      * @author nwz
      */
-    @GetMapping("menInMap1")
+    @GetMapping("menInMap")
     public Object menInMap1() {
         try {
             List<MapMenInfo> list = new ArrayList<MapMenInfo>();
             HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
-//            List<Object> coordinateMap = hashOperations.values("temporyCoordinateMap");
-            List<Object> coordinateMap = hashOperations.values("UserInformation");
-
-//            GeoOperations<String, Object> geoOperations = redisTemplate.opsForGeo();
-//            List<Point> location = geoOperations.geoPos("location", "liuzeID");
+            List<Object> coordinateMap = hashOperations.values("temporyCoordinateMap");
 
             return WebApiResponse.success(coordinateMap);
         } catch (Exception e) {

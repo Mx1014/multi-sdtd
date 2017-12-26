@@ -79,6 +79,18 @@ public class CheckLiveTaskDetail  implements Serializable{
    	 @Column(name = "CREATE_TIME")
      private Date createTime;
 
+	//字段描述: 看护任务id
+	@Column(name = "KH_TASK_ID")
+	private Long khTaskId;
+
+	public Long getKhTaskId() {
+		return khTaskId;
+	}
+
+	public void setKhTaskId(Long khTaskId) {
+		this.khTaskId = khTaskId;
+	}
+
 	public void setId(){
 		this.id =   Long.valueOf(new SnowflakeIdWorker(0,0).nextId());
 	}

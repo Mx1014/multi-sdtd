@@ -10,6 +10,8 @@ import com.rzt.entity.model.KhTaskModel;
 import com.rzt.repository.KhSiteRepository;
 import com.rzt.repository.KhTaskRepository;
 import com.rzt.entity.KhTask;
+import com.rzt.util.WebApiResponse;
+import com.rzt.utils.DateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -129,5 +131,17 @@ public class KhTaskService extends CurdService<KhTask,KhTaskRepository> {
     }
 
 
+    public WebApiResponse listCurrentTaskByUserId(String userId) {
+       try {
+           String date = DateUtil.getCurrentDate();
+           String sql = "select * from kh_task k where k.user_id = ? and k.plan_start_time>=to_date(?,'yyyy-mm-dd hh24:mi:ss') and k.plan_start_time<=to_date(?,'yyyy-mm-dd hh24:mi:ss')";
+           String start =  date+" 00:00:00";
+           String end = date+" 23:59:59";
+           return WebApiResponse.success(this.execSql(sql,userId,start,end));
+       }catch (Exception e){
+           e.printStackTrace();
+           return WebApiResponse.erro("数据获取失败");
+       }
+    }
 }
 

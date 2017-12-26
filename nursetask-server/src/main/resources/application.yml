@@ -31,10 +31,24 @@ spring:
   #     ddl-aut
   application:
     name: nurseTask
+  redis:
+      database: 0
+      host: 168.130.1.31
+      port: 31662
+      password:
+      timeout: 0
+      pool:
+        max-active: 100
+        max-idle: 8
+        min-idle: 0
+        max-wait: -1
 eureka:
   client:
     service-url:
       defaultZone: http://168.130.1.31:7002/eureka/
+ #      defaultZone: http://192.168.22.38:7002/eureka/
+  instance:
+    prefer-ip-address: true
 #spring:
 #  profiles:
 #    active: prd

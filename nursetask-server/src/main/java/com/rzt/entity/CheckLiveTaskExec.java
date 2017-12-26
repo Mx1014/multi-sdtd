@@ -27,7 +27,7 @@ import java.util.Date;
  */
 @Entity
 @Table(name="CHECK_LIVE_TASK_EXEC")
-public class CHECKLIVETASKEXEC implements Serializable{
+public class CheckLiveTaskExec implements Serializable{
 	//字段描述: 
    	 @Id
      private Long id;        
@@ -55,7 +55,45 @@ public class CHECKLIVETASKEXEC implements Serializable{
     	//字段描述: 通道外协单位
    	 @Column(name = "TDWH_ORG")
      private String tdwhOrg;
-    
+
+	//字段描述: 计划开始时段
+	@Column(name = "PLAN_START_TIME")
+	//@DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+	private Date planStartTime;
+	//字段描述: 计划结束时段
+	@Column(name = "PLAN_END_TIME")
+	//@DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+	private Date planEndTime;
+
+
+	//字段描述: 任务类别
+	@Column(name = "TASK_TYPE")
+	private String taskType;
+
+	public Date getPlanStartTime() {
+		return planStartTime;
+	}
+
+	public void setPlanStartTime(Date planStartTime) {
+		this.planStartTime = planStartTime;
+	}
+
+	public Date getPlanEndTime() {
+		return planEndTime;
+	}
+
+	public void setPlanEndTime(Date planEndTime) {
+		this.planEndTime = planEndTime;
+	}
+
+	public String getTaskType() {
+		return taskType;
+	}
+
+	public void setTaskType(String taskType) {
+		this.taskType = taskType;
+	}
+
 	public void setId(Long id){
 		if(id==null||id==0){
 			this.id = new SnowflakeIdWorker(0,0).nextId();

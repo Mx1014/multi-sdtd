@@ -1,17 +1,18 @@
 package com.rzt.entity.model;
 
-import com.rzt.entity.CheckLiveTaskCycle;
+import com.rzt.entity.CheckLiveTaskExec;
 import com.rzt.utils.DateUtil;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+/**
+ * Created by admin on 2017/12/18.
+ */
+public class CheckLiveTaskExecModel extends CheckLiveTaskExec{
 
 
-public class CheckLiveTaskCycleModel extends CheckLiveTaskCycle{
 
-
-    private String execId;
     //计划开始时间
     private String startTime;
     //计划结束时间
@@ -60,13 +61,7 @@ public class CheckLiveTaskCycleModel extends CheckLiveTaskCycle{
         return endTime;
     }
 
-    public String getExecId() {
-        return execId;
-    }
 
-    public void setExecId(String execId) {
-        this.execId = execId;
-    }
 
     public String getTime() {
         return time;

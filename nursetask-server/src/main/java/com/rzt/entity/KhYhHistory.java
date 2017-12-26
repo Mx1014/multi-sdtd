@@ -47,7 +47,7 @@ public class KhYhHistory implements Serializable {
 
     //字段描述: 关联线路id
     @Column(name = "LINE_ID")
-    private String lineId;
+    private long lineId;
 
     //字段描述: 起始杆塔号
     @Column(name = "START_TOWER")
@@ -150,10 +150,10 @@ public class KhYhHistory implements Serializable {
     private String tdclwcsj;
     //字段描述: 纬度
     @Column(name = "WD")
-    private String wd;
+    private double wd;
     //字段描述: 经度
     @Column(name = "JD")
-    private String jd;
+    private double jd;
     //字段描述: 填报时间
     @Column(name = "TBSJ")
     private String tbsj;
@@ -208,6 +208,9 @@ public class KhYhHistory implements Serializable {
     //字段描述: 照片修改时间
     @Column(name = "ZPXGSJ")
     private String zpxgsj;
+    //字段描述: 施工情况
+    @Column(name = "SGQK")
+    private String sgqk;
 
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
@@ -290,12 +293,12 @@ public class KhYhHistory implements Serializable {
         return this.sdgs;
     }
 
-    public void setLineId(String lineId) {
+    public void setLineId(long lineId) {
         this.lineId = lineId;
     }
 
     @ExcelResources(title = "关联线路id", order = 10)
-    public String getLineId() {
+    public long getLineId() {
         return this.lineId;
     }
 
@@ -353,21 +356,21 @@ public class KhYhHistory implements Serializable {
         return this.tdclwcsj;
     }
 
-    public void setWd(String wd) {
+    public void setWd(double wd) {
         this.wd = wd;
     }
 
     @ExcelResources(title = "纬度", order = 17)
-    public String getWd() {
+    public double getWd() {
         return this.wd;
     }
 
-    public void setJd(String jd) {
+    public void setJd(double jd) {
         this.jd = jd;
     }
 
     @ExcelResources(title = "经度", order = 18)
-    public String getJd() {
+    public double getJd() {
         return this.jd;
     }
 
@@ -702,5 +705,13 @@ public class KhYhHistory implements Serializable {
 
     public void setYhlb(String yhlb) {
         this.yhlb = yhlb;
+    }
+
+    public String getSgqk() {
+        return sgqk;
+    }
+
+    public void setSgqk(String sgqk) {
+        this.sgqk = sgqk;
     }
 }
