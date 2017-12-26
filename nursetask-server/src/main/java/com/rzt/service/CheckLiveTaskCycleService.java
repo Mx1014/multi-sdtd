@@ -35,6 +35,12 @@ public class CheckLiveTaskCycleService extends CurdService<CheckLiveTaskCycle, C
     @Autowired
     private CheckLiveTaskCycleRepository repository;
 
+   /* @Autowired
+    private PictureCenter pictureCenter;
+
+    @Autowired
+    private UserCenter userCenter;*/
+
     @ApiOperation(value = "稽查维护维护",notes = "稽查维护的分页查询，条件搜索")
     public  Page<Map<String, Object>> listCheckTaskMain(String startTime,String endTime, String userId,String taskName,Pageable pageable) {
         String result =" c.id id,c.task_name taskName,c.TASK_TYPE taskType,u.realname realName," +

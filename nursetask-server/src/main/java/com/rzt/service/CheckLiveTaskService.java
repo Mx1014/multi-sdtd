@@ -104,17 +104,18 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
                      " check_live_task_exec c  left join rztsysuser u " +
                      "on c.user_id = u.id left join RZTSYSDEPARTMENT  g on u.CLASSNAME = g.ID" + sb.toString();
         Page<Map<String, Object>> maps = execSqlPage(pageable, sql, params.toArray());
+
         return maps;
 
     }
 
 
     public  Page<Map<String, Object>> listpaifaCheckTask(String startTime,String endTime, String userId,String taskName,String taskType,Pageable pageable) {
-        String result1 = " k1.id id,k1.task_name taskName,k.TDYW_ORG tddw,k.TDWX_ORG tdwxdw,k.YHMS yhms," +
-                        " k.YHJB yhjb,k1.task_type taskType,k1.create_time createTime, u.realname realname " ;
+        String result1 = " k.id id,k.task_name taskName,k.TDYW_ORG tddw,k.WX_ORG tdwxdw,k1.YHMS yhms," +
+                        " k1.YHJB yhjb ,k1.create_time createTime, u.realname realname " ;
 
-        String result2 = " c.ID id,c.task_name taskName,r.companyname tddw,d.DEPTNAME tdwxdw ,c.task_type taskType, " +
-                " c.plan_start_time startTime,c.plan_end_time endTime,u.realname realname " ;
+        String result2 = " c.ID id,c.task_name taskName,r.companyname tddw,d.DEPTNAME tdwxdw , " +
+                         " c.plan_start_time startTime,c.plan_end_time endTime,u.realname realname " ;
 
         StringBuilder sb = new StringBuilder();
         sb.append(" where 1=1 ");
@@ -149,14 +150,27 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
                      "on c.yh_id = k.id " + sb.toString();*/
 
         String sql = null;
+        Page<Map<String, Object>> maps=null;
 
         if(taskType.equals("0")){
             //查询看护任务
-            sb.append(" and k1.jc_status = 0 ");//未派发定死
-            sb.append(" and k.yhzt=0 ");
-            sb.append(" order by k1.create_time desc  ");
-            sql = "select " + result1 + " from KH_YH_HISTORY k left join " +
-                    " kh_site k1 on k.id = k1.yh_id left join rztsysuser u on u.id=k1.user_id  " +sb.toString();
+            sb.append(" and k.jc_status = 0 ");//未派发定死
+            sb.append(" and k1.yhzt=0 ");
+            sb.append(" order by k.create_time desc  ");
+            sql = "select " + result1 + " from KH_CYCLE k LEFT JOIN  KH_YH_HISTORY k1 ON k.YH_ID=k1.ID " +
+                    " LEFT JOIN RZTSYSUSER u ON  k.JC_USER_ID=u.ID  " +sb.toString();
+
+
+
+            maps = execSqlPage(pageable, sql, params.toArray());
+
+            List<Map<String,Object>> list= maps.getContent();
+            for(Map<String,Object> map : list){
+                map.put("TASKTYPE","看护");
+
+            }
+            //看一下有没有更改 内存中中maps的值
+            return maps;
 
 
         }else{
@@ -165,14 +179,21 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
             sb.append(" and c1.IN_USE=0 ");
             sb.append(" order by c.PLAN_START_TIME desc  ");
             sql = "select " + result2 + " from XS_ZC_TASK c LEFT JOIN  XS_ZC_CYCLE c1 on c.XS_ZC_CYCLE_ID = c1.ID  " +
-                    " left join RZTSYSCOMPANY r on r.id=c.TD_ORG  LEFT JOIN  RZTSYSDEPARTMENT d on d.ID = c.WX_ORG  left join rztsysuser u on u.id=c.cm_user_id   " +sb.toString();
+                    " left join RZTSYSCOMPANY r on r.id=c.TD_ORG  LEFT JOIN  RZTSYSDEPARTMENT d on d.ID = c.WX_ORG  left join rztsysuser u on u.id=c.JC_USER_ID   " +sb.toString();
 
 
+             maps = execSqlPage(pageable, sql, params.toArray());
+
+            List<Map<String,Object>> list= maps.getContent();
+            for(Map<String,Object> map : list){
+                map.put("TASKTYPE","稽查");
+
+            }
+            //看一下有没有更改 内存中中maps的值
+            return maps;
         }
 
-        Page<Map<String, Object>> maps = execSqlPage(pageable, sql, params.toArray());
 
-        return maps;
 
     }
 
@@ -181,13 +202,13 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
         String sql = null;
         if(taskType.equals("0")){
             //看护任务详情查看
-            sql=  "select c.id id,c.task_name taskName,c.CREATE_TIME createtime, c.TDYW_ORG tddw," +
-                    "c1.yhjb yhjb,u.REALNAME realname from KH_SITE c left join kh_yh_history c1 on c.yh_id = c1.id " +
-                    " LEFT JOIN  RZTSYSUSER u on c.USER_ID = u.ID where c.id=?";
+            sql= " select c.id id,c.task_name taskName,c.CREATE_TIME createtime," +
+                    " c.TDYW_ORG tddw,c.WX_ORG wxOrg,c1.yhjb yhjb,u.REALNAME realname " +
+                    "from KH_CYCLE c left join kh_yh_history c1 on c.yh_id = c1.id LEFT JOIN  RZTSYSUSER u on c.JC_USER_ID = u.ID where c.id=? ";
         }else{
             //巡视任务详情查看
             sql =" select c.id id,c.task_name taskName, r.COMPANYNAME tddw,u.REALNAME realname " +
-                    " from XS_ZC_TASK c LEFT JOIN  RZTSYSUSER u on c.CM_USER_ID = u.ID LEFT JOIN  RZTSYSCOMPANY r on r.ID = c.TD_ORG ";
+                    " from XS_ZC_TASK c LEFT JOIN  RZTSYSUSER u on c.CM_USER_ID = u.ID LEFT JOIN  RZTSYSCOMPANY r on r.ID = c.TD_ORG where c.id=?";
         }
         Long ids = Long.parseLong(id);
 
@@ -292,19 +313,30 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
     }
 
 
-    public List paifaCheckTaskPro(String userId,String task_type) {
+    public List<Map<String,Object>> paifaCheckTaskPro(String userId,String task_type) {
 
         String sql = null;
+        List<Map<String,Object>> result=null;
         if(task_type.equals("0")){
             //看护任务推荐
-            sql = " select id id,task_name taskName,task_type taskType from kh_site where jc_user_id=? ";
+            sql = " select id id,task_name taskName  from kh_cycle where jc_user_id=? ";
+            result = this.execSql(sql,userId);
+            for (Map<String,Object> map : result ){
+                map.put("TASKTYPE","看护");
+            }
+            return  result;
 
         }else{
             //巡视任务推荐
-            sql = " select id id,task_name taskName,task_type taskType from XS_ZC_TASK where jc_user_id=? ";
+            sql = " select id id,task_name taskName  from XS_ZC_TASK where jc_user_id=? ";
+            result = this.execSql(sql,userId);
+            for (Map<String,Object> map : result ){
+                map.put("TASKTYPE","稽查");
+            }
+            return  result;
         }
 
-        return this.execSql(sql,userId);
+
     }
 
     public static void main(String[] args) {
@@ -365,9 +397,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
             taskExec.setTaskName(taskName.toString());
             taskExec.setTaskType("巡视稽查");
         }
-       // taskName.append(time).append("看护稽查任务");
 
-      //  taskExec.setTaskName(taskName.toString());
         taskExec.setStatus(0);//未开始
         taskExec.setCreateTime(model.getCreateTime());
         taskExec.setUserId(model.getUserId());
@@ -375,7 +405,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
         taskExec.setTdwhOrg(model.getTdwhOrg());//通道外协单位id
         taskExec.setPlanStartTime(model.getPlanStartTime());
         taskExec.setPlanEndTime(model.getPlanEndTime());
-    //    taskExec.setTaskType("看护稽查");
+
 
         this.execRepository.save(taskExec);
 
@@ -392,14 +422,14 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
                 khTaskDetail.setCreateTime(DateUtil.dateNow());
                 khTaskDetail.setKhTaskId(Long.parseLong(String.valueOf(id)));
                 this.khDetailRepository.save(khTaskDetail);
-                //更新看护kh_site 的稽查人 和 稽查状态
-               // KhSite khSite = this.khSiteRepository.findSite(Long.parseLong(id));
-              //  khSite.setJcUserId(model.getUserId());
-            //    khSite.setJcStatus(0);
                 //更新
-                Long khSiteId = Long.parseLong(id);
-            //    this.khSiteRepository.updateKhSite(khSite.getJcUserId(),khSite.getJcStatus(),khSiteId);
-                this.khSiteRepository.updateKhSite(model.getUserId(),0,khSiteId);
+                Long khcycleId = Long.parseLong(id);
+                String sql = "update kh_cycle set JC_STATUS=?,JC_USER_ID=? where id=?";
+                Query q = this.entityManager.createNativeQuery(sql);
+                q.setParameter(1,0);
+                q.setParameter(2,model.getUserId());
+                q.setParameter(3,khcycleId);
+                q.executeUpdate();
 
             }
 
@@ -434,9 +464,12 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
     @Transactional
     public void timeCheckLiveTask() {
 
-        this.khSiteRepository.updateKhSiteJcStatus();//更新看护点表 稽查状态为未派发
+     //   this.khSiteRepository.updateKhSiteJcStatus();//更新看护点表 稽查状态为未派发
+        String s = "update KH_cycle set JC_STATUS=0";
+        Query q = this.entityManager.createNativeQuery(s);
+        q.executeUpdate();
         //更改巡视表 稽查状态为未派发
-        String sql = "update KH_SITE set JC_STATUS=0 ";
+        String sql = "update XS_ZC_TASK set JC_STATUS=0 ";
         Query query = this.entityManager.createNativeQuery(sql);
         query.executeUpdate();
 
