@@ -35,13 +35,18 @@ public class KhYhHistoryController extends
 	public WebApiResponse listYhCount(){
 		return this.service.listYhCount();
 	}
-	@ApiOperation(notes = "今日治理、新增、修改隐患数量",value = "今日治理、新增、修改隐患数量")
+
+	@ApiOperation(notes = "施工情况",value = "施工情况")
 	@GetMapping("/listSgCount")
 	public WebApiResponse listSgCount(){
 		return this.service.listSgCount();
 	}
 
-
+	@ApiOperation(notes = "施工情况",value = "施工情况")
+	@GetMapping("/listGkqk")
+	public WebApiResponse listGkqk(){
+		return this.service.listGkqk();
+	}
 	/*@ApiOperation(notes = "今日调整隐患数量",value = "今日调整隐患数量")
 	@GetMapping("/listUpdateYhCount")
 	public WebApiResponse listUpdateYhCount(){

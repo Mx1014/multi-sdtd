@@ -49,10 +49,10 @@ public class Cmcoordinate {
     private Integer gzlx;
     //字段描述: 用户名
     @Column(name = "user_name")
-    private Integer userName;
+    private String userName;
     //字段描述: 在线 离线
     @Column(name = "on_line")
-    private boolean onLine;
+    private Integer onLine;
 
     public String getId() {
         return id;
@@ -113,19 +113,19 @@ public class Cmcoordinate {
         this.gzlx = gzlx;
     }
 
-    public Integer getUserName() {
+    public String getUserName() {
         return userName;
     }
 
-    public void setUserName(Integer userName) {
+    public void setUserName(String userName) {
         this.userName = userName;
     }
 
-    public boolean isOnLine() {
+    public Integer isOnLine() {
         return onLine;
     }
 
-    public void setOnLine(boolean onLine) {
+    public void setOnLine(Integer onLine) {
         this.onLine = onLine;
     }
 }

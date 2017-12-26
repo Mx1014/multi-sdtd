@@ -121,6 +121,10 @@ public class AppKhTaskController extends
         return this.service.getPoint(Long.parseLong(taskId));
     }
 
+    @GetMapping("/listPhone")
+    public WebApiResponse listPhone(String taskId){
+        return this.service.listPhone(Long.parseLong(taskId));
+    }
     //KHOffSet(String userId,long taskId)
     //获取交接班的
     /*@GetMapping("listYhPoint")

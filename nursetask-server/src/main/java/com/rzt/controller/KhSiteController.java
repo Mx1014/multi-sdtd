@@ -57,8 +57,8 @@ public class KhSiteController extends
     //  数据没有设置完成  稽查任务实体类有部分修改
     @PostMapping("/saveYh.do")
     @ResponseBody
-    public WebApiResponse saveYh(KhYhHistory yh, String fxtime) {
-        return this.service.saveYh(yh, fxtime);
+    public WebApiResponse saveYh(KhYhHistory yh, String fxtime,String startTowerName,String endTowerName) {
+        return this.service.saveYh(yh, fxtime,startTowerName,endTowerName);
     }
 
 

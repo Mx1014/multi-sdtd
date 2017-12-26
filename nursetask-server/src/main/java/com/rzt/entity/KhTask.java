@@ -55,9 +55,9 @@ public class KhTask implements Serializable{
 	//字段描述: 到达现场时间
 	@Column(name = "DDXC_TIME")
 	private String ddxcTime;
-	//字段描述: 周期内第多少次任务
+	/*//字段描述: 周期内第多少次任务
 	@Column(name = "TASK_NUM_IN_CYCLE")
-	private int taskNumInCycle;
+	private int taskNumInCycle;*/
 	//字段描述: 外协单位
 	@Column(name = "WX_ORG")
 	private String wxOrg;
@@ -158,13 +158,13 @@ public class KhTask implements Serializable{
 		return this.ddxcTime;
 	}
 
-	public void setTaskNumInCycle(int taskNumInCycle){
+	/*public void setTaskNumInCycle(int taskNumInCycle){
 		this.taskNumInCycle = taskNumInCycle;
 	}
 	@ExcelResources(title="周期内第多少次任务",order=10)
 	public int getTaskNumInCycle(){
 		return this.taskNumInCycle;
-	}
+	}*/
 
 	public void setWxOrg(String wxOrg){
 		this.wxOrg = wxOrg;

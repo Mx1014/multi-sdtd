@@ -143,21 +143,31 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
     }
 
     //获取中心点坐标  现获取看护点的坐标  如果不存在，就用隐患的坐标
-    public List<Map<String,Object>> getPoint(long taskId) {
+    public List<Map<String, Object>> getPoint(long taskId) {
         String sql = "select c.longitude as jd,c.latitude as wd from kh_cycle c left join kh_site s on s.yh_id = c.id left join kh_task k on k.site_id = s.id where k.id = ?";
         List<Map<String, Object>> list = this.execSql(sql, taskId);
-        if (list.isEmpty()){
+        if (list.isEmpty()) {
             sql = "select y.jd as jd,y.wd as wd from kh_yh_history y left join kh_task k on y.id = k.yh_id where k.id=?";
-            list = this.execSql(sql,taskId);
+            list = this.execSql(sql, taskId);
         }
-        for (Map map:list){
-            map.put("ROUND",100);
-            map.put("URL","http://192.168.1.122:7011//nurseTask/AppKhTask/appListjbr");
+        for (Map map : list) {
+            map.put("ROUND", 100);
+            map.put("URL", "http://192.168.1.122:7011//nurseTask/AppKhTask/appListjbr");
         }
        /* Point point = null;
         for (Map map : list) {
             point = new Point(Double.parseDouble(map.get("WD").toString()), Double.parseDouble(map.get("JD").toString()));
         }*/
         return list;
+    }
+
+    public WebApiResponse listPhone(long taskId) {
+        try {
+            String sql = "SELECT Y.YHZRDWLXR AS NAME,Y.YHZRDWDH AS PHONE FROM KH_YH_HISTORY Y LEFT JOIN KH_TASK K ON K.YH_ID = Y.ID WHERE  K.ID=? ";
+            return WebApiResponse.success(this.execSql(sql,taskId));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("数据获取失败");
+        }
     }
 }
