@@ -95,4 +95,66 @@ public class CMINSTALLController extends
         }
         return map;
     }
+
+    @GetMapping("tourAlarm")
+    public WebApiResponse tourAlarm() {
+        String sql = "SELECT *  " +
+                "FROM (SELECT  " +
+                "        x.PLAN_START_TIME,  " +
+                "        x.TASK_NAME,  " +
+                "        t.DEPTNAME,  " +
+                "        '未按时间按时任务' AS ZT,  " +
+                "        u.REALNAME,  " +
+                "        mm.COMPANYNAME  " +
+                "      FROM xs_txbd_task x LEFT JOIN RZTSYSDEPARTMENT t ON x.TD_ORG = t.ID  " +
+                "        LEFT JOIN RZTSYSUSER u ON x.CM_USER_ID = u.ID  " +
+                "        LEFT JOIN RZTSYSCOMPANY mm ON x.CLASS_ID = mm.ID  " +
+                "      WHERE trunc(x.plan_start_time) = trunc(sysdate) AND x.plan_start_time < nvl(x.real_start_time, sysdate)  " +
+                "      UNION ALL  " +
+                "      SELECT  " +
+                "        x.PLAN_START_TIME,  " +
+                "        x.TASK_NAME,  " +
+                "        t.DEPTNAME,  " +
+                "        '未按时间按时任务' AS ZT,  " +
+                "        u.REALNAME,  " +
+                "        mm.COMPANYNAME  " +
+                "      FROM xs_zc_task x LEFT JOIN RZTSYSDEPARTMENT t ON x.TD_ORG = t.ID  " +
+                "        LEFT JOIN RZTSYSUSER u ON x.CM_USER_ID = u.ID  " +
+                "        LEFT JOIN RZTSYSCOMPANY mm ON x.CLASS_ID = mm.ID  " +
+                "      WHERE trunc(x.plan_start_time) = trunc(sysdate) AND trunc(x.plan_start_time) < nvl(x.real_start_time, sysdate)  " +
+                "      UNION ALL  " +
+                "      SELECT  " +
+                "        x.START_TIME AS PLAN_START_TIME,  " +
+                "        k.TASK_NAME,  " +
+                "        t1.DEPTNAME,  " +
+                "        '巡视不合格'      AS ZT,  " +
+                "        u.REALNAME,  " +
+                "        mm.COMPANYNAME  " +
+                "      FROM XS_ZC_TASK_EXEC_DETAIL x LEFT JOIN XS_ZC_TASK_EXEC t ON x.XS_ZC_TASK_EXEC_ID = t.ID  " +
+                "        LEFT JOIN XS_ZC_TASK k ON t.XS_ZC_TASK_ID = k.ID  " +
+                "        LEFT JOIN RZTSYSUSER u ON k.CM_USER_ID = u.ID  " +
+                "        LEFT JOIN RZTSYSDEPARTMENT t1 ON u.DEPTID = t1.ID  " +
+                "        LEFT JOIN RZTSYSCOMPANY mm ON k.CLASS_ID = mm.ID  " +
+                "      WHERE is_dw = 1)  " +
+                "ORDER BY PLAN_START_TIME DESC";
+        try {
+            return WebApiResponse.success(this.service.execSql(sql));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("erro");
+        }
+    }
+
+    @GetMapping("khAlarm")
+    public WebApiResponse khAlarm() {
+        String sql = "SELECT k.PLAN_START_TIME,k.TASK_NAME,'未按时间按时任务' as zt ,k.TDYW_ORG,u.REALNAME,k.WX_ORG   AS COMPANYNAME " +
+                "FROM KH_TASK k   LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID " +
+                "WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND PLAN_START_TIME < nvl(REAL_START_TIME, sysdate) ";
+        try {
+            return WebApiResponse.success(this.service.execSql(sql));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("erro");
+        }
+    }
 }
