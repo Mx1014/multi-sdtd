@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.geo.*;
 import org.springframework.data.redis.connection.RedisGeoCommands;
 import org.springframework.data.redis.core.GeoOperations;
+import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.http.HttpRequest;
@@ -51,10 +52,16 @@ public class CmcoordinateController extends
             Point point = new Point(cmcoordinate.getLongitude(), cmcoordinate.getLatitude());
             GeoOperations geoOperations = redisTemplate.opsForGeo();
             geoOperations.geoAdd(Constances.LOCATION_OBJ, point, cmcoordinate.getUserid());
+
+            //临时用map geo放一放
+            HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
+            hashOperations.put("temporyCoordinateMap",cmcoordinate.getUserid(),cmcoordinate);
+
             //为每个用户每天创建一个key，用于保存当天的坐标。
             ZSetOperations setOperations = redisTemplate.opsForZSet();
             String key = cmcoordinate.getUserid() + "-" + DateUtil.getCurrentDate();
             setOperations.add(key, cmcoordinate, date.getTime());
+
             this.service.add(cmcoordinate);
             return WebApiResponse.success("添加成功");
         } catch (Exception e) {

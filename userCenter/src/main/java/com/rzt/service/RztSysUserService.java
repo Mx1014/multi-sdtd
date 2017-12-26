@@ -22,6 +22,7 @@ import org.springframework.util.StringUtils;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -241,7 +242,6 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
                     HashOperations hashOperations = redisTemplate.opsForHash();
                     hashOperations.put("UserInformation", stringObjectMap.get("USERID"), userid1);
                     request.getSession().setAttribute("user", userid1);
-//                    usercenter.lineSize(String.valueOf(userid1.get(0).get("ID")), Integer.valueOf(userid1.get(0).get("LOGINSTATUS").toString()), Integer.valueOf(userid1.get(0).get("WORKTYPE").toString()));
                     return WebApiResponse.success(userid1);
                 }
             }
@@ -260,7 +260,7 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
             List<Map<String, Object>> maps = this.execSql(userAccout, id);
             HashOperations hashOperations = redisTemplate.opsForHash();
             hashOperations.put("UserInformation", id, maps);
-//            usercenter.lineSize(String.valueOf(maps.get(0).get("ID")), Integer.valueOf(maps.get(0).get("LOGINSTATUS").toString()), Integer.valueOf(maps.get(0).get("WORKTYPE").toString()));
+
             return WebApiResponse.success("");
         } catch (Exception e) {
             e.printStackTrace();
