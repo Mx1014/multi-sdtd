@@ -142,18 +142,15 @@ public class PersonnelTasksPushService extends CurdService<websocket, websocketR
                     "(" + xsLxUser + ") as xsLxUser," +
                     "(" + khZxUser + ") as khZxUser," +
                     "(" + khLxUser + ") as khLxUser, " +
-                    "(" + zcXsWks + ") as zcXsWks," +
-                    "(" + zcXsJxz + ") as zcXsJxz," +
-                    "(" + zcXsYwc + ") as zcXsYwc," +
+                    "(" + zcXsWks + ")+(" + bdXsWks + ") as XsWks," +
+                    "(" + zcXsJxz + ")+(" + bdXsJxz + ") as XsJxz," +
+                    "(" + zcXsYwc + ")+(" + bdXsYwc + ") as XsYwc," +
                     "(" + khJxz + ") as khJxz," +
                     "(" + khWks + ") as khWks, " +
                     "(" + khYwc + ") as khYwc," +
                     "(" + xcJcJxz + ") as xcJcJxz," +
                     "(" + xcJcWks + ") as xcJcWks," +
-                    "(" + xcJcYwc + ") as xcJcYwc, " +
-                    "(" + bdXsJxz + ") as bdXsJxz," +
-                    "(" + bdXsWks + ") as bdXsWks," +
-                    "(" + bdXsYwc + ") as bdXsYwc " +
+                    "(" + xcJcYwc + ") as xcJcYwc " +
                     " FROM dual";
             try {
                 personnelTasksServerEndpoint.sendText((Session) session.get("session"), this.execSql(sql));
