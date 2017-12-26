@@ -40,4 +40,12 @@ public interface RztSysUserRepository extends JpaRepository<RztSysUser, String> 
             "  USERNAME = ?9, WORKTYPE = ?10, WORKYEAR = ?11 " +
             "WHERE ID = ?12 ", nativeQuery = true)
     int updateUser(int age, String certificate, String deptid, String email, String phone, String realname, String serialnumber, int userType, String username, int worktype, int workyear, String id);
+
+    @Modifying
+    @Query(value = " UPDATE RZTSYSUSER SET LOGINSTATUS = 1 WHERE id=?1 ", nativeQuery = true)
+    int updateUserLOGINSTATUS(String id);
+
+    @Modifying
+    @Query(value = " UPDATE RZTSYSUSER SET LOGINSTATUS = 0 WHERE id=?1 ", nativeQuery = true)
+    int quitUserLOGINSTATUS(String id);
 }

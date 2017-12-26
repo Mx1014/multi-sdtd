@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -144,7 +145,7 @@ public class RztsyscompanyService extends CurdService<Rztsyscompany, Rztsyscompa
         }
     }
 
-//    /**
+    //    /**
 //     * 修改查询外协
 //     *
 //     * @param id 外协ID
@@ -166,4 +167,13 @@ public class RztsyscompanyService extends CurdService<Rztsyscompany, Rztsyscompa
 //            return WebApiResponse.erro("数据请求失败");
 //        }
 //    }
+    public List<Map<String, Object>> exportXlsCompany() {
+        String sql = "SELECT " +
+                "  c.COMPANYNAME, " +
+                "  c.CREATETIME, " +
+                "  c.UPDATETIME, " +
+                "  c.ORGNAME " +
+                "FROM RZTSYSCOMPANY c";
+        return this.execSql(sql);
+    }
 }

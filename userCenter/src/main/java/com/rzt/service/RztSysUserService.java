@@ -21,6 +21,7 @@ import org.springframework.util.StringUtils;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -71,25 +72,49 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
             arrayList.add(WORKTYPE);
             s += " AND WORKTYPE = ?" + arrayList.size();
         }
+//        String sql = "SELECT " +
+//                "  wm_concat(r.ID) AS roleid,u.id," +
+//                "  wm_concat(R.roleName) AS roleName," +
+//                "  U.REALNAME, " +
+//                "  U.USERNAME, " +
+//                "  U.EMAIL, " +
+//                "  U.PHONE, " +
+//                "  U.DEPTID, " +
+//                "  U.CLASSNAME, " +
+//                "  U.CERTIFICATE, " +
+//                "  U.WORKYEAR, " +
+//                "  U.WORKTYPE, " +
+//                "  U.SERIALNUMBER, " +
+//                "  U.AGE, " +
+//                "  U.USERTYPE, " +
+//                "  U.AVATAR  " +
+//                " FROM rztsysuser u LEFT JOIN rztsysuserrole l ON u.id = l.userId " +
+//                "  LEFT JOIN rztsysrole r ON l.roleId = r.id WHERE USERDELETE = 1  " + s +
+//                " GROUP BY u.REALNAME, U.REALNAME,U.USERNAME,U.EMAIL,U.PHONE,U.DEPTID,U.CLASSNAME,U.CERTIFICATE,U.WORKYEAR,U.WORKTYPE,U.SERIALNUMBER,U.AGE,U.USERTYPE,U.AVATAR,u.id";
         String sql = "SELECT " +
-                "  wm_concat(r.ID) AS roleid,u.id," +
-                "  wm_concat(R.roleName) AS roleName," +
+                "  u.id, " +
+                "  R.roleName AS roleName, " +
                 "  U.REALNAME, " +
                 "  U.USERNAME, " +
                 "  U.EMAIL, " +
                 "  U.PHONE, " +
                 "  U.DEPTID, " +
-                "  U.CLASSNAME, " +
                 "  U.CERTIFICATE, " +
                 "  U.WORKYEAR, " +
                 "  U.WORKTYPE, " +
                 "  U.SERIALNUMBER, " +
                 "  U.AGE, " +
                 "  U.USERTYPE, " +
-                "  U.AVATAR  " +
-                " FROM rztsysuser u LEFT JOIN rztsysuserrole l ON u.id = l.userId " +
-                "  LEFT JOIN rztsysrole r ON l.roleId = r.id WHERE USERDELETE = 1  " + s +
-                " GROUP BY u.REALNAME, U.REALNAME,U.USERNAME,U.EMAIL,U.PHONE,U.DEPTID,U.CLASSNAME,U.CERTIFICATE,U.WORKYEAR,U.WORKTYPE,U.SERIALNUMBER,U.AGE,U.USERTYPE,U.AVATAR,u.id";
+                "  U.AVATAR, " +
+                "  y.DEPTNAME, " +
+                "  m.COMPANYNAME , " +
+                "  t.DEPTNAME as classname " +
+                "FROM rztsysuser u LEFT JOIN rztsysuserrole l ON u.id = l.userId " +
+                "  LEFT JOIN rztsysrole r ON l.roleId = r.id " +
+                "  LEFT JOIN RZTSYSDEPARTMENT y ON u.DEPTID = y.ID " +
+                "  LEFT JOIN RZTSYSDEPARTMENT t ON u.CLASSNAME = t.ID " +
+                "  LEFT JOIN RZTSYSCOMPANY m ON m.ID = u.COMPANYID " +
+                "WHERE USERDELETE = 1" + s;
         return this.execSqlPage(pageable, sql, arrayList.toArray());
     }
 
@@ -133,7 +158,7 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
             /**
              * 修改Redis人员信息
              */
-            String sql1 = " SELECT * FROM RZTSYSUSER where id=?1 and USERDELETE = 1 ";
+            String sql1 = " SELECT * FROM USERINFO where id=?1 and USERDELETE = 1 ";
             Map<String, Object> stringObjectMap = this.execSqlSingleResult(sql1, id);
             HashOperations hashOperations = redisTemplate.opsForHash();
             hashOperations.put("UserInformation", id, stringObjectMap);
@@ -199,5 +224,47 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
             }
         }
         return childOrg;
+    }
+
+    @Transactional
+    public WebApiResponse userLogin(String password, String account, String loginType, HttpServletRequest request) {
+        String auth = "SELECT USERID FROM RZTSYSUSERAUTH WHERE IDENTITYTYPE = ?1 AND PASSWORD =?2 ";
+        String user = "SELECT * FROM RZTSYSUSER  WHERE id=?1 AND USERDELETE = 1 AND USERTYPE = ?2 ";
+        String userAccout = "SELECT * FROM USERINFO where id=?1";
+        try {
+            Map<String, Object> stringObjectMap = this.execSqlSingleResult(auth, account, password);
+            if (!StringUtils.isEmpty(stringObjectMap.get("USERID"))) {
+                List<Map<String, Object>> userid = this.execSql(user, String.valueOf(stringObjectMap.get("USERID")), loginType);
+                if (userid.size() == 1) {
+                    this.reposiotry.updateUserLOGINSTATUS(String.valueOf(stringObjectMap.get("USERID")));
+                    List<Map<String, Object>> userid1 = this.execSql(userAccout, String.valueOf(stringObjectMap.get("USERID")));
+                    HashOperations hashOperations = redisTemplate.opsForHash();
+                    hashOperations.put("UserInformation", stringObjectMap.get("USERID"), userid1);
+                    request.getSession().setAttribute("user", userid1);
+//                    usercenter.lineSize(String.valueOf(userid1.get(0).get("ID")), Integer.valueOf(userid1.get(0).get("LOGINSTATUS").toString()), Integer.valueOf(userid1.get(0).get("WORKTYPE").toString()));
+                    return WebApiResponse.success(userid1);
+                }
+            }
+            return WebApiResponse.erro("erro");
+        } catch (Exception e) {
+            return WebApiResponse.erro("erro");
+        }
+    }
+
+    @Transactional
+    public WebApiResponse userQuit(String id, HttpServletRequest request) {
+        String userAccout = "SELECT * FROM USERINFO where id=?1";
+        try {
+            this.reposiotry.quitUserLOGINSTATUS(id);
+            request.getSession().removeAttribute("user");
+            List<Map<String, Object>> maps = this.execSql(userAccout, id);
+            HashOperations hashOperations = redisTemplate.opsForHash();
+            hashOperations.put("UserInformation", id, maps);
+//            usercenter.lineSize(String.valueOf(maps.get(0).get("ID")), Integer.valueOf(maps.get(0).get("LOGINSTATUS").toString()), Integer.valueOf(maps.get(0).get("WORKTYPE").toString()));
+            return WebApiResponse.success("");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("erro");
+        }
     }
 }

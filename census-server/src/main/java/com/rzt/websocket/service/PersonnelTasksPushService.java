@@ -39,7 +39,7 @@ public class PersonnelTasksPushService extends CurdService<websocket, websocketR
      * The WebSocket session [0] has been closed
      * and no method (apart from close()) may be called on a closed session
      */
-    @Scheduled(fixedRate = 5000)
+    @Scheduled(fixedRate = 1000)
     public void sendMsgs() {
         Map<String, HashMap> sendMsg = personnelTasksServerEndpoint.sendMsg();
         /**
@@ -77,7 +77,7 @@ public class PersonnelTasksPushService extends CurdService<websocket, websocketR
                     "(" + khLxUser + ") as khLxUser " +
                     " FROM dual";
             try {
-                personnelTasksServerEndpoint.sendText((Session) session.get("session"), this.execSql(sql).toString());
+                personnelTasksServerEndpoint.sendText((Session) session.get("session"), this.execSql(sql));
             } catch (Exception e) {
                 LOGGER.error("Error: The user closes the browser , Session Does Not Exist", e);
             }

@@ -18,8 +18,6 @@ import java.util.Map;
 @FeignClient(value = "FILESERVER")
 //@FeignClient(value = "FILESERVER",url = "http://168.130.1.31:9091/")
 public interface Cmuserfile {
-
-
     /**
      * 人员头像上传
      *
@@ -32,4 +30,5 @@ public interface Cmuserfile {
      */
     @PostMapping("fileserver/CmFile/fileUpload")
     Map<String, Object> userFileUpload(@Param(value = "file") MultipartFile file, @RequestParam("fileName") String fileName, @RequestParam("fileType") Integer fileType, @RequestParam("createTime") Date createTime, @RequestParam("fkIdStr") String fkIdStr);
+
 }

@@ -1,10 +1,17 @@
 package com.rzt.websocket.serverendpoint;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.rzt.util.WebApiResponse;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -15,7 +22,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * Time: 15:11
  * 任务人员统计
  */
-@ServerEndpoint("/serverendpoint/PersonnelTasks/{username}/{orgid}")
+@RestController
+@ServerEndpoint("/serverendpoint/PersonnelTasks/{username}")
 public class PersonnelTasksServerEndpoint {
     /**
      * WebSocket服务器端通过一个线程安全的队列来保持所有客户端的Session
@@ -30,12 +38,12 @@ public class PersonnelTasksServerEndpoint {
      * @param session
      */
     @OnOpen
-    public void openSession(@PathParam("username") String usernamee, @PathParam("orgid") String orgid, Session session) {
+    public void openSession(@PathParam("username") String usernamee, Session session) {
         HashMap h = new HashMap();
         String sessionId = session.getId();
         h.put("session", session);
         h.put("username", usernamee);
-        h.put("orgid", orgid);
+//        h.put("orgid", orgid);
         livingSessions.put(sessionId, h);
     }
 
@@ -72,10 +80,11 @@ public class PersonnelTasksServerEndpoint {
      * @param session
      * @param message
      */
-    public void sendText(Session session, String message) {
+    public void sendText(Session session, List<Map<String, Object>> message) {
         RemoteEndpoint.Basic basic = session.getBasicRemote();
         try {
-            basic.sendText(message);
+            String s = JSONObject.toJSONString(message);
+            basic.sendText(s);
         } catch (IOException e) {
             e.printStackTrace();
         }
