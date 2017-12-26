@@ -150,13 +150,16 @@ public class RztsyscompanyController extends
      */
     @DeleteMapping("deleteRztsyscompany")
     public WebApiResponse deleteRztsyscompany(String id) {
-        int deleteRztsyscompany = this.service.deleteRztsyscompany(id);
-        int one = 1;
-        if (deleteRztsyscompany == one) {
+        String[] split = id.split(",");
+        try {
+            for (int i = 0; i < split.length; i++) {
+                this.service.deleteRztsyscompany(split[i]);
+            }
             return WebApiResponse.success("Note[Data deleted successfully]");
-        } else {
-            return WebApiResponse.erro("Note[Data deletion failed]");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return WebApiResponse.erro("Note[Data deletion failed]");
     }
 
     /**

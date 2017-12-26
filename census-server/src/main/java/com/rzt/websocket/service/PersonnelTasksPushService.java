@@ -48,19 +48,39 @@ public class PersonnelTasksPushService extends CurdService<websocket, websocketR
         /**
          * 巡视在线人员
          */
-        String xsZxUser = " SELECT count(id) FROM RZTSYSUSER WHERE LOGINSTATUS = 1 AND WORKTYPE = 1 AND USERDELETE = 1 ";
+        String xsZxUser = " SELECT count(id) FROM RZTSYSUSER WHERE LOGINSTATUS = 1 AND WORKTYPE = 2 AND USERDELETE = 1 ";
         /**
          * 巡视离线人员
          */
-        String xsLxUser = " SELECT count(id) FROM RZTSYSUSER WHERE LOGINSTATUS = 0 AND WORKTYPE = 1 AND USERDELETE = 1 ";
+        String xsLxUser = " SELECT count(id) FROM RZTSYSUSER WHERE LOGINSTATUS = 0 AND WORKTYPE = 2 AND USERDELETE = 1 ";
         /**
          * 看护在线人员
          */
-        String khZxUser = " SELECT count(id) FROM RZTSYSUSER WHERE LOGINSTATUS = 1 AND WORKTYPE = 0 AND USERDELETE = 1 ";
+        String khZxUser = " SELECT count(id) FROM RZTSYSUSER WHERE LOGINSTATUS = 1 AND WORKTYPE = 1 AND USERDELETE = 1 ";
         /**
          * 看护离线人员
          */
-        String khLxUser = " SELECT count(id) FROM RZTSYSUSER WHERE LOGINSTATUS = 0 AND WORKTYPE = 0 AND USERDELETE = 1 ";
+        String khLxUser = " SELECT count(id) FROM RZTSYSUSER WHERE LOGINSTATUS = 0 AND WORKTYPE = 1 AND USERDELETE = 1 ";
+
+        /**
+         * 前台稽查在线人员
+         */
+        String qjcZxUser = " SELECT count(id) FROM RZTSYSUSER WHERE LOGINSTATUS = 1 AND WORKTYPE = 3 AND USERDELETE = 1 ";
+        /**
+         * 前台稽查离线人员
+         */
+        String qjcLxUser = " SELECT count(id) FROM RZTSYSUSER WHERE LOGINSTATUS = 0 AND WORKTYPE = 3 AND USERDELETE = 1 ";
+
+        /**
+         * 后台稽查在线人员
+         */
+        String hjcZxUser = " SELECT count(id) FROM RZTSYSUSER WHERE LOGINSTATUS = 1 AND WORKTYPE = 4 AND USERDELETE = 1 ";
+        /**
+         * 后台稽查离线人员
+         */
+        String hjcLxUser = " SELECT count(id) FROM RZTSYSUSER WHERE LOGINSTATUS = 0 AND WORKTYPE = 4 AND USERDELETE = 1 ";
+
+
         /**
          * 正常巡视未开始
          */
@@ -150,7 +170,11 @@ public class PersonnelTasksPushService extends CurdService<websocket, websocketR
                     "(" + khYwc + ") as khYwc," +
                     "(" + xcJcJxz + ") as xcJcJxz," +
                     "(" + xcJcWks + ") as xcJcWks," +
-                    "(" + xcJcYwc + ") as xcJcYwc " +
+                    "(" + xcJcYwc + ") as xcJcYwc," +
+                    "(" + qjcZxUser + ") as qjcZxUser," +
+                    "(" + qjcLxUser + ") as qjcLxUser," +
+                    "(" + hjcZxUser + ") as hjcZxUser," +
+                    "(" + hjcLxUser + ") as hjcLxUser " +
                     " FROM dual";
             try {
                 personnelTasksServerEndpoint.sendText((Session) session.get("session"), this.execSql(sql));

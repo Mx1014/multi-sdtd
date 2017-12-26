@@ -134,7 +134,7 @@ public class KhTaskService extends CurdService<KhTask,KhTaskRepository> {
     public WebApiResponse listCurrentTaskByUserId(String userId) {
        try {
            String date = DateUtil.getCurrentDate();
-           String sql = "select * from kh_task k where k.user_id = ? and to_char(k.plan_start_time)>=? and to_char(k.plan_start_time)<=?";
+           String sql = "select * from kh_task k where k.user_id = ? and k.plan_start_time>=to_date(?,'yyyy-mm-dd hh24:mi:ss') and k.plan_start_time<=to_date(?,'yyyy-mm-dd hh24:mi:ss')";
            String start =  date+" 00:00:00";
            String end = date+" 23:59:59";
            return WebApiResponse.success(this.execSql(sql,userId,start,end));

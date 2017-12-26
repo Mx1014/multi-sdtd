@@ -143,17 +143,17 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
     }
 
     @Transactional
-    public WebApiResponse saveYh(KhYhHistory yh, String fxtime) {
+    public WebApiResponse saveYh(KhYhHistory yh, String fxtime,String startTowerName,String endTowerName) {
         try {
             yh.setYhfxsj(DateUtil.parseDate(fxtime));
             yh.setSfdj("未定级");
             yh.setYhzt("0");//隐患未消除
             yh.setId(0L);
             yh.setCreateTime(DateUtil.dateNow());
-            yh.setSection(yh.getStartTower() + "-" + yh.getEndTower() + " 区段");
+            yh.setSection(startTowerName+ "-" + endTowerName + " 区段");
             yhservice.add(yh);
             KhCycle task = new KhCycle();
-            String taskName = yh.getVtype() + yh.getLineName() + yh.getStartTower() + "-" + yh.getEndTower() + "号杆塔看护任务";
+            String taskName = yh.getVtype() + yh.getLineName() + startTowerName + "-" + endTowerName + " 号杆塔看护任务";
             task.setVtype(yh.getVtype());
             task.setLineName(yh.getLineName());
             task.setTdywOrg(yh.getTdywOrg());
