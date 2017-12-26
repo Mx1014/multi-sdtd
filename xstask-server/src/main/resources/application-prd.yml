@@ -29,7 +29,7 @@ spring:
     redis:
           database: 0
           host: 168.130.1.31
-          port: 30094
+          port: 31662
           password:
           timeout: 0
           pool:

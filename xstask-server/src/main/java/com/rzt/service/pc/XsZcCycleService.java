@@ -216,4 +216,10 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
     public void updateCycle(Long id, Integer cycle, Integer inUse, Integer planXsNum, String planStartTime, String planEndTime) {
         this.reposiotry.updateCycle(id,cycle,inUse,planXsNum,planStartTime,planEndTime);
     }
+
+    public Object listPictureById(Long taskId) {
+        String sql = "select FILE_PATH \"filePath\" from PICTURE_TOUR WHERE TASK_ID = ?";
+        List<Map<String, Object>> maps = this.execSql(sql, taskId);
+        return maps;
+    }
 }

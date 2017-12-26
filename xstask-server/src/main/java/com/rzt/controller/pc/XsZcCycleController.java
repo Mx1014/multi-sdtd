@@ -153,19 +153,31 @@ public class XsZcCycleController extends
 	@GetMapping("listPlan")
 	public Object listPlan(Pageable pageable, XsTaskSCh xsTaskSch) {
 		try {
-//			Sort sort = new Sort(Sort.Direction.DESC, new String[]{sortField});
-//			if (sortDirection.equals("ASC")) {
-//				sort = new Sort(Sort.Direction.ASC, new String[]{sortField});
-//			}
-//
-//			Pageable pageable = new PageRequest(page, size, sort);
-//			return WebApiResponse.success(this.service.findAll(pageable));
 			return this.service.listPlan(pageable,xsTaskSch);
 		} catch (Exception var7) {
 			return WebApiResponse.erro("数据查询失败" + var7.getMessage());
 		}
 
 	}
+
+	/**
+	 * @Method listPlan
+	 * @Description  任务派发 生成任务和人员信息
+	 * @param
+	 * @return java.lang.Object
+	 * @date 2017/12/7 17:57
+	 * @author nwz
+	 */
+	@ApiOperation(value = "pc端任务派发列表",notes = "pc端任务派发列表")
+	@GetMapping("listPictureById")
+	public Object listPictureById(Long taskId) {
+		try {
+			return WebApiResponse.success(this.service.listPictureById(taskId));
+		} catch (Exception var) {
+			return WebApiResponse.erro("图片查找失败" + var.getMessage());
+		}
+	}
+
 
 	@InitBinder
 	public void initBinder(ServletRequestDataBinder binder) {
