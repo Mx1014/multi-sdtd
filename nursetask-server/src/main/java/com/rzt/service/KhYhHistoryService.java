@@ -67,4 +67,15 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             return WebApiResponse.erro("数据获取失败");
         }
     }
+
+    public WebApiResponse listGkqk() {
+        try {
+            String doingSql = "select count(*) from  left join ";
+            String doneSql = "(select count(*) as count from kh_yh_history where sgqk = 2) b,";
+            String sql = "select a.count as doing,b.count as done from "+doingSql+doneSql;
+            return WebApiResponse.success("");
+        } catch (Exception e) {
+            return WebApiResponse.erro("数据获取失败");
+        }
+    }
 }
