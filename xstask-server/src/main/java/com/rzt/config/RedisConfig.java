@@ -23,8 +23,7 @@ import java.lang.reflect.Method;
  * Created by Administrator on 2017/12/12.
  */
 @Configuration
-public class
-RedisConfig {
+public class RedisConfig {
 
     @Value("${spring.redis.host}")
     private String host;
@@ -104,18 +103,18 @@ RedisConfig {
     }
 
 
-	@Bean
-	public RedisTemplate<String, Object> redisHashTemplate(RedisConnectionFactory connectionFactory){
-		FastJsonRedisSerializer fastJsonRedisSerializer = new FastJsonRedisSerializer(Object.class);
-		FastJsonConfig jsonConfig = new FastJsonConfig();
-		jsonConfig.setSerializerFeatures(SerializerFeature.WriteMapNullValue);
-		fastJsonRedisSerializer.setFastJsonConfig(jsonConfig);
-		RedisTemplate<String,Object> template = new RedisTemplate<>();
-		template.setConnectionFactory(connectionFactory);
-		template.setKeySerializer(new StringRedisSerializer());
-		template.setHashKeySerializer(new StringRedisSerializer());
-		template.setHashValueSerializer(fastJsonRedisSerializer);
-		template.setValueSerializer(fastJsonRedisSerializer);
-		return template;
-	}
+    @Bean
+    public RedisTemplate<String, Object> redisHashTemplate(RedisConnectionFactory connectionFactory){
+        FastJsonRedisSerializer fastJsonRedisSerializer = new FastJsonRedisSerializer(Object.class);
+        FastJsonConfig jsonConfig = new FastJsonConfig();
+        jsonConfig.setSerializerFeatures(SerializerFeature.WriteMapNullValue);
+        fastJsonRedisSerializer.setFastJsonConfig(jsonConfig);
+        RedisTemplate<String,Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setHashKeySerializer(new StringRedisSerializer());
+        template.setHashValueSerializer(fastJsonRedisSerializer);
+        template.setValueSerializer(fastJsonRedisSerializer);
+        return template;
+    }
 }

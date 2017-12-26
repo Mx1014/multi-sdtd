@@ -178,9 +178,9 @@ public class XsZcTaskwpqrController extends CurdController<XsZcTaskwpqr, XsZcTas
      */
     @ApiOperation(value = "更新轮详情数据", notes = "更新轮详情数据 ")
     @PatchMapping("updateExecDetail")
-    public Object updateExecDetail(Integer xslx,Integer sfdw,String reason,Long execDetailId) {
+    public Object updateExecDetail(Integer xslx,Integer sfdw,String reason,Long execDetailId,Float longtitude,Float latitude) {
         try {
-            this.service.updateExecDetail(xslx,sfdw, reason,execDetailId);
+            this.service.updateExecDetail(xslx,sfdw, reason,execDetailId,longtitude,latitude);
             return WebApiResponse.success("数据更新成功");
         } catch (Exception var3) {
             return WebApiResponse.erro("数据更新失败" + var3.getMessage());

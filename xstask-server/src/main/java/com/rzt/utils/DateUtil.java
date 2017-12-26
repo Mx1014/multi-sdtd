@@ -49,5 +49,22 @@ public class DateUtil {
         return SDF.format(new Date());
     }
 
+    /***
+    * @Method stringToDate
+    * @Description   字符串转日期格式
+    * @param [time]
+    * @return java.util.Date
+    * @date 2017/12/25 13:19
+    * @author nwz
+    */
+    public static Date stringToDate(String time)  {
+        try {
+            return DateUtils.parseDate(time,partterns);
+        } catch (ParseException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return new Date();
+    }
 
 }

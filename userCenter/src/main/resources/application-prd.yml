@@ -6,7 +6,7 @@ token:
 spring:
     datasource:
       type: com.alibaba.druid.pool.DruidDataSource
-      url: jdbc:oracle:thin:@47.92.67.90:1521:ORCL
+      url: jdbc:oracle:thin:@168.130.1.32:1521:ORCL
 #      url: jdbc:oracle:thin:@192.168.1.111:1521:LIUZE
       username: sdtd27
       password: sdtd27
@@ -34,7 +34,7 @@ spring:
     redis:
         database: 0
         host: 168.130.1.31
-        port: 30094
+        port: 31662
         password:
         timeout: 0
         pool:

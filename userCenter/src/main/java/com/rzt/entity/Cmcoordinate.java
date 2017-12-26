@@ -44,6 +44,15 @@ public class Cmcoordinate {
     //字段描述: 手机串号
     @Column(name = "IMEI2")
     private String imei2;
+    //字段描述: 工作类型
+    @Column(name = "gzlx")
+    private Integer gzlx;
+    //字段描述: 用户名
+    @Column(name = "user_name")
+    private Integer userName;
+    //字段描述: 在线 离线
+    @Column(name = "on_line")
+    private boolean onLine;
 
     public String getId() {
         return id;
@@ -94,5 +103,29 @@ public class Cmcoordinate {
 
     public void setImei2(String imei2) {
         this.imei2 = imei2;
+    }
+
+    public Integer getGzlx() {
+        return gzlx;
+    }
+
+    public void setGzlx(Integer gzlx) {
+        this.gzlx = gzlx;
+    }
+
+    public Integer getUserName() {
+        return userName;
+    }
+
+    public void setUserName(Integer userName) {
+        this.userName = userName;
+    }
+
+    public boolean isOnLine() {
+        return onLine;
+    }
+
+    public void setOnLine(boolean onLine) {
+        this.onLine = onLine;
     }
 }
