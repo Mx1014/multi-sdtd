@@ -81,7 +81,6 @@ public class PersonnelTasksPushService extends CurdService<websocket, websocketR
         String hjcLxUser = " SELECT count(id) FROM RZTSYSUSER WHERE LOGINSTATUS = 0 AND WORKTYPE = 4 AND USERDELETE = 1 ";
 
 
-
         /**
          * 正常巡视未开始
          */
@@ -163,15 +162,19 @@ public class PersonnelTasksPushService extends CurdService<websocket, websocketR
                     "(" + xsLxUser + ") as xsLxUser," +
                     "(" + khZxUser + ") as khZxUser," +
                     "(" + khLxUser + ") as khLxUser, " +
-                    "(" + zcXsWks + ") as zcXsWks," +
-                    "(" + zcXsJxz + ") as zcXsJxz," +
-                    "(" + zcXsYwc + ") as zcXsYwc," +
+                    "(" + zcXsWks + ")+(" + bdXsWks + ") as XsWks," +
+                    "(" + zcXsJxz + ")+(" + bdXsJxz + ") as XsJxz," +
+                    "(" + zcXsYwc + ")+(" + bdXsYwc + ") as XsYwc," +
                     "(" + khJxz + ") as khJxz," +
                     "(" + khWks + ") as khWks, " +
                     "(" + khYwc + ") as khYwc," +
                     "(" + xcJcJxz + ") as xcJcJxz," +
                     "(" + xcJcWks + ") as xcJcWks," +
-                    "(" + xcJcYwc + ") as xcJcYwc " +
+                    "(" + xcJcYwc + ") as xcJcYwc," +
+                    "(" + qjcZxUser + ") as qjcZxUser," +
+                    "(" + qjcLxUser + ") as qjcLxUser," +
+                    "(" + hjcZxUser + ") as hjcZxUser," +
+                    "(" + hjcLxUser + ") as hjcLxUser " +
                     " FROM dual";
             try {
                 personnelTasksServerEndpoint.sendText((Session) session.get("session"), this.execSql(sql));
