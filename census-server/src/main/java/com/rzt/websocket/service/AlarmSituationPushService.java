@@ -1,6 +1,5 @@
 package com.rzt.websocket.service;
 
-import com.alibaba.fastjson.JSONArray;
 import com.rzt.entity.websocket;
 import com.rzt.repository.websocketRepository;
 import com.rzt.service.CurdService;
