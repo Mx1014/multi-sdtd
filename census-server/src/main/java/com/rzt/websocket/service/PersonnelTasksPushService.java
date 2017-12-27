@@ -200,63 +200,66 @@ public class PersonnelTasksPushService extends CurdService<websocket, websocketR
                     "(" + allSql + ") as ALLSQL " +
                     " FROM dual";
             personnelTasksServerEndpoint.sendText((Session) session.get("session"), this.execSql(sql));
-//            try {
-                /*List<Map<String, Object>> list = new ArrayList();
-                Map map = new HashMap();
-                Map<String, Object> stringObjectMap = execSqlSingleResult(zxUser);
-                map.put("ZXUSER", stringObjectMap.get("COUNT"));
-                Map<String, Object> stringObjectMap1 = execSqlSingleResult(lxUser);
-                map.put("LXUSER", stringObjectMap1.get("COUNT"));
-                Map<String, Object> stringObjectMap2 = execSqlSingleResult(xsZxUser);
-                map.put("XSZXUSER", stringObjectMap2.get("COUNT"));
-                Map<String, Object> stringObjectMap3 = execSqlSingleResult(xsLxUser);
-                map.put("XSLXUSER", stringObjectMap3.get("COUNT"));
-                Map<String, Object> stringObjectMap4 = execSqlSingleResult(khZxUser);
-                map.put("KHZXUSER", stringObjectMap4.get("COUNT"));
-                Map<String, Object> stringObjectMap5 = execSqlSingleResult(khLxUser);
-                map.put("KHLXUSER", stringObjectMap5.get("COUNT"));
-                Map<String, Object> stringObjectMap6 = execSqlSingleResult(zcXsWks);
-                map.put("ZCXSWKS", stringObjectMap6.get("COUNT"));
-                Map<String, Object> stringObjectMap7 = execSqlSingleResult(bdXsWks);
-                map.put("XSWKS", Integer.valueOf(String.valueOf(stringObjectMap6)) + Integer.valueOf(String.valueOf(stringObjectMap7)));
-                Map<String, Object> stringObjectMap8 = execSqlSingleResult(zcXsJxz);
-                Map<String, Object> stringObjectMap9 = execSqlSingleResult(bdXsJxz);
-                map.put("XSJXZ", Integer.valueOf(String.valueOf(stringObjectMap8)) + Integer.valueOf(String.valueOf(stringObjectMap9)));
-                Map<String, Object> stringObjectMap10 = execSqlSingleResult(zcXsYwc);
-                Map<String, Object> stringObjectMap11 = execSqlSingleResult(bdXsYwc);
-                map.put("XSYWC", Integer.valueOf(String.valueOf(stringObjectMap10)) + Integer.valueOf(String.valueOf(stringObjectMap11)));
-                Map<String, Object> stringObjectMap12 = execSqlSingleResult(khJxz);
-                map.put("KHJXZ", stringObjectMap12);
-                Map<String, Object> stringObjectMap13 = execSqlSingleResult(khWks);
-                map.put("KHWKS", stringObjectMap13);
-                Map<String, Object> stringObjectMap14 = execSqlSingleResult(khYwc);
-                map.put("KHYWC", stringObjectMap14);
-                Map<String, Object> stringObjectMap15 = execSqlSingleResult(xcJcJxz);
-                map.put("XCJCJXZ", stringObjectMap15);
-                Map<String, Object> stringObjectMap16 = execSqlSingleResult(xcJcWks);
-                map.put("XCJCWKS", stringObjectMap16);
-                Map<String, Object> stringObjectMap17 = execSqlSingleResult(xcJcYwc);
-                map.put("XCJCYWC", stringObjectMap17);
-                Map<String, Object> stringObjectMap18 = execSqlSingleResult(qjcZxUser);
-                map.put("QJCZXUSER", stringObjectMap18);
-                Map<String, Object> stringObjectMap19 = execSqlSingleResult(qjcLxUser);
-                map.put("QJCLXUSER", stringObjectMap19);
-                Map<String, Object> stringObjectMap20 = execSqlSingleResult(hjcZxUser);
-                map.put("HJCZXUSER", stringObjectMap20);
-                Map<String, Object> stringObjectMap21 = execSqlSingleResult(hjcLxUser);
-                map.put("HJCLXUSER", stringObjectMap21);
-                Map<String, Object> stringObjectMap22 = execSqlSingleResult(handlesql);
-                map.put("HANDLESQL", stringObjectMap22);
-                Map<String, Object> stringObjectMap23 = execSqlSingleResult(updateSql);
-                map.put("UPDATESQL", stringObjectMap23);
-                Map<String, Object> stringObjectMap24 = execSqlSingleResult(addedsql);
-                map.put("ADDEDSQL", stringObjectMap24);
-                Map<String, Object> stringObjectMap25 = execSqlSingleResult(allSql);
-                map.put("ALLSQL", stringObjectMap25);*/
-
-//            } catch (Exception e) {
-//                LOGGER.error("Error: The user closes the browser , Session Does Not Exist", e);
-//            }
         });
     }
 }
+//            try {
+//                List<Map<String, Object>> list = new ArrayList();
+//                Map map = new HashMap();
+//                Map<String, Object> stringObjectMap = execSqlSingleResult(zxUser);
+//                map.put("ZXUSER", stringObjectMap.get("COUNT"));
+//                Map<String, Object> stringObjectMap1 = execSqlSingleResult(lxUser);
+//                map.put("LXUSER", stringObjectMap1.get("COUNT"));
+//                Map<String, Object> stringObjectMap2 = execSqlSingleResult(xsZxUser);
+//                map.put("XSZXUSER", stringObjectMap2.get("COUNT"));
+//                Map<String, Object> stringObjectMap3 = execSqlSingleResult(xsLxUser);
+//                map.put("XSLXUSER", stringObjectMap3.get("COUNT"));
+//                Map<String, Object> stringObjectMap4 = execSqlSingleResult(khZxUser);
+//                map.put("KHZXUSER", stringObjectMap4.get("COUNT"));
+//                Map<String, Object> stringObjectMap5 = execSqlSingleResult(khLxUser);
+//                map.put("KHLXUSER", stringObjectMap5.get("COUNT"));
+//                Map<String, Object> stringObjectMap6 = execSqlSingleResult(zcXsWks);
+//                map.put("ZCXSWKS", stringObjectMap6.get("COUNT"));
+//                Map<String, Object> stringObjectMap7 = execSqlSingleResult(bdXsWks);
+//                map.put("XSWKS", Integer.valueOf(String.valueOf(stringObjectMap6)) + Integer.valueOf(String.valueOf(stringObjectMap7)));
+//                Map<String, Object> stringObjectMap8 = execSqlSingleResult(zcXsJxz);
+//                Map<String, Object> stringObjectMap9 = execSqlSingleResult(bdXsJxz);
+//                map.put("XSJXZ", Integer.valueOf(String.valueOf(stringObjectMap8)) + Integer.valueOf(String.valueOf(stringObjectMap9)));
+//                Map<String, Object> stringObjectMap10 = execSqlSingleResult(zcXsYwc);
+//                Map<String, Object> stringObjectMap11 = execSqlSingleResult(bdXsYwc);
+//                map.put("XSYWC", Integer.valueOf(String.valueOf(stringObjectMap10)) + Integer.valueOf(String.valueOf(stringObjectMap11)));
+//                Map<String, Object> stringObjectMap12 = execSqlSingleResult(khJxz);
+//                map.put("KHJXZ", stringObjectMap12);
+//                Map<String, Object> stringObjectMap13 = execSqlSingleResult(khWks);
+//                map.put("KHWKS", stringObjectMap13);
+//                Map<String, Object> stringObjectMap14 = execSqlSingleResult(khYwc);
+//                map.put("KHYWC", stringObjectMap14);
+//                Map<String, Object> stringObjectMap15 = execSqlSingleResult(xcJcJxz);
+//                map.put("XCJCJXZ", stringObjectMap15);
+//                Map<String, Object> stringObjectMap16 = execSqlSingleResult(xcJcWks);
+//                map.put("XCJCWKS", stringObjectMap16);
+//                Map<String, Object> stringObjectMap17 = execSqlSingleResult(xcJcYwc);
+//                map.put("XCJCYWC", stringObjectMap17);
+//                Map<String, Object> stringObjectMap18 = execSqlSingleResult(qjcZxUser);
+//                map.put("QJCZXUSER", stringObjectMap18);
+//                Map<String, Object> stringObjectMap19 = execSqlSingleResult(qjcLxUser);
+//                map.put("QJCLXUSER", stringObjectMap19);
+//                Map<String, Object> stringObjectMap20 = execSqlSingleResult(hjcZxUser);
+//                map.put("HJCZXUSER", stringObjectMap20);
+//                Map<String, Object> stringObjectMap21 = execSqlSingleResult(hjcLxUser);
+//                map.put("HJCLXUSER", stringObjectMap21);
+//                Map<String, Object> stringObjectMap22 = execSqlSingleResult(handlesql);
+//                map.put("HANDLESQL", stringObjectMap22);
+//                Map<String, Object> stringObjectMap23 = execSqlSingleResult(updateSql);
+//                map.put("UPDATESQL", stringObjectMap23);
+//                Map<String, Object> stringObjectMap24 = execSqlSingleResult(addedsql);
+//                map.put("ADDEDSQL", stringObjectMap24);
+//                Map<String, Object> stringObjectMap25 = execSqlSingleResult(allSql);
+//                map.put("ALLSQL", stringObjectMap25);
+//
+//            } catch (Exception e) {
+//                LOGGER.error("Error: The user closes the browser , Session Does Not Exist", e);
+//            }
+//        });
+//    }
+//}
