@@ -130,23 +130,48 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
         StringBuffer sqlBuffer = new StringBuffer();
         ArrayList arrList = new ArrayList();
         sqlBuffer.append("SELECT id,plan_xs_num xspl,plan_start_time,plan_end_time,v_level \"vLevel\",task_name \"taskName\",section,cycle,tdyw_org \"tdywOrg\",in_use \"inUse\",total_task_num \"totalTaskNum\",create_time \"createTime\" FROM xs_zc_cycle where 1 = 1 and is_delete = 0");
-        String startDate = xsTaskSch.getStartDate();
-        String endDate = xsTaskSch.getEndDate();
+
+        //开始日期  结束日期
+        Date startDate = xsTaskSch.getStartDate();
+        Date endDate = xsTaskSch.getEndDate();
         if(startDate != null && endDate != null) {
-            sqlBuffer.append("and create_time between ? and ?");
-            arrList.add(DateUtil.stringToDate(startDate));
-            arrList.add(DateUtil.stringToDate(endDate));
+            sqlBuffer.append(" and create_time between ? and ?");
+            arrList.add(startDate);
+            arrList.add(endDate);
         }
+
+        //0 在用 1 停用
         Integer status = xsTaskSch.getStatus();
         if(status != null) {
-            sqlBuffer.append("and in_use = ?");
+            sqlBuffer.append(" and in_use = ?");
             arrList.add(status);
 
         }
+
+        //区分周期维护 和 任务派发的请求
         Integer ispf = xsTaskSch.getIspf();
         if(ispf == 1) {
-            sqlBuffer.append("and total_task_num = 0");
+            sqlBuffer.append(" and total_task_num = 0");
         }
+
+        //电压等级
+        Integer v_type = xsTaskSch.getV_type();
+        if(v_type != null) {
+            sqlBuffer.append(" and V_LEVEL = ?");
+            arrList.add(v_type);
+        }
+
+        //线路id
+        Integer lineId = xsTaskSch.getLineId();
+        if(lineId != null) {
+            sqlBuffer.append(" and line_id = ?");
+            arrList.add(lineId);
+        }
+        
+        //通道单位
+        xsTaskSch.getTdOrg();
+
+        sqlBuffer.append(" order by id desc");
 
 
         Page<Map<String, Object>> maps = this.execSqlPage(pageable,sqlBuffer.toString(), arrList.toArray());
@@ -177,24 +202,34 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
         StringBuffer sqlBuffer = new StringBuffer();
         ArrayList arrList = new ArrayList();
         sqlBuffer.append("SELECT * FROM xs_zc_task where 1 = 1");
-        String startDate = xsTaskSch.getStartDate();
-        String endDate = xsTaskSch.getEndDate();
+
+        //开始日期 结束日期
+        Date startDate = xsTaskSch.getStartDate();
+        Date endDate = xsTaskSch.getEndDate();
         if (startDate != null && endDate != null) {
             sqlBuffer.append("and plan_start_time between ? and ?");
-            arrList.add(DateUtil.stringToDate(startDate));
-            arrList.add(DateUtil.stringToDate(endDate));
+            arrList.add(startDate);
+            arrList.add(endDate);
         }
+
+        //状态 0 未开始 1 巡视中 2 已完成
         Integer status = xsTaskSch.getStatus();
         if (status != null) {
             sqlBuffer.append("and status = ?");
             arrList.add(status);
 
         }
+
+        //人员id
         String userId = xsTaskSch.getUserId();
         if (userId != null) {
             sqlBuffer.append("and cm_user_id = ?");
             arrList.add(userId);
         }
+
+        //通道单位
+        
+
         Page<Map<String, Object>> maps = this.execSqlPage(pageable, sqlBuffer.toString(), arrList.toArray());
         return maps;
     }

@@ -81,8 +81,8 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
                 "FROM (SELECT *\n" +
                 "      FROM RZTSYSUSER\n" +
                 "      WHERE id = ?) t\n" +
-                "  JOIN RZTSYSDEPARTMENT tt ON t.DEPTID = tt.id\n" +
-                "  JOIN RZTSYSCOMPANY ttt ON ttt.id = t.COMPANYID";
+                " left JOIN RZTSYSDEPARTMENT tt ON t.DEPTID = tt.id\n" +
+                " left JOIN RZTSYSCOMPANY ttt ON ttt.id = t.COMPANYID";
         String deptmentSql = "select DEPTNAME from RZTSYSDEPARTMENT where id = ?";
         Map<String, Object> task = null;
         if (xslx == 0 || xslx == 1) {

@@ -8,6 +8,7 @@ import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
 
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /***
@@ -24,7 +25,7 @@ public class DateUtil {
     private static String partterns[] = new String[5];
 
     static {
-        partterns[0] = "yyyy-MM-dd HH:mm:ss";
+        partterns[0] = "yyyy-MM-dd HH:mm";
     }
 
 
@@ -65,6 +66,12 @@ public class DateUtil {
             e.printStackTrace();
         }
         return new Date();
+    }
+
+    public static void main(String[] args) throws ParseException {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        Date parse = sdf.parse("2017-12-30 00:00:00");
+        System.out.println(parse);
     }
 
 }

@@ -318,7 +318,7 @@ public interface XsZcTaskwpqrRepository extends JpaRepository<XsZcTaskwpqr, Stri
     @Modifying
     @Transactional
     @Query(value = "UPDATE xs_zc_task_exec_detail SET is_dw =?1,reason = ?2,end_time = sysdate,REALLONGITUDE = ?4,REALLATITUDE = ?5 WHERE id =?3", nativeQuery = true)
-    void updateZcxsExecDetail(Integer sfdw, String reason, Long execDetailId, Float longtitude, Float latitude);
+    void updateZcxsExecDetail(Integer sfdw, String reason, Long execDetailId, String longtitude, String latitude);
 
     /***
     * @Method updateTxbdExecOn
