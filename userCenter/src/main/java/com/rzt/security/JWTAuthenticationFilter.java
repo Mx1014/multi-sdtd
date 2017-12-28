@@ -32,27 +32,24 @@ public class JWTAuthenticationFilter implements Filter {
         httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
         ObjectMapper mapper = new ObjectMapper();
-        HttpServletRequest httpRequest = (HttpServletRequest)request;
+        HttpServletRequest httpRequest = (HttpServletRequest) request;
         String auth = httpRequest.getHeader("Authorization");
         httpRequest.getHeaderNames();
-        if ((auth != null) && (auth.length() > 7))
-        {
+        if ((auth != null) && (auth.length() > 7)) {
             String HeadStr = auth.substring(0, 6).toLowerCase();
-            if (HeadStr.compareTo("bearer") == 0)
-            {
+            if (HeadStr.compareTo("bearer") == 0) {
 
                 auth = auth.substring(6, auth.length());
-                try{
-                    if (JwtHelper.parseJWT(auth) != null)
-                    {
+                try {
+                    if (JwtHelper.parseJWT(auth) != null) {
                         chain.doFilter(request, response);
                         return;
                     }
-                }catch (ExpiredJwtException e){
+                } catch (ExpiredJwtException e) {
                     resultMsg = new ResultMsg(ResultStatusCode.TOKEN_EXPIRES.getErrocode(), ResultStatusCode.TOKEN_EXPIRES.getErrmsg(), null);
                     httpResponse.getWriter().write(mapper.writeValueAsString(resultMsg));
                     return;
-                }catch (Exception e){
+                } catch (Exception e) {
                     resultMsg = new ResultMsg(ResultStatusCode.INVALID_TOKEN.getErrocode(), ResultStatusCode.INVALID_TOKEN.getErrmsg(), null);
                     httpResponse.getWriter().write(mapper.writeValueAsString(resultMsg));
                     return;

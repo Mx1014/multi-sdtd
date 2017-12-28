@@ -23,7 +23,6 @@ import java.util.List;
  * @version        
  */
 @Service
-@Transactional
 public class ExamTextService extends CurdService<ExamText,ExamTextRepository> {
 
 

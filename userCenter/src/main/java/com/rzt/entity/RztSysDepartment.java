@@ -16,14 +16,13 @@ import java.util.Date;
 import java.util.UUID;
 
 /**
- * 类名称：RztSysDepartment    
- * 类描述：InnoDB free: 537600 kB    
- * 创建人：张虎成   
- * 创建时间：2017/10/10 10:26:33 
- * 修改人：张虎成    
- * 修改时间：2017/10/10 10:26:33    
- * 修改备注：    
- * @version
+ * 类名称：RztSysDepartment
+ * 类描述：InnoDB free: 537600 kB
+ * 创建人：张虎成
+ * 创建时间：2017/10/10 10:26:33
+ * 修改人：张虎成
+ * 修改时间：2017/10/10 10:26:33
+ * 修改备注：
  */
 @Entity
 @Table(name = "RZTSYSDEPARTMENT")
@@ -59,6 +58,8 @@ public class RztSysDepartment extends BaseEntity implements Serializable {
     private String roleid;
     @Column(name = "lastnode")
     private Integer lastnode;
+    @Column(name = "orgtype")
+    private Integer orgtype;
 
     public Integer getLastnode() {
         return lastnode;
@@ -149,4 +150,12 @@ public class RztSysDepartment extends BaseEntity implements Serializable {
         this.roleid = roleid;
     }
 
+    @ExcelResources(title = "", order = 10)
+    public Integer getOrgtype() {
+        return orgtype;
+    }
+
+    public void setOrgtype(Integer orgtype) {
+        this.orgtype = orgtype;
+    }
 }

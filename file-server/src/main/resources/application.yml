@@ -3,14 +3,14 @@
 ########################################################
 server:
   port: 9091
-#  context-path: jicha
+  context-path: /fileserver/
 #expireTime: 30000000
 #log
 logging:
   config: classpath:logback.xml
 spring:
   application:
-    name: microservice-file-server
+    name: fileserver
   primary:
     datasource:
 #      url: jdbc:mysql://localhost:3306/micro_service_exam?useUnicode=true&characterEncoding=utf-8
@@ -21,7 +21,8 @@ spring:
       #oracle数据库配置
       driverClassName: oracle.jdbc.driver.OracleDriver
 #      url: jdbc:mysql://168.130.1.31:30624/sdtd27?useUnicode=true&characterEncoding=utf8
-      url: jdbc:oracle:thin:@47.92.67.90:1521/orcl
+#      url: jdbc:oracle:thin:@47.92.67.90:1521/orcl
+      url: jdbc:oracle:thin:@168.130.1.32:1521/orcl
       username: sdtd27
       password: sdtd27
 # 下面为连接池的补充设置，应用到上面所有数据源中
@@ -48,6 +49,7 @@ spring:
     hibernate:
       ddl-auto: none
     show: true
+    database: oracle
   #文件上传
   http:
     encoding:
@@ -58,7 +60,6 @@ spring:
   datasource:
     platform: oracle
     type: com.alibaba.druid.pool.DruidDataSource
-
 #文件上传路径,必须以/结尾
 my-defined:
    mapProps:
@@ -74,5 +75,5 @@ eureka:
     serviceUrl:
       defaultZone: http://168.130.1.31:31814/eureka/
   instance:
-    status-page-url: http://localhost:${server.port}/swagger-ui.html
+    prefer-ip-address: true
     # ${server.port}为该服务的端口号

@@ -10,10 +10,7 @@ import com.rzt.util.excelUtil.ExcelResources;
 import com.rzt.utils.SnowflakeIdWorker;
 import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.UUID;
@@ -33,9 +30,11 @@ public class KhTask implements Serializable{
 	@Id
 	private Long id;
 	//字段描述: 计划开始时间
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "PLAN_START_TIME")
 	private Date planStartTime;
 	//字段描述: 计划结束时间
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "PLAN_END_TIME")
 	private Date planEndTime;
 	//字段描述: 第几次执行该任务
@@ -56,9 +55,9 @@ public class KhTask implements Serializable{
 	//字段描述: 到达现场时间
 	@Column(name = "DDXC_TIME")
 	private String ddxcTime;
-	//字段描述: 周期内第多少次任务
+	/*//字段描述: 周期内第多少次任务
 	@Column(name = "TASK_NUM_IN_CYCLE")
-	private int taskNumInCycle;
+	private int taskNumInCycle;*/
 	//字段描述: 外协单位
 	@Column(name = "WX_ORG")
 	private String wxOrg;
@@ -68,12 +67,6 @@ public class KhTask implements Serializable{
 	//字段描述: 看护人ID
 	@Column(name = "USER_ID")
 	private String userId;
-	//字段描述: 是否为负责人  0为队长 1为队员
-	@Column(name = "CAPTAIN")
-	private String captain;
-	//字段描述: 队伍标识  一样的为一队
-	@Column(name = "GROUP_FLAG")
-	private String groupFlag;
 	//字段描述: 隐患id
 	@Column(name = "YH_ID")
 	private Long yhId;
@@ -81,6 +74,7 @@ public class KhTask implements Serializable{
 	@Column(name = "TASK_NAME")
 	private String taskName;
 	//字段描述: 看护任务派发时间
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "CREATE_TIME")
 	private Date createTime;
 	//字段描述: 物品确认时间
@@ -89,6 +83,9 @@ public class KhTask implements Serializable{
 	//字段描述: 任务状态 0未开始 1进行中 2已完成
 	@Column(name = "STATUS")
 	private String status;
+
+	@Column(name="ZXYS_NUM")
+	private int zxysNum;
 	public void setId(){
 		this.id =   Long.valueOf(new SnowflakeIdWorker(0,0).nextId());
 	}
@@ -161,13 +158,13 @@ public class KhTask implements Serializable{
 		return this.ddxcTime;
 	}
 
-	public void setTaskNumInCycle(int taskNumInCycle){
+	/*public void setTaskNumInCycle(int taskNumInCycle){
 		this.taskNumInCycle = taskNumInCycle;
 	}
 	@ExcelResources(title="周期内第多少次任务",order=10)
 	public int getTaskNumInCycle(){
 		return this.taskNumInCycle;
-	}
+	}*/
 
 	public void setWxOrg(String wxOrg){
 		this.wxOrg = wxOrg;
@@ -191,22 +188,6 @@ public class KhTask implements Serializable{
 	@ExcelResources(title="看护人ID",order=13)
 	public String getUserId(){
 		return this.userId;
-	}
-
-	public void setCaptain(String captain){
-		this.captain = captain;
-	}
-	@ExcelResources(title="是否为负责人  0为队长 1为队员",order=14)
-	public String getCaptain(){
-		return this.captain;
-	}
-
-	public void setGroupFlag(String groupFlag){
-		this.groupFlag = groupFlag;
-	}
-	@ExcelResources(title="队伍标识  一样的为一队",order=15)
-	public String getGroupFlag(){
-		return this.groupFlag;
 	}
 
 	public void setYhId(Long yhId){
@@ -249,4 +230,11 @@ public class KhTask implements Serializable{
 		return this.status;
 	}
 
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public int getZxysNum() {
+		return zxysNum;
+	}
 }

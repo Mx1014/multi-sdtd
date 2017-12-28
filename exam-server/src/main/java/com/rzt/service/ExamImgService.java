@@ -9,7 +9,6 @@ package com.rzt.service;
 import com.rzt.entity.ExamImg;
 import com.rzt.repository.ExamImgRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**      
  * 类名称：ExamImgService    
@@ -22,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
  * @version        
  */
 @Service
-@Transactional
 public class ExamImgService extends CurdService<ExamImg,ExamImgRepository> {
 
 

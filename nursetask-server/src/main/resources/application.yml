@@ -4,11 +4,12 @@ server:
 spring:
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
-    url: jdbc:mysql://168.130.1.31:30624/sdtd27?useUnicode=true&characterEncoding=utf8
+    url: jdbc:oracle:thin:@168.130.1.32:1521:orcl
+   # url: jdbc:mysql://168.130.1.31:30624/sdtd27?useUnicode=true&characterEncoding=utf8
     username: sdtd27
     password: sdtd27
-    driver-class-name: com.mysql.jdbc.Driver
-#    driver-class-name: oracle.jdbc.driver.OracleDriver
+ #   driver-class-name: com.mysql.jdbc.Driver
+    driver-class-name: oracle.jdbc.driver.OracleDriver
     initialSize: 5
     minIdle: 5
     maxActive : 10
@@ -25,13 +26,29 @@ spring:
     connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
   jpa:
      show-sql: true
-     database: ORACLE
+#     database: ORACLE
+ #    hibernate:
+  #     ddl-aut
   application:
     name: nurseTask
+  redis:
+      database: 0
+      host: 168.130.1.31
+      port: 31662
+      password:
+      timeout: 0
+      pool:
+        max-active: 100
+        max-idle: 8
+        min-idle: 0
+        max-wait: -1
 eureka:
   client:
     service-url:
-      defaultZone: http://168.130.1.30:31814/eureka
+      defaultZone: http://168.130.1.31:7002/eureka/
+ #      defaultZone: http://192.168.22.38:7002/eureka/
+  instance:
+    prefer-ip-address: true
 #spring:
 #  profiles:
 #    active: prd

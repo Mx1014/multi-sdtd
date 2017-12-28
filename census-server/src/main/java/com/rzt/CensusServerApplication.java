@@ -1,30 +1,33 @@
 package com.rzt;
 
-import com.alibaba.fastjson.serializer.SerializerFeature;
-import com.alibaba.fastjson.support.config.FastJsonConfig;
-import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import com.rzt.websocket.serverendpoint.AlarmSituationServerEndpoint;
 import com.rzt.websocket.serverendpoint.PersonnelTasksServerEndpoint;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.web.HttpMessageConverters;
 import org.springframework.boot.web.servlet.ServletComponentScan;
+import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
+import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
-import org.springframework.http.MediaType;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * 统计服务
  */
-@SpringBootApplication
 @ServletComponentScan
+@Configuration
+@EnableAutoConfiguration
+@SpringBootApplication
+@ComponentScan
+@EnableEurekaClient
+@EnableFeignClients
 @EnableScheduling
 @EnableWebSocket
+
 public class CensusServerApplication {
 
     public static void main(String[] args) {

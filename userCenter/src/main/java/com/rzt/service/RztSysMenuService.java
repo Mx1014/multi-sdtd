@@ -6,13 +6,15 @@
  */
 package com.rzt.service;
 
-import com.rzt.service.CurdService;
 import com.rzt.entity.RztSysMenu;
 import com.rzt.repository.RztSysMenuRepository;
 import com.rzt.util.WebApiResponse;
+import com.rzt.utils.DateUtil;
 import com.rzt.utils.DbUtil;
 import com.rzt.utils.PageUtil;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -31,10 +33,13 @@ public class RztSysMenuService extends CurdService<RztSysMenu, RztSysMenuReposit
     @PersistenceContext
     private EntityManager entityManager;
 
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+
     //添加子节点
     @Transactional
     public RztSysMenu addSonNode(String id, RztSysMenu rztSysMenu) {
-        rztSysMenu.setCreatetime(new Date());
+        rztSysMenu.setCreatetime(DateUtil.dateNow());
         int lft = this.reposiotry.getLftById(id).getLft();
         this.reposiotry.updateLft(lft);
         this.reposiotry.updateRgt(lft);
@@ -48,7 +53,7 @@ public class RztSysMenuService extends CurdService<RztSysMenu, RztSysMenuReposit
     //添加节点
     @Transactional
     public RztSysMenu addNode(String id, RztSysMenu rztSysMenu) {
-        rztSysMenu.setCreatetime(new Date());
+        rztSysMenu.setCreatetime(DateUtil.dateNow());
         RztSysMenu tongji = this.reposiotry.getRgtById(id);
         int rgt = tongji.getRgt();
         this.reposiotry.updateLft(rgt);
@@ -70,8 +75,9 @@ public class RztSysMenuService extends CurdService<RztSysMenu, RztSysMenuReposit
         buffer.append(" AND node.rgt <" + rztSysMenu.getRgt() + " ");
         buffer.append("GROUP BY node.id,node.lft,node.menuName,node.rgt,node.menuUrl,node.menuPid ");
         buffer.append("ORDER BY node.rgt");
-        if (size != 0)
+        if (size != 0) {
             buffer.append(PageUtil.getLimit(page, size));
+        }
 //		Query queryentityManager.createNativeQuery(buffer.toString());
         List<Map<String, Object>> list = DbUtil.list(entityManager, buffer.toString());
         return list;
@@ -91,6 +97,7 @@ public class RztSysMenuService extends CurdService<RztSysMenu, RztSysMenuReposit
         RztSysMenu rztSysMenu = this.reposiotry.getOne(id);
         return this.reposiotry.findByLftLessThanAndRgtGreaterThan(rztSysMenu.getLft(), rztSysMenu.getRgt());
     }
+
     @Transactional
     public void deleteNode(String id) {
         RztSysMenu rztSysMenu = this.reposiotry.getOne(id);
@@ -134,21 +141,24 @@ public class RztSysMenuService extends CurdService<RztSysMenu, RztSysMenuReposit
         String sql1 = "SELECT * FROM RZTMENUPRIVILEGE WHERE MENUID =?1 AND ROLEID=?2 ";
         String sql = "SELECT r.ID,r.MENUPID,r.MENUNAME,b.ID as a FROM RZTSYSMENU r LEFT JOIN (SELECT * FROM RZTSYSBUTTON WHERE PRIVILEGEID = ?1) b ON r.ID = b.MENUID WHERE TYPE = 1 AND MENUTYPE = 3 AND MENUPID= ?2 ";
         try {
-            Map map = this.execSqlSingleResult(sql1, id, roleid);
-            if (!StringUtils.isEmpty(map.get("ID"))) {
-                return WebApiResponse.success(this.execSql(sql, map.get("ID").toString(), id));
+            List<Map<String, Object>> list = this.execSql(sql1, id, roleid);
+            if (list.size() > 0) {
+                if (!StringUtils.isEmpty(list.get(0).get("ID"))) {
+                    return WebApiResponse.success(this.execSql(sql, String.valueOf(list.get(0).get("ID")), id));
+                }
             } else {
                 String sql2 = "SELECT * FROM RZTSYSMENU WHERE TYPE = 1 AND MENUTYPE = 3 AND MENUPID=?1";
                 return WebApiResponse.success(this.execSql(sql2, id));
             }
         } catch (Exception e) {
             e.printStackTrace();
-            return WebApiResponse.erro("数据返回错误");
+            return WebApiResponse.erro("数据失败");
         }
+        return WebApiResponse.erro("数据失败");
     }
 
     public List<Map<String, Object>> treeQuery(String deptpid) {
-        String sql = " select id as \"value\",DEPTNAME as \"label\",DEPTPID,ID from RZTSYSDEPARTMENT start with deptpid= ?1 CONNECT by prior id=  DEPTPID ";
+        String sql = " select id as \"value\",DEPTNAME as \"label\",DEPTPID,ID,ORGTYPE from RZTSYSDEPARTMENT start with id= ?1 CONNECT by prior id=  DEPTPID ";
         List<Map<String, Object>> list = this.execSql(sql, deptpid);
         List list1 = treeOrgList(list, list.get(0).get("ID").toString());
         return list1;
@@ -176,6 +186,7 @@ public class RztSysMenuService extends CurdService<RztSysMenu, RztSysMenuReposit
      * @param roleid 角色ID
      * @return
      */
+    @Transactional
     public WebApiResponse insertRztmenuprivilege(String menuid, String roleid) {
         if (!StringUtils.isEmpty(menuid) && !StringUtils.isEmpty(roleid)) {
             try {
@@ -196,15 +207,19 @@ public class RztSysMenuService extends CurdService<RztSysMenu, RztSysMenuReposit
      * @param roleid   人员ID
      * @return
      */
+    @Transactional
     public WebApiResponse insertRztsysbutton(String roleid, String menuid, String buttonid) {
         if (!StringUtils.isEmpty(roleid) && !StringUtils.isEmpty(menuid) && !StringUtils.isEmpty(buttonid)) {
             String sql = "SELECT id FROM RZTMENUPRIVILEGE WHERE MENUID=?1 AND ROLEID=?2";
             try {
                 Map map = this.execSqlSingleResult(sql, menuid, roleid);
-                this.reposiotry.insertRztsysbutton(buttonid, map.get("ID").toString());
-                return WebApiResponse.success("添加成功");
+                if (map.size() == 1) {
+                    this.reposiotry.insertRztsysbutton(buttonid, map.get("ID").toString());
+                    return WebApiResponse.success("添加成功");
+                } else {
+                    return WebApiResponse.erro("添加失败");
+                }
             } catch (Exception e) {
-                e.printStackTrace();
                 return WebApiResponse.erro("添加失败");
             }
         }
@@ -218,6 +233,7 @@ public class RztSysMenuService extends CurdService<RztSysMenu, RztSysMenuReposit
      * @param menuid
      * @return
      */
+    @Transactional
     public WebApiResponse deleteRztmenuprivilege(String roleid, String menuid) {
         if (!StringUtils.isEmpty(roleid) && !StringUtils.isEmpty(menuid)) {
             String sql = "SELECT id FROM RZTMENUPRIVILEGE WHERE MENUID=?1 AND ROLEID=?2";
@@ -242,15 +258,19 @@ public class RztSysMenuService extends CurdService<RztSysMenu, RztSysMenuReposit
      * @param buttonid 按钮ID
      * @return
      */
+    @Transactional
     public WebApiResponse deleteRztsysbutton(String roleid, String menuid, String buttonid) {
         if (!StringUtils.isEmpty(roleid) && !StringUtils.isEmpty(menuid) && !StringUtils.isEmpty(buttonid)) {
             String sql = "SELECT id FROM RZTMENUPRIVILEGE WHERE MENUID=?1 AND ROLEID=?2";
             try {
                 Map map = this.execSqlSingleResult(sql, menuid, roleid);
-                this.reposiotry.deleteRztsysbutton(map.get("ID").toString(), buttonid);
-                return WebApiResponse.success("删除成功");
+                if (map.size() == 1) {
+                    this.reposiotry.deleteRztsysbutton(map.get("ID").toString(), buttonid);
+                    return WebApiResponse.success("删除成功");
+                } else {
+                    return WebApiResponse.erro("删除失败");
+                }
             } catch (Exception e) {
-                e.printStackTrace();
                 return WebApiResponse.erro("删除失败");
             }
         }
@@ -264,8 +284,10 @@ public class RztSysMenuService extends CurdService<RztSysMenu, RztSysMenuReposit
      * @param roleid 人员ID
      * @return
      */
+    @Transactional
     public WebApiResponse insertApp(String menuid, String roleid) {
         if (!StringUtils.isEmpty(menuid) && !StringUtils.isEmpty(roleid)) {
+            String sql = "";
             try {
                 this.reposiotry.insertApp(menuid, roleid);
                 return WebApiResponse.success("添加成功");
@@ -277,6 +299,7 @@ public class RztSysMenuService extends CurdService<RztSysMenu, RztSysMenuReposit
         return WebApiResponse.erro("数据为空");
     }
 
+    @Transactional
     public WebApiResponse deleteApp(String menuid, String roleid) {
         if (!StringUtils.isEmpty(menuid) && !StringUtils.isEmpty(roleid)) {
             try {
@@ -290,6 +313,7 @@ public class RztSysMenuService extends CurdService<RztSysMenu, RztSysMenuReposit
         return WebApiResponse.erro("数据为空");
     }
 
+    @Transactional
     public WebApiResponse insertRztsysdata(String type, String roleid) {
         if (!StringUtils.isEmpty(type) && !StringUtils.isEmpty(roleid)) {
             try {
@@ -302,5 +326,63 @@ public class RztSysMenuService extends CurdService<RztSysMenu, RztSysMenuReposit
             }
         }
         return WebApiResponse.erro("数据为空");
+    }
+
+    /**
+     * 查询角色数据权限
+     *
+     * @param roleid
+     * @return
+     */
+    public WebApiResponse qDataQx(String roleid) {
+        String sql = " SELECT y.ID,y.DATANAME,y.DATATYPE,a.ID as a FROM RZTSYSDATAPRIMARY y LEFT JOIN (SELECT ID,TYPE,ROLEID FROM RZTSYSDATA WHERE ROLEID=?1) a ON y.DATATYPE=a.TYPE ORDER BY y.DATATYPE ";
+        try {
+            return WebApiResponse.success(this.execSql(sql, roleid));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("Erro");
+        }
+    }
+
+    /**
+     * 添加角色数据权限
+     *
+     * @param type
+     * @param roleid
+     * @return
+     */
+    @Transactional
+    public WebApiResponse dataByDAndi(String type, String roleid) {
+        try {
+            this.reposiotry.deleteSysData(roleid);
+            this.reposiotry.insertSysData(type, roleid);
+            String sql = " SELECT * FROM RZTSYSDATA ";
+            List<Map<String, Object>> maps = this.execSql(sql);
+            HashOperations hashOperations = redisTemplate.opsForHash();
+            for (Map map : maps) {
+                hashOperations.put("RZTSYSDATA", map.get("ROLEID"), map);
+            }
+            return WebApiResponse.success("yes");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("no");
+        }
+    }
+
+    /**
+     * 修改菜单
+     *
+     * @param menuname
+     * @param id
+     * @return
+     */
+    @Transactional
+    public WebApiResponse updateNodeById(String menuname, String id) {
+        try {
+            return WebApiResponse.success(this.reposiotry.updateNodeById(menuname, id));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("fail to edit");
+        }
     }
 }

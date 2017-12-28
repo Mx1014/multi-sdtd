@@ -13,13 +13,12 @@ import com.rzt.entity.KhSite;
 import com.rzt.entity.KhTask;
 import com.rzt.entity.KhYhHistory;
 import com.rzt.entity.model.KhTaskModel;
-import com.rzt.eureka.LineData;
-import com.rzt.eureka.UserCenter;
 import com.rzt.service.CheckLiveTaskService;
 import com.rzt.service.KhSiteService;
 import com.rzt.service.KhTaskService;
 import com.rzt.service.KhYhHistoryService;
 import com.rzt.util.WebApiResponse;
+import com.rzt.utils.DateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -44,7 +43,7 @@ import java.util.Map;
  * @version
  */
 @RestController
-@RequestMapping("KhSite")
+    @RequestMapping("KhSite")
 public class KhSiteController extends
         CurdController<KhSite, KhSiteService> {
     @Autowired
@@ -53,83 +52,15 @@ public class KhSiteController extends
     private KhTaskService taskService;
     @Autowired
     private CheckLiveTaskService checkService;
-    @Autowired
-    private UserCenter userCenter;
-    @Autowired
-    private LineData line;
-
-    @GetMapping("/getLineInfoCommOptions")
-    public WebApiResponse getLineInfoCommOptions(String kv){
-        return line.getLine(kv);
-    }
-
-    @GetMapping("/getTowerInfoCommOptions")
-    public WebApiResponse getTowerInfoCommOptions(String LineId){
-        return line.getTower(LineId);
-    }
-    @GetMapping("/treeQuery")
-    public List userCenter(String id){
-        return userCenter.treeQuery(id);
-    }
-
-    @GetMapping("/userQuery")
-    public WebApiResponse userQuery(@RequestParam("classname") String classname,@RequestParam(value = "realname",required = false)String realname){
-        return userCenter.userQuery(classname,realname);
-    }
-    //外协单位
-    @GetMapping("/queryOrgName")
-    public WebApiResponse queryOrgName(){
-        return userCenter.queryOrgName();
-    }
-    //通道单位
-    @GetMapping("/queryCompanyname")
-    public WebApiResponse queryCompanyname(){
-        return userCenter.queryCompanyname();
-    }
 
 
     //  数据没有设置完成  稽查任务实体类有部分修改
     @PostMapping("/saveYh.do")
     @ResponseBody
-    @Transactional
-    public WebApiResponse saveYh(KhYhHistory yh, String fxtime) {
-        return this.service.saveYh(yh, fxtime);
+    public WebApiResponse saveYh(KhYhHistory yh, String fxtime,String startTowerName,String endTowerName) {
+        return this.service.saveYh(yh, fxtime,startTowerName,endTowerName);
     }
 
-    /**
-     * 审批隐患后
-     * @param id
-     * @return
-     */
-    @GetMapping("/shenpiYh")
-    @ResponseBody
-    public WebApiResponse shenpiYh(String id, KhYhHistory yh1) {
-        try {
-//			yhservice.update(); 修改隐患审批状态
-
-            KhYhHistory yh = yhservice.findOne(id);
-            KhSite task = new KhSite();
-            String taskName = yh.getVtype() + yh.getLineName() + yh.getStartTower() + "-" + yh.getEndTower() + "号杆塔看护任务";
-            task.setCreateTime(new Date());
-            task.setVtype(yh.getVtype());
-            task.setLineName(yh.getLineName());
-            task.setTdywOrg(yh.getTdywOrg());
-            task.setTaskName(taskName);
-            task.setStatus(0);//隐患未消除
-            task.setStatus(0);//未停用
-            task.setCount(0);//生成任务次数0
-            task.setYhId(yh.getId());
-            task.setCreateTime(new Date());
-            this.service.add(task);
-            //	yh1.setYhdm("已定级");
-            //yh1.setTaskId(task.getId());
-            yhservice.update(yh1, id);
-            return WebApiResponse.success("保存成功");
-        } catch (Exception e) {
-            e.printStackTrace();
-            return WebApiResponse.erro("数据查询失败" + e.getMessage());
-        }
-    }
 
     /***
      * 获取 待安排的看护任务
@@ -137,10 +68,10 @@ public class KhSiteController extends
      */
     @GetMapping("/listAllTaskNotDo.do")
     @ResponseBody
-    public WebApiResponse listAllTaskNotDo(HttpServletResponse response, KhTaskModel task, Pageable pageable, String userName) {
+    public WebApiResponse listAllTaskNotDo(HttpServletResponse response, KhTaskModel task, Pageable pageable, String userName,String deptId) {
         try {
             //分页参数 page size
-            Page list = this.service.listAllTaskNotDo(task, pageable, userName);
+            Page list = this.service.listAllTaskNotDo(task, pageable, userName,deptId);
             return WebApiResponse.success(list);
         } catch (Exception e) {
             e.printStackTrace();
@@ -151,7 +82,7 @@ public class KhSiteController extends
     /**
      * 消缺待安排任务   同时将隐患状态修改？
      */
-    @GetMapping("/xiaoQueTask.do")
+    @PatchMapping("/xiaoQueTask.do")
     @ResponseBody
     @Transactional
     public WebApiResponse updateQxTask(String id) {
@@ -193,62 +124,22 @@ public class KhSiteController extends
     }
 
     //派发任务  参数传递taskList[0].planStartTime
-    @GetMapping("/paifaTask.do")
+    @PostMapping("/paifaTask.do")
     @ResponseBody
     @Transactional
     public WebApiResponse paifaTask(String id, String tasks, KhTaskModel model) {
-        try {
-            List<Map<Object, String>> list = (List<Map<Object, String>>) JSONObject.parse(tasks);
-            KhSite site = this.service.findSite(id);
-            String groupFlag = System.currentTimeMillis() + "";
-            for (Map map : list) {
-                KhTask task = new KhTask();
-                String capatain = map.get("capatain").toString();
-                String UserId = map.get("userId").toString();
-                if (site.getKhfzrId1() == null && capatain.equals("01")) {
-                    site.setKhfzrId1(UserId);
-                    task.setGroupFlag(groupFlag + "1");
-                }
-                if (site.getKhdyId1() == null && capatain.equals("02")) {
-                    site.setKhdyId1(UserId);
-                    task.setGroupFlag(groupFlag + "2");
-                }
-                if (site.getKhfzrId2() == null && capatain.equals("11")) {
-                    site.setKhfzrId2(UserId);
-                    task.setGroupFlag(groupFlag + "11");
-                }
-                if (site.getKhdyId2() == null && capatain.equals("12")) {
-                    site.setKhdyId2(UserId);
-                    task.setGroupFlag(groupFlag + "12");
-                }
-                int count = taskService.getCount(Long.parseLong(id), UserId);
-                task.setCount(count);
-                task.setCaptain(capatain);
-                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                Date planStartTime = formatter.parse(map.get("planStartTime").toString());
-                Date planEndTime = formatter.parse(map.get("planEndTime").toString());
-                task.setPlanStartTime(planStartTime);
-                task.setPlanEndTime(planEndTime);
-                task.setUserId(UserId);
-                task.setCount(count);
-                task.setWxOrg("无");
-                task.setTdywOrg(site.getTdywOrg());
-                task.setCreateTime(new Date());
-                task.setStatus("未开始");
-                task.setSiteId(Long.parseLong(id));
-                task.setYhId(site.getYhId());
-                task.setTaskName(site.getTaskName());
-                task.setId();
-                taskService.add(task);
-            }
-            site.setCount(site.getCount() + 1);
-            site.setStatus(1);
-            this.service.paifaTask(id, site);
-            return WebApiResponse.success("任务派发成功");
-        } catch (Exception e) {
-            e.printStackTrace();
-            return WebApiResponse.erro("任务派发失败" + e.getMessage());
-        }
+        return this.service.paifaTask(id,tasks,model);
+    }
+    @PostMapping("/listJpgById.do")
+    @ResponseBody
+    public WebApiResponse listJpgById(String taskId) {
+        return this.service.listJpgById(taskId);
+    }
+
+    @GetMapping("/listOverdueKh.do")
+    @ResponseBody
+    public WebApiResponse listOverdueKh(){
+        return this.service.listOverdueKh();
     }
 /**
  *
@@ -400,4 +291,72 @@ public class KhSiteController extends
 	</select>
 
 	 */
+	 /* @Autowired
+    private UserCenter userCenter;
+    @Autowired
+    private LineData line;
+
+    @GetMapping("/getLineInfoCommOptions")
+    public WebApiResponse getLineInfoCommOptions(String kv){
+        return line.getLine(kv);
+    }
+
+    @GetMapping("/getTowerInfoCommOptions")
+    public WebApiResponse getTowerInfoCommOptions(String LineId){
+        return line.getTower(LineId);
+    }
+    @GetMapping("/treeQuery")
+    public List userCenter(String id){
+        return userCenter.treeQuery(id);
+    }
+
+    @GetMapping("/userQuery")
+    public WebApiResponse userQuery(@RequestParam("classname") String classname,@RequestParam(value = "realname",required = false)String realname){
+        return userCenter.userQuery(classname,realname);
+    }
+    //外协单位
+    @GetMapping("/queryOrgName")
+    public WebApiResponse queryOrgName(){
+        return userCenter.queryOrgName();
+    }
+    //通道单位
+    @GetMapping("/queryCompanyname")
+    public WebApiResponse queryCompanyname(){
+        return userCenter.queryCompanyname();
+    }*/
+
+	 /* *//**
+     * 审批隐患后
+     * @param id
+     * @return
+     *//*
+    @GetMapping("/shenpiYh")
+    @ResponseBody
+    public WebApiResponse shenpiYh(String id, KhYhHistory yh1) {
+        try {
+//			yhservice.update(); 修改隐患审批状态
+
+            KhYhHistory yh = yhservice.findOne(id);
+            KhSite task = new KhSite();
+            String taskName = yh.getVtype() + yh.getLineName() + yh.getStartTower() + "-" + yh.getEndTower() + "号杆塔看护任务";
+            task.setCreateTime(new Date());
+            task.setVtype(yh.getVtype());
+            task.setLineName(yh.getLineName());
+            task.setTdywOrg(yh.getTdywOrg());
+            task.setTaskName(taskName);
+            task.setStatus(0);//隐患未消除
+            task.setStatus(0);//未停用
+            task.setCount(0);//生成任务次数0
+            task.setYhId(yh.getId());
+            task.setCreateTime(new Date());
+            this.service.add(task);
+            //	yh1.setYhdm("已定级");
+            //yh1.setTaskId(task.getId());
+            yhservice.update(yh1, id);
+            return WebApiResponse.success("保存成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("数据查询失败" + e.getMessage());
+        }
+    }*/
 }

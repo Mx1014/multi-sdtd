@@ -9,8 +9,6 @@ package com.rzt.controller;
 import com.rzt.entity.CheckLiveTaskCycle;
 import com.rzt.entity.CheckLiveTaskExec;
 import com.rzt.entity.model.CheckLiveTaskCycleModel;
-import com.rzt.eureka.PictureCenter;
-import com.rzt.eureka.UserCenter;
 import com.rzt.service.CheckLiveTaskCycleService;
 import com.rzt.service.CheckLiveTaskExecService;
 import com.rzt.util.WebApiResponse;
@@ -43,11 +41,11 @@ import java.util.Map;
 public class CheckLiveTaskCycleController extends
         CurdController<CheckLiveTaskCycle, CheckLiveTaskCycleService> {
 
-    @Autowired
+   /* @Autowired
     private UserCenter userCenter;
 
     @Autowired
-    private PictureCenter pictureCenter;
+    private PictureCenter pictureCenter;*/
 
     @Autowired
     private CheckLiveTaskExecService execService;
@@ -72,9 +70,9 @@ public class CheckLiveTaskCycleController extends
 
     @ApiOperation(value = "稽查任务详情查询",notes = "稽查任务详情分页查询，条件搜索")
     @GetMapping("/listCheckTaskDetailById/{id}")
-    public WebApiResponse listCheckTaskDetailById(@PathVariable String id){
+    public WebApiResponse listCheckTaskDetailById(@PathVariable String id,String taskType){
         try{
-            List list = this.service.listCheckTaskDetailById(id);
+            List list = this.service.listCheckTaskDetailById(id,taskType);
             return WebApiResponse.success(list);
         }catch (Exception e) {
             return WebApiResponse.erro("数据获取失败"+e.getMessage());
@@ -149,7 +147,7 @@ public class CheckLiveTaskCycleController extends
     }
 
 
-    @ApiOperation(value = "用户班组",notes = "用户班组")
+   /* @ApiOperation(value = "用户班组",notes = "用户班组")
     @GetMapping("/treeQuery")
     public List<Map<String,Object>>  treeQuery(String id){
          return userCenter.treeQuery(id);
@@ -163,14 +161,14 @@ public class CheckLiveTaskCycleController extends
     }
 
 
-    /**
+    *//**
      * 测试图片服务
-     */
+     *//*
     @ApiOperation(value = "图片服务",notes = "图片服务")
     @GetMapping("/getImgsBytaskId/{id}")
     public  Map<String, Object> getImgsBytaskId(@PathVariable String id){
         Long taskId = Long.parseLong(id);
         return pictureCenter.getImgsBytaskId(taskId);
-    }
+    }*/
 
 }

@@ -3,4 +3,6 @@
 #忽略生成的target目录
 target
 #忽略以.log开头的日志文件
+*.project
 *.log
+*.iml

@@ -29,6 +29,18 @@ import java.util.List;
 public interface XsZcCycleRepository extends JpaRepository<XsZcCycle,String> {
     @Modifying
     @Transactional
-    @Query(value = "update xs_zc_cycle set is_delte = 0 where id= in (?1)", nativeQuery = true)
-    Object logicalDelete(List<Long> longs);
+    @Query(value = "update xs_zc_cycle set is_delete = 1 where id in (?1)", nativeQuery = true)
+    void logicalDelete(List<Long> longs);
+
+
+    @Modifying
+    @Transactional
+    @Query(value = "update xs_zc_cycle set cycle = ?2, in_use = ?3,plan_xs_num = ?4,plan_start_time = ?5,plan_end_time = ?6 where id= ?1", nativeQuery = true)
+    void updateCycle(Long id, Integer cycle, Integer inUse, Integer planXsNum, String planStartTime, String planEndTime);
+
+
+    @Modifying
+    @Transactional
+    @Query(value = "update xs_zc_cycle set TOTAL_TASK_NUM = 1 where id= ?1", nativeQuery = true)
+    void updateTotalTaskNum(Long xsZcCycleId);
 }

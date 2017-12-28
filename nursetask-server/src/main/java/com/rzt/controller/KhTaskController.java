@@ -55,13 +55,13 @@ public class KhTaskController extends
 	/**
 	 * 修改已安排任务
 	 */
-	@PatchMapping("/updateTaskById")
+	@GetMapping("/updateTaskById.do")
 	@ResponseBody
-	public WebApiResponse updateTaskById(KhSite site,String id){
+	public WebApiResponse updateTaskById(String userId,String id){
 	// 提交申请给 管理员  如何提交待定  还是说没有修改功能
 		try {
 			//分页参数 page size
-			this.service.updateTaskById(site,id);
+			this.service.updateTaskById(userId,id);
 			return WebApiResponse.success("修改成功");
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -97,7 +97,13 @@ public class KhTaskController extends
 			e.printStackTrace();
 		}
 	}
-
+	/**
+	 *   获取当前
+	 */
+	@GetMapping("/listCurrentTaskByUserId")
+	public WebApiResponse listCurrentTaskByUserId(String userId){
+		return this.service.listCurrentTaskByUserId(userId);
+	}
 }
 
 

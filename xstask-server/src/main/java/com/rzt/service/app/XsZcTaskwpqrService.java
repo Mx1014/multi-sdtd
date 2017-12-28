@@ -173,11 +173,11 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
             map = this.execSqlSingleResult(xszcCycleIdSql,taskId);
             Long cycleId = Long.parseLong(map.get("CYCEL").toString());
 
-            String xsTowerListSql = "SELECT id,tower_name\n" +
-                    "FROM CM_LINE_TOWER\n" +
-                    "WHERE id IN (SELECT cm_line_tower_id\n" +
-                    "             FROM XS_ZC_CYCLE_LINE_TOWER\n" +
-                    "             WHERE XS_ZC_CYCLE_ID = ?)\n" +
+            String xsTowerListSql = "SELECT t.id,tt.LINE_NAME || '-' ||t.tower_name tower_name\n" +
+                    "FROM(select * from  CM_LINE_TOWER t WHERE t.id IN (SELECT cm_line_tower_id\n" +
+                    "             FROM XS_zc_CYCLE_LINE_TOWER\n" +
+                    "             WHERE XS_zc_CYCLE_ID = ?) ) t join CM_LINE_SECTION tt on t.LINE_ID = tt.LINE_ID\n" +
+                    "\n" +
                     "ORDER BY sort";
             xsTowers = this.execSql(xsTowerListSql, cycleId);
             Long jiandandewo = Long.valueOf(0);//我只是一个简单的long类型的0
@@ -227,11 +227,11 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
     * @date 2017/12/18 19:08
     * @author nwz
     */
-    public void updateExecDetail(Integer xslx,Integer sfdw, String reason, Long execDetailId) {
+    public void updateExecDetail(Integer xslx,Integer sfdw, String reason, Long execDetailId,String longtitude,String latitude) {
         if(xslx == 0 || xslx == 1) {
             this.reposiotry.updateTxbdExecDetail(sfdw,reason,execDetailId);
         } else {
-            this.reposiotry.updateZcxsExecDetail(sfdw,reason,execDetailId);
+            this.reposiotry.updateZcxsExecDetail(sfdw,reason,execDetailId,longtitude,latitude);
         }
     }
     /***

@@ -4,8 +4,6 @@ import com.rzt.entity.websocket;
 import com.rzt.repository.websocketRepository;
 import com.rzt.service.CurdService;
 import com.rzt.websocket.serverendpoint.AlarmSituationServerEndpoint;
-import org.hibernate.SQLQuery;
-import org.hibernate.transform.Transformers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +12,6 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 import javax.websocket.Session;
 import java.util.HashMap;
 import java.util.List;
@@ -42,7 +39,7 @@ public class AlarmSituationPushService extends CurdService<websocket, websocketR
      * The WebSocket session [0] has been closed
      * and no method (apart from close()) may be called on a closed session
      */
-    @Scheduled(fixedRate = 5000)
+    @Scheduled(fixedRate = 3000)
     public void sendMsgs() {
         Map<String, HashMap> sendMsg = alarmSituationServerEndpoint.sendMsg();
         /**
@@ -57,12 +54,16 @@ public class AlarmSituationPushService extends CurdService<websocket, websocketR
          * touroverdue 巡视超期
          */
         String touroverdue = "select count(id) from xs_txbd_task where  (stauts = 0 or stauts = 1) and  trunc(plan_end_time) <trunc(sysdate)";
+        /**
+         * 巡视不合格
+         */
+        String xsbhg = "SELECT count(1) as xsbhg FROM XS_ZC_TASK_EXEC_DETAIL WHERE is_dw = 1";
         //遍历Map取出通道单位id用于数据库查询权限
         sendMsg.forEach((sessionId, session) -> {
-            String sql = "SELECT ((" + notstarttime + ")+(" + normalinspection + ")) as notstarttime,(" + touroverdue + ") as touroverdue FROM DUAL";
+            String sql = "SELECT ((" + notstarttime + ")+(" + normalinspection + ")) as notstarttime,(" + touroverdue + ") as touroverdue,(" + xsbhg + ") as xsbhg  FROM DUAL";
             List<Map<String, Object>> execSql = this.execSql(sql);
             try {
-                alarmSituationServerEndpoint.sendText((Session) session.get("session"), execSql.toString());
+                alarmSituationServerEndpoint.sendText((Session) session.get("session"), execSql);
             } catch (Exception e) {
                 LOGGER.error("Error: The user closes the browser , Session Does Not Exist", e);
             }

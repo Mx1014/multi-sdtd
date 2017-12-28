@@ -63,9 +63,22 @@ public class RztSysMenuController extends
         return WebApiResponse.success("更新成功！");
     }
 
+    /**
+     * 修改菜单
+     *
+     * @param menuname
+     * @param id
+     * @return
+     */
+    @PatchMapping("updateNodeById")
+    public WebApiResponse updateNodeById(String menuname, String id) {
+        return this.service.updateNodeById(menuname, id);
+    }
+
+
     //删除节点
-    @DeleteMapping("deleteNode/{id}")
-    public void deleteNode(@PathVariable String id) {
+    @DeleteMapping("deleteNode")
+    public void deleteNode(String id) {
         this.service.deleteNode(id);
     }
 
@@ -99,9 +112,9 @@ public class RztSysMenuController extends
      * @return
      */
     @GetMapping("queryMenuPc")
-    public WebApiResponse queryMenuPc() {
+    public WebApiResponse queryMenuPc(String roleid) {
         try {
-            return WebApiResponse.success(this.service.queryMenuPc());
+            return WebApiResponse.success(this.service.queryMenuPc(roleid));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("数据返回失败");
@@ -114,9 +127,9 @@ public class RztSysMenuController extends
      * @return
      */
     @GetMapping("queryMenuApp")
-    public WebApiResponse queryMenuApp() {
+    public WebApiResponse queryMenuApp(String roleid) {
         try {
-            return WebApiResponse.success(this.service.queryMenuApp());
+            return WebApiResponse.success(this.service.queryMenuApp(roleid));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("数据返回失败");
@@ -130,12 +143,83 @@ public class RztSysMenuController extends
      * @return
      */
     @GetMapping("queryListMenu")
-    public WebApiResponse queryListMenu(String id) {
-        return this.service.queryListMenu(id);
+    public WebApiResponse queryListMenu(String id, String roleid) {
+        return this.service.queryListMenu(id, roleid);
     }
 
+    /**
+     * 公共选择任务
+     *
+     * @param id
+     * @return
+     */
     @GetMapping("treeQuery")
     public List<Map<String, Object>> treeQuery(String id) {
         return this.service.treeQuery(id);
+    }
+
+    /**
+     * 菜单数据中间表
+     *
+     * @param menuid 菜单表ID
+     * @param roleid 角色ID
+     * @return
+     */
+    @PostMapping("insertRztmenuprivilege")
+    public WebApiResponse insertRztmenuprivilege(String menuid, String roleid) {
+        return this.service.insertRztmenuprivilege(menuid, roleid);
+    }
+
+    @PostMapping("insertRztsysbutton")
+    public WebApiResponse insertRztsysbutton(String roleid, String menuid, String buttonid) {
+        return this.service.insertRztsysbutton(roleid, menuid, buttonid);
+    }
+
+    @PostMapping("deleteRztmenuprivilege")
+    public WebApiResponse deleteRztmenuprivilege(String roleid, String menuid) {
+        return this.service.deleteRztmenuprivilege(roleid, menuid);
+    }
+
+    @PostMapping("deleteRztsysbutton")
+    public WebApiResponse deleteRztsysbutton(String roleid, String menuid, String buttonid) {
+        return this.service.deleteRztsysbutton(roleid, menuid, buttonid);
+    }
+
+    @PostMapping("insertApp")
+    public WebApiResponse insertApp(String menuid, String roleid) {
+        return this.service.insertApp(menuid, roleid);
+    }
+
+    @PostMapping("deleteApp")
+    public WebApiResponse deleteApp(String menuid, String roleid) {
+        return this.service.deleteApp(menuid, roleid);
+    }
+
+    @PostMapping("insertRztsysdata")
+    public WebApiResponse insertRztsysdata(String type, String roleid) {
+        return this.service.insertRztsysdata(type, roleid);
+    }
+
+    /**
+     * 查询角色数据权限
+     *
+     * @param roleid
+     * @return
+     */
+    @GetMapping("qDataQx")
+    public WebApiResponse qDataQx(String roleid) {
+        return this.service.qDataQx(roleid);
+    }
+
+    /**
+     * 添加角色数据权限
+     *
+     * @param type
+     * @param roleid
+     * @return
+     */
+    @PostMapping("dataByDAndi")
+    public WebApiResponse dataByDAndi(String type, String roleid) {
+        return this.service.dataByDAndi(type, roleid);
     }
 }

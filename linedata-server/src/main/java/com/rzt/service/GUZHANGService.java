@@ -5,12 +5,9 @@
  * Copyright 融智通科技(北京)股份有限公司 版权所有    
  */
 package com.rzt.service;
-import com.rzt.repository.GUZHANGRepository;
 import com.rzt.entity.GUZHANG;
+import com.rzt.repository.GUZHANGRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import javax.annotation.Resource;
-import com.rzt.service.CurdService;
 
 /**      
  * 类名称：GUZHANGService    
@@ -23,7 +20,6 @@ import com.rzt.service.CurdService;
  * @version        
  */
 @Service
-@Transactional
 public class GUZHANGService extends CurdService<GUZHANG,GUZHANGRepository> {
 
 

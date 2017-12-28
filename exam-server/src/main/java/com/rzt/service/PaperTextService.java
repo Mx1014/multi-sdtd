@@ -9,7 +9,6 @@ package com.rzt.service;
 import com.rzt.entity.PaperText;
 import com.rzt.repository.PaperTextRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**      
  * 类名称：PaperTextService    
@@ -22,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
  * @version        
  */
 @Service
-@Transactional
 public class PaperTextService extends CurdService<PaperText,PaperTextRepository> {
 
 

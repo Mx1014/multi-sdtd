@@ -50,7 +50,7 @@ public class CheckLiveTaskDetail  implements Serializable{
      private Date realEndTime;
     	//字段描述: 执行情况 0未开始 1进行中 2已完成 3已超期
    	 @Column(name = "STATUS")
-     private String status;
+     private Integer status;
     	//字段描述: 达到现场时间
    	 @Column(name = "DDXC_TIME")
      private Date ddxcTime;
@@ -59,25 +59,37 @@ public class CheckLiveTaskDetail  implements Serializable{
      private Long count;
     	//字段描述: 是否在岗(0是 1否)
    	 @Column(name = "SFZG")
-     private String sfzg;
+     private Integer sfzg;
     	//字段描述: 现场APP人员是否一直（0是 1否）
    	 @Column(name = "RYYZ")
-     private String ryyz;
+     private Integer ryyz;
     	//字段描述: 是否清楚段落电压等级等（0是 1否）
    	 @Column(name = "DYDJ")
-     private String dydj;
+     private Integer dydj;
     	//字段描述: 是否掌握现场隐患信息（0是 1否）
    	 @Column(name = "YHXX")
-     private String yhxx;
+     private Integer yhxx;
     	//字段描述: 是否清楚隐患处置方案（0 是 1否）
    	 @Column(name = "CZFA")
-     private String czfa;
+     private Integer czfa;
     	//字段描述: 是否存在其他问题（0 是 1否）
    	 @Column(name = "QTWT")
-     private String qtwt;
+     private Integer qtwt;
     	//字段描述: 创建时间
    	 @Column(name = "CREATE_TIME")
      private Date createTime;
+
+	//字段描述: 看护任务id
+	@Column(name = "KH_TASK_ID")
+	private Long khTaskId;
+
+	public Long getKhTaskId() {
+		return khTaskId;
+	}
+
+	public void setKhTaskId(Long khTaskId) {
+		this.khTaskId = khTaskId;
+	}
 
 	public void setId(){
 		this.id =   Long.valueOf(new SnowflakeIdWorker(0,0).nextId());
@@ -135,11 +147,11 @@ public class CheckLiveTaskDetail  implements Serializable{
 		return this.realEndTime;
 	}
 
-	public void setStatus(String status){
+	public void setStatus(Integer status){
 		this.status = status;
 	}
 	@ExcelResources(title="执行情况 0未开始 1进行中 2已完成 3已超期",order=8)
-	public String getStatus(){
+	public Integer getStatus(){
 		return this.status;
 	}
 
@@ -159,51 +171,51 @@ public class CheckLiveTaskDetail  implements Serializable{
 		return this.count;
 	}
 
-	public void setSfzg(String sfzg){
+	public void setSfzg(Integer sfzg){
 		this.sfzg = sfzg;
 	}
 	@ExcelResources(title="是否在岗(0是 1否)",order=11)
-	public String getSfzg(){
+	public Integer getSfzg(){
 		return this.sfzg;
 	}
 
-	public void setRyyz(String ryyz){
+	public void setRyyz(Integer ryyz){
 		this.ryyz = ryyz;
 	}
 	@ExcelResources(title="现场APP人员是否一直（0是 1否）",order=12)
-	public String getRyyz(){
+	public Integer getRyyz(){
 		return this.ryyz;
 	}
 
-	public void setDydj(String dydj){
+	public void setDydj(Integer dydj){
 		this.dydj = dydj;
 	}
 	@ExcelResources(title="是否清楚段落电压等级等（0是 1否）",order=13)
-	public String getDydj(){
+	public Integer getDydj(){
 		return this.dydj;
 	}
 
-	public void setYhxx(String yhxx){
+	public void setYhxx(Integer yhxx){
 		this.yhxx = yhxx;
 	}
 	@ExcelResources(title="是否掌握现场隐患信息（0是 1否）",order=14)
-	public String getYhxx(){
+	public Integer getYhxx(){
 		return this.yhxx;
 	}
 
-	public void setCzfa(String czfa){
+	public void setCzfa(Integer czfa){
 		this.czfa = czfa;
 	}
 	@ExcelResources(title="是否清楚隐患处置方案（0 是 1否）",order=15)
-	public String getCzfa(){
+	public Integer getCzfa(){
 		return this.czfa;
 	}
 
-	public void setQtwt(String qtwt){
+	public void setQtwt(Integer qtwt){
 		this.qtwt = qtwt;
 	}
 	@ExcelResources(title="是否存在其他问题（0 是 1否）",order=16)
-	public String getQtwt(){
+	public Integer getQtwt(){
 		return this.qtwt;
 	}
 
