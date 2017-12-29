@@ -84,7 +84,6 @@ public class KhSiteController extends
      */
     @PatchMapping("/xiaoQueTask.do")
     @ResponseBody
-    @Transactional
     public WebApiResponse updateQxTask(String id) {
         try {
             String[] split = id.split(",");
@@ -100,6 +99,23 @@ public class KhSiteController extends
         }
     }
 
+    //消缺未派发的任务
+    @PatchMapping("/xiaoQueCycle.do")
+    @ResponseBody
+    public WebApiResponse updateCycle(String id) {
+        try {
+            String[] split = id.split(",");
+            if (split.length > 0) {
+                for (int i = 0; i < split.length; i++) {
+                    this.service.updateCycle(Long.parseLong(split[i]));
+                }
+            }
+            return WebApiResponse.success("任务消缺成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("任务消缺失败" + e.getMessage());
+        }
+    }
     @GetMapping("/listKhtaskById.do")
     @ResponseBody
     public WebApiResponse listKhtaskByid(HttpServletResponse response,String id) {
@@ -141,9 +157,10 @@ public class KhSiteController extends
     public WebApiResponse listOverdueKh(){
         return this.service.listOverdueKh();
     }
-/**
- *
- */
+
+    /**
+    *
+    */
 
     /**
      * 导出文件的接口

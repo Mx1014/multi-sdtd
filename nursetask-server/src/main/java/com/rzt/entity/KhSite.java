@@ -87,12 +87,6 @@ public class KhSite  implements Serializable{
 	//字段描述: 计划结束时段
 	@Column(name = "PLAN_END_TIME")
 	private String planEndTime;
-	//字段描述: 稽查人
-	@Column(name = "JC_USER_ID")
-	private String jcUserId;
-	//字段描述: 稽查状态
-	@Column(name = "JC_STATUS")
-	private String jcStatus;
 
 	public void setId(){
 		this.id = new SnowflakeIdWorker(0,0).nextId();
@@ -264,19 +258,4 @@ public class KhSite  implements Serializable{
 		this.capatain = capatain;
 	}
 
-	public String getJcUserId() {
-		return jcUserId;
-	}
-
-	public void setJcUserId(String jcUserId) {
-		this.jcUserId = jcUserId;
-	}
-
-	public String getJcStatus() {
-		return jcStatus;
-	}
-
-	public void setJcStatus(String jcStatus) {
-		this.jcStatus = jcStatus;
-	}
 }

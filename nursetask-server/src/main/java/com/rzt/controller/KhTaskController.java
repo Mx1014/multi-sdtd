@@ -104,6 +104,12 @@ public class KhTaskController extends
 	public WebApiResponse listCurrentTaskByUserId(String userId){
 		return this.service.listCurrentTaskByUserId(userId);
 	}
+
+	@GetMapping("/listTaskInfoByYhId")
+	@ResponseBody
+	public WebApiResponse listTaskInfoById(String yhId){
+		return this.service.listTaskInfoById(yhId);
+	}
 }
 
 
