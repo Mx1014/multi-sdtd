@@ -114,8 +114,8 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
         String result1 = " k.id id,k.task_name taskName,k.TDYW_ORG tddw,k.WX_ORG tdwxdw,k1.YHMS yhms," +
                         " k1.YHJB yhjb ,k1.create_time createTime, u.realname realname " ;
 
-        String result2 = " c.ID id,c.task_name taskName,r.companyname tddw,d.DEPTNAME tdwxdw , " +
-                         " c.plan_start_time startTime,c.plan_end_time endTime,u.realname realname " ;
+        String result2 = " k.ID id,k.task_name taskName,r.companyname tddw,d.DEPTNAME tdwxdw , " +
+                         " k.plan_start_time startTime,k.plan_end_time endTime,u.realname realname " ;
 
         StringBuilder sb = new StringBuilder();
         sb.append(" where 1=1 ");
@@ -124,13 +124,13 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
         if (!StringUtils.isEmpty(startTime) && !StringUtils.isEmpty(endTime)){
             startTime =  startTime.substring(0, 10);
             endTime = endTime.substring(0, 10);
-            sb.append(" and c.create_time between to_date(?,'YYYY-MM-DD') and to_date(?,'YYYY-MM-DD') ");
+            sb.append(" and k.create_time between to_date(?,'YYYY-MM-DD') and to_date(?,'YYYY-MM-DD') ");
             params.add(startTime);
             params.add(endTime);
         }
         //任务名查询
         if (!StringUtils.isEmpty(taskName)) {
-            sb.append(" and c.task_name like ? ");
+            sb.append(" and k.task_name like ? ");
             params.add("%"+taskName+"%");
         }
 
@@ -138,7 +138,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
 
         //用户人查询
         if (!StringUtils.isEmpty(userId)) {
-            sb.append(" and c.user_id = ? ");
+            sb.append(" and k.JC_USER_ID = ? ");
             params.add(userId);
         }
 
@@ -216,7 +216,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
     }
 
     public List getCheckTaskName() {
-        String sql = " select DISTINCT task_name   from CHECK_LIVE_TASK where ROWNUM<=15  ";
+        String sql = " select DISTINCT task_name   from kh_cycle where ROWNUM<=15  ";
         return this.execSql(sql);
     }
 
@@ -399,7 +399,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
         }
 
         taskExec.setStatus(0);//未开始
-        taskExec.setCreateTime(model.getCreateTime());
+        taskExec.setCreateTime(DateUtil.dateNow());
         taskExec.setUserId(model.getUserId());
         taskExec.setTaskStatus(0);//未稽查
         taskExec.setTdwhOrg(model.getTdwhOrg());//通道外协单位id
@@ -426,7 +426,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
                 Long khcycleId = Long.parseLong(id);
                 String sql = "update kh_cycle set JC_STATUS=?,JC_USER_ID=? where id=?";
                 Query q = this.entityManager.createNativeQuery(sql);
-                q.setParameter(1,0);
+                q.setParameter(1,1);
                 q.setParameter(2,model.getUserId());
                 q.setParameter(3,khcycleId);
                 q.executeUpdate();
@@ -450,12 +450,10 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
             Long xsid = Long.parseLong(xs_id);
             String sql = "UPDATE  XS_ZC_TASK set JC_STATUS=?,JC_USER_ID=? where ID=? ";
             Query q = this.entityManager.createNativeQuery(sql);
-            q.setParameter(1,0);
+            q.setParameter(1,1);
             q.setParameter(2,model.getUserId());
             q.setParameter(3,xsid);
             q.executeUpdate();
-
-
 
         }
 
