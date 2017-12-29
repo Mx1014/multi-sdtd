@@ -8,6 +8,7 @@ package com.rzt.service;
 
 import com.rzt.entity.RztSysUser;
 import com.rzt.repository.RztSysUserRepository;
+import com.rzt.security.TokenProp;
 import com.rzt.util.WebApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -43,6 +44,8 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
     private EntityManager entityManager;
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+    @Autowired
+    private TokenProp tokenProp;
 
     public Page<RztSysUser> findByName(String name, Pageable pageable) {
         if (StringUtils.isEmpty(name))
@@ -73,25 +76,6 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
             arrayList.add(WORKTYPE);
             s += " AND WORKTYPE = ?" + arrayList.size();
         }
-//        String sql = "SELECT " +
-//                "  wm_concat(r.ID) AS roleid,u.id," +
-//                "  wm_concat(R.roleName) AS roleName," +
-//                "  U.REALNAME, " +
-//                "  U.USERNAME, " +
-//                "  U.EMAIL, " +
-//                "  U.PHONE, " +
-//                "  U.DEPTID, " +
-//                "  U.CLASSNAME, " +
-//                "  U.CERTIFICATE, " +
-//                "  U.WORKYEAR, " +
-//                "  U.WORKTYPE, " +
-//                "  U.SERIALNUMBER, " +
-//                "  U.AGE, " +
-//                "  U.USERTYPE, " +
-//                "  U.AVATAR  " +
-//                " FROM rztsysuser u LEFT JOIN rztsysuserrole l ON u.id = l.userId " +
-//                "  LEFT JOIN rztsysrole r ON l.roleId = r.id WHERE USERDELETE = 1  " + s +
-//                " GROUP BY u.REALNAME, U.REALNAME,U.USERNAME,U.EMAIL,U.PHONE,U.DEPTID,U.CLASSNAME,U.CERTIFICATE,U.WORKYEAR,U.WORKTYPE,U.SERIALNUMBER,U.AGE,U.USERTYPE,U.AVATAR,u.id";
         String sql = "SELECT " +
                 "  u.id, " +
                 "  R.roleName AS roleName, " +
@@ -117,6 +101,21 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
                 "  LEFT JOIN RZTSYSCOMPANY m ON m.ID = u.COMPANYID " +
                 "WHERE USERDELETE = 1" + s;
         return this.execSqlPage(pageable, sql, arrayList.toArray());
+    }
+
+    /**
+     * 人员条件查询下拉框
+     *
+     * @return
+     */
+    public WebApiResponse userQuertDeptZero() {
+        String sql = " SELECT * FROM RZTSYSDEPARTMENT WHERE ORGTYPE = 0 ";
+        try {
+            return WebApiResponse.success(this.execSql(sql));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("erro");
+        }
     }
 
     public RztSysUser findByUsernameAndDeptid(String username, String deptid) {
@@ -184,7 +183,8 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
             s += " AND REALNAME LIKE  ?" + arrayList.size();
         }
         String sql = " SELECT ID,REALNAME FROM RZTSYSUSER WHERE CLASSNAME = ?1 AND USERDELETE = 1 " + s;
-        return this.execSql(sql, arrayList.toArray());
+        List<Map<String, Object>> maps = this.execSql(sql, arrayList.toArray());
+        return maps;
     }
 
     public Map<String, Object> getUserinfoByUserId(String userid) {
@@ -198,6 +198,7 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
         }
         return map;
     }
+
 
     /**
      * 人员添加角色
@@ -227,6 +228,15 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
         return childOrg;
     }
 
+    /**
+     * 人员登录
+     *
+     * @param password
+     * @param account
+     * @param loginType
+     * @param request
+     * @return
+     */
     @Transactional
     public WebApiResponse userLogin(String password, String account, String loginType, HttpServletRequest request) {
         String auth = "SELECT USERID FROM RZTSYSUSERAUTH WHERE IDENTITYTYPE = ?1 AND PASSWORD =?2 ";

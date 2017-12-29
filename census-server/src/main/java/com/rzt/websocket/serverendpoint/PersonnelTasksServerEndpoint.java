@@ -88,6 +88,5 @@ public class PersonnelTasksServerEndpoint {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 }
