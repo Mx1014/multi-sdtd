@@ -50,6 +50,6 @@ eureka:
     prefer-ip-address: true
   client:
         service-url:
-          defaultZone: http://localhost:7002/eureka/
+          defaultZone: http://168.130.1.31:31814/eureka/
 logging:
   config: classpath:logback-spring.xml
