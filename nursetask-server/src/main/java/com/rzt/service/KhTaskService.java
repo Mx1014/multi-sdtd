@@ -143,5 +143,17 @@ public class KhTaskService extends CurdService<KhTask,KhTaskRepository> {
            return WebApiResponse.erro("数据获取失败");
        }
     }
+    //电压等级  任务执行人 线路名称  杆塔号 开始时间  通道单位 外协单位  区段
+    public WebApiResponse listTaskInfoById(String yhId) {
+        try {
+            String sql = "select s.vtype as voltage,s.line_name as linename,s.section as section,s.tdyw_org as yworg,y.TDWX_ORG as wxorg,U.REALNAME as name,T.PLAN_START_TIME as starttime,T.PLAN_END_TIME as endtime \n" +
+                    "from KH_SITE S,KH_YH_HISTORY y,KH_TASK T,RZTSYSUSER U\n" +
+                    "where s.YH_ID = ? and t.PLAN_END_TIME>=sysdate and y.id = s.YH_ID AND S.ID = T.SITE_ID AND T.USER_ID = U.ID";
+            return WebApiResponse.success(this.execSql(sql,yhId));
+        }catch (Exception e){
+            e.printStackTrace();
+            return WebApiResponse.erro("数据获取失败");
+        }
+    }
 }
 

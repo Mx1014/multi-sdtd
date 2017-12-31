@@ -107,16 +107,17 @@ public class AppKhTaskController extends
 
    //前端传回用户id  获取多个用户坐标
     @GetMapping("/listPoint")
-    public List getUser(String ids,String taskId) {
-        String[] str = ids.split(",");
+    public  List listPoint(String ids,String taskId) {
+        //String[] str = ids.split(",");
         GeoOperations<String, Object> geoOperations = redisTemplate.opsForGeo();
-        List<Point> location = geoOperations.geoPos("location", "liuzeID");
+        List<Point> location = geoOperations.geoPos("location", ids);
         // Point point = this.service.getPoint(taskId);();
         // list.add(point);
         return location;
     }
+
     //获取中心点坐标
-    @GetMapping("listYhPoint")
+    @GetMapping("/listYhPoint")
     public List<Map<String,Object>> listYhPoint(String taskId){
         return this.service.getPoint(Long.parseLong(taskId));
     }
@@ -131,4 +132,6 @@ public class AppKhTaskController extends
     public List<Map<String,Object>> listYhPoint(long taskId){
         return this.service.getPoint(taskId);
     }*/
+
+
 }

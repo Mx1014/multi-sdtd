@@ -6,6 +6,7 @@
  */
 package com.rzt.repository;
 import com.rzt.entity.KhCycle;
+import com.rzt.entity.KhSite;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -21,7 +22,8 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface KhCycleRepository extends JpaRepository<KhCycle,String> {
+
     @Query(value ="SELECT * FROM KH_CYCLE  where id=?1",nativeQuery = true)
         //SELECT id,VTYPE,LINE_NAME,SECTION,status,line_id,KH_RANGE,to_date(KHXQ_TIME,'yyyy-mm-dd hh24:mi:ss'),to_date(create_time,'yyyy-mm-dd hh24:mi:ss'),KHFZR_ID1,KHFZR_ID2,KHDY_ID1,KHDY_ID2,TDYW_ORG,YH_ID,TASK_NAME,COUNT FROM KH_SITE  where id=?1
-    KhCycle findSite(long id);
+    KhCycle findCycle(long id);
 }

@@ -25,7 +25,7 @@ public class DateUtil {
     private static String partterns[] = new String[5];
 
     static {
-        partterns[0] = "yyyy-MM-dd HH:mm";
+        partterns[0] = "yyyy-MM-dd HH:mm:ss";
     }
 
 
