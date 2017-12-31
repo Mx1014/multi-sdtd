@@ -6,9 +6,7 @@
  */
 package com.rzt.controller;
 
-import com.rzt.controller.CurdController;
 import com.rzt.entity.RztSysUserauth;
-import com.rzt.service.RztSysUserauthService;
 import com.rzt.service.RztSysUserauthService;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

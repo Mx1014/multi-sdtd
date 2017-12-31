@@ -6,7 +6,6 @@
  */
 package com.rzt.controller;
 
-import com.rzt.controller.CurdController;
 import com.rzt.entity.RztSysUser;
 import com.rzt.entity.RztSysUserauth;
 import com.rzt.eureka.Cmuserfile;
@@ -29,7 +28,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -63,6 +61,7 @@ public class RztSysUserController extends
 
     @PostMapping("addUser")
     @Transactional
+    @ApiOperation(value = "人员添加", notes = "人员添加")
     public WebApiResponse addUser(MultipartFile file, String password, RztSysUser user) {
         String filePath = "";
         String id = UUID.randomUUID().toString().replaceAll("-", "");
@@ -104,6 +103,7 @@ public class RztSysUserController extends
      * @return
      */
     @DeleteMapping("deleteUser/{id}")
+    @ApiOperation(value = "逻辑删除一个人", notes = "逻辑删除一个人")
     public WebApiResponse deleteUser(@PathVariable String id) {
         try {
             this.service.logicUser(id);
@@ -126,6 +126,7 @@ public class RztSysUserController extends
      * @return
      */
     @DeleteMapping("deleteBatchUser")
+    @ApiOperation(value = "逻辑批量删除人员", notes = "逻辑批量删除人员*人员ID用,分割")
     public WebApiResponse deleteBatchUser(@RequestParam String ids) {
         if (!StringUtils.isEmpty(ids)) {
             HashOperations hashOperations = redisTemplate.opsForHash();
@@ -155,6 +156,7 @@ public class RztSysUserController extends
      * @return
      */
     @PatchMapping("updateUser")
+    @ApiOperation(value = "修改人员", notes = "修改人员")
     public WebApiResponse updateUser(String id, RztSysUser user, String password) {
         this.service.updateUser(id, user);
         return WebApiResponse.success("修改成功");
@@ -176,6 +178,17 @@ public class RztSysUserController extends
             e.printStackTrace();
             return WebApiResponse.erro("数据错误");
         }
+    }
+
+    /**
+     * 人员分页查询下拉框
+     *
+     * @return
+     */
+    @GetMapping("userQuertDeptZero")
+    @ApiOperation(value = "人员分页查询下拉框", notes = "人员分页查询下拉框")
+    public WebApiResponse userQuertDeptZero() {
+        return this.service.userQuertDeptZero();
     }
 
     @GetMapping("findUserById/{id}")
@@ -268,6 +281,7 @@ public class RztSysUserController extends
      * @return
      */
     @GetMapping("userQuery")
+    @ApiOperation(value = "公共人员查询", notes = "公共人员查询")
     public WebApiResponse userQuery(String classname, String realname) {
         try {
             return WebApiResponse.success(this.service.userQuery(classname, realname));
@@ -284,6 +298,7 @@ public class RztSysUserController extends
      * @return
      */
     @GetMapping("treeRztsysroleQuery")
+    @ApiOperation(value = "给人员附角色", notes = "给人员附角色")
     public List<Map<String, Object>> treeRztsysroleQuery(String roleid) {
         return this.service.treeRztsysroleQuery(roleid);
     }
@@ -297,6 +312,7 @@ public class RztSysUserController extends
      * @return
      */
     @PostMapping("userLogin")
+    @ApiOperation(value = "人员登陆", notes = "人员登陆")
     public WebApiResponse userLogin(String password, String account, String loginType, HttpServletRequest request) {
         return this.service.userLogin(password, account, loginType, request);
     }
@@ -308,6 +324,7 @@ public class RztSysUserController extends
      * @param request
      * @return
      */
+    @ApiOperation(value = "人员退出", notes = "人员退出")
     @PostMapping("userQuit")
     public WebApiResponse userQuit(String id, HttpServletRequest request) {
         return this.service.userQuit(id, request);

@@ -129,7 +129,7 @@ public class KhYhHistory implements Serializable {
     private String yhzt;
     //字段描述: 看护任务id
     @Column(name = "TASK_ID")
-    private String taskId;
+    private Long taskId;
     //字段描述: 更新时间
     @Column(name = "UPDATE_TIME")
     private Date updateTime;
@@ -211,6 +211,14 @@ public class KhYhHistory implements Serializable {
     //字段描述: 施工情况
     @Column(name = "SGQK")
     private String sgqk;
+    //字段描述：通道单位id
+    @Column(name = "YWORG_ID")
+    private String yworgId;
+    //字段描述: 外协单位id
+    @Column(name = "WXORG_ID")
+    private String wxorgId;
+    @Column(name="radius")
+    private String radius;
 
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
@@ -545,12 +553,12 @@ public class KhYhHistory implements Serializable {
         return this.yhfxsj;
     }
 
-    public void setTaskId(String taskId) {
+    public void setTaskId(Long taskId) {
         this.taskId = taskId;
     }
 
     @ExcelResources(title = "看护任务id", order = 38)
-    public String getTaskId() {
+    public Long getTaskId() {
         return this.taskId;
     }
 
@@ -713,5 +721,29 @@ public class KhYhHistory implements Serializable {
 
     public void setSgqk(String sgqk) {
         this.sgqk = sgqk;
+    }
+
+    public String getTdorgId() {
+        return yworgId;
+    }
+
+    public void setTdorgId(String tdorgId) {
+        this.yworgId = tdorgId;
+    }
+
+    public String getWxorgId() {
+        return wxorgId;
+    }
+
+    public void setWxorgId(String wxorgId) {
+        this.wxorgId = wxorgId;
+    }
+
+    public void setRadius(String radius) {
+        this.radius = radius;
+    }
+
+    public String getRadius() {
+        return radius;
     }
 }

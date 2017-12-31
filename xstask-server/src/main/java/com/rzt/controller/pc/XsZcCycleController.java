@@ -13,6 +13,7 @@ import com.rzt.entity.sch.XsTaskSCh;
 import com.rzt.service.app.XSZCTASKService;
 import com.rzt.service.pc.XsZcCycleService;
 import com.rzt.util.WebApiResponse;
+import com.rzt.utils.DateUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +57,7 @@ public class XsZcCycleController extends
     public Object addCycle( XsZcCycle xsZcCycle) {
 		try {
 			xsZcCycle.setTotalTaskNum(0);
+			xsZcCycle.setCreateTime(DateUtil.dateNow());
 			Object o = this.service.addCycle(xsZcCycle);
 			return WebApiResponse.success("数据新增成功");
 		} catch (Exception var) {
@@ -75,12 +77,6 @@ public class XsZcCycleController extends
 	@PostMapping("listCycle")
 	public Object cycleList(Pageable pageable,XsTaskSCh xsTaskSCh) {
 		try {
-//			Sort sort = new Sort(Sort.Direction.DESC, new String[]{sortField});
-//			if (sortDirection.equals("ASC")) {
-//				sort = new Sort(Sort.Direction.ASC, new String[]{sortField});
-//			}
-//
-//			Pageable pageable = new PageRequest(page, size, sort);
 			Object cycleList = this.service.cycleList(pageable, xsTaskSCh);
 			return WebApiResponse.success(cycleList);
 		} catch (Exception var7) {
@@ -182,7 +178,8 @@ public class XsZcCycleController extends
 	@InitBinder
 	public void initBinder(ServletRequestDataBinder binder) {
 		 /*** 自动转换日期类型的字段格式
-		 */SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		 */
+		 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 		 binder.registerCustomEditor(Date.class, new CustomDateEditor(sdf, true));
 
    }

@@ -110,6 +110,7 @@ public class RztSysDepartmentController extends
      * @return
      */
     @GetMapping("queryOrgName")
+    @ApiOperation(value = "查询通道运维单位", notes = "查询通道运维单位")
     public WebApiResponse queryOrgName() {
         return this.service.queryOrgName();
     }

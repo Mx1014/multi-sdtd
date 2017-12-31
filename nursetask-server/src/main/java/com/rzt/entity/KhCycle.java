@@ -73,6 +73,10 @@ public class KhCycle implements Serializable{
     //字段描述: 创建时间
     @Column(name = "PF_TIME")
     private Date pfTime;
+    @Column(name = "LONGITUDE")
+    private String longitude;
+    @Column(name = "LATITUDE")
+    private String latitude;
 
 
     public void setId(){
@@ -185,5 +189,21 @@ public class KhCycle implements Serializable{
 
     public Date getPfTime() {
         return pfTime;
+    }
+
+    public String getLatitude() {
+        return latitude;
+    }
+
+    public String getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(String longtitude) {
+        this.longitude = longtitude;
+    }
+
+    public void setLatitude(String latitude) {
+        this.latitude = latitude;
     }
 }

@@ -51,6 +51,9 @@ public interface AppKhUpdateRepository extends JpaRepository<KhTask, String> {
 
     @Modifying
     @Transactional
-    @Query(value = "UPDATE KH_TASK SET STATUS ='已完成',real_end_time = ?1 WHERE TASKID =?2",nativeQuery = true)
+    @Query(value = "UPDATE KH_TASK SET STATUS ='已完成',real_end_time = ?1 WHERE id =?2",nativeQuery = true)
     void updateEndTime(Date date, long taskId);
+
+    @Query(value = "select ZXYS_NUM  FROM KH_TASK where id=?1",nativeQuery = true)
+    int findNum(long taskId);
 }

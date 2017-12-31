@@ -19,6 +19,11 @@ import com.rzt.utils.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.geo.Distance;
+import org.springframework.data.geo.Metrics;
+import org.springframework.data.geo.Point;
+import org.springframework.data.redis.core.GeoOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import redis.clients.jedis.Jedis;
@@ -52,6 +57,8 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
     private KhCycleService cycleService;
     @Autowired
     private KhCycleRepository cycleRepository;
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
     public Page listAllTaskNotDo(KhTaskModel task, Pageable pageable, String userName, String deptId) {
         List params = new ArrayList<>();
@@ -101,11 +108,19 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
         }
         return maps1;
     }
-
+    //消缺已派发的任务
     public void updateQxTask(long id) {
         this.reposiotry.updateQxTask(id, DateUtil.dateNow());
         this.reposiotry.updateDoingTask(id, DateUtil.dateNow());
-        KhCycle site = this.cycleRepository.findSite(id);
+        KhSite site = this.reposiotry.findSite(id);
+        this.reposiotry.updateYH(site.getYhId(), DateUtil.dateNow());
+        this.reposiotry.updateKhCycle(id);
+        //将带稽查 已完成稽查的看护任务状态修改
+        this.reposiotry.updateCheckTask(id, DateUtil.dateNow());
+    }
+    //消缺未派发的任务
+    public void updateCycle(long id) {
+        KhCycle site = this.cycleRepository.findCycle(id);
         this.reposiotry.updateYH(site.getYhId(), DateUtil.dateNow());
         this.reposiotry.updateKhCycle(id);
         //将带稽查 已完成稽查的看护任务状态修改
@@ -145,14 +160,35 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
     @Transactional
     public WebApiResponse saveYh(KhYhHistory yh, String fxtime,String startTowerName,String endTowerName) {
         try {
+             GeoOperations<String, Object> geoOperations = redisTemplate.opsForGeo();
             yh.setYhfxsj(DateUtil.parseDate(fxtime));
             yh.setSfdj("未定级");
+            if (!yh.getStartTower().isEmpty()) {
+                String startTower = "select longitude,latitude from cm_tower where id = ?";
+                String endTower = "select longitude,latitude from cm_tower where id = ?";
+                Map<String, Object> map = execSqlSingleResult(startTower, Integer.parseInt(yh.getStartTower()));
+                Map<String, Object> map1 = execSqlSingleResult(endTower, Integer.parseInt(yh.getEndTower()));
+                //经度
+                double jd = (Double.parseDouble(map.get("LONGITUDE").toString()) + Double.parseDouble(map1.get("LONGITUDE").toString())) / 2;
+                double wd = (Double.parseDouble(map.get("LATITUDE").toString()) + Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
+                // yh.seto
+              //  Point point1 = new Point(Double.parseDouble(map.get("LONGITUDE").toString()), Double.parseDouble(map.get("LATITUDE").toString()));
+              //  Point point2 = new Point(Double.parseDouble(map1.get("LONGITUDE").toString()), Double.parseDouble(map1.get("LATITUDE").toString()));
+
+               // Distance distance = geoOperations.geoDist("geoDist", point1, point2, Metrics.MILES);
+               // yh.setRadius(distance.getValue() + "");
+                yh.setJd(jd);
+                yh.setWd(wd);
+            }
+            KhCycle task = new KhCycle();
+            task.setId();
+            yh.setTaskId(task.getId());
             yh.setYhzt("0");//隐患未消除
             yh.setId(0L);
             yh.setCreateTime(DateUtil.dateNow());
             yh.setSection(startTowerName+ "-" + endTowerName + " 区段");
             yhservice.add(yh);
-            KhCycle task = new KhCycle();
+
             String taskName = yh.getVtype() + yh.getLineName() + startTowerName + "-" + endTowerName + " 号杆塔看护任务";
             task.setVtype(yh.getVtype());
             task.setLineName(yh.getLineName());
@@ -160,11 +196,12 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             task.setSection(yh.getSection());
             task.setLineId(yh.getLineId());
             task.setTaskName(taskName);
+            task.setWxOrg(yh.getTdwxOrg());
             task.setStatus(0);// 未派发
 //            task.setCount(0);//生成任务次数0
             task.setYhId(yh.getId());
             task.setCreateTime(DateUtil.dateNow());
-            task.setId();
+
             this.cycleService.add(task);
             CheckLiveTask check = new CheckLiveTask();
             check.setCheckType(0); //0为 看护类型稽查
@@ -221,7 +258,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
     public WebApiResponse paifaTask(String id, String tasks, KhTaskModel model) {
         try {
             List<Map<Object, String>> list = (List<Map<Object, String>>) JSONObject.parse(tasks);
-            KhCycle site = this.cycleRepository.findSite(Long.parseLong(id));
+            KhCycle site = this.cycleRepository.findCycle(Long.parseLong(id));
             String groupFlag = System.currentTimeMillis() + "";
             for (Map map : list) {
                 KhTask task = new KhTask();
@@ -253,15 +290,15 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                 site1.setPlanEndTime(endTime.substring(11, 19));
                 this.add(site1);
                 int count = taskService.getCount(Long.parseLong(id), userId);
-                task.setPlanStartTime(DateUtil.dateNow());
-                task.setPlanEndTime(DateUtil.dateNow());
+                task.setPlanStartTime(DateUtil.getPlanStartTime(startTime));
+                task.setPlanEndTime(DateUtil.getPlanStartTime(endTime));
                 task.setUserId(userId);
                 task.setCount(count);
-                task.setWxOrg("无");
+                task.setWxOrg(site.getWxOrg());
                 task.setTdywOrg(site.getTdywOrg());
                 task.setCreateTime(new Date());
                 task.setStatus("未开始");
-                task.setSiteId(Long.parseLong(id));
+                task.setSiteId(site1.getId());
                 task.setYhId(site.getYhId());
                 task.setTaskName(site.getTaskName());
                 task.setId();
@@ -278,7 +315,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
 
     public WebApiResponse listJpgById(String taskId) {
         try {
-            String sql = "select file_path from picture_tour where task_id = ?";
+            String sql = "select file_path from picture_kh where task_id = ?";
             return WebApiResponse.success(this.execSql(sql, Long.parseLong(taskId)));
         } catch (Exception e) {
             e.printStackTrace();

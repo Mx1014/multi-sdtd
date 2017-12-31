@@ -1,14 +1,17 @@
 package com.rzt.entity.sch;
 
 import java.io.Serializable;
+import java.util.Date;
+
 public class XsTaskSCh implements Serializable {
-    private String startDate;
-    private String endDate;
+    private Date startDate;
+    private Date endDate;
     private Integer status;
     private Integer v_type;
     private Integer lineId;
     private String lineName;
     private Integer ispf;
+    private String tdOrg;
     private String userId;
 
     public String getUserId() {
@@ -23,23 +26,31 @@ public class XsTaskSCh implements Serializable {
         return ispf;
     }
 
+    public String getTdOrg() {
+        return tdOrg;
+    }
+
+    public void setTdOrg(String tdOrg) {
+        this.tdOrg = tdOrg;
+    }
+
     public void setIspf(Integer ispf) {
         this.ispf = ispf;
     }
 
-    public String getStartDate() {
+    public Date getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(String startDate) {
+    public void setStartDate(Date startDate) {
         this.startDate = startDate;
     }
 
-    public String getEndDate() {
+    public Date getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(String endDate) {
+    public void setEndDate(Date endDate) {
         this.endDate = endDate;
     }
 
