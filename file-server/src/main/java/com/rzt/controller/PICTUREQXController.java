@@ -36,12 +36,19 @@ public class PICTUREQXController extends
 	protected static Logger LOGGER = LoggerFactory.getLogger(PICTUREQXController.class);
 
 	@ApiOperation(
-			value = "单个文件上传",
-			notes = "上传文件信息及参数。taskId  userId processId processName lat lon，这些是必须的"
+			value = "单个照片文件上传",
+			notes = "上传照片信息及参数。taskId  userId processId processName lat lon 这些是必须的，" +
+					"文件类型（默认1图片）2录音3摄像,fileType 为空是传照片，不为空则传文件"
 	)
 	@PostMapping("fileUpload")
 	public Map<String, Object> fileUpload(MultipartFile multipartFile, PICTUREQX pictureqx) {
-		return service.fileUpload( multipartFile,  pictureqx);
+		Map<String, Object> result;
+		if(pictureqx.getFileType()==null){
+			result = service.fileUpload(multipartFile, pictureqx);
+		}else{
+			result = service.fileUploadByType( multipartFile,  pictureqx);
+		}
+		return result;
 	}
 
 	@ApiOperation(
@@ -49,8 +56,8 @@ public class PICTUREQXController extends
 			notes = "根据Id删除照片，同时删除文件及数据"
 	)
 	@DeleteMapping("deleteImgsById")
-	public Map<String, Object> deleteImgsById(Long id) {
-		return service.deleteImgsById( id);
+	public Map<String, Object> deleteImgsById(String id) {
+		return service.deleteImgsById(Long.valueOf(id));
 	}
 
 	@ApiOperation(
@@ -58,8 +65,8 @@ public class PICTUREQXController extends
 			notes = "根据taskId获取某条任务的所有照片"
 	)
 	@GetMapping("getImgsBytaskId")
-	public Map<String, Object> getImgsBytaskId(Long taskId) {
-		return service.getImgsBytaskId( taskId);
+	public Map<String, Object> getImgsBytaskId(String taskId) {
+		return service.getImgsBytaskId(Long.valueOf(taskId));
 	}
 
 
@@ -68,9 +75,9 @@ public class PICTUREQXController extends
 			notes = "根据taskId,processId获取某一步骤的照片"
 	)
 	@GetMapping("getImgsBytaskIdAndProcessId")
-	public Map<String, Object> getImgsBytaskIdAndProcessId(String taskId,String processId) {
+	public Map<String, Object> getImgsBytaskIdAndProcessId(String taskId,String processId,String processType) {
 
-		return service.getImgsBytaskIdAndProcessId( taskId, processId);
+		return service.getImgsBytaskIdAndProcessId( taskId, processId,processType);
 
 	}
 
@@ -79,9 +86,9 @@ public class PICTUREQXController extends
 			notes = "根据id获取照片"
 	)
 	@GetMapping("getImgById")
-	public Map<String, Object> getImgById(Long id) {
+	public Map<String, Object> getImgById(String id) {
 
-		return service.getImgById(id);
+		return service.getImgById(Long.valueOf(id));
 
 	}
 

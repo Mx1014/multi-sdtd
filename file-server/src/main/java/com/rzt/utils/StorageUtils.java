@@ -163,6 +163,47 @@ public class StorageUtils {
     }
 
     /**
+     * 存储文件
+     * @param file    文件
+     */
+    public static Map<String, Object> storageFilesByDay(MultipartFile file) throws IOException {
+
+        Map<String, Object> result = new HashMap<>();
+
+        if(file.isEmpty()){
+            throw new IOException("上传文件为空！");
+        }
+        String fileName = file.getOriginalFilename();
+        String fileType="";
+        fileType = fileName.substring(fileName.lastIndexOf(".")+1,fileName.length());
+
+
+        String currentDate = DateUtil.getCurrentDate();
+        String saveName = String.valueOf(UUID.randomUUID());
+        String baseDir = picDir + currentDate + File.separator + fileType + File.separator;
+        String targetPath = baseDir+saveName+"."+fileType;
+
+        //原文件存放路径
+        File targetFile = new File(targetPath);
+        //目标目录是否存在
+        File folder = new File(baseDir);
+        if(!folder.exists()&&!folder.isDirectory()){
+            folder.mkdirs();
+        }
+
+        //保存原图到指定路径
+        file.transferTo(targetFile);
+        String url = File.separator + currentDate + File.separator + fileType + File.separator + saveName+"."+fileType;
+        result.put("fileName",saveName+"."+fileType);
+        result.put("filePath",url);
+        result.put("success",true);
+
+        return result;
+
+    }
+
+
+    /**
      * 删除图片
      * @param suffixPath
      */

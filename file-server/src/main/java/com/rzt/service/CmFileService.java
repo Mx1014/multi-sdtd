@@ -52,6 +52,7 @@ public class CmFileService extends CurdService<CmFile,CmFileRepository> {
 
                 add(cmFile);
                 result.put("success",true);
+                result.put("id",String.valueOf(cmFile.getId()));
                 result.put("filePath",filePath);
 
             }
