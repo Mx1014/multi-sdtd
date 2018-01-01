@@ -15,6 +15,7 @@ import com.rzt.repository.KhSiteRepository;
 import com.rzt.repository.KhTaskRepository;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DateUtil;
+import com.rzt.utils.MapUtil;
 import com.rzt.utils.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -94,11 +95,11 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             params.add(userName);
         }
         buffer.append(" order by k.create_time desc ");
-        String sql  = "";
+        String sql = "";
         if (task.getStatus().equals("1")) {
             sql = "select " + result + " from kh_site k left join kh_yh_history y on k.yh_id = y.id left join rztsysuser u on u.id = k.user_id" + buffer.toString();
-        }else {
-            sql = "select "+ result1 +"from kh_cycle k left join kh_yh_history y on k.yh_id = y.id " + buffer.toString();
+        } else {
+            sql = "select " + result1 + "from kh_cycle k left join kh_yh_history y on k.yh_id = y.id " + buffer.toString();
         }
         //String sql = "select * from listAllTaskNotDo "+buffer.toString();
         Page<Map<String, Object>> maps1 = this.execSqlPage(pageable, sql, params.toArray());
@@ -108,6 +109,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
         }
         return maps1;
     }
+
     //消缺已派发的任务
     public void updateQxTask(long id) {
         this.reposiotry.updateQxTask(id, DateUtil.dateNow());
@@ -118,6 +120,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
         //将带稽查 已完成稽查的看护任务状态修改
         this.reposiotry.updateCheckTask(id, DateUtil.dateNow());
     }
+
     //消缺未派发的任务
     public void updateCycle(long id) {
         KhCycle site = this.cycleRepository.findCycle(id);
@@ -158,9 +161,9 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
     }
 
     @Transactional
-    public WebApiResponse saveYh(KhYhHistory yh, String fxtime,String startTowerName,String endTowerName) {
+    public WebApiResponse saveYh(KhYhHistory yh, String fxtime, String startTowerName, String endTowerName) {
         try {
-             GeoOperations<String, Object> geoOperations = redisTemplate.opsForGeo();
+            GeoOperations<String, Object> geoOperations = redisTemplate.opsForGeo();
             yh.setYhfxsj(DateUtil.parseDate(fxtime));
             yh.setSfdj("未定级");
             if (!yh.getStartTower().isEmpty()) {
@@ -171,14 +174,10 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                 //经度
                 double jd = (Double.parseDouble(map.get("LONGITUDE").toString()) + Double.parseDouble(map1.get("LONGITUDE").toString())) / 2;
                 double wd = (Double.parseDouble(map.get("LATITUDE").toString()) + Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
-                // yh.seto
-              //  Point point1 = new Point(Double.parseDouble(map.get("LONGITUDE").toString()), Double.parseDouble(map.get("LATITUDE").toString()));
-              //  Point point2 = new Point(Double.parseDouble(map1.get("LONGITUDE").toString()), Double.parseDouble(map1.get("LATITUDE").toString()));
-
-               // Distance distance = geoOperations.geoDist("geoDist", point1, point2, Metrics.MILES);
-               // yh.setRadius(distance.getValue() + "");
-                yh.setJd(jd);
-                yh.setWd(wd);
+                double radius = MapUtil.GetDistance(Double.parseDouble(map.get("LONGITUDE").toString()), Double.parseDouble(map.get("LATITUDE").toString()), Double.parseDouble(map1.get("LONGITUDE").toString()), Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
+                yh.setRadius(radius+"");
+                yh.setJd(jd+"");
+                yh.setWd(wd+"");
             }
             KhCycle task = new KhCycle();
             task.setId();
@@ -186,9 +185,8 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             yh.setYhzt("0");//隐患未消除
             yh.setId(0L);
             yh.setCreateTime(DateUtil.dateNow());
-            yh.setSection(startTowerName+ "-" + endTowerName + " 区段");
+            yh.setSection(startTowerName + "-" + endTowerName);
             yhservice.add(yh);
-
             String taskName = yh.getVtype() + yh.getLineName() + startTowerName + "-" + endTowerName + " 号杆塔看护任务";
             task.setVtype(yh.getVtype());
             task.setLineName(yh.getLineName());

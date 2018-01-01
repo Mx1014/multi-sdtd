@@ -40,7 +40,7 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
         } else if (dbyb == 2) {
             buffer.append(" where status like '已完成'");
         }
-        String sql = "select " + result + " from kh_task k left join rztsysuser u on u.id = k.user_id " + buffer.toString() + " and user_id = ?";
+        String sql = "select " + result + " from kh_task k left join rztsysuser u on u.id = k.user_id " + buffer.toString() + " and user_id = ? order by k.plan_start_time";
         return this.execSqlPage(pageable, sql, userId);
     }
 
@@ -65,9 +65,11 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
         }
     }
 
-    public WebApiResponse appSavePhoto(String userId, String taskId) {
+    public WebApiResponse appListWp(String userId, String taskId) {
         try {
-            return WebApiResponse.success("身份已经确认");
+            String sql = "select wp_zt from kh_task_wpqr where taskId=?";
+            List<Map<String, Object>> map = this.execSql(sql, taskId);
+            return WebApiResponse.success(map);
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("数据获取失败");
@@ -144,16 +146,20 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
 
     //获取中心点坐标  现获取看护点的坐标  如果不存在，就用隐患的坐标
     public List<Map<String, Object>> getPoint(long taskId) {
-        String sql = "select c.longitude as jd,c.latitude as wd from kh_cycle c left join kh_site s on s.yh_id = c.yh_id left join kh_task k on k.site_id = s.id where k.id = ?";
+        String sql = "select c.radius as ROUND,c.longitude as jd,c.latitude as wd from kh_cycle c left join kh_site s on s.yh_id = c.yh_id left join kh_task k on k.site_id = s.id where k.id = ?";
         List<Map<String, Object>> list = this.execSql(sql, taskId);
-        for (Map map:list){
-            if (map.get("WD") == null || map.get("JD") == null){
-                sql = "select y.jd as jd,y.wd as wd from kh_yh_history y left join kh_task k on y.id = k.yh_id where k.id=?";
-                list = this.execSql(sql, taskId);
+        if (!list.isEmpty()){
+            for (Map map:list) {
+                if (map.get("WD") == null || map.get("JD") == null) {
+                    sql = "select y.radius as ROUND,y.jd as jd,y.wd as wd from kh_yh_history y left join kh_task k on y.id = k.yh_id where k.id=?";
+                    list = this.execSql(sql, taskId);
+                }
             }
+        }else{
+            sql = "select y.jd as jd,y.wd as wd from kh_yh_history y left join kh_task k on y.id = k.yh_id where k.id=?";
+            list = this.execSql(sql, taskId);
         }
         for (Map map : list) {
-            map.put("ROUND", 100);
             map.put("URL", "http://168.130.1.31:8097:/warningServer/warning/KHOffPost");
         }
        /* Point point = null;
@@ -166,6 +172,16 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
     public WebApiResponse listPhone(long taskId) {
         try {
             String sql = "SELECT Y.YHZRDWLXR AS NAME,Y.YHZRDWDH AS PHONE FROM KH_YH_HISTORY Y ,KH_TASK K where K.YH_ID = Y.ID and  K.ID=? ";
+            return WebApiResponse.success(this.execSql(sql,taskId));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("数据获取失败");
+        }
+    }
+
+    public WebApiResponse appListZl(String taskId) {
+        try {
+            String sql = "select cl_zt from kh_task_wpqr where taskId=?";
             return WebApiResponse.success(this.execSql(sql,taskId));
         } catch (Exception e) {
             e.printStackTrace();
