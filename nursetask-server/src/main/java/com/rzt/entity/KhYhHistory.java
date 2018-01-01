@@ -150,10 +150,10 @@ public class KhYhHistory implements Serializable {
     private String tdclwcsj;
     //字段描述: 纬度
     @Column(name = "WD")
-    private double wd;
+    private String wd;
     //字段描述: 经度
     @Column(name = "JD")
-    private double jd;
+    private String jd;
     //字段描述: 填报时间
     @Column(name = "TBSJ")
     private String tbsj;
@@ -217,6 +217,7 @@ public class KhYhHistory implements Serializable {
     //字段描述: 外协单位id
     @Column(name = "WXORG_ID")
     private String wxorgId;
+    //字段描述: 隐患点半径
     @Column(name="radius")
     private String radius;
 
@@ -364,21 +365,21 @@ public class KhYhHistory implements Serializable {
         return this.tdclwcsj;
     }
 
-    public void setWd(double wd) {
+    public void setWd(String wd) {
         this.wd = wd;
     }
 
     @ExcelResources(title = "纬度", order = 17)
-    public double getWd() {
+    public String getWd() {
         return this.wd;
     }
 
-    public void setJd(double jd) {
+    public void setJd(String jd) {
         this.jd = jd;
     }
 
     @ExcelResources(title = "经度", order = 18)
-    public double getJd() {
+    public String getJd() {
         return this.jd;
     }
 

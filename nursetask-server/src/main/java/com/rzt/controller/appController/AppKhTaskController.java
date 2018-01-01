@@ -74,10 +74,10 @@ public class AppKhTaskController extends
 
     //人员收集  → 物品提示  图片信息 未完成！！！！！！！
     @ApiOperation(value = "物品提示", notes = "收集看护人照片信息  ")
-    @GetMapping("/appSavePhoto.do")
+    @GetMapping("/appListWp.do")
     @ResponseBody
-    public WebApiResponse appSavePhoto(String userId,String taskId){
-        return this.service.appSavePhoto(userId,taskId);
+    public WebApiResponse appListWp(String userId,String taskId){
+        return this.service.appListWp(userId,taskId);
     }
 
     //物品提示 → 看护提醒   目前施工进度从哪里来
@@ -88,6 +88,12 @@ public class AppKhTaskController extends
         return this.service.appSaveWpzt(task);
     }
 
+    @ApiOperation(value = "看护提醒", notes = "车辆回显  ")
+    @GetMapping("/appListCl.do")
+    @ResponseBody
+    public WebApiResponse appListZl(String taskId){
+        return this.service.appListZl(taskId);
+    }
 
     // 开始看护 →  交接班   现场环境照片保存
     // 问题：上报的危机信息保存到哪里 现场工况采集如何保存

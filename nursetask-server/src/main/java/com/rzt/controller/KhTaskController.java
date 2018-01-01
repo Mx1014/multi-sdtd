@@ -105,6 +105,11 @@ public class KhTaskController extends
 		return this.service.listCurrentTaskByUserId(userId);
 	}
 
+	/**
+	 * 隐患台账获取看护任务详情
+	 * @param yhId
+	 * @return
+	 */
 	@GetMapping("/listTaskInfoByYhId")
 	@ResponseBody
 	public WebApiResponse listTaskInfoById(String yhId){

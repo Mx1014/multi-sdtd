@@ -6,6 +6,7 @@
  */
 package com.rzt.entity;
 
+import com.rzt.util.excelUtil.ExcelResources;
 import com.rzt.utils.SnowflakeIdWorker;
 
 import javax.persistence.Column;
@@ -77,8 +78,10 @@ public class KhCycle implements Serializable{
     private String longitude;
     @Column(name = "LATITUDE")
     private String latitude;
-
-
+    //字段描述: 隐患点半径
+    @Column(name="radius")
+    private String radius;
+    @ExcelResources(title="被稽查的任务id",order=1)
     public void setId(){
             this.id = new SnowflakeIdWorker(0,0).nextId();
     }
@@ -205,5 +208,13 @@ public class KhCycle implements Serializable{
 
     public void setLatitude(String latitude) {
         this.latitude = latitude;
+    }
+
+    public void setRadius(String radius) {
+        this.radius = radius;
+    }
+
+    public String getRadius() {
+        return radius;
     }
 }
