@@ -98,10 +98,10 @@ public class AppKhTaskController extends
     // 开始看护 →  交接班   现场环境照片保存
     // 问题：上报的危机信息保存到哪里 现场工况采集如何保存
     @ApiOperation(value = "开始看护", notes = "收集现场环境照片、工况、危机信息  ")
-    @GetMapping("/appExchange.do")
+    @GetMapping("/appListCaptain.do")
     @ResponseBody
-    public WebApiResponse appExchange(String taskId){
-        return this.service.appExchange(taskId);
+    public WebApiResponse appListCaptain(String taskId,String userId){
+        return this.service.appListCaptain(taskId,userId);
     }
 
     @ApiOperation(value = "查看接班人", notes = "查看接班人  ")
@@ -111,7 +111,15 @@ public class AppKhTaskController extends
         return this.service.appListjbr(userId,taskId);
     }
 
-   //前端传回用户id  获取多个用户坐标
+
+    @ApiOperation(value = "查看接班人", notes = "查看队长是否交接班  ")
+    @GetMapping("/appCaptainTime.do")
+    @ResponseBody
+    public WebApiResponse appCaptainTime(String userId,long taskId,String flag){
+        return this.service.appCaptainTime(userId,taskId,flag);
+    }
+
+    //前端传回用户id  获取多个用户坐标
     @GetMapping("/listPoint")
     public  List listPoint(String ids,String taskId) {
         //String[] str = ids.split(",");

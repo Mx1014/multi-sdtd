@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
 /**
  * 类名称：KHYHHISTORYController
  * 类描述：    
@@ -30,7 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class KhYhHistoryController extends
 		CurdController<KhYhHistory, KhYhHistoryService> {
 
-	@ApiOperation(notes = "今日治理、新增、修改隐患数量",value = "今日治理、新增、修改隐患数量")
+	/*@ApiOperation(notes = "今日治理、新增、修改隐患数量",value = "今日治理、新增、修改隐患数量")
 	@GetMapping("/listYhCount")
 	public WebApiResponse listYhCount(){
 		return this.service.listYhCount();
@@ -46,10 +49,11 @@ public class KhYhHistoryController extends
 	@GetMapping("/listGkqk")
 	public WebApiResponse listGkqk(){
 		return this.service.listGkqk();
-	}
-	/*@ApiOperation(notes = "今日调整隐患数量",value = "今日调整隐患数量")
-	@GetMapping("/listUpdateYhCount")
-	public WebApiResponse listUpdateYhCount(){
-		return this.service.listUpdateYhCount();
 	}*/
+
+	@ApiOperation(notes = "施工情况",value = "施工情况")
+	@GetMapping("/saveYh")
+	public WebApiResponse saveYh(KhYhHistory yh,String fxtime,String startTowerName,String endTowerName){
+		return this.service.saveYh(yh,fxtime,startTowerName,endTowerName);
+	}
 }

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * 类名称：KhCycleRepository    
@@ -87,4 +88,7 @@ public interface KhSiteRepository extends JpaRepository<KhSite, String> {
     @Query(value ="SELECT * FROM KH_SITE  where id=?1",nativeQuery = true)
         //SELECT id,VTYPE,LINE_NAME,SECTION,status,line_id,KH_RANGE,to_date(KHXQ_TIME,'yyyy-mm-dd hh24:mi:ss'),to_date(create_time,'yyyy-mm-dd hh24:mi:ss'),KHFZR_ID1,KHFZR_ID2,KHDY_ID1,KHDY_ID2,TDYW_ORG,YH_ID,TASK_NAME,COUNT FROM KH_SITE  where id=?1
     KhSite findSite(long id);
+
+    @Query(value = "select * from KH_SITE WHERE STATUS=1",nativeQuery = true)
+    List<KhSite> findSites();
 }

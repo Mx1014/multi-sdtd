@@ -10,12 +10,14 @@ import com.rzt.repository.KhYhHistoryRepository;
 import com.rzt.entity.KhYhHistory;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DateUtil;
+import com.rzt.utils.MapUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Map;
 
 /**
  * 类名称：KHYHHISTORYService    
@@ -40,7 +42,35 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         }
     }
 
-    public WebApiResponse listYhCount() {
+    public WebApiResponse saveYh(KhYhHistory yh,String fxtime,String startTowerName,String endTowerName) {
+        try {
+            yh.setYhfxsj(DateUtil.parseDate(fxtime));
+            yh.setId(0l);
+            if (!yh.getStartTower().isEmpty()) {
+                String startTower = "select longitude,latitude from cm_tower where id = ?";
+                String endTower = "select longitude,latitude from cm_tower where id = ?";
+                Map<String, Object> map = execSqlSingleResult(startTower, Integer.parseInt(yh.getStartTower()));
+                Map<String, Object> map1 = execSqlSingleResult(endTower, Integer.parseInt(yh.getEndTower()));
+                //经度
+                double jd = (Double.parseDouble(map.get("LONGITUDE").toString()) + Double.parseDouble(map1.get("LONGITUDE").toString())) / 2;
+                double wd = (Double.parseDouble(map.get("LATITUDE").toString()) + Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
+                double radius = MapUtil.GetDistance(Double.parseDouble(map.get("LONGITUDE").toString()), Double.parseDouble(map.get("LATITUDE").toString()), Double.parseDouble(map1.get("LONGITUDE").toString()), Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
+                yh.setRadius(radius+"");
+                yh.setJd(jd+"");
+                yh.setWd(wd+"");
+            }
+            yh.setSfdj(0);
+            yh.setYhzt("0");//隐患未消除
+            yh.setCreateTime(DateUtil.dateNow());
+            yh.setSection(startTowerName + "-" + endTowerName);
+            this.add(yh);
+            return WebApiResponse.success("");
+        } catch (Exception e) {
+            return WebApiResponse.erro("数据保存失败");
+        }
+    }
+
+   /* public WebApiResponse listYhCount() {
         try {
             String date = DateUtil.getCurrentDate();
             String handlesql = "(SELECT COUNT(*) as count FROM KH_YH_HISTORY WHERE to_char(YHXQ_TIME) >=? and to_char(YHXQ_TIME) <=?)  a,";
@@ -77,5 +107,5 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         } catch (Exception e) {
             return WebApiResponse.erro("数据获取失败");
         }
-    }
+    }*/
 }

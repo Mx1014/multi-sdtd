@@ -163,9 +163,8 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
     @Transactional
     public WebApiResponse saveYh(KhYhHistory yh, String fxtime, String startTowerName, String endTowerName) {
         try {
-            GeoOperations<String, Object> geoOperations = redisTemplate.opsForGeo();
             yh.setYhfxsj(DateUtil.parseDate(fxtime));
-            yh.setSfdj("未定级");
+            yh.setSfdj(0);
             if (!yh.getStartTower().isEmpty()) {
                 String startTower = "select longitude,latitude from cm_tower where id = ?";
                 String endTower = "select longitude,latitude from cm_tower where id = ?";

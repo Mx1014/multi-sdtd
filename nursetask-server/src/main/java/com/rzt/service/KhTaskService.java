@@ -32,7 +32,7 @@ public class KhTaskService extends CurdService<KhTask,KhTaskRepository> {
     EntityManager entityManager;
     @Autowired
     private KhSiteRepository siteRepository;
-    
+
     public Object listAllKhTask(KhTaskModel task, Pageable pageable) {
         task = timeUtil(task);
         String result = "k.id as id, k.task_name as taskName,k.tdyw_org as yworg,k.CREATE_TIME as createTime,k.plan_start_time as startTime,k.plan_end_time as endTime,k.status as status,u.realname as userName,d.DEPTNAME as class";
@@ -153,6 +153,13 @@ public class KhTaskService extends CurdService<KhTask,KhTaskRepository> {
         }catch (Exception e){
             e.printStackTrace();
             return WebApiResponse.erro("数据获取失败");
+        }
+    }
+
+    public void CreateTask() {
+        List<KhSite> list = siteRepository.findSites();
+        for (KhSite site:list) {
+
         }
     }
 }
