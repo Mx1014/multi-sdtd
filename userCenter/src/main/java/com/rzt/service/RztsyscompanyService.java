@@ -158,7 +158,7 @@ public class RztsyscompanyService extends CurdService<Rztsyscompany, Rztsyscompa
 //                "  c.CREATETIME, " +
 //                "  c.ORGID, " +
 //                "  c.UPDATETIME, " +
-//                "  c.ORGNAME " +
+//                "  c.ORGNAME " +  
 //                "FROM RZTSYSCOMPANY c";
 //        try {
 //            return WebApiResponse.success(this.execSqlSingleResult(sql, id));

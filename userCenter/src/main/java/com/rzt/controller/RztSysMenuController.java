@@ -153,9 +153,20 @@ public class RztSysMenuController extends
      * @param id
      * @return
      */
+//    @GetMapping("treeQuery")
+//    public List<Map<String, Object>> treeQuery(String id, Integer orgtype) {
+//        return this.service.treeQuery(id, orgtype);
+//    }
+
+    /**
+     * 公共接口
+     * @param id deptID
+     * @param orgtype 专业类型
+     * @return
+     */
     @GetMapping("treeQuery")
-    public List<Map<String, Object>> treeQuery(String id) {
-        return this.service.treeQuery(id);
+    public List<Map<String, Object>> treeQuery(String id, Integer orgtype) {
+        return this.service.treeQuery(id, orgtype);
     }
 
     /**

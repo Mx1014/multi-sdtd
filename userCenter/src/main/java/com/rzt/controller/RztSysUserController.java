@@ -62,10 +62,8 @@ public class RztSysUserController extends
     @PostMapping("addUser")
     @Transactional
     @ApiOperation(value = "人员添加", notes = "人员添加")
-    public WebApiResponse addUser(MultipartFile file, String password, RztSysUser user) {
-        String filePath = "";
-        String id = UUID.randomUUID().toString().replaceAll("-", "");
-        user.setId(id);
+    public WebApiResponse addUser(String password, RztSysUser user) {
+//        String id = UUID.randomUUID().toString().replaceAll("-", "");
         /**
          * 验证
          */
@@ -80,10 +78,6 @@ public class RztSysUserController extends
          */
         this.service.add(user);
         userauthService.addUserAuth(user, password);
-        if (!StringUtils.isEmpty(file)) {
-            cmuserfile.userFileUpload(file, file.getName(), 0, DateUtil.dateNow(), id);
-            user.setAvatar(filePath);
-        }
         /**
          * 人员缓存Redis
          */
@@ -94,6 +88,28 @@ public class RztSysUserController extends
             hashOperations.put("UserInformation", map.get("ID"), map);
         }
         return WebApiResponse.success("添加成功！");
+    }
+
+    /**
+     * 修改人员
+     *
+     * @param id
+     * @param user
+     * @param password
+     * @return
+     */
+    @PatchMapping("updateUser")
+    @ApiOperation(value = "修改人员", notes = "修改人员")
+    public WebApiResponse updateUser(String id, RztSysUser user, String password) {
+        /**
+         * 验证
+         */
+        String flag = userauthService.findByUserName(user);
+        if (!flag.equals("1")) {
+            return WebApiResponse.erro(flag);
+        }
+        this.service.updateUser(id, user);
+        return WebApiResponse.success("修改成功");
     }
 
     /**
@@ -148,21 +164,6 @@ public class RztSysUserController extends
     }
 
     /**
-     * 修改人员
-     *
-     * @param id
-     * @param user
-     * @param password
-     * @return
-     */
-    @PatchMapping("updateUser")
-    @ApiOperation(value = "修改人员", notes = "修改人员")
-    public WebApiResponse updateUser(String id, RztSysUser user, String password) {
-        this.service.updateUser(id, user);
-        return WebApiResponse.success("修改成功");
-    }
-
-    /**
      * 人员列表分页查询
      *
      * @param page 页数
@@ -171,9 +172,9 @@ public class RztSysUserController extends
      */
     @GetMapping("findAllUser")
     @ApiOperation(value = "人员分页查询", notes = "人员分页查询")
-    public WebApiResponse findAllUser(int page, int size, String deptid, String realname, String classname, String worktype) {
+    public WebApiResponse findAllUser(int page, int size, String id, String realname, String companyid, String worktype) {
         try {
-            return WebApiResponse.success(this.service.findUserList(page, size, deptid, realname, classname, worktype));
+            return WebApiResponse.success(this.service.findUserList(page, size, id, realname, companyid, worktype));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("数据错误");
@@ -189,6 +190,17 @@ public class RztSysUserController extends
     @ApiOperation(value = "人员分页查询下拉框", notes = "人员分页查询下拉框")
     public WebApiResponse userQuertDeptZero() {
         return this.service.userQuertDeptZero();
+    }
+
+    /**
+     * 下拉框外协单位
+     *
+     * @return
+     */
+    @GetMapping("companyPage")
+    @ApiOperation(value = "下拉框外协单位", notes = "下拉框外协单位")
+    public WebApiResponse companyPage() {
+        return this.service.companyPage();
     }
 
     @GetMapping("findUserById/{id}")
@@ -235,6 +247,8 @@ public class RztSysUserController extends
         return WebApiResponse.success(access_token);
     }
 
+    /*
+    人员登陆暂时不用
     @GetMapping("login/{flag}")
     public WebApiResponse login(@PathVariable int flag, @RequestParam String account,
                                 @RequestParam String password, @RequestParam String deptid) {
@@ -257,8 +271,10 @@ public class RztSysUserController extends
         }
 
         return WebApiResponse.success(sysUser);
-    }
+    }*/
 
+    /*
+    人员退出暂时不用
     @GetMapping("logOut")
     public WebApiResponse logOut(HttpServletRequest request) {
         RztSysUser user = (RztSysUser) request.getSession().getAttribute("user");
@@ -271,7 +287,7 @@ public class RztSysUserController extends
         request.getSession().removeAttribute("user");
 
         return WebApiResponse.success("退出成功！");
-    }
+    }*/
 
     /**
      * 人员查询

@@ -41,8 +41,8 @@ public interface RztSysUserauthRepository extends JpaRepository<RztSysUserauth, 
      * @param username
      * @return
      */
-    @Query(value = "SELECT count(id) FROM RZTSYSUSER WHERE USERNAME = ?1 AND USERDELETE = 1", nativeQuery = true)
-    int VerificationUsername(String username);
+    @Query(value = "SELECT count(id) FROM RZTSYSUSER WHERE USERNAME = ?1 AND USERDELETE = 1 AND id != ?2 ", nativeQuery = true)
+    int VerificationUsername(String username, String id);
 
     /**
      * 手机号验证
@@ -50,8 +50,8 @@ public interface RztSysUserauthRepository extends JpaRepository<RztSysUserauth, 
      * @param phone
      * @return
      */
-    @Query(value = "SELECT count(id) FROM RZTSYSUSER WHERE PHONE = ?1 AND USERDELETE = 1", nativeQuery = true)
-    int VerificationPhone(String phone);
+    @Query(value = "SELECT count(id) FROM RZTSYSUSER WHERE PHONE = ?1 AND USERDELETE = 1 AND id != ?2 ", nativeQuery = true)
+    int VerificationPhone(String phone, String id);
 
     @Modifying
     @Query(value = "UPDATE RztSysUserauth u SET u.password=?2 WHERE u.userId=?1", nativeQuery = true)
