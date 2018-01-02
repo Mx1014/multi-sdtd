@@ -44,14 +44,14 @@ public class CmFileController extends
 
 	@ApiOperation(value = "根据fkid获取照片",notes = "根据fkid获取照片")
 	@GetMapping("getImgByFkId")
-	public Map<String,Object> getImgByFkId(Long fkid){
-		return service.getImgByFkId( fkid);
+	public Map<String,Object> getImgByFkId(String fkid){
+		return service.getImgByFkId(Long.valueOf(fkid));
 	}
 
 	@ApiOperation(value = "根据id获取照片",notes = "根据id获取照片")
 	@GetMapping("getImgById")
-	public Map<String,Object> getImgById(Long id){
-		return service.getImgById(id);
+	public Map<String,Object> getImgById(String id){
+		return service.getImgById(Long.valueOf(id));
 	}
 
 }

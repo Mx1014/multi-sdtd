@@ -91,10 +91,10 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
     }
 
 
-    public WebApiResponse appExchange(String taskId) {
+    public WebApiResponse appListCaptain(String taskId,String userId) {
         try {
-            //保存现场照片
-            return WebApiResponse.success("");
+            String sql = "select s.CAPATAIN,s.group_flag as flag FROM KH_SITE s,KH_TASK k where s.ID = k.SITE_ID AND  k.id=? and k.USER_ID =?";
+            return WebApiResponse.success(this.execSql(sql,taskId,userId));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("数据获取失败");
@@ -186,6 +186,19 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("数据获取失败");
+        }
+    }
+
+    public WebApiResponse appCaptainTime(String userId, long taskId, String flag) {
+        try {
+            flag = flag.substring(0,flag.length()-1)+1;
+            String sql = "SELECT k.REAL_END_TIME \n" +
+                    "FROM KH_SITE s,KH_TASK k WHERE s.ID=k.SITE_ID and k.id=? and s.GROUP_FLAG=?";
+            Map<String, Object> map = this.execSqlSingleResult(sql, taskId, flag);
+            return WebApiResponse.success(map);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("队长未交班");
         }
     }
 }

@@ -53,7 +53,6 @@ public class KhYhHistory implements Serializable {
     @Column(name = "START_TOWER")
     private String startTower;
 
-
     //字段描述: 终止杆塔号
     @Column(name = "END_TOWER")
     private String endTower;
@@ -106,7 +105,7 @@ public class KhYhHistory implements Serializable {
     //字段描述: 管控措施
     @Column(name = "GKCS")
     private String gkcs;
-    //字段描述: 维护单位（通道单位）
+        //字段描述: 维护单位（通道单位）
     @Column(name = "TDYW_ORG")
     private String tdywOrg;
     //字段描述: 通道外协单位
@@ -117,7 +116,7 @@ public class KhYhHistory implements Serializable {
     private String sbywOrg;
     //字段描述: 是否定级
     @Column(name = "SFDJ")
-    private String sfdj;
+    private int sfdj;
     //字段描述: 数据创建时间
     @Column(name = "CREATE_TIME")
     private Date createTime;
@@ -156,16 +155,7 @@ public class KhYhHistory implements Serializable {
     private String jd;
     //字段描述: 填报时间
     @Column(name = "TBSJ")
-    private String tbsj;
-    //字段描述: 填报部门
-    @Column(name = "TBBM")
-    private String tbbm;
-    //字段描述: 填报部门ID
-    @Column(name = "TBBMID")
-    private String tbbmid;
-    //字段描述: 填报人
-    @Column(name = "TBR")
-    private String tbr;
+    private Date tbsj;
     //字段描述: 填报人ID
     @Column(name = "TBRID")
     private String tbrid;
@@ -392,41 +382,15 @@ public class KhYhHistory implements Serializable {
         return this.yhzt;
     }
 
-    public void setTbsj(String tbsj) {
+    public void setTbsj(Date tbsj) {
         this.tbsj = tbsj;
     }
 
     @ExcelResources(title = "填报时间", order = 20)
-    public String getTbsj() {
+    public Date getTbsj() {
         return this.tbsj;
     }
 
-    public void setTbbm(String tbbm) {
-        this.tbbm = tbbm;
-    }
-
-    @ExcelResources(title = "填报部门", order = 21)
-    public String getTbbm() {
-        return this.tbbm;
-    }
-
-    public void setTbbmid(String tbbmid) {
-        this.tbbmid = tbbmid;
-    }
-
-    @ExcelResources(title = "填报部门ID", order = 22)
-    public String getTbbmid() {
-        return this.tbbmid;
-    }
-
-    public void setTbr(String tbr) {
-        this.tbr = tbr;
-    }
-
-    @ExcelResources(title = "填报人", order = 23)
-    public String getTbr() {
-        return this.tbr;
-    }
 
     public void setTbrid(String tbrid) {
         this.tbrid = tbrid;
@@ -685,11 +649,11 @@ public class KhYhHistory implements Serializable {
         return xlzycd;
     }
 
-    public String getSfdj() {
+    public int getSfdj() {
         return sfdj;
     }
 
-    public void setSfdj(String SFDJ) {
+    public void setSfdj(int SFDJ) {
         this.sfdj = SFDJ;
     }
 
