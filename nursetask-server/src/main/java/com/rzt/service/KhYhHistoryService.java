@@ -59,12 +59,13 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 yh.setJd(jd+"");
                 yh.setWd(wd+"");
             }
-            yh.setSfdj(0);
+            yh.setSdgs("1");
+            yh.setSfdj(0);  //是否定级
             yh.setYhzt("0");//隐患未消除
             yh.setCreateTime(DateUtil.dateNow());
             yh.setSection(startTowerName + "-" + endTowerName);
             this.add(yh);
-            return WebApiResponse.success("");
+            return WebApiResponse.success("数据保存成功");
         } catch (Exception e) {
             return WebApiResponse.erro("数据保存失败");
         }
