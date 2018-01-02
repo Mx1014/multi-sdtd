@@ -129,22 +129,8 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         this.reposiotry.updateRealStartTime(time, id);
     }
 
-    public void updateTaskById(String userId, String id) {
-        //KhSite one = siteRepository.findSite(Long.parseLong(id));
-        /*if (site.getKhfzrId1()== null){
-            site.setKhfzrId1(one.getKhfzrId1());
-        }
-        if (site.getKhfzrId2()== null){
-            site.setKhfzrId2(one.getKhfzrId2());
-        }
-        if (site.getKhdyId1()== null){
-            site.setKhdyId1(one.getKhdyId1());
-        }
-        if (site.getKhdyId2()== null){
-            site.setKhdyId2(one.getKhdyId2());
-        }
-        this.reposiotry.updateTaskById(Long.parseLong(id),site.getKhfzrId1(),site.getKhfzrId2(),site.getKhdyId1(),site.getKhdyId2());*/
-        this.reposiotry.updateTaskById(userId, id);
+    public void updateTaskById(String startTime,String endTime,String userId, String id) {
+        this.reposiotry.updateSiteById(userId, id,startTime,endTime);
     }
 
 
