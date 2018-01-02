@@ -40,7 +40,7 @@
 //public class XsTxbdCycleController extends
 //		CurdController<XsTxbdCycle,XsTxbdCycleService> {
 //	@Autowired
-//	private XSZCTASKService xszctaskService;
+//	private XsTxbdCycleService xsTxbdCycleService;
 //
 //	/**
 //	 * @Method addCycle
@@ -52,10 +52,10 @@
 //	 */
 //	@ApiOperation(value = "周期维护 新增周期",notes = "pc端新增周期")
 //	@PostMapping("addCycle")
-//	public Object addCycle( XsZcCycle xsZcCycle) {
+//	public Object addCycle( XsTxbdCycle xsTxbdCycle) {
 //		try {
-//			xsZcCycle.setTotalTaskNum(0);
-//			xsZcCycle.setCreateTime(DateUtil.dateNow());
+//            xsTxbdCycle.setTotalTaskNum(0);
+//            xsTxbdCycle.setCreateTime(DateUtil.dateNow());
 //			Object o = this.service.addCycle(xsZcCycle);
 //			return WebApiResponse.success("数据新增成功");
 //		} catch (Exception var) {

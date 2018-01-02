@@ -8,7 +8,7 @@ public class XsTaskSCh implements Serializable {
     private Date endDate;
     private Integer status;
     private Integer v_type;
-    private Integer lineId;
+    private Long lineId;
     private String lineName;
     private Integer ispf;
     private String tdOrg;
@@ -70,11 +70,11 @@ public class XsTaskSCh implements Serializable {
         this.v_type = v_type;
     }
 
-    public Integer getLineId() {
+    public Long getLineId() {
         return lineId;
     }
 
-    public void setLineId(Integer lineId) {
+    public void setLineId(Long lineId) {
         this.lineId = lineId;
     }
 

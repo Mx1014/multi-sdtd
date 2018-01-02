@@ -15,8 +15,9 @@ import com.rzt.service.CurdService;
 import com.rzt.service.app.XSZCTASKService;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DateUtil;
-import org.apache.commons.lang.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
@@ -43,7 +44,8 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
     @Autowired
     private XsZcCycleLineTowerService xsZcCycleLineTowerService;
     /***
-    * @Method addCycle
+    * @Method
+     * addCycle
     * @Description 新增周期
     * @param xsZcCycle
     * @return java.lang.Object
@@ -55,30 +57,25 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
 
     @Modifying
     @Transactional
-    public Object addCycle(XsZcCycle xsZcCycle) {
-        try {
-            //添加周期
-            xsZcCycle.setId();
-            xsZcCycle.setCreateTime(new Date());
-            this.add(xsZcCycle);
-            //添加周期表关联的线路杆塔
-            Long xsZcCycleId = xsZcCycle.getId();
-            Long lineId = xsZcCycle.getLineId();
-            Integer xsStartSort = xsZcCycle.getXsStartSort();
-            Integer xsEndSort = xsZcCycle.getXsEndSort();
-            String sql = "select * from cm_line_tower where line_id = ?1 and sort between ?2 and ?3";
-            List<Map<String, Object>> lineTowerList = this.execSql(sql,lineId,xsStartSort,xsEndSort);
-            for (Map<String,Object> lineTower: lineTowerList) {
-                long lineTowerId = Long.parseLong(lineTower.get("ID").toString());
-                XsZcCycleLineTower xsZcCycleLineTower = new XsZcCycleLineTower();
-                xsZcCycleLineTower.setId();
-                xsZcCycleLineTower.setCmLineTowerId(lineTowerId);
-                xsZcCycleLineTower.setXsZcCycleId(xsZcCycleId);
-                xsZcCycleLineTowerService.add(xsZcCycleLineTower);
-            }
-            return WebApiResponse.success("数据保存成功!");
-        } catch (Exception var3) {
-            return WebApiResponse.erro("出错了" + var3.getMessage());
+    public void addCycle(XsZcCycle xsZcCycle) {
+        //添加周期
+        xsZcCycle.setId();
+        xsZcCycle.setCreateTime(new Date());
+        this.add(xsZcCycle);
+        //添加周期表关联的线路杆塔
+        Long xsZcCycleId = xsZcCycle.getId();
+        Long lineId = xsZcCycle.getLineId();
+        Integer xsStartSort = xsZcCycle.getXsStartSort();
+        Integer xsEndSort = xsZcCycle.getXsEndSort();
+        String sql = "select * from cm_line_tower where line_id = ?1 and tower_id between ?2 and ?3";
+        List<Map<String, Object>> lineTowerList = this.execSql(sql,lineId,xsStartSort,xsEndSort);
+        for (Map<String,Object> lineTower: lineTowerList) {
+            long towerId = Long.parseLong(lineTower.get("TOWER_ID").toString());
+            XsZcCycleLineTower xsZcCycleLineTower = new XsZcCycleLineTower();
+            xsZcCycleLineTower.setId();
+            xsZcCycleLineTower.setCmLineTowerId(towerId);
+            xsZcCycleLineTower.setXsZcCycleId(xsZcCycleId);
+            xsZcCycleLineTowerService.add(xsZcCycleLineTower);
         }
     }
 
@@ -162,7 +159,7 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
         }
 
         //线路id
-        Integer lineId = xsTaskSch.getLineId();
+        Long lineId = xsTaskSch.getLineId();
         if(lineId != null) {
             sqlBuffer.append(" and line_id = ?");
             arrList.add(lineId);
@@ -201,13 +198,13 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
     public Object listPlan(Pageable pageable, XsTaskSCh xsTaskSch) {
         StringBuffer sqlBuffer = new StringBuffer();
         ArrayList arrList = new ArrayList();
-        sqlBuffer.append("SELECT * FROM xs_zc_task where 1 = 1");
+        sqlBuffer.append("SELECT * FROM xs_zc_task where 1 = 1 and is_delete = 0 ");
 
         //开始日期 结束日期
         Date startDate = xsTaskSch.getStartDate();
         Date endDate = xsTaskSch.getEndDate();
         if (startDate != null && endDate != null) {
-            sqlBuffer.append("and plan_start_time between ? and ?");
+            sqlBuffer.append("and plan_start_time between ? and ? ");
             arrList.add(startDate);
             arrList.add(endDate);
         }
@@ -215,7 +212,7 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
         //状态 0 未开始 1 巡视中 2 已完成
         Integer status = xsTaskSch.getStatus();
         if (status != null) {
-            sqlBuffer.append("and status = ?");
+            sqlBuffer.append("and stauts = ? ");
             arrList.add(status);
 
         }
@@ -223,7 +220,14 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
         //人员id
         String userId = xsTaskSch.getUserId();
         if (userId != null) {
-            sqlBuffer.append("and cm_user_id = ?");
+            sqlBuffer.append("and cm_user_id = ? ");
+            arrList.add(userId);
+        }
+
+        //线路id
+        Long lineId = xsTaskSch.getLineId();
+        if (userId != null) {
+            sqlBuffer.append("and cm_user_id = ? ");
             arrList.add(userId);
         }
 
@@ -242,19 +246,40 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
     * @date 2017/12/15 16:56
     * @author nwz
     */
+    @Cacheable(value = "xsZcCycles" , key = "#id")
     public Object getCycle(Long id) throws Exception{
         String sql = "select * from xs_zc_cycle where id = ?";
         Map<String, Object> cycle = this.execSqlSingleResult(sql, id);
         return cycle;
     }
 
+    @CacheEvict(value = "xsZcCycles" , key = "#id")
     public void updateCycle(Long id, Integer cycle, Integer inUse, Integer planXsNum, String planStartTime, String planEndTime) {
         this.reposiotry.updateCycle(id,cycle,inUse,planXsNum,planStartTime,planEndTime);
     }
 
-    public Object listPictureById(Long taskId) {
-        String sql = "select FILE_PATH \"filePath\" from PICTURE_TOUR WHERE TASK_ID = ?";
+    public Object listPictureById(Long taskId, Integer zj) {
+        String sql = "select PROCESS_NAME \"name\",FILE_SMALL_PATH \"smallFilePath\",FILE_PATH \"filePath\",CREATE_TIME \"createTime\" from PICTURE_TOUR WHERE TASK_ID = ? order by id";
+        if(zj == 1) {
+            sql += " desc";
+        }
         List<Map<String, Object>> maps = this.execSql(sql, taskId);
         return maps;
+    }
+
+    public Object listExecByTaskid(Long taskId) {
+        String sql = "select id,XS_CREATE_TIME,XS_END_TIME,XS_STATUS,XS_REPEAT_NUM from XS_ZC_TASK_EXEC where XS_ZC_TASK_ID = ? order by ID";
+        List<Map<String, Object>> maps = this.execSql(sql, taskId);
+        return maps;
+    }
+
+    public Object listExecDetail(Long execId) {
+        String sql = "select t.ID,t.IS_DW,t.OPERATE_NAME,t.END_TIME,t.REASON,t.REALLONGITUDE,t.REALLATITUDE,tt.LONGITUDE,tt.LATITUDE from (select * from XS_ZC_TASK_EXEC_DETAIL where XS_ZC_TASK_EXEC_ID = ? and end_tower_id = '0') t join CM_TOWER tt on t.START_TOWER_ID = tt.ID";
+        List<Map<String, Object>> maps = this.execSql(sql, execId);
+        return maps;
+    }
+
+    public void logicalDeletePlan(Long[] ids) {
+        this.reposiotry.logicalDeletePlan(ids);
     }
 }

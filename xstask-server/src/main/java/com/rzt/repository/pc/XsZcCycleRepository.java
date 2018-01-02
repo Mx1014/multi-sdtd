@@ -43,4 +43,10 @@ public interface XsZcCycleRepository extends JpaRepository<XsZcCycle,String> {
     @Transactional
     @Query(value = "update xs_zc_cycle set TOTAL_TASK_NUM = 1 where id= ?1", nativeQuery = true)
     void updateTotalTaskNum(Long xsZcCycleId);
+
+
+    @Modifying
+    @Transactional
+    @Query(value = "update xs_zc_task set is_delete = 1 where id in (?1)", nativeQuery = true)
+    void logicalDeletePlan(Long[] ids);
 }
