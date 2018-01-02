@@ -1,8 +1,8 @@
-/**    
+/**
  * 文件名：ANOMALYMONITORINGController
- * 版本信息：    
- * 日期：2017/12/31 16:25:17    
- * Copyright 融智通科技(北京)股份有限公司 版权所有    
+ * 版本信息：
+ * 日期：2017/12/31 16:25:17
+ * Copyright 融智通科技(北京)股份有限公司 版权所有
  */
 package com.rzt.controller;
 
@@ -11,18 +11,19 @@ import com.rzt.service.AnomalymonitoringService;
 import com.rzt.util.WebApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
  * 类名称：ANOMALYMONITORINGController
- * 类描述：    
- * 创建人：张虎成   
- * 创建时间：2017/12/31 16:25:17 
- * 修改人：张虎成    
- * 修改时间：2017/12/31 16:25:17    
- * 修改备注：    
- * @version        
+ * 类描述：
+ * 创建人：张虎成
+ * 创建时间：2017/12/31 16:25:17
+ * 修改人：张虎成
+ * 修改时间：2017/12/31 16:25:17
+ * 修改备注：
+ * @version
  */
 @RestController
 @RequestMapping("ANOMALYMONITORING")
@@ -85,5 +86,35 @@ public class AnomalymonitoringController extends
     @GetMapping("khGjCZ")
     public WebApiResponse khGjCZ(Integer orgtype, Integer page, Integer size, String date, String orgid, String type) {
         return this.service.khGjCZ(orgtype, page, size, date, orgid, type);
+    }
+
+    /**
+     * 处理中
+     *
+     * @param orgtype     一级还是二级单位
+     * @param explain
+     * @param status
+     * @param tasktype
+     * @param anomalytype
+     * @return
+     */
+    @PostMapping("anomalyIns")
+    public WebApiResponse anomalyIns(String orgtype, String explain, Integer status, Integer tasktype, Integer anomalytype) {
+        return this.service.anomalyIns(orgtype, explain, status, tasktype, anomalytype);
+    }
+
+    /**
+     * 已完成处理
+     *
+     * @param orgtype
+     * @param explain
+     * @param status
+     * @param tasktype
+     * @param anomalytype
+     * @return
+     */
+    @PostMapping("anomalyInsO")
+    public WebApiResponse anomalyInsO(String orgtype, String explain, Integer status, Integer tasktype, Integer anomalytype, Integer assessment) {
+        return this.service.anomalyInsO(orgtype, explain, status, tasktype, anomalytype, assessment);
     }
 }

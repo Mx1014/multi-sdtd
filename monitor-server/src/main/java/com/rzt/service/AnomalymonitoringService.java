@@ -10,6 +10,9 @@ import com.rzt.entity.Anomalymonitoring;
 import com.rzt.repository.AnomalymonitoringRepository;
 import com.rzt.util.WebApiResponse;
 import org.springframework.data.domain.Page;
+import com.rzt.utils.DateUtil;
+import com.rzt.utils.SnowflakeIdWorker;
+import com.sun.org.apache.regexp.internal.RE;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -20,13 +23,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 类名称：ANOMALYMONITORINGService    
+ * 类名称：ANOMALYMONITORINGService
  * 类描述：${table.comment}
- * 创建人：张虎成   
- * 创建时间：2017/12/31 16:25:17 
- * 修改人：张虎成    
- * 修改时间：2017/12/31 16:25:17    
- * 修改备注：    
+ * 创建人：张虎成
+ * 创建时间：2017/12/31 16:25:17
+ * 修改人：张虎成
+ * 修改时间：2017/12/31 16:25:17
+ * 修改备注：
  * @version
  */
 @Service
@@ -712,6 +715,66 @@ public class AnomalymonitoringService extends CurdService<Anomalymonitoring, Ano
                 return WebApiResponse.erro("erro");
             }
         }
+    }
+
+    /**
+     * 处理中
+     *
+     * @param orgtype
+     * @param explain
+     * @param status
+     * @param tasktype
+     * @param anomalytype
+     * @return
+     */
+    public WebApiResponse anomalyIns(String orgtype, String explain, Integer status, Integer tasktype, Integer anomalytype) {
+        if (!orgtype.equals("0")) {
+            Long id = new SnowflakeIdWorker(19, 25).nextId();
+            try {
+                return WebApiResponse.success(this.reposiotry.ejAnomalyIns(id, explain, status, tasktype, anomalytype));
+            } catch (Exception e) {
+                e.printStackTrace();
+                return WebApiResponse.erro("erro");
+            }
+        } else {
+            Long id = new SnowflakeIdWorker(19, 25).nextId();
+            try {
+                return WebApiResponse.success(this.reposiotry.yiAnomalyIns(id, explain, status, tasktype, anomalytype));
+            } catch (Exception e) {
+                return WebApiResponse.erro("erro");
+            }
+        }
+
+    }
+
+    /**
+     * 已完成处理
+     *
+     * @param orgtype
+     * @param explain
+     * @param status
+     * @param tasktype
+     * @param anomalytype
+     * @return
+     */
+    public WebApiResponse anomalyInsO(String orgtype, String explain, Integer status, Integer tasktype, Integer anomalytype,Integer assessment) {
+        if (!orgtype.equals("0")) {
+            Long id = new SnowflakeIdWorker(19, 25).nextId();
+            try {
+                return WebApiResponse.success(this.reposiotry.ejAnomalyInsO(id, explain, status, tasktype, anomalytype,assessment));
+            } catch (Exception e) {
+                e.printStackTrace();
+                return WebApiResponse.erro("erro");
+            }
+        } else {
+            Long id = new SnowflakeIdWorker(19, 25).nextId();
+            try {
+                return WebApiResponse.success(this.reposiotry.yjAnomalyInsO(id, explain, status, tasktype, anomalytype,assessment));
+            } catch (Exception e) {
+                return WebApiResponse.erro("erro");
+            }
+        }
+
     }
 
 }
