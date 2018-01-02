@@ -177,4 +177,18 @@ public class PICTURETOURService extends CurdService<PICTURETOUR,PICTURETOURRepos
         return result;
 
     }
+
+    public Object getImgsByExecId(String execId) {
+        Map<String, Object> result = new HashMap<>();
+        ArrayList<String> params = new ArrayList<>();
+        String sql= "select id,file_path,file_small_path,PROCESS_NAME from picture_tour where 1=1 ";
+        if(!StringUtils.isEmpty(execId)){
+            params.add(execId);
+            sql += " and process_id in (select ID from XS_ZC_TASK_EXEC_DETAIL where xs_zc_task_exec_id = ?)"+params.size();
+        }
+        List<Map<String, Object>> maps = execSql(sql, params.toArray());
+        result.put("success",true);
+        result.put("object",maps);
+        return result;
+    }
 }
