@@ -18,10 +18,10 @@ import org.springframework.cloud.netflix.feign.EnableFeignClients;
 * @date 2017/12/10 15:57
 * @author nwz
 */
-public class XstaskServerApplication {
+public class Application {
 
     public static void main(String[] args) {
-        SpringApplication.run(XstaskServerApplication.class, args);
+        SpringApplication.run(Application.class, args);
     }
 
 //    @Bean
