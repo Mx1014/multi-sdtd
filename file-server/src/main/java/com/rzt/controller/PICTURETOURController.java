@@ -87,6 +87,15 @@ public class PICTURETOURController extends
     }
 
     @ApiOperation(
+            value = "巡视获取某一轮的照片",
+            notes = "根据execId获取某一轮的照片"
+    )
+    @GetMapping("getImgsByExecId")
+    public Object getImgsByExecId(String execId) {
+        return service.getImgsByExecId(execId);
+    }
+
+    @ApiOperation(
             value = "根据id获取照片",
             notes = "根据id获取照片"
     )
