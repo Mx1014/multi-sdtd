@@ -61,23 +61,11 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
-    public Page listAllTaskNotDo(KhTaskModel task, Pageable pageable, String userName, String deptId) {
+    public Object listAllTaskNotDo(KhTaskModel task, Pageable pageable, String userName, String deptId,String roleType) {
         List params = new ArrayList<>();
         StringBuffer buffer = new StringBuffer();
-        // task = timeUtil(task);
         String result = " k.id as id,k.task_name as taskName,k.tdyw_org as yworg,y.yhms as ms,y.yhjb as jb,k.create_time as createTime,k.COUNT as COUNT,u.realname as username,k.jbd as jbd ";
         String result1 = " k.id as id,k.task_name as taskName,k.tdyw_org as yworg,y.yhms as ms,y.yhjb as jb,k.create_time as createTime ";
-
-
-      /*  Jedis jedis = RedisUtil.getConnection();
-        Set<String> key = jedis.zrange("key", 1, 2);
-        Iterator<String> iterator = key.iterator();
-        if (!iterator.next().equals("1")){
-            buffer.append(" and u.deptid = ?");
-            params.add(deptId);
-        }*/
-
-
         buffer.append(" where k.status = ?");// 0为未派发的任务
         params.add(task.getStatus());
         if (task.getPlanStartTime() != null && !task.getPlanStartTime().equals("")) {
@@ -94,13 +82,46 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             buffer.append(" and u.realname like ? ");
             params.add(userName);
         }
-        buffer.append(" order by k.create_time desc ");
+
         String sql = "";
-        if (task.getStatus().equals("1")) {
-            sql = "select " + result + " from kh_site k left join kh_yh_history y on k.yh_id = y.id left join rztsysuser u on u.id = k.user_id" + buffer.toString();
-        } else {
-            sql = "select " + result1 + "from kh_cycle k left join kh_yh_history y on k.yh_id = y.id " + buffer.toString();
+        if (roleType.equals("1") || roleType.equals("2")) {
+            if (task.getStatus().equals("1")) {
+                sql = "select " + result + " from kh_site k ,kh_yh_history y,rztsysuser u,RZTSYSDEPARTMENT d  " + buffer.toString()+" and k.yh_id = y.id and u.id = k.user_id and d.id = u.deptid and u.deptid = (select DEPTID FROM RZTSYSUSER where id =?) ";
+            } else {
+                sql = "select " + result1 + "from kh_cycle k,kh_yh_history y " + buffer.toString()+" and k.yh_id = y.id  and k.tdyw_org = (select d.deptname FROM RZTSYSUSER u,RZTSYSDEPARTMENT d where d.id= u.deptid and u.id =?) ";
+            }
+            params.add(task.getUserId());
+        } else if (roleType.equals("3")) {
+            if (task.getStatus().equals("1")) {
+                sql = "select " + result + " from kh_site k ,kh_yh_history y,rztsysuser u,RZTSYSCOMPANY d  " + buffer.toString()+" and  k.yh_id = y.id and u.id = k.user_id and d.id = u.COMPANYID and u.COMPANYID = (select COMPANYID FROM RZTSYSUSER where id =?) ";
+            } else {
+                sql = "select " + result1 + "from kh_cycle k,kh_yh_history y " + buffer.toString()+" and k.yh_id = y.id and k.WX_ORG = (select d.COMPANYNAME FROM RZTSYSUSER u,RZTSYSCOMPANY d where d.id= u.COMPANYID and u.id =?) ";
+            }
+            params.add(task.getUserId());
+        } else if (roleType.equals("4")) {
+            if (task.getStatus().equals("1")) {
+                sql = "select " + result + " from kh_site k ,kh_yh_history y,rztsysuser u,RZTSYSDEPARTMENT d  " + buffer.toString()+" and  k.yh_id = y.id and u.id = k.user_id and d.id = u.classname and u.classname = (select classname FROM RZTSYSUSER where id =?) ";
+            } else {
+               // sql = "select " + result1 + "from kh_cycle k,kh_yh_history y " + buffer.toString()+" and k.yh_id = y.id and k.tdyw_org = d.deptname and k.tdyw_org = (select d.deptname FROM RZTSYSUSER u,RZTSYSDEPARTMENT d where d.id= u.deptid and u.id =?) ";
+                return new ArrayList<>();
+            }
+            params.add(task.getUserId());
+        } else if (roleType.equals("5")) {
+            if (task.getStatus().equals("1")) {
+                sql = "select " + result + " from kh_site k ,kh_yh_history y,rztsysuser u  " + buffer.toString()+" and k.yh_id = y.id and u.id = k.user_id and k.user_id = ?";
+            } else {
+               // sql = "select " + result1 + "from kh_cycle k,kh_yh_history y,RZTSYSDEPARTMENT d " + buffer.toString()+" and k.yh_id = y.id and k.tdyw_org = d.deptname and k.tdyw_org = (select d.deptname FROM RZTSYSUSER u,RZTSYSDEPARTMENT d where d.id= u.deptid and u.id =?) ";
+                return new ArrayList<>();
+            }
+            params.add(task.getUserId());
+        }else{
+            if (task.getStatus().equals("1")) {
+                sql = "select " + result + " from kh_site k ,kh_yh_history y,rztsysuser u " + buffer.toString()+" and k.yh_id = y.id and u.id = k.user_id";
+            } else {
+                sql = "select " + result1 + "from kh_cycle k left join kh_yh_history y on k.yh_id = y.id " + buffer.toString();
+            }
         }
+        sql = sql +" order by k.create_time desc";
         //String sql = "select * from listAllTaskNotDo "+buffer.toString();
         Page<Map<String, Object>> maps1 = this.execSqlPage(pageable, sql, params.toArray());
         List<Map<String, Object>> content1 = maps1.getContent();
@@ -174,9 +195,9 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                 double jd = (Double.parseDouble(map.get("LONGITUDE").toString()) + Double.parseDouble(map1.get("LONGITUDE").toString())) / 2;
                 double wd = (Double.parseDouble(map.get("LATITUDE").toString()) + Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
                 double radius = MapUtil.GetDistance(Double.parseDouble(map.get("LONGITUDE").toString()), Double.parseDouble(map.get("LATITUDE").toString()), Double.parseDouble(map1.get("LONGITUDE").toString()), Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
-                yh.setRadius(radius+"");
-                yh.setJd(jd+"");
-                yh.setWd(wd+"");
+                yh.setRadius(radius + "");
+                yh.setJd(jd + "");
+                yh.setWd(wd + "");
             }
             KhCycle task = new KhCycle();
             task.setId();
@@ -198,9 +219,8 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
 //            task.setCount(0);//生成任务次数0
             task.setYhId(yh.getId());
             task.setCreateTime(DateUtil.dateNow());
-
             this.cycleService.add(task);
-            CheckLiveTask check = new CheckLiveTask();
+           /* CheckLiveTask check = new CheckLiveTask();
             check.setCheckType(0); //0为 看护类型稽查
             check.setTaskId(task.getId());
             check.setTaskType(1);// 1 为正常稽查
@@ -227,7 +247,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             check1.setYhId(yh.getId());
             check1.setDzwl(1);
             check1.setId();
-            checkService.add(check1);
+            checkService.add(check1);*/
             return WebApiResponse.success("保存成功");
         } catch (Exception e) {
             e.printStackTrace();
@@ -348,4 +368,59 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                     site.setKhdyId2(UserId);
                     task.setGroupFlag(groupFlag + "12");
                 }*/
+
+    /*public Page listAllTaskNotDo(KhTaskModel task, Pageable pageable, String userName, String deptId) {
+        String roleType = "";
+        List params = new ArrayList<>();
+        StringBuffer buffer = new StringBuffer();
+        if (roleType.equals("1") || roleType.equals("2")) {
+            buffer.append(" and d.id = u.deptid and u.deptid = (select DEPTID FROM RZTSYSUSER where id =?) ");
+            params.add(task.getUserId());
+        } else if (roleType.equals("3")) {
+            buffer.append(" and d.id = u.companyid and u.deptid = (select DEPTID FROM RZTSYSUSER where id =?) ");
+            params.add(task.getUserId());
+        } else if (roleType.equals("4")) {
+            buffer.append(" and d.id = u.deptid and u.deptid = (select DEPTID FROM RZTSYSUSER where id =?) ");
+            params.add(task.getUserId());
+        } else if (roleType.equals("5")) {
+            buffer.append(" and d.id = u.deptid and u.deptid = (select DEPTID FROM RZTSYSUSER where id =?) ");
+            params.add(task.getUserId());
+        }
+        // task = timeUtil(task);
+        String result = " k.id as id,k.task_name as taskName,k.tdyw_org as yworg,y.yhms as ms,y.yhjb as jb,k.create_time as createTime,k.COUNT as COUNT,u.realname as username,k.jbd as jbd ";
+        String result1 = " k.id as id,k.task_name as taskName,k.tdyw_org as yworg,y.yhms as ms,y.yhjb as jb,k.create_time as createTime ";
+        buffer.append(" and k.status = ?");// 0为未派发的任务
+        params.add(task.getStatus());
+        if (task.getPlanStartTime() != null && !task.getPlanStartTime().equals("")) {
+            buffer.append(" and k.create_time between to_date(?,'YYYY-MM-DD hh24:mi') and to_date(?,'YYYY-MM-DD hh24:mi') ");
+            params.add(task.getPlanStartTime());
+            params.add(task.getPlanEndTime());
+        }
+        if (task.getTaskName() != null && !task.getTaskName().equals("")) {  //线路名查询
+            task.setTaskName("%" + task.getTaskName() + "%");
+            buffer.append(" and k.task_name like ? ");
+            params.add(task.getTaskName());
+        }
+        if (userName != null) {
+            buffer.append(" and u.realname like ? ");
+            params.add(userName);
+        }
+
+        String sql = "";
+
+        buffer.append(" order by k.create_time desc ");
+        if (task.getStatus().equals("1")) {
+            //sql = "select " + result + " from kh_site k left join kh_yh_history y on k.yh_id = y.id left join rztsysuser u on u.id = k.user_id left join RZTSYSDEPARTMENT d on k.TDYW_ORG = d.DEPTNAME " + buffer.toString();
+            sql = "select " + result + " from kh_site k ,kh_yh_history y,rztsysuser u,RZTSYSDEPARTMENT d  where k.yh_id = y.id and u.id = k.user_id" + buffer.toString();
+        } else {
+            //sql = "select " + result1 + "from kh_cycle k left join kh_yh_history y on k.yh_id = y.id left join RZTSYSDEPARTMENT d on k.TDYW_ORG = d.DEPTNAME " + buffer.toString();
+        }
+        //String sql = "select * from listAllTaskNotDo "+buffer.toString();
+        Page<Map<String, Object>> maps1 = this.execSqlPage(pageable, sql, params.toArray());
+        List<Map<String, Object>> content1 = maps1.getContent();
+        for (Map map : content1) {
+            map.put("ID", map.get("ID") + "");
+        }
+        return maps1;
+    }*/
 }

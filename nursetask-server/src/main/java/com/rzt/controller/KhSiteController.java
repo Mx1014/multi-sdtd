@@ -68,11 +68,11 @@ public class KhSiteController extends
      */
     @GetMapping("/listAllTaskNotDo.do")
     @ResponseBody
-    public WebApiResponse listAllTaskNotDo(HttpServletResponse response, KhTaskModel task, Pageable pageable, String userName,String deptId) {
+    public WebApiResponse listAllTaskNotDo(HttpServletResponse response, KhTaskModel task, Pageable pageable, String userName,String deptId,String roleType) {
         try {
             //分页参数 page size
-            Page list = this.service.listAllTaskNotDo(task, pageable, userName,deptId);
-            return WebApiResponse.success(list);
+//            Object list = this.service.listAllTaskNotDo(task, pageable, userName,deptId,roleType);
+            return WebApiResponse.success(this.service.listAllTaskNotDo(task, pageable, userName,deptId,roleType));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("数据查询失败" + e.getMessage());
