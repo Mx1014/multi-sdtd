@@ -1,5 +1,5 @@
 spring:
   profiles:
-    active: liuze
+    active: prd
 
     #
