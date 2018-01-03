@@ -89,6 +89,8 @@ public class KhTaskController extends
 			return WebApiResponse.erro("数据获取失败" + e.getMessage());
 		}
 	}
+
+	//任务查询页面的导出文件
 	@GetMapping("/exportKhTask.do")
 	public void exportKhTask(HttpServletRequest request, HttpServletResponse response){
 		try {

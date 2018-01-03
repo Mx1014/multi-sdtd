@@ -8,6 +8,7 @@ package com.rzt.entity;
 
 import com.rzt.util.excelUtil.ExcelResources;
 import com.rzt.utils.SnowflakeIdWorker;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -32,16 +33,13 @@ public class CheckLiveTaskDetailXs  implements Serializable{
     //字段描述:
     @Id
     private Long id;
-    //字段描述: 稽查父任务id(check_live_task_exec表id)
-    @Column(name = "EXEC_ID")
-    private Long execId;
     //字段描述: 稽查任务id（check_live_task表）
     @Column(name = "TASK_ID")
     private Long taskId;
     //字段描述: 巡视任务id
     @Column(name = "XS_TASK_ID")
     private Long xsTaskId;
-    //字段描述: 巡视任务类型（0 特殊 1保电 2 正常）
+    //字段描述: 巡视任务类型（0 正常 1保电 2 特殊）
     @Column(name = "XS_TASK_TYPE")
     private Integer xsTaskType;
     //字段描述: 计划开始时间
@@ -49,9 +47,11 @@ public class CheckLiveTaskDetailXs  implements Serializable{
     private Date planStartTime;
     //字段描述: 计划结束时间
     @Column(name = "PLAN_END_TIME")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date planEndTime;
     //字段描述: 实际开始时间
     @Column(name = "REAL_START_TIME")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date realStartTime;
     //字段描述: 实际结束时间
     @Column(name = "REAL_END_TIME")
@@ -88,19 +88,11 @@ public class CheckLiveTaskDetailXs  implements Serializable{
     private Date createTime;
 
     public void setId(){
-        this.id =   new SnowflakeIdWorker(0,0).nextId();
+        this.id =   new SnowflakeIdWorker(3,0).nextId();
     }
     @ExcelResources(title="",order=1)
     public Long getId(){
         return this.id;
-    }
-
-    public void setExecId(Long execId){
-        this.execId = execId;
-    }
-    @ExcelResources(title="稽查父任务id(check_live_task_exec表id)",order=2)
-    public Long getExecId(){
-        return this.execId;
     }
 
     public void setTaskId(Long taskId){

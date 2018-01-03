@@ -31,12 +31,12 @@ import java.util.List;
 public interface KhSiteRepository extends JpaRepository<KhSite, String> {
 
     @Modifying
-    @Query(value = "update kh_site set status=2,khxq_time=?2 where id= ?1", nativeQuery = true)
+    @Query(value = "update kh_site set status=2,khxq_time=?2 where yh_id= ?1", nativeQuery = true)
     @Transactional
     int updateQxTask(long id, Date date);
 
     @Modifying
-    @Query(value = "update kh_task set status='已完成',plan_end_time=?2 where site_id= ?1 and status in ('未开始','进行中')", nativeQuery = true)
+    @Query(value = "update kh_task set status='已取消',REAL_END_TIME=?2 where yh_id= ?1 and status in ('未开始','进行中')", nativeQuery = true)
     @Transactional
     void updateDoingTask(long id, Date date);
 
@@ -66,7 +66,7 @@ public interface KhSiteRepository extends JpaRepository<KhSite, String> {
 
 
     @Modifying
-    @Query(value = "update kh_cycle set xq_time = sysdate,status=2 where id = ?1", nativeQuery = true)
+    @Query(value = "update kh_cycle set xq_time = sysdate,status=2 where yh_id = ?1", nativeQuery = true)
     @Transactional
     void updateKhCycle(long id);
 
@@ -91,4 +91,5 @@ public interface KhSiteRepository extends JpaRepository<KhSite, String> {
 
     @Query(value = "select * from KH_SITE WHERE STATUS=1",nativeQuery = true)
     List<KhSite> findSites();
+
 }

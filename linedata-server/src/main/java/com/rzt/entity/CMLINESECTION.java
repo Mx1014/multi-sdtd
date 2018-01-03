@@ -29,12 +29,15 @@ public class CMLINESECTION implements Serializable{
 	//字段描述: 
    	 @Id
      private Long id;        
-    	//字段描述: 线路名称
+    	//字段描述: 线路名称拼音
    	 @Column(name = "LINE_NAME")
      private String lineName;
+	//字段描述: 线路名称汉子
+	@Column(name = "LINE_NAME1")
+	private String lineName1;
     	//字段描述: 线路id
    	 @Column(name = "LINE_ID")
-     private String lineId;
+     private Long lineId;
     	//字段描述: 段落
    	 @Column(name = "SECTION")
      private String section;
@@ -52,10 +55,10 @@ public class CMLINESECTION implements Serializable{
      private String lineJb;
     	//字段描述: 起始杆塔序号
    	 @Column(name = "START_SORT")
-     private String startSort;
+     private Integer startSort;
     	//字段描述: 终止杆塔序号
    	 @Column(name = "END_SORT")
-     private String endSort;
+     private Integer endSort;
     	//字段描述: 通道单位id
    	 @Column(name = "TD_ORG")
      private String tdOrg;
@@ -71,7 +74,25 @@ public class CMLINESECTION implements Serializable{
     	//字段描述: 
    	 @Column(name = "TD_ORG_NAME")
      private String tdOrgName;
-    
+   	 @Column(name = "FJ_TOWER")
+   	 private Integer fjTower;
+
+	public String getLineName1() {
+		return lineName1;
+	}
+
+	public void setLineName1(String lineName1) {
+		this.lineName1 = lineName1;
+	}
+
+	public Integer getFjTower() {
+		return fjTower;
+	}
+
+	public void setFjTower(Integer fjTower) {
+		this.fjTower = fjTower;
+	}
+
 	public void setId(Long id){
 		if(id==null||id==0){
 			this.id = new SnowflakeIdWorker(1,2).nextId();
@@ -94,10 +115,10 @@ public class CMLINESECTION implements Serializable{
 	
 	
 
-	public void setLineId(String lineId){
+	public void setLineId(Long lineId){
 		this.lineId = lineId;
 	}
-    public String getLineId(){
+    public Long getLineId(){
 		return this.lineId;
 	}
 	
@@ -148,19 +169,19 @@ public class CMLINESECTION implements Serializable{
 	
 	
 
-	public void setStartSort(String startSort){
+	public void setStartSort(Integer startSort){
 		this.startSort = startSort;
 	}
-    public String getStartSort(){
+    public Integer getStartSort(){
 		return this.startSort;
 	}
 	
 	
 
-	public void setEndSort(String endSort){
+	public void setEndSort(Integer endSort){
 		this.endSort = endSort;
 	}
-    public String getEndSort(){
+    public Integer getEndSort(){
 		return this.endSort;
 	}
 	

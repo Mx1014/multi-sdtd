@@ -2,7 +2,7 @@
 <configuration scan="true" scanPeriod="10 seconds">
     <include resource="org/springframework/boot/logging/logback/base.xml" />
 
-    <property name="LOG_PATH" value="D:/rzt/log/" />
+    <property name="LOG_PATH" value="F:/rzt/log/" />
 
     <!--<appender name="INFO_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <File>${LOG_PATH}/info.log</File>
@@ -42,12 +42,12 @@
     <!--TRACE, DEBUG, INFO, WARN, ERROR, ALL 和 OFF-->
     <!-- hibernate日志输入 -->
     <logger name="org.hibernate.type.descriptor.sql.BasicBinder"
-        level="DEBUG" />
+        level="ERROR" />
     <logger name="org.hibernate.type.descriptor.sql.BasicExtractor"
-        level="DEBUG" />
-    <logger name="org.hibernate.SQL" level="DEBUG" />
-    <logger name="org.hibernate.engine.QueryParameters" level="DEBUG" />
-    <logger name="org.hibernate.engine.query.HQLQueryPlan" level="DEBUG" />
+        level="ERROR" />
+    <logger name="org.hibernate.SQL" level="ERROR" />
+    <logger name="org.hibernate.engine.QueryParameters" level="ERROR" />
+    <logger name="org.hibernate.engine.query.HQLQueryPlan" level="ERROR" />
 
     <!--myibatis log configure-->
     <!--<logger name="com.apache.ibatis" level="TRACE"/>
