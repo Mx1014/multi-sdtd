@@ -35,7 +35,7 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
         if (dbyb == 1) {
             buffer.append("where (status like '未开始' or status like '进行中')");
         } else if (dbyb == 2) {
-            buffer.append(" where status like '已完成'");
+            buffer.append(" where (status like '已完成' or status like '已取消')");
         }
         String sql = "select " + result + " from kh_task k left join rztsysuser u on u.id = k.user_id " + buffer.toString() + " and user_id = ? order by k.plan_start_time";
         return this.execSqlPage(pageable, sql, userId);

@@ -90,6 +90,12 @@ public class KhSite  implements Serializable{
 	//字段描述: 计划结束时段
 	@Column(name = "PLAN_END_TIME")
 	private String planEndTime;
+	//字段描述: 计划开始时段
+	@Column(name = "WX_ORGID")
+	private String wxOrgId;
+	//字段描述: 计划结束时段
+	@Column(name = "TDYW_ORGID")
+	private String tdywOrgId;
 
 	public void setId(){
 		this.id = new SnowflakeIdWorker(0,0).nextId();
@@ -271,5 +277,21 @@ public class KhSite  implements Serializable{
 
 	public String getWxOrg() {
 		return wxOrg;
+	}
+
+	public String getWxOrgId() {
+		return wxOrgId;
+	}
+
+	public void setWxOrgId(String wxOrgId) {
+		this.wxOrgId = wxOrgId;
+	}
+
+	public String getTdywOrgId() {
+		return tdywOrgId;
+	}
+
+	public void setTdywOrgId(String tdywOrgId) {
+		this.tdywOrgId = tdywOrgId;
 	}
 }
