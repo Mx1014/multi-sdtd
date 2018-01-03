@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -777,4 +778,293 @@ public class AnomalymonitoringService extends CurdService<Anomalymonitoring, Ano
         }
 
     }
-}
+
+    /**
+     * 告警
+     *
+     * @return
+     */
+    public WebApiResponse xsTu() {
+        /*所有任务*/
+        /**
+         * 二级保电巡视任务超期警告
+         */
+        String sql0 = "SELECT " +
+                "  count(x.ID) NUM, " +
+                "  x.TD_ORG " +
+                "FROM xs_txbd_task x LEFT JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID " +
+                "WHERE (stauts = 0 OR stauts = 1) AND trunc(plan_end_time) < trunc(sysdate) " +
+                "      AND a.TWOCHECK_STATUS = 1 " +
+                "GROUP BY x.TD_ORG";
+        /**
+         * 二级正常巡视任务超期警告
+         */
+        String sql1 = "SELECT " +
+                "  count(x.TD_ORG) NUM, " +
+                "  x.TD_ORG " +
+                "FROM xs_zc_task x " +
+                "  JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID " +
+                "WHERE (stauts = 0 OR stauts = 1) AND trunc(plan_end_time) < trunc(sysdate) " +
+                "      AND (ceil((sysdate - plan_end_time) * 24 * 60) < 40 OR a.ONECHECK_STATUS = 0) " +
+                "GROUP BY x.TD_ORG";
+        /**
+         * 正常巡视任务未上线 二级
+         */
+        String sql2 = "SELECT " +
+                "  count(x.ID) NUM, " +
+                "  x.TD_ORG " +
+                "FROM XS_ZC_TASK x " +
+                "  JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID " +
+                "WHERE (ceil((sysdate - plan_end_time) * 24 * 60) < 40 OR a.ONECHECK_STATUS = 0) " +
+                "GROUP BY x.TD_ORG";
+        /**
+         * --保电巡视任务未上线 二级
+         */
+        String sql3 = "SELECT " +
+                "  count(x.ID) NUM, " +
+                "  x.TD_ORG " +
+                "FROM XS_TXBD_TASK x " +
+                "  JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID " +
+                "WHERE (ceil((sysdate - plan_end_time) * 24 * 60) < 40 OR a.ONECHECK_STATUS = 0) " +
+                "GROUP BY x.TD_ORG";
+        /**
+         * --正常巡视未按时接任务 二级
+         */
+        String sql4 = "SELECT " +
+                "  count(x.id) NUM, " +
+                "  x.TD_ORG " +
+                "FROM XS_ZC_TASK x " +
+                "  JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID " +
+                "WHERE trunc(plan_start_time) = trunc(sysdate) AND plan_start_time < nvl(real_start_time, sysdate) " +
+                "      AND (ceil((sysdate - plan_end_time) * 24 * 60) < 40 OR a.ONECHECK_STATUS = 0) " +
+                "GROUP BY x.TD_ORG";
+        /**
+         * --保电巡视未按时接任务 二级
+         */
+        String sql5 = "SELECT " +
+                "  count(x.id) NUM, " +
+                "  x.TD_ORG " +
+                "FROM XS_TXBD_TASK x " +
+                "  JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID " +
+                "WHERE trunc(plan_start_time) = trunc(sysdate) AND plan_start_time < nvl(real_start_time, sysdate) " +
+                "      AND (ceil((sysdate - plan_end_time) * 24 * 60) < 40 OR a.ONECHECK_STATUS = 0) GROUP BY x.TD_ORG";
+
+        String sql6 = "SELECT sum(count) sum,xxx.ID as TD_ORG FROM( " +
+                "SELECT count(1) count,d.ID FROM " +
+                "  (SELECT x.TD_ORG FROM ANOMALY_MONITORING a JOIN  XS_ZC_TASK x  ON x.ID = a.TASKID " +
+                "  WHERE a.ONECHECK_STATUS = 0 AND  trunc(PLAN_START_TIME)=trunc(sysdate) ) xx " +
+                "JOIN RZTSYSDEPARTMENT d ON d.ID = xx.TD_ORG  GROUP BY d.ID " +
+                "UNION ALL " +
+                "SELECT count(1) count,d.ID FROM " +
+                "  (SELECT x.TD_ORG FROM ANOMALY_MONITORING a JOIN  XS_TXBD_TASK x  ON x.ID = a.TASKID " +
+                "   WHERE a.ONECHECK_STATUS = 0 AND  trunc(PLAN_START_TIME)=trunc(sysdate) ) xx " +
+                "JOIN RZTSYSDEPARTMENT d ON d.ID = xx.TD_ORG  GROUP BY d.ID) xxx GROUP BY xxx.ID";
+        String sql7 = "SELECT sum(count) sum,xxx.ID as TD_ORG FROM( " +
+                "SELECT count(1) count,d.ID FROM " +
+                "  (SELECT x.TD_ORG FROM ANOMALY_MONITORING a JOIN  XS_ZC_TASK x  ON x.ID = a.TASKID " +
+                "  WHERE a.TWOCHECK_STATUS = 0 AND  trunc(PLAN_START_TIME)=trunc(sysdate) ) xx " +
+                "JOIN RZTSYSDEPARTMENT d ON d.ID = xx.TD_ORG  GROUP BY d.ID " +
+                "UNION ALL " +
+                "SELECT count(1) count,d.ID FROM " +
+                "  (SELECT x.TD_ORG FROM ANOMALY_MONITORING a JOIN  XS_TXBD_TASK x  ON x.ID = a.TASKID " +
+                "   WHERE a.TWOCHECK_STATUS = 0 AND  trunc(PLAN_START_TIME)=trunc(sysdate) ) xx " +
+                "JOIN RZTSYSDEPARTMENT d ON d.ID = xx.TD_ORG  GROUP BY d.ID) xxx GROUP BY xxx.ID";
+        /*所有任务*/
+        List<Map<String, Object>> list0 = null;
+        List<Map<String, Object>> list1 = null;
+        List<Map<String, Object>> list2 = null;
+        List<Map<String, Object>> list3 = null;
+        List<Map<String, Object>> list4 = null;
+        List<Map<String, Object>> list5 = null;
+        List<Map<String, Object>> list6 = null;
+        List<Map<String, Object>> list7 = null;
+        try {
+            list0 = this.execSql(sql0);
+            list1 = this.execSql(sql1);
+            list2 = this.execSql(sql2);
+            list3 = this.execSql(sql3);
+            list4 = this.execSql(sql4);
+            list5 = this.execSql(sql5);
+
+            list6 = this.execSql(sql6);
+            list7 = this.execSql(sql7);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        String dept = "SELECT ID,DEPTNAME FROM RZTSYSDEPARTMENT WHERE ORGTYPE = 0";
+        List<Map<String, Object>> list = this.execSql(dept);
+        List<List<Map<String, Object>>> listW = new ArrayList();
+        listW.add(0, list0);
+        listW.add(1, list1);
+        listW.add(2, list2);
+        listW.add(3, list3);
+        listW.add(4, list4);
+        listW.add(5, list5);
+        int wks = 0;
+        int ksz = 0;
+        int ywc = 0;
+        for (int i = 0; i < list.size(); i++) {
+            for (int j = 0; j < listW.size(); j++) {
+                for (int jj = 0; jj < listW.get(j).size(); jj++) {
+                    if (listW.get(j).get(jj).get("TD_ORG") == list.get(i).get("ID")) {
+                        wks += (int) listW.get(j).get(jj).get("NUM");
+                        list.get(i).put("WKS", wks);
+                    }
+                }
+            }
+            for (int j = 0; j < list6.size(); j++) {
+                if (list6.get(j).get("TD_ORG") == list.get(i).get("ID")) {
+                    ksz += (int) list6.get(j).get("NUM");
+                    list.get(i).put("ksz", ksz);
+                }
+            }
+            for (int j = 0; j < list7.size(); j++) {
+                if (list6.get(j).get("TD_ORG") == list.get(i).get("ID")) {
+                    ywc += (int) list7.get(j).get("NUM");
+                    list.get(i).put("ywc", ywc);
+                }
+            }
+        }
+        return WebApiResponse.success(list);
+    }
+
+}//        /*已完成任务*/
+//        /**
+//         * 二级保电任务超期警告
+//         */
+//        String sql6 = "SELECT " +
+//                "  count(x.id) AS num, " +
+//                "  x.TD_ORG " +
+//                "FROM xs_txbd_task x LEFT JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID " +
+//                "WHERE (stauts = 0 OR stauts = 1) AND trunc(plan_end_time) < trunc(sysdate) " +
+//                "      AND a.TWOCHECK_STATUS = 0 " +
+//                "GROUP BY x.TD_ORG";
+//        /**
+//         * 二级正常巡视任务超期警告
+//         */
+//        String sql7 = "SELECT " +
+//                "  count(x.ID) NUM, " +
+//                "  x.TD_ORG " +
+//                "FROM xs_zc_task x " +
+//                "  JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID " +
+//                "WHERE (stauts = 0 OR stauts = 1) AND trunc(plan_end_time) < trunc(sysdate) " +
+//                "      AND a.TWOCHECK_STATUS = 0 " +
+//                "GROUP BY x.TD_ORG";
+//        /**
+//         * 正常巡视任务未上线 二级
+//         */
+//        String sql8 = "SELECT " +
+//                "  count(x.ID) NUM, " +
+//                "  x.TD_ORG " +
+//                "FROM XS_ZC_TASK x " +
+//                "  JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID " +
+//                "WHERE a.TWOCHECK_STATUS = 0 " +
+//                "GROUP BY x.TD_ORG";
+//        /**
+//         * 保电巡视任务未上线 二级
+//         */
+//        String sql9 = "SELECT " +
+//                "  count(x.ID) NUM, " +
+//                "  x.TD_ORG " +
+//                "FROM XS_TXBD_TASK x " +
+//                "  JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID " +
+//                "WHERE a.TWOCHECK_STATUS = 0 " +
+//                "GROUP BY x.TD_ORG";
+//        /**
+//         * 正常巡视未按时接任务 二级
+//         */
+//        String sql10 = "SELECT " +
+//                "  count(x.ID) NUM, " +
+//                "  x.TD_ORG " +
+//                "FROM XS_ZC_TASK x " +
+//                "  JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID " +
+//                "WHERE trunc(plan_start_time) = trunc(sysdate) AND plan_start_time < nvl(real_start_time, sysdate) " +
+//                "      AND a.TWOCHECK_STATUS = 0 " +
+//                "GROUP BY x.TD_ORG";
+//        /**
+//         * 保电巡视未按时接任务 二级
+//         */
+//        String sql11 = "SELECT " +
+//                "  count(x.ID) NUM, " +
+//                "  x.TD_ORG " +
+//                "FROM XS_TXBD_TASK x " +
+//                "  JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID " +
+//                "WHERE trunc(plan_start_time) = trunc(sysdate) AND plan_start_time < nvl(real_start_time, sysdate) " +
+//                "      AND a.TWOCHECK_STATUS = 0 GROUP BY x.TD_ORG";
+//        /*处理中任务*/
+//        /**
+//         * 二级保电任务超期警告
+//         */
+//        String sql12 = "SELECT " +
+//                "  count(x.id) AS num, " +
+//                "  x.TD_ORG " +
+//                "FROM xs_txbd_task x LEFT JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID " +
+//                "WHERE (stauts = 0 OR stauts = 1) AND trunc(plan_end_time) < trunc(sysdate) " +
+//                "      AND a.TWOCHECK_STATUS = 1 " +
+//                "GROUP BY x.TD_ORG";
+//        /**
+//         * 二级正常巡视任务超期警告
+//         */
+//        String sql13 = "SELECT " +
+//                "  count(x.ID) NUM, " +
+//                "  x.TD_ORG " +
+//                "FROM xs_zc_task x " +
+//                "  JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID " +
+//                "WHERE (stauts = 0 OR stauts = 1) AND trunc(plan_end_time) < trunc(sysdate) " +
+//                "      AND a.TWOCHECK_STATUS = 1 " +
+//                "GROUP BY x.TD_ORG";
+//        /**
+//         * 正常巡视任务未上线 二级
+//         */
+//        String sql14 = "SELECT " +
+//                "  count(x.ID) NUM, " +
+//                "  x.TD_ORG " +
+//                "FROM XS_ZC_TASK x " +
+//                "  JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID " +
+//                "WHERE a.TWOCHECK_STATUS = 1 " +
+//                "GROUP BY x.TD_ORG";
+//        /**
+//         * 保电巡视任务未上线 二级
+//         */
+//        String sql15 = "SELECT " +
+//                "  count(x.ID) NUM, " +
+//                "  x.TD_ORG " +
+//                "FROM XS_TXBD_TASK x " +
+//                "  JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID " +
+//                "WHERE a.TWOCHECK_STATUS = 1 " +
+//                "GROUP BY x.TD_ORG";
+//        /**
+//         * 正常巡视未按时接任务 二级
+//         */
+//        String sql16 = "SELECT " +
+//                "  count(x.ID) NUM, " +
+//                "  x.TD_ORG " +
+//                "FROM XS_ZC_TASK x " +
+//                "  JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID " +
+//                "WHERE trunc(plan_start_time) = trunc(sysdate) AND plan_start_time < nvl(real_start_time, sysdate) " +
+//                "      AND a.TWOCHECK_STATUS = 1 " +
+//                "GROUP BY x.TD_ORG";
+//        /**
+//         * 保电巡视未按时接任务 二级
+//         */
+//        String sql17 = "SELECT " +
+//                "  count(x.ID) NUM, " +
+//                "  x.TD_ORG " +
+//                "FROM XS_TXBD_TASK x " +
+//                "  JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID " +
+//                "WHERE trunc(plan_start_time) = trunc(sysdate) AND plan_start_time < nvl(real_start_time, sysdate) " +
+//                "      AND a.TWOCHECK_STATUS = 1 GROUP BY x.TD_ORG";
+
+//        /*已完成任务*/
+//        List<Map<String, Object>> list6 = this.execSql(sql6);
+//        List<Map<String, Object>> list7 = this.execSql(sql7);
+//        List<Map<String, Object>> list8 = this.execSql(sql8);
+//        List<Map<String, Object>> list9 = this.execSql(sql9);
+//        List<Map<String, Object>> list10 = this.execSql(sql10);
+//        List<Map<String, Object>> list11 = this.execSql(sql11);
+//        /*处理中任务*/
+//        List<Map<String, Object>> list12 = this.execSql(sql12);
+//        List<Map<String, Object>> list13 = this.execSql(sql13);
+//        List<Map<String, Object>> list14 = this.execSql(sql14);
+//        List<Map<String, Object>> list15 = this.execSql(sql15);
+//        List<Map<String, Object>> list16 = this.execSql(sql16);

@@ -120,4 +120,9 @@ public class AnomalymonitoringController extends
     public WebApiResponse anomalyInsO(String orgtype, String explain, Integer status, Integer tasktype, Integer anomalytype, Integer assessment) {
         return this.service.anomalyInsO(orgtype, explain, status, tasktype, anomalytype, assessment);
     }
+
+    @GetMapping("xsTu")
+    public WebApiResponse xsTu() {
+        return this.service.xsTu();
+    }
 }
