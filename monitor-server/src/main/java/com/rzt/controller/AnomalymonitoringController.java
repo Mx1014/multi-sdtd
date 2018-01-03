@@ -92,29 +92,26 @@ public class AnomalymonitoringController extends
      * 处理中
      *
      * @param orgtype     一级还是二级单位
-     * @param explain
-     * @param status
-     * @param tasktype
-     * @param anomalytype
+     * @param explain   审核详情
+     * @param taskId   任务id
+     * @param tasktype  任务类型
+     * @param anomalytype  警告类型
      * @return
      */
     @PostMapping("anomalyIns")
-    public WebApiResponse anomalyIns(String orgtype, String explain, Integer status, Integer tasktype, Integer anomalytype) {
-        return this.service.anomalyIns(orgtype, explain, status, tasktype, anomalytype);
+    public WebApiResponse anomalyIns(String orgtype, String explain,String explainApp, Long taskId, Integer tasktype, Integer anomalytype) {
+        return this.service.anomalyIns(orgtype, explain,explainApp, taskId, tasktype, anomalytype);
     }
 
     /**
-     * 已完成处理
-     *
-     * @param orgtype
-     * @param explain
-     * @param status
-     * @param tasktype
-     * @param anomalytype
+     * 已完成处理  处理中告警处理
+	 * assessment  是否自动纳入考核
      * @return
      */
     @PostMapping("anomalyInsO")
-    public WebApiResponse anomalyInsO(String orgtype, String explain, Integer status, Integer tasktype, Integer anomalytype, Integer assessment) {
-        return this.service.anomalyInsO(orgtype, explain, status, tasktype, anomalytype, assessment);
+    public WebApiResponse anomalyInsO(String orgtype, String explain, Long taskId,Integer anomalytype) {
+        return this.service.anomalyInsO(orgtype, explain, taskId,anomalytype);
     }
+
+
 }
