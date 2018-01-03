@@ -6,9 +6,13 @@
  */
 package com.rzt.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import com.rzt.entity.CMLINE;
-/**      
+import org.springframework.transaction.annotation.Transactional;
+
+/**
  * 类名称：CMLINERepository    
  * 类描述：    
  * 创建人：张虎成   
@@ -20,4 +24,8 @@ import com.rzt.entity.CMLINE;
  */
  @Repository
 public interface CMLINERepository extends JpaRepository<CMLINE,String> {
+    @Query(value = "update SDTD27.CM_LINE set line_name=?2 where id=?1 ",nativeQuery = true)
+    @Modifying
+    @Transactional
+    void updateLineName(Long id, String linename);
 }
