@@ -30,7 +30,6 @@ import java.util.Map;
  * 修改人：张虎成
  * 修改时间：2017/12/31 16:25:17
  * 修改备注：
- * @version
  */
 @Service
 public class AnomalymonitoringService extends CurdService<Anomalymonitoring, AnomalymonitoringRepository> {
@@ -50,7 +49,7 @@ public class AnomalymonitoringService extends CurdService<Anomalymonitoring, Ano
         List list = new ArrayList();
         String s = "";
         if (!StringUtils.isEmpty(date)) {
-            list.add( date );
+            list.add(date);
             s += " AND  PLAN_START_TIME <= to_date( ?" + list.size() + ",'yyyy-MM-dd hh24:mi:ss')  ";
         } else {
             s += " AND trunc(PLAN_START_TIME)=trunc(sysdate) ";
@@ -103,7 +102,7 @@ public class AnomalymonitoringService extends CurdService<Anomalymonitoring, Ano
                 "  JOIN WARNING_OFF_POST_USER UR ON UT.FK_USER_ID = UR.USER_ID" +
                 "  JOIN KH_TASK K ON UR.TASK_ID = K.ID LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID" +
                 "  LEFT JOIN ANOMALY_MONITORING a ON a.TASKID = k.ID   LEFT JOIN RZTSYSDEPARTMENT de ON k.TDYW_ORG = de.DEPTNAME " +
-                "WHERE ceil((sysdate - UT.START_TIME ) * 24 * 60) < 40 OR a.ONECHECK_STATUS = 0";
+                "WHERE ceil((sysdate - UT.START_TIME ) * 24 * 60) < 40 AND UR.STATUS = 1 AND END_TIME is NULL OR a.ONECHECK_STATUS = 0";
         /**
          * 一级脱岗
          */
@@ -131,13 +130,14 @@ public class AnomalymonitoringService extends CurdService<Anomalymonitoring, Ano
             }
         }
     }
+
     //巡视任务警告查询所有
     public Object XSGJ(Integer orgtype, Integer page, Integer size, String date, String orgid, String type) {
         Pageable pageable = new PageRequest(page, size, null);
         List list = new ArrayList();
         String s = "";
         if (!StringUtils.isEmpty(date)) {
-            list.add( date );
+            list.add(date);
             s += " AND  PLAN_START_TIME <= to_date( ?" + list.size() + ",'yyyy-MM-dd hh24:mi:ss')  ";
         } else {
             s += " AND trunc(PLAN_START_TIME)=trunc(sysdate) ";
@@ -257,12 +257,12 @@ public class AnomalymonitoringService extends CurdService<Anomalymonitoring, Ano
                 "  JOIN RZTSYSCOMPANY c ON c.ID = xxx.COMPANYID ) cc JOIN RZTSYSDEPARTMENT d on d.ID = cc.DEPTID";
         //type == 0 为一级
         String sql = "";
-        if(orgtype!=0){
-            sql="SELECT * FROM (" +sql1+" UNION ALL "+sql2+" UNION ALL "+sql3+" UNION ALL "+sql4+" UNION ALL "+sql5+" UNION ALL "+sql6+") where 1=1 "+s;
-        }else if (orgtype==0){
-            sql = "SELECT * FROM (" +sql11+" UNION ALL "+sql12+" UNION ALL "+sql13+" UNION ALL "+sql14+" UNION ALL "+sql15+" UNION ALL "+sql16+") where 1=1 "+s;
+        if (orgtype != 0) {
+            sql = "SELECT * FROM (" + sql1 + " UNION ALL " + sql2 + " UNION ALL " + sql3 + " UNION ALL " + sql4 + " UNION ALL " + sql5 + " UNION ALL " + sql6 + ") where 1=1 " + s;
+        } else if (orgtype == 0) {
+            sql = "SELECT * FROM (" + sql11 + " UNION ALL " + sql12 + " UNION ALL " + sql13 + " UNION ALL " + sql14 + " UNION ALL " + sql15 + " UNION ALL " + sql16 + ") where 1=1 " + s;
         }
-        Page<Map<String, Object>> maps = execSqlPage(pageable, sql,list.toArray());
+        Page<Map<String, Object>> maps = execSqlPage(pageable, sql, list.toArray());
         return maps;
     }
 
@@ -272,7 +272,7 @@ public class AnomalymonitoringService extends CurdService<Anomalymonitoring, Ano
         List list = new ArrayList();
         String s = "";
         if (!StringUtils.isEmpty(date)) {
-            list.add( date );
+            list.add(date);
             s += " AND  PLAN_START_TIME <= to_date( ?" + list.size() + ",'yyyy-MM-dd hh24:mi:ss')  ";
         } else {
             s += " AND trunc(PLAN_START_TIME)=trunc(sysdate) ";
@@ -395,12 +395,12 @@ public class AnomalymonitoringService extends CurdService<Anomalymonitoring, Ano
 
         //type == 0 为一级
         String sql = "";
-        if(orgtype!=0){
-            sql="SELECT * FROM (" +sql1+" UNION ALL "+sql2+" UNION ALL "+sql3+" UNION ALL "+sql4+" UNION ALL "+sql5+" UNION ALL "+sql6+") where 1=1 "+s;
-        }else if (orgtype==0){
-            sql = "SELECT * FROM (" +sql11+" UNION ALL "+sql12+" UNION ALL "+sql13+" UNION ALL "+sql14+" UNION ALL "+sql15+" UNION ALL "+sql16+") where 1=1 "+s;
+        if (orgtype != 0) {
+            sql = "SELECT * FROM (" + sql1 + " UNION ALL " + sql2 + " UNION ALL " + sql3 + " UNION ALL " + sql4 + " UNION ALL " + sql5 + " UNION ALL " + sql6 + ") where 1=1 " + s;
+        } else if (orgtype == 0) {
+            sql = "SELECT * FROM (" + sql11 + " UNION ALL " + sql12 + " UNION ALL " + sql13 + " UNION ALL " + sql14 + " UNION ALL " + sql15 + " UNION ALL " + sql16 + ") where 1=1 " + s;
         }
-        Page<Map<String, Object>> maps = execSqlPage(pageable, sql,list.toArray());
+        Page<Map<String, Object>> maps = execSqlPage(pageable, sql, list.toArray());
         return maps;
     }
 
@@ -410,7 +410,7 @@ public class AnomalymonitoringService extends CurdService<Anomalymonitoring, Ano
         List list = new ArrayList();
         String s = "";
         if (!StringUtils.isEmpty(date)) {
-            list.add( date );
+            list.add(date);
             s += " AND  PLAN_START_TIME <= to_date( ?" + list.size() + ",'yyyy-MM-dd hh24:mi:ss') ";
         } else {
             s += " AND trunc(PLAN_START_TIME)=trunc(sysdate) ";
@@ -533,12 +533,12 @@ public class AnomalymonitoringService extends CurdService<Anomalymonitoring, Ano
 
         //type == 0 为一级
         String sql = "";
-        if(orgtype!=0){
-            sql="SELECT * FROM (" +sql1+" UNION ALL "+sql2+" UNION ALL "+sql3+" UNION ALL "+sql4+" UNION ALL "+sql5+" UNION ALL "+sql6+") where 1=1 "+s;
-        }else if (orgtype==0){
-            sql = "SELECT * FROM (" +sql11+" UNION ALL "+sql12+" UNION ALL "+sql13+" UNION ALL "+sql14+" UNION ALL "+sql15+" UNION ALL "+sql16+") where 1=1 "+s;
+        if (orgtype != 0) {
+            sql = "SELECT * FROM (" + sql1 + " UNION ALL " + sql2 + " UNION ALL " + sql3 + " UNION ALL " + sql4 + " UNION ALL " + sql5 + " UNION ALL " + sql6 + ") where 1=1 " + s;
+        } else if (orgtype == 0) {
+            sql = "SELECT * FROM (" + sql11 + " UNION ALL " + sql12 + " UNION ALL " + sql13 + " UNION ALL " + sql14 + " UNION ALL " + sql15 + " UNION ALL " + sql16 + ") where 1=1 " + s;
         }
-        Page<Map<String, Object>> maps = execSqlPage(pageable, sql,list.toArray());
+        Page<Map<String, Object>> maps = execSqlPage(pageable, sql, list.toArray());
         return maps;
     }
 
@@ -548,7 +548,7 @@ public class AnomalymonitoringService extends CurdService<Anomalymonitoring, Ano
         List list = new ArrayList();
         String s = "";
         if (!StringUtils.isEmpty(date)) {
-            list.add( date );
+            list.add(date);
             s += " AND  PLAN_START_TIME <= to_date( ?" + list.size() + ",'yyyy-MM-dd hh24:mi:ss')  ";
         } else {
             s += " AND trunc(PLAN_START_TIME)=trunc(sysdate) ";
@@ -629,13 +629,14 @@ public class AnomalymonitoringService extends CurdService<Anomalymonitoring, Ano
             }
         }
     }
+
     //看护处理中
     public WebApiResponse khGjCZ(Integer orgtype, Integer page, Integer size, String date, String orgid, String type) {
         Pageable pageable = new PageRequest(page, size, null);
         List list = new ArrayList();
         String s = "";
         if (!StringUtils.isEmpty(date)) {
-            list.add( date );
+            list.add(date);
             s += " AND  PLAN_START_TIME <= to_date( ?" + list.size() + ",'yyyy-MM-dd hh24:mi:ss') ";
         } else {
             s += " AND trunc(PLAN_START_TIME)=trunc(sysdate) ";
@@ -757,11 +758,11 @@ public class AnomalymonitoringService extends CurdService<Anomalymonitoring, Ano
      * @param anomalytype
      * @return
      */
-    public WebApiResponse anomalyInsO(String orgtype, String explain, Integer status, Integer tasktype, Integer anomalytype,Integer assessment) {
+    public WebApiResponse anomalyInsO(String orgtype, String explain, Integer status, Integer tasktype, Integer anomalytype, Integer assessment) {
         if (!orgtype.equals("0")) {
             Long id = new SnowflakeIdWorker(19, 25).nextId();
             try {
-                return WebApiResponse.success(this.reposiotry.ejAnomalyInsO(id, explain, status, tasktype, anomalytype,assessment));
+                return WebApiResponse.success(this.reposiotry.ejAnomalyInsO(id, explain, status, tasktype, anomalytype, assessment));
             } catch (Exception e) {
                 e.printStackTrace();
                 return WebApiResponse.erro("erro");
@@ -769,12 +770,11 @@ public class AnomalymonitoringService extends CurdService<Anomalymonitoring, Ano
         } else {
             Long id = new SnowflakeIdWorker(19, 25).nextId();
             try {
-                return WebApiResponse.success(this.reposiotry.yjAnomalyInsO(id, explain, status, tasktype, anomalytype,assessment));
+                return WebApiResponse.success(this.reposiotry.yjAnomalyInsO(id, explain, status, tasktype, anomalytype, assessment));
             } catch (Exception e) {
                 return WebApiResponse.erro("erro");
             }
         }
 
     }
-
 }
