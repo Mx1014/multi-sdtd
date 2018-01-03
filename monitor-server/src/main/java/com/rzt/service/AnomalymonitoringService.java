@@ -767,8 +767,4 @@ public class AnomalymonitoringService extends CurdService<Anomalymonitoring, Ano
     }
 
 
-    public WebApiResponse taskDetial(Integer tasktype,String taskId) {
-
-        return null;
-    }
 }
