@@ -11,9 +11,12 @@
 
     <body>
 
-
-    <form class="form-horizontal" method="post" action="/GUZHANG/ImportGuZhang" enctype="multipart/form-data" >
-                <input type="file" name="file" style="height: auto" />
+    <form class="form-horizontal" method="post" action="" enctype="multipart/form-data" >
+        先导入杆塔坐标数据： <input type="file" name="file" style="height: auto" />
+        <input type="submit" value="提交" />
+    </form>
+    <form class="form-horizontal" method="post" action="/linedata/CMLINESECTION/importLineSection" enctype="multipart/form-data" >
+            再导入各通道单位线路区段 ：<input type="file" name="file" style="height: auto" />
         <input type="submit" value="提交" />
     </form>
 

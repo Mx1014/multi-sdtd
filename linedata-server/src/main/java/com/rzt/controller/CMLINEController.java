@@ -9,6 +9,7 @@ package com.rzt.controller;
 import com.rzt.entity.CMLINE;
 import com.rzt.service.CMLINEService;
 import com.rzt.util.WebApiResponse;
+import com.rzt.utils.HanyuPinyinHelper;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -47,6 +48,17 @@ public class CMLINEController extends
 		return WebApiResponse.success(maps);
 	}
 
+	@ApiOperation(tags = "线路名转拼音",value = "")
+	@GetMapping("test")
+	public void test(){
+
+		List<Map<String, Object>> list = service.execSql("select id,line_name from cm_line");
+		for (Map map:list) {
+			Long id = Long.valueOf(map.get("ID").toString());
+			String linename = HanyuPinyinHelper.getPinyinString(String.valueOf(map.get("LINE_NAME")));
+			service.reposiotry.updateLineName(id,linename);
+		}
+	}
 
 	
 }

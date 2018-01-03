@@ -7,30 +7,25 @@
 package com.rzt.controller;
 
 import com.rzt.entity.CheckLiveTask;
-import com.rzt.entity.model.CheckLiveTaskExecModel;
-import com.rzt.service.CheckLiveTaskCycleService;
-import com.rzt.service.CheckLiveTaskDetailService;
-import com.rzt.service.CheckLiveTaskExecService;
 import com.rzt.service.CheckLiveTaskService;
 import com.rzt.util.WebApiResponse;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
  * 类名称：CHECKLIVETASKController
- * 类描述：
- * 创建人：张虎成
- * 创建时间：2017/12/04 15:13:15
- * 修改人：张虎成
- * 修改时间：2017/12/04 15:13:15
+ * 类描述：看护类
+ * 创建人： 李泽州
+ * 创建时间：2018/01/02 15:13:15
  * 修改备注：
  * @version
  */
@@ -38,234 +33,55 @@ import java.util.Map;
 @RequestMapping("CheckLiveTask")
 public class CheckLiveTaskController extends CurdController<CheckLiveTask, CheckLiveTaskService> {
 
-	@Autowired
-	private CheckLiveTaskCycleService cycleService;
-
-	@Autowired
-	private CheckLiveTaskExecService execService;
-
-	@Autowired
-	private CheckLiveTaskService liveTaskService;
-
-	@Autowired
-	private CheckLiveTaskDetailService detailService;
-
-
-
-
-	@ApiOperation(value = "任务展示",notes = "任务展示分页查询，条件搜索")
-	@GetMapping("/listAllCheckTask.do")
-	public WebApiResponse listAllCheckTask(@RequestParam(value = "page",defaultValue = "0") Integer page,
-											 @RequestParam(value = "size",defaultValue = "15") Integer size,
-											 String startTime, String endTime,String taskName,Integer status,String userId,String taskType){
+	@ApiOperation(value = "看护稽查任务派发前，看护任务列表接口",notes = "看护稽查任务派发前，看护任务列表分页查询，条件搜索")
+	@GetMapping("/listKhCheckPage")
+	public WebApiResponse listKhCheckPage(@RequestParam(value = "page",defaultValue = "0") Integer page,
+										  @RequestParam(value = "size",defaultValue = "15") Integer size,
+										 String lineId,String tddwId){
 		try{
 			Pageable pageable = new PageRequest(page, size);
-			Page<Map<String, Object>> list = this.service.listAllCheckTask(startTime,endTime,taskName, status,userId, taskType,pageable);
+			Page<Map<String, Object>> list = this.service.listKhCheckPage(pageable, lineId, tddwId);
 			return WebApiResponse.success(list);
 		}catch (Exception e){
 			return WebApiResponse.erro("数据获取失败"+e.getMessage());
 		}
-
-
-
 	}
 
-
-	@ApiOperation(value = "任务派发任务查询",notes = "任务派发分页查询，条件搜索")
-	@GetMapping("/listpaifaCheckTask.do")
-	public WebApiResponse listpaifaCheckTask(@RequestParam(value = "page",defaultValue = "0") Integer page,
-											@RequestParam(value = "size",defaultValue = "15") Integer size,
-											String startTime, String endTime, String userId,String taskName,String taskType){
-		try{
-			Pageable pageable = new PageRequest(page, size);
-			Page<Map<String, Object>> list = this.service.listpaifaCheckTask(startTime,endTime, userId,taskName,taskType, pageable);
-			return WebApiResponse.success(list);
-		}catch (Exception e){
-			return WebApiResponse.erro("数据获取失败"+e.getMessage());
+	@ApiOperation(value = "看护任务详情",notes = "看护任务详情")
+	@GetMapping("/khTaskDetail")
+	public WebApiResponse khTaskDetail(String taskId){
+		Map<String, Object> map = new HashMap<>();
+		try {
+			map = service.xsTaskDetail(taskId);
+		} catch (Exception e) {
+			WebApiResponse.erro(e.getMessage());
 		}
-
+		return WebApiResponse.success(map);
 	}
 
-
-	@ApiOperation(value = "稽查子任务详情",notes = "稽查子任务详情查询")
-	@GetMapping("/getCheckTaskById/{id}")
-	public WebApiResponse getCheckTaskById(@PathVariable String id,String taskType){
-		try{
-			//传过来任务类型 决定走哪条sql语句
-			List task =  this.service.getCheckTaskById(id,taskType);
-			return WebApiResponse.success(task);
-
-		}catch (Exception e){
-			return WebApiResponse.erro("数据获取失败"+e.getMessage());
-		}
-
-	}
-
-	@ApiOperation(value = "稽查子任务名字",notes = "稽查子任务名字查询")
-	@GetMapping("/getCheckTaskName.do")
-	public WebApiResponse getCheckTaskName(){
-		try{
-			List task =  this.service.getCheckTaskName();
-			return WebApiResponse.success(task);
-
-		}catch (Exception e){
-			return WebApiResponse.erro("数据获取失败"+e.getMessage());
-		}
-
-	}
-//	@ApiOperation(value = "稽查任务派发",notes = "稽查任务派发")
-//	@GetMapping("/paifaCheckTask2.do")
-//	@Transactional
-//	public WebApiResponse paifaCheckTask2(CheckLiveTaskCycleModel model){
-//		try{
-//
-//			CheckLiveTaskCycle taskcycle = new CheckLiveTaskCycle();
-//
-//			String[] values = model.getIds().split(",");//子任务id
-//
-//			taskcycle.setId();//周期id
-//			long count =  this.execService.getCount(model.getUserId());
-//			taskcycle.setCount(count+1);//派发几次
-//			taskcycle.setUserId(model.getUserId());
-//			CheckLiveTask task = this.liveTaskService.findLiveTask(values[0]);
-//			taskcycle.setTaskName(task.getTaskName() + "...等");//任务名
-//			taskcycle.setCreateTime(DateUtil.dateNow());
-//			taskcycle.setPlanStartTime(model.getPlanStartTime());
-//			taskcycle.setPlanEndTime(model.getPlanEndTime());
-//			//taskcycle.setStatus("0");//是否停用 0 不停用
-//
-//			taskcycle.setCheckDept(model.getCheckDept());
-//			taskcycle.setCheckCycle(model.getCheckCycle());
-//			taskcycle.setTaskType(model.getTaskType());
-//
-//			this.cycleService.add(taskcycle);
-//
-//			//生成exec任务
-//			CheckLiveTaskExec exec = new CheckLiveTaskExec();
-//			//exec.setId();
-//			exec.setCycleId(taskcycle.getId());
-//			exec.setTaskName(taskcycle.getTaskName());
-//			//exec.setCount(count+1);
-//			//exec.setStatus("0");
-//			exec.setCreateTime(DateUtil.dateNow());
-//			exec.setUserId(model.getUserId());
-//		//	exec.setTaskStatus(0L);
-//
-//			exec.setTdwhOrg(task.getTdwhOrg()+"等"); // 通道维护通道单位  子任务拼接
-//			this.execService.add(exec);//保存主任务
-//
-//			//生成主任务的子任务   多个
-//			for(int i=0;i<values.length;i++){
-//				CheckLiveTaskDetail detail = new CheckLiveTaskDetail();
-//				detail.setId();
-//				detail.setExecId(exec.getId());
-//				detail.setTaskId(Long.parseLong(values[i]));
-//				detail.setPlanStartTime(taskcycle.getPlanStartTime());
-//				detail.setPlanEndTime(taskcycle.getPlanEndTime());
-//			//	detail.setStatus("0");
-//				detail.setCount(count+1);
-//				detail.setCreateTime(DateUtil.dateNow());
-//				//添加到数据库
-//				this.detailService.add(detail);
-//				//更新稽查子任务
-//				CheckLiveTask tt = this.liveTaskService.findLiveTask(values[i]);
-//				//tt.setStatus("1");
-//				tt.setCycleId(taskcycle.getId());
-//				this.liveTaskService.updateLiveTask(tt,values[i]);//更新重新写一下
-//			}
-//
-//			return WebApiResponse.success("任务派发成功");
-//
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			return WebApiResponse.erro("任务派发失败" + e.getMessage());
-//		}
-//
-//	}
-
-
-	@ApiOperation(value = "稽查任务派发",notes = "稽查任务派发")
-	@GetMapping("/paifaCheckTask.do")
-	@Transactional
-	public WebApiResponse paifaCheckTask(CheckLiveTaskExecModel model,  String type){
+	@ApiOperation(value = "看护稽查任务派发",notes = "看护稽查任务派发")
+	@GetMapping("/paifaKhCheckTask")
+	public WebApiResponse paifaKhCheckTask(CheckLiveTask task ,String planStartTime,String planEndTime, String username){
 		try {
 
-
-				this.service.paifaTask(model, type);
-
-
+			this.service.paifaXsCheckTask(task, planStartTime, planEndTime,username);
 			return WebApiResponse.success("任务派发成功");
 		}catch (Exception e){
-			e.printStackTrace();
-			return WebApiResponse.erro("任务派发失败" + e.getMessage());
+			return WebApiResponse.erro("任务派发失败");
 		}
 
 	}
 
-	@ApiOperation(value = "派发任务推荐根据用户id",notes = "派发任务推荐")
-	@GetMapping("/paifaCheckTaskPro.do")
-	@Transactional
-	public WebApiResponse paifaCheckTaskPro(String userId,String taskType){
+	@GetMapping("/test")
+	public Map<String, Object> test(){
 		try {
-            //根据稽查人的id推荐任务
-			List list = this.service.paifaCheckTaskPro(userId,taskType);
-			return WebApiResponse.success(list);
-		}catch (Exception e){
+			Map<String, Object> map = service.execSqlSingleResult("select id,TDYW_ORGID,TDWX_ORGID from CHECK_LIVE_SITE where id = ?1", "397703564270501888");
+			System.out.println("成功");
+			return map;
+		} catch (Exception e) {
 			e.printStackTrace();
-			return WebApiResponse.erro("任务派发失败" + e.getMessage());
 		}
-
+		return null;
 	}
-
-	@ApiOperation(value = "定时生成稽查任务",notes = "定时生成稽查任务")
-	@GetMapping("/timeCheckLiveTask.do")
-	public WebApiResponse timeCheckLiveTask(){
-		try{
-			this.service.timeCheckLiveTask();
-			return WebApiResponse.success("生成任务成功");
-		}catch (Exception e) {
-			return WebApiResponse.erro("生成任务失败"+e.getMessage());
-		}
-	}
-
-
-
-
-//	@ApiOperation(value = "稽查任务删除",notes = "稽查任务删除")
-//	@DeleteMapping("/deleteCheckLiveTaskById/{id}")
-//	public WebApiResponse deleteById(@PathVariable  String id){
-//		  return this.service.deleteById(id);
-//	}
-
-
-
-//	@ApiOperation(value = "稽查任务名字",notes = "稽查任务名字")
-//	@GetMapping("/listCheckTaskName")
-//	public WebApiResponse listCheckTaskName(){
-//		try{
-//			List list = this.service.listCheckTaskName();
-//			return WebApiResponse.success(list);
-//		}catch (Exception e) {
-//			return WebApiResponse.erro("数据获取失败"+e.getMessage());
-//		}
-//	}
-
-
-
-
-
-//
-//
-//	@ApiOperation(value = "定时生成稽查任务",notes = "定时生成稽查任务")
-//	@GetMapping("/saveCheckLiveTask.do")
-//	public WebApiResponse saveCheckLiveTask(){
-//		try{
-//			this.service.saveCheckLiveTask();
-//			return WebApiResponse.success("生成任务成功");
-//		}catch (Exception e) {
-//			return WebApiResponse.erro("生成任务失败"+e.getMessage());
-//		}
-//	}
-//
 
 }
