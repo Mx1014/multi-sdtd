@@ -61,7 +61,7 @@ public class KhTaskController extends
 	// 提交申请给 管理员  如何提交待定  还是说没有修改功能
 		try {
 			//分页参数 page size
-			this.service.updateTaskById(startTime,endTime,userId,id);
+ 				this.service.updateTaskById(startTime,endTime,userId,id);
 			return WebApiResponse.success("修改成功");
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -90,9 +90,11 @@ public class KhTaskController extends
 		}
 	}
 	@GetMapping("/exportKhTask.do")
-	public void exportNursePlan(HttpServletRequest request, HttpServletResponse response){
+	public void exportKhTask(HttpServletRequest request, HttpServletResponse response){
 		try {
-			this.service.exportExcel(response);
+			List<Map<String, Object>> taskList = this.service.findAlls();
+			this.service.exportNursePlan(taskList,request,response);
+			//this.service.exportExcel(response);
 		}catch (Exception e){
 			e.printStackTrace();
 		}

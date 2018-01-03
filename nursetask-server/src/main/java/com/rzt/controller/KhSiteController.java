@@ -19,6 +19,7 @@ import com.rzt.service.KhTaskService;
 import com.rzt.service.KhYhHistoryService;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DateUtil;
+import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +28,10 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -170,14 +175,15 @@ public class KhSiteController extends
     @GetMapping("/exportNursePlan.do")
     public void exportNursePlan(HttpServletRequest request, HttpServletResponse response) {
         try {
-            List all = this.service.findAll();
-            this.service.exportExcel(response);
-            /*String rootpath = request.getSession().getServletContext().getRealPath(File.separator);
-			*//*String ecxcelModelPath = rootpath + "excelModels"+File.separator+"巡视任务导出表.xlsx";
-			InputStream in = new FileInputStream(ecxcelModelPath);
-			XSSFWorkbook wb = new XSSFWorkbook(in);*//*
+            List<Map<String, Object>> taskList = this.service.findAlls();
+            //this.service.exportExcel(response);
+
+			//String ecxcelModelPath = rootpath + "excelModels"+File.separator+"看护任务导出表.xlsx";
+			//InputStream in = new FileInputStream(ecxcelModelPath);
+			//XSSFWorkbook wb = new XSSFWorkbook(in);
+            String rootpath = request.getSession().getServletContext().getRealPath(File.separator);
 			XSSFWorkbook wb = new XSSFWorkbook();
-			XSSFSheet sheet = wb.createSheet("看护任务");
+			XSSFSheet sheet = wb.createSheet("看护周期");
 
 			// 设置列宽
 			sheet.setColumnWidth((short) 0, (short) 6000);
@@ -208,74 +214,76 @@ public class KhSiteController extends
 			cell.setCellValue("任务名称");
 			cell.setCellStyle(headerStyle);
 			cell = row.createCell((short) 1);
-			cell.setCellValue("派发时间");
+			cell.setCellValue("电压等级");
 			cell.setCellStyle(headerStyle);
 			cell = row.createCell((short) 2);
-			cell.setCellValue("计划开始时间");
+			cell.setCellValue("线路名称");
 			cell.setCellStyle(headerStyle);
 			cell = row.createCell((short) 3);
-			cell.setCellValue("计划结束时间");
+			cell.setCellValue("段落");
 			cell.setCellStyle(headerStyle);
 			cell = row.createCell((short) 4);
-			cell.setCellValue("通道单位");
+			cell.setCellValue("看护人");
 			cell.setCellStyle(headerStyle);
 			cell = row.createCell((short) 5);
-			cell.setCellValue("班组");
+			cell.setCellValue("通道运维单位");
 			cell.setCellStyle(headerStyle);
 			cell = row.createCell((short) 6);
-			cell.setCellValue("巡视人员");
+			cell.setCellValue("外协单位");
 			cell.setCellStyle(headerStyle);
 			cell = row.createCell((short) 7);
-			cell.setCellValue("实际开始时间");
+			cell.setCellValue("创建时间");
 			cell.setCellStyle(headerStyle);
 			cell = row.createCell((short) 8);
-			cell.setCellValue("实际完成时间");
+			cell.setCellValue("几班倒");
 			cell.setCellStyle(headerStyle);
 			cell = row.createCell((short) 9);
-			cell.setCellValue("状态");
+			cell.setCellValue("任务状态");
 			cell.setCellStyle(headerStyle);
 			//Sheet sheet = wb.getSheetAt(0);
 			for (int i = 0; i < taskList.size(); i++) {
 				row = sheet.createRow(i + 1);
 				//Row row = sheet.getRow(i+1);
 				Map<String, Object> task = taskList.get(i);
-				if (task.get("TASKNAME") != null) {
-					row.createCell(0).setCellValue(task.get("TASKNAME").toString());//任务名称
+				if (task.get("TASK_NAME") != null) {
+					row.createCell(0).setCellValue(task.get("TASK_NAME").toString());//任务名称
 				}
-				if (task.get("CREATETIME") != null) {
-					row.createCell(1).setCellValue(task.get("CREATETIME").toString());//派发时间
+				if (task.get("VTYPE") != null) {
+					row.createCell(1).setCellValue(task.get("VTYPE").toString());//派发时间
 				}
-				if (task.get("PLANSTARTTIME") != null) {
-					row.createCell(2).setCellValue(task.get("PLANSTARTTIME").toString());//计划开始时间
+				if (task.get("LINE_NAME") != null) {
+					row.createCell(2).setCellValue(task.get("LINE_NAME").toString());//计划开始时间
 				}
-				if (task.get("PLANENDTIME") != null) {
-					row.createCell(3).setCellValue(task.get("PLANENDTIME").toString());//计划结束时间
+				if (task.get("SECTION") != null) {
+					row.createCell(3).setCellValue(task.get("SECTION").toString());//计划结束时间
 				}
 
-				if (task.get("tddwName") != null) {
-					row.createCell(4).setCellValue(task.get("tddwName").toString());//通道单位
+				if (task.get("USER_ID") != null) {
+				    String sql = "select realname from rztsysuser where id=?";
+                    Map<String, Object> map = this.service.execSqlSingleResult(sql, task.get("USER_ID").toString());
+                    row.createCell(4).setCellValue(map.get("REALNAME").toString());//通道单位
 				}
-				if (task.get("orgName") != null) {
-					row.createCell(5).setCellValue(task.get("orgName").toString());//班组
+				if (task.get("TDYW_ORG") != null) {
+					row.createCell(5).setCellValue(task.get("TDYW_ORG").toString());//班组
 				}
-				if (task.get("nickName") != null) {
-					row.createCell(6).setCellValue(task.get("nickName").toString());//巡视人员
+				if (task.get("WX_ORG") != null) {
+					row.createCell(6).setCellValue(task.get("WX_ORG").toString());//巡视人员
 				}
-				if (task.get("REALSTARTTIME") != null) {
-					row.createCell(7).setCellValue(task.get("REALSTARTTIME").toString());
+				if (task.get("CREATE_TIME") != null) {
+					row.createCell(7).setCellValue(task.get("CREATE_TIME").toString());
 				}
-				if (task.get("REALENDTIME") != null) {
-					row.createCell(8).setCellValue(task.get("REALENDTIME").toString());
+				if (task.get("JBD") != null) {
+					row.createCell(8).setCellValue(task.get("JBD").toString());
 				}
 				int status = Integer.parseInt(task.get("STATUS").toString());
 				//该次执行状态(0待办,1进行中,2完成)
 
 				if (status == 0) {
-					row.createCell(9).setCellValue("待办");
+					row.createCell(9).setCellValue("未派发");
 				} else if (status == 1) {
-					row.createCell(9).setCellValue("进行中");
+					row.createCell(9).setCellValue("已派发");
 				} else if (status == 2) {
-					row.createCell(9).setCellValue("完成");
+					row.createCell(9).setCellValue("已消缺");
 				}
 
 			}
@@ -285,7 +293,7 @@ public class KhSiteController extends
 			response.setHeader("Content-disposition", "attachment; filename=" + new String("看护任务导出表.xlsx".getBytes("utf-8"), "iso8859-1"));
 			response.setContentType("Content-Type:application/vnd.ms-excel ");
 			wb.write(output);
-			output.close();*/
+			output.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -308,39 +316,6 @@ public class KhSiteController extends
 	</select>
 
 	 */
-	 /* @Autowired
-    private UserCenter userCenter;
-    @Autowired
-    private LineData line;
-
-    @GetMapping("/getLineInfoCommOptions")
-    public WebApiResponse getLineInfoCommOptions(String kv){
-        return line.getLine(kv);
-    }
-
-    @GetMapping("/getTowerInfoCommOptions")
-    public WebApiResponse getTowerInfoCommOptions(String LineId){
-        return line.getTower(LineId);
-    }
-    @GetMapping("/treeQuery")
-    public List userCenter(String id){
-        return userCenter.treeQuery(id);
-    }
-
-    @GetMapping("/userQuery")
-    public WebApiResponse userQuery(@RequestParam("classname") String classname,@RequestParam(value = "realname",required = false)String realname){
-        return userCenter.userQuery(classname,realname);
-    }
-    //外协单位
-    @GetMapping("/queryOrgName")
-    public WebApiResponse queryOrgName(){
-        return userCenter.queryOrgName();
-    }
-    //通道单位
-    @GetMapping("/queryCompanyname")
-    public WebApiResponse queryCompanyname(){
-        return userCenter.queryCompanyname();
-    }*/
 
 	 /* *//**
      * 审批隐患后

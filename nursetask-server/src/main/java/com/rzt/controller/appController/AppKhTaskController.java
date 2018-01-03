@@ -140,12 +140,25 @@ public class AppKhTaskController extends
     public WebApiResponse listPhone(String taskId){
         return this.service.listPhone(Long.parseLong(taskId));
     }
-    //KHOffSet(String userId,long taskId)
-    //获取交接班的
-    /*@GetMapping("listYhPoint")
-    public List<Map<String,Object>> listYhPoint(long taskId){
-        return this.service.getPoint(taskId);
-    }*/
 
+    @ApiOperation(value = "已完成任务界面", notes = "已完成任务界面  ")
+    @GetMapping("/appListTaskDone")
+    @ResponseBody
+    public WebApiResponse appListTaskDone(String userId,long taskId){
+        return this.service.appListTaskDone(userId,taskId);
+    }
+    @ApiOperation(value = "获取人员头像", notes = "获取人员头像  ")
+    @GetMapping("/appListPicture")
+    @ResponseBody
+    public WebApiResponse appListPicture(int step,long taskId){
+        return this.service.appListPicture(step,taskId);
+    }
+
+    @ApiOperation(value = "确认是否能够提交任务", notes = "确认是否能够提交任务  ")
+    @GetMapping("/appCompareEndTime")
+    @ResponseBody
+    public WebApiResponse appCompareEndTime(long taskId){
+        return this.service.appCompareEndTime(taskId);
+    }
 
 }

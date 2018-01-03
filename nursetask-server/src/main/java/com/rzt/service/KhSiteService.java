@@ -139,7 +139,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
         this.reposiotry.updateYH(site.getYhId(), DateUtil.dateNow());
         this.reposiotry.updateKhCycle(id);
         //将带稽查 已完成稽查的看护任务状态修改
-        this.reposiotry.updateCheckTask(id, DateUtil.dateNow());
+       // this.reposiotry.updateCheckTask(id, DateUtil.dateNow());
     }
 
     //消缺未派发的任务
@@ -151,11 +151,11 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
         this.reposiotry.updateCheckTask(id, DateUtil.dateNow());
     }
 
-    public List findAll() {
+    public List<Map<String, Object>> findAlls() {
         String sql = "select * from kh_site";
         List<Map<String, Object>> maps = this.execSql(sql);
         List<KhSite> all = this.reposiotry.findAll();
-        return all;
+        return maps;
     }
 
    /* public void paifaTask(String id, KhSite site) {
@@ -214,6 +214,8 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             task.setSection(yh.getSection());
             task.setLineId(yh.getLineId());
             task.setTaskName(taskName);
+            task.setWxOrgId(yh.getWxorgId());
+            task.setTdywOrgId(yh.getTdorgId());
             task.setWxOrg(yh.getTdwxOrg());
             task.setStatus(0);// 未派发
 //            task.setCount(0);//生成任务次数0
@@ -295,6 +297,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                 site1.setTdywOrg(site.getTdywOrg());
                 site1.setYhId(site.getYhId());
                 site1.setCount(1);
+                site1.setWxOrg(site.getWxOrg());
                 site1.setCreateTime(DateUtil.dateNow());
                 site1.setJbd(map.get("jbd").toString());
                 site1.setGroupFlag(groupFlag + capatain);
