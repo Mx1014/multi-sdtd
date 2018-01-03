@@ -107,12 +107,12 @@ public class KhSiteController extends
     //消缺未派发的任务
     @PatchMapping("/xiaoQueCycle.do")
     @ResponseBody
-    public WebApiResponse updateCycle(String id) {
+    public WebApiResponse xiaoQueCycle(String id) {
         try {
             String[] split = id.split(",");
             if (split.length > 0) {
                 for (int i = 0; i < split.length; i++) {
-                    this.service.updateCycle(Long.parseLong(split[i]));
+                    this.service.xiaoQueCycle(Long.parseLong(split[i]));
                 }
             }
             return WebApiResponse.success("任务消缺成功");

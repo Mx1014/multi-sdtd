@@ -96,6 +96,9 @@ public class KhSite  implements Serializable{
 	//字段描述: 计划结束时段
 	@Column(name = "TDYW_ORGID")
 	private String tdywOrgId;
+	//字段描述: 一轮任务总时长
+	@Column(name = "CYCLE")
+	private int cycle;
 
 	public void setId(){
 		this.id = new SnowflakeIdWorker(0,0).nextId();
@@ -293,5 +296,13 @@ public class KhSite  implements Serializable{
 
 	public void setTdywOrgId(String tdywOrgId) {
 		this.tdywOrgId = tdywOrgId;
+	}
+
+	public int getCycle() {
+		return cycle;
+	}
+
+	public void setCycle(int cycle) {
+		this.cycle = cycle;
 	}
 }
