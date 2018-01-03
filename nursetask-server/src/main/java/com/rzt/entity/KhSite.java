@@ -54,6 +54,9 @@ public class KhSite  implements Serializable{
 	//字段描述: 通道运维单位
 	@Column(name = "TDYW_ORG")
 	private String tdywOrg;
+	//字段描述: 外协单位
+	@Column(name = "WX_ORG")
+	private String wxOrg;
 	//字段描述: 生成任务总次数
 	@Column(name = "COUNT")
 	private int count;
@@ -87,10 +90,17 @@ public class KhSite  implements Serializable{
 	//字段描述: 计划结束时段
 	@Column(name = "PLAN_END_TIME")
 	private String planEndTime;
+	//字段描述: 计划开始时段
+	@Column(name = "WX_ORGID")
+	private String wxOrgId;
+	//字段描述: 计划结束时段
+	@Column(name = "TDYW_ORGID")
+	private String tdywOrgId;
 
 	public void setId(){
 		this.id = new SnowflakeIdWorker(0,0).nextId();
 	}
+	@ExcelResources(title="看护点id",order=1)
 	public Long getId(){
 		return this.id;
 	}
@@ -100,6 +110,7 @@ public class KhSite  implements Serializable{
 	public void setVtype(String vtype){
 		this.vtype = vtype;
 	}
+	@ExcelResources(title="电压等级",order=3)
 	public String getVtype(){
 		return this.vtype;
 	}
@@ -109,6 +120,7 @@ public class KhSite  implements Serializable{
 	public void setLineName(String lineName){
 		this.lineName = lineName;
 	}
+	@ExcelResources(title="线路名称",order=5)
 	public String getLineName(){
 		return this.lineName;
 	}
@@ -118,18 +130,16 @@ public class KhSite  implements Serializable{
 	public void setSection(String section){
 		this.section = section;
 	}
+	@ExcelResources(title="区段",order=4)
 	public String getSection(){
 		return this.section;
 	}
 
 
-
-
-
-
 	public void setTaskName(String taskName){
 		this.taskName = taskName;
 	}
+	@ExcelResources(title="任务名",order=2)
 	public String getTaskName(){
 		return this.taskName;
 	}
@@ -139,6 +149,7 @@ public class KhSite  implements Serializable{
 	public void setUserid(String userid){
 		this.userid = userid;
 	}
+	@ExcelResources(title="看护人id",order=6)
 	public String getUserid(){
 		return this.userid;
 	}
@@ -148,6 +159,7 @@ public class KhSite  implements Serializable{
 	public void setTdywOrg(String tdywOrg){
 		this.tdywOrg = tdywOrg;
 	}
+	@ExcelResources(title="通道运维单位",order=8)
 	public String getTdywOrg(){
 		return this.tdywOrg;
 	}
@@ -177,6 +189,7 @@ public class KhSite  implements Serializable{
 	public void setCreateTime(Date createTime){
 		this.createTime = createTime;
 	}
+	@ExcelResources(title="创建时间",order=9)
 	public Date getCreateTime(){
 		return this.createTime;
 	}
@@ -233,7 +246,7 @@ public class KhSite  implements Serializable{
 	public void setLineId(long lineId) {
 		this.lineId = lineId;
 	}
-
+	@ExcelResources(title="隐患id",order=7)
 	public long getYhId() {
 		return yhId;
 	}
@@ -241,7 +254,7 @@ public class KhSite  implements Serializable{
 	public void setYhId(long yhId) {
 		this.yhId = yhId;
 	}
-
+	@ExcelResources(title="几班倒",order=10)
 	public String getJbd() {
 		return jbd;
 	}
@@ -258,4 +271,27 @@ public class KhSite  implements Serializable{
 		this.capatain = capatain;
 	}
 
+	public void setWxOrg(String wxOrg) {
+		this.wxOrg = wxOrg;
+	}
+
+	public String getWxOrg() {
+		return wxOrg;
+	}
+
+	public String getWxOrgId() {
+		return wxOrgId;
+	}
+
+	public void setWxOrgId(String wxOrgId) {
+		this.wxOrgId = wxOrgId;
+	}
+
+	public String getTdywOrgId() {
+		return tdywOrgId;
+	}
+
+	public void setTdywOrgId(String tdywOrgId) {
+		this.tdywOrgId = tdywOrgId;
+	}
 }

@@ -8,7 +8,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.cloud.netflix.feign.EnableFeignClients;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
@@ -19,9 +18,9 @@ import org.springframework.context.annotation.Configuration;
 @ComponentScan
 @EnableEurekaClient
 @EnableFeignClients
-public class MicroserviceRztUserCenterApplication {
+public class Application {
     public static void main(String[] args) {
-        SpringApplication.run(MicroserviceRztUserCenterApplication.class, args);
-        Logger logger = LoggerFactory.getLogger(MicroserviceRztUserCenterApplication.class);
+        SpringApplication.run(Application.class, args);
+        Logger logger = LoggerFactory.getLogger(Application.class);
     }
 }

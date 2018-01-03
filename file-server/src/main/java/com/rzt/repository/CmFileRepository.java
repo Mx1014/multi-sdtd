@@ -28,4 +28,6 @@ public interface CmFileRepository extends JpaRepository<CmFile,String> {
     CmFile findById(Long id);
 
     void deleteById(Long id);
+
+    List<CmFile> findByFkIdStr(String fkidStr);
 }

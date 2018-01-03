@@ -69,7 +69,13 @@ public class CmFileService extends CurdService<CmFile,CmFileRepository> {
         List<CmFile> list = reposiotry.findByFkId(fkid);
         result.put("success",true);
         result.put("object",list);
-
+        return result;
+    }
+    public Map<String,Object> getImgByFkIdStr(String fkidStr) {
+        Map<String, Object> result = new HashMap<>();
+        List<CmFile> list = reposiotry.findByFkIdStr(fkidStr);
+        result.put("success",true);
+        result.put("object",list);
         return result;
     }
 

@@ -113,5 +113,8 @@ public class AnomalymonitoringController extends
         return this.service.anomalyInsO(orgtype, explain, taskId,anomalytype);
     }
 
-
+    @GetMapping("xsTu")
+    public WebApiResponse xsTu() {
+        return this.service.xsTu();
+    }
 }

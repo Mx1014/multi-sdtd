@@ -39,13 +39,13 @@ public class RztSysUserauthService extends CurdService<RztSysUserauth, RztSysUse
 
     public String findByUserName(RztSysUser user) {
         String flag = "1";
-        int userauth = this.reposiotry.VerificationEmail(user.getEmail());
-        if (userauth != 0)
-            flag = "该邮箱已存在";
-        int userauth1 = this.reposiotry.VerificationUsername(user.getUsername());
+//        int userauth = this.reposiotry.VerificationEmail(user.getEmail());
+//        if (userauth != 0)
+//            flag = "该邮箱已存在";
+        int userauth1 = this.reposiotry.VerificationUsername(user.getUsername(), user.getId());
         if (userauth1 != 0)
             flag = "该账号已存在";
-        int userauth2 = this.reposiotry.VerificationPhone(user.getPhone());
+        int userauth2 = this.reposiotry.VerificationPhone(user.getPhone(), user.getId());
         if (userauth2 != 0)
             flag = "该手机号已存在";
         return flag;

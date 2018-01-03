@@ -58,10 +58,10 @@ public class XsZcCycleController extends
 		try {
 			xsZcCycle.setTotalTaskNum(0);
 			xsZcCycle.setCreateTime(DateUtil.dateNow());
-			Object o = this.service.addCycle(xsZcCycle);
-			return WebApiResponse.success("数据新增成功");
+			this.service.addCycle(xsZcCycle);
+			return WebApiResponse.success("周期新增成功");
 		} catch (Exception var) {
-			return WebApiResponse.erro("数据新增失败" + var.getMessage());
+			return WebApiResponse.erro("周期新增失败" + var.getMessage());
 		}
 	}
 
@@ -104,6 +104,19 @@ public class XsZcCycleController extends
     public Object deleteCycle(@RequestParam(value = "ids[]") Long[] ids) {
         try {
 			this.service.logicalDelete(ids);
+            return WebApiResponse.success("数据删除成功");
+        } catch (Exception var3) {
+            return WebApiResponse.erro("数据删除失败" + var3.getMessage());
+        }
+
+    }
+
+
+    @ApiOperation(value = "任务删除",notes = "任务删除")
+    @DeleteMapping("deletePlan")
+    public Object deletePlan(@RequestParam(value = "ids[]") Long[] ids) {
+        try {
+			this.service.logicalDeletePlan(ids);
             return WebApiResponse.success("数据删除成功");
         } catch (Exception var3) {
             return WebApiResponse.erro("数据删除失败" + var3.getMessage());
@@ -166,13 +179,52 @@ public class XsZcCycleController extends
 	 */
 	@ApiOperation(value = "pc端任务派发列表",notes = "pc端任务派发列表")
 	@GetMapping("listPictureById")
-	public Object listPictureById(Long taskId) {
+	public Object listPictureById(Long taskId,Integer zj) {
 		try {
-			return WebApiResponse.success(this.service.listPictureById(taskId));
+			return WebApiResponse.success(this.service.listPictureById(taskId,zj));
 		} catch (Exception var) {
 			return WebApiResponse.erro("图片查找失败" + var.getMessage());
 		}
 	}
+
+
+	/**
+	 * @Method listExecByTaskid
+	 * @Description  轮数据
+	 * @param
+	 * @return java.lang.Object
+	 * @date 2017/12/7 17:57
+	 * @author nwz
+	 */
+	@ApiOperation(value = "轮数据",notes = "轮数据")
+	@GetMapping("listExecByTaskid")
+	public Object listExecByTaskid(Long taskId) {
+		try {
+			return WebApiResponse.success(this.service.listExecByTaskid(taskId));
+		} catch (Exception var) {
+			return WebApiResponse.erro("图片查找失败" + var.getMessage());
+		}
+	}
+
+	/**
+	 * @Method listExecByTaskid
+	 * @Description  轮详情数据
+	 * @param
+	 * @return java.lang.Object
+	 * @date 2017/12/7 17:57
+	 * @author nwz
+	 */
+	@ApiOperation(value = "轮详情数据",notes = "轮详情数据")
+	@GetMapping("listExecDetail")
+	public Object listExecDetail(Long execId) {
+		try {
+			return WebApiResponse.success(this.service.listExecDetail(execId));
+		} catch (Exception var) {
+			return WebApiResponse.erro("图片查找失败" + var.getMessage());
+		}
+	}
+
+
 
 
 	@InitBinder
@@ -183,5 +235,7 @@ public class XsZcCycleController extends
 		 binder.registerCustomEditor(Date.class, new CustomDateEditor(sdf, true));
 
    }
+
+
 
 }

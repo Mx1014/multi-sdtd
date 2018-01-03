@@ -17,21 +17,23 @@ import java.util.Date;
 
 /**
  * 类名称：CheckLiveTask
- * 类描述：看护任务实体类
- * 创建人：李泽州
- * 创建时间：2018/01/02 15:13:15
+ * 类描述：${table.comment}
+ * 创建人：张虎成
+ * 创建时间：2017/12/04 15:13:15
+ * 修改人：张虎成
+ * 修改时间：2017/12/04 15:13:15
  * 修改备注：
  * @version
  */
 @Entity
-@Table(name="CHECK_LIVE_TASK")
-public class CheckLiveTask  implements Serializable{
+@Table(name="CHECK_LIVE_TASKXS")
+public class CheckLiveTaskXs implements Serializable{
 	//字段描述:
 	@Id
 	private Long id;
 	//字段描述: 被稽查的任务id
 	@Column(name = "TASK_ID")
-	private String taskId;
+	private Long taskId;
 	//字段描述: 稽查任务类别（0 正常 1保电 2 特殊）
 	@Column(name = "TASK_TYPE")
 	private Integer taskType;
@@ -53,14 +55,18 @@ public class CheckLiveTask  implements Serializable{
 	//字段描述: 任务派发状态  0未派发  1已派发  2已消缺
 	@Column(name = "STATUS")
 	private Integer status;
-
+	//字段描述: 通道运维单位
+	@Column(name = "TDWH_ORG")
+	private String tdwhOrg;
 	//字段描述: 稽查人部门（0属地 1北京）
 	@Column(name = "CHECK_DEPT")
-	private Integer checkDept;
+	private String checkDept;
 	//字段描述: 稽查周期
 	@Column(name = "CHECK_CYCLE")
 	private Integer checkCycle;
-
+	//字段描述: 通道外协单位id
+	@Column(name = "TDWX_ORGID")
+	private String tdwxOrgid;
 	//字段描述: 是否设置了电子围栏（0是 1否）
 	@Column(name = "DZWL")
 	private Integer dzwl;
@@ -76,11 +82,11 @@ public class CheckLiveTask  implements Serializable{
 		return this.id;
 	}
 
-	public void setTaskId(String taskId){
+	public void setTaskId(Long taskId){
 		this.taskId = taskId;
 	}
 	@ExcelResources(title="被稽查的任务id",order=2)
-	public String getTaskId(){
+	public Long getTaskId(){
 		return this.taskId;
 	}
 
@@ -140,11 +146,19 @@ public class CheckLiveTask  implements Serializable{
 		return this.status;
 	}
 
-	public void setCheckDept(Integer checkDept){
+	public void setTdwhOrg(String tdwhOrg){
+		this.tdwhOrg = tdwhOrg;
+	}
+	@ExcelResources(title="通道运维单位",order=10)
+	public String getTdwhOrg(){
+		return this.tdwhOrg;
+	}
+
+	public void setCheckDept(String checkDept){
 		this.checkDept = checkDept;
 	}
 	@ExcelResources(title="稽查人部门（0属地 1北京）",order=11)
-	public Integer getCheckDept(){
+	public String getCheckDept(){
 		return this.checkDept;
 	}
 
@@ -155,6 +169,16 @@ public class CheckLiveTask  implements Serializable{
 	public Integer getCheckCycle(){
 		return this.checkCycle;
 	}
+
+	public void setTdwxOrgid(String tdwxOrgid){
+		this.tdwxOrgid = tdwxOrgid;
+	}
+	@ExcelResources(title="通道外协单位id",order=13)
+	public String getTdwxOrgid(){
+		return this.tdwxOrgid;
+	}
+
+
 
 	public void setDzwl(Integer dzwl){
 		this.dzwl = dzwl;

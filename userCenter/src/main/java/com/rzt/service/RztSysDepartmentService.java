@@ -75,6 +75,7 @@ public class RztSysDepartmentService extends CurdService<RztSysDepartment, RztSy
         rztSysDepartment.setLft(rgt + 1);
         rztSysDepartment.setRgt(rgt + 2);
         rztSysDepartment.setDeptpid(tongji.getDeptpid());
+        rztSysDepartment.setLastnode(tongji.getLastnode());
         this.add(rztSysDepartment);
         return rztSysDepartment;
     }
@@ -83,11 +84,11 @@ public class RztSysDepartmentService extends CurdService<RztSysDepartment, RztSy
     public List<Map<String, Object>> findDeptListByPid(int page, int size, String id) {
         RztSysDepartment rztSysDepartment = this.reposiotry.getOne(id);
         StringBuilder buffer = new StringBuilder();
-        buffer.append("SELECT node.id ,node.deptName ,node.lft,node.rgt,node.deptPid,node.lastnode ");
+        buffer.append("SELECT node.id ,node.deptName ,node.lft,node.rgt,node.deptPid,node.lastnode,node.ORGTYPE  ");
         buffer.append("FROM RztSysDepartment node,RztSysDepartment parent WHERE node.lft BETWEEN parent.lft AND parent.rgt ");
         buffer.append("AND node.lft > " + rztSysDepartment.getLft());
         buffer.append(" AND node.rgt <" + rztSysDepartment.getRgt() + " ");
-        buffer.append("GROUP BY node.id,node.lft,node.deptName,node.rgt,node.deptPid,node.lastnode ");
+        buffer.append("GROUP BY node.id,node.lft,node.deptName,node.rgt,node.deptPid,node.lastnode,node.ORGTYPE ");
         buffer.append("ORDER BY node.lft");
         if (size != 0) {
             buffer.append(PageUtil.getLimit(page, size));

@@ -51,7 +51,17 @@ spring:
     hibernate:
       ddl-auto: none
     show: true
-    database: oracle
+#  redis:
+#      database: 11
+#      host: 168.130.1.31
+#      port: 30094
+#      password:
+#      timeout: 0
+#      pool:
+#        max-active: 100
+#        max-idle: 8
+#        min-idle: 0
+#        max-wait: -1
   #文件上传
   http:
     encoding:
@@ -63,4 +73,4 @@ spring:
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://127.0.0.1:7002/eureka/
+      defaultZone: http://168.130.1.31:31814/eureka/

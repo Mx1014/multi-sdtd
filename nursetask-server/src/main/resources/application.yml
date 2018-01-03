@@ -1,6 +1,9 @@
 server:
   port: 7011
   context-path: /nurseTask/
+#log
+logging:
+  config: classpath:logback.xml
 spring:
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
@@ -26,7 +29,7 @@ spring:
     connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
   jpa:
      show-sql: true
-#     database: ORACLE
+     database: ORACLE
  #    hibernate:
   #     ddl-aut
   application:

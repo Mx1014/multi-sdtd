@@ -67,6 +67,6 @@ public interface AnomalymonitoringRepository extends JpaRepository<Anomalymonito
     int ejAnomalyInsO(Long id, String explain, Integer status, Integer tasktype, Integer anomalytype, Integer assessment);
 
     @Modifying
-    @Query(value = " INSERT INTO ANOMALY_MONITORING (ID, TASKID, ONECHECK_STATUS, ONECHECK_EXPLAINZ, TASK_TYPE, ANOMALY_TYPE,ONEASSESSMENT) VALUES (?1, ?2, 0, ?3, ?4, ?5,?6); ", nativeQuery = true)
+    @Query(value = " INSERT INTO ANOMALY_MONITORING (ID, TASKID, ONECHECK_STATUS, ONECHECK_EXPLAINZO, TASK_TYPE, ANOMALY_TYPE,ONEASSESSMENT) VALUES (?1, ?2, 0, ?3, ?4, ?5,?6); ", nativeQuery = true)
     int yjAnomalyInsO(Long id, String explain, Integer status, Integer tasktype, Integer anomalytype, Integer assessment);
 }

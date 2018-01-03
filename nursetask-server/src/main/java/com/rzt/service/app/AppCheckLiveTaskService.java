@@ -2,13 +2,10 @@ package com.rzt.service.app;
 
 import com.rzt.entity.CheckLiveTaskDetail;
 import com.rzt.repository.AppCheckLiveTaskRepository;
-import com.rzt.repository.CheckLiveTaskDetailRepository;
 import com.rzt.service.CurdService;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DateUtil;
-import org.apache.commons.lang.time.DateUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -118,7 +115,7 @@ public class AppCheckLiveTaskService extends CurdService<CheckLiveTaskDetail, Ap
     }
 
     //到岗到位
-    public WebApiResponse appDgdwCheck(CheckLiveTaskDetail detail) {
+/*    public WebApiResponse appDgdwCheck(CheckLiveTaskDetail detail) {
         try {
             this.reposiotry.updateDgdwCheck(detail.getSfzg(), detail.getRyyz(), detail.getExecId());
             this.reposiotry.updateDzwl(detail.getTaskId(), detail.getDydj());
@@ -129,7 +126,7 @@ public class AppCheckLiveTaskService extends CurdService<CheckLiveTaskDetail, Ap
             e.printStackTrace();
             return WebApiResponse.erro("数据获取失败" + e.getMessage());
         }
-    }
+    }*/
 
     public WebApiResponse appCompleteTask(CheckLiveTaskDetail detail) {
         try {

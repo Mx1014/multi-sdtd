@@ -18,10 +18,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by admin on 2017/12/17.
@@ -38,7 +35,7 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
         if (dbyb == 1) {
             buffer.append("where (status like '未开始' or status like '进行中')");
         } else if (dbyb == 2) {
-            buffer.append(" where status like '已完成'");
+            buffer.append(" where (status like '已完成' or status like '已取消')");
         }
         String sql = "select " + result + " from kh_task k left join rztsysuser u on u.id = k.user_id " + buffer.toString() + " and user_id = ? order by k.plan_start_time";
         return this.execSqlPage(pageable, sql, userId);
@@ -69,6 +66,11 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
         try {
             String sql = "select wp_zt from kh_task_wpqr where taskId=?";
             List<Map<String, Object>> map = this.execSql(sql, taskId);
+            if (map.isEmpty()) {
+                Map map1 = new HashMap<>();
+                map1.put("wp_zt", "1,1,1,1,1");
+                map.add(map1);
+            }
             return WebApiResponse.success(map);
         } catch (Exception e) {
             e.printStackTrace();
@@ -91,10 +93,10 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
     }
 
 
-    public WebApiResponse appListCaptain(String taskId,String userId) {
+    public WebApiResponse appListCaptain(String taskId, String userId) {
         try {
             String sql = "select s.CAPATAIN,s.group_flag as flag FROM KH_SITE s,KH_TASK k where s.ID = k.SITE_ID AND  k.id=? and k.USER_ID =?";
-            return WebApiResponse.success(this.execSql(sql,taskId,userId));
+            return WebApiResponse.success(this.execSql(sql, taskId, userId));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("数据获取失败");
@@ -148,14 +150,14 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
     public List<Map<String, Object>> getPoint(long taskId) {
         String sql = "select c.radius as ROUND,c.longitude as jd,c.latitude as wd from kh_cycle c left join kh_site s on s.yh_id = c.yh_id left join kh_task k on k.site_id = s.id where k.id = ?";
         List<Map<String, Object>> list = this.execSql(sql, taskId);
-        if (!list.isEmpty()){
-            for (Map map:list) {
+        if (!list.isEmpty()) {
+            for (Map map : list) {
                 if (map.get("WD") == null || map.get("JD") == null) {
                     sql = "select y.radius as ROUND,y.jd as jd,y.wd as wd from kh_yh_history y left join kh_task k on y.id = k.yh_id where k.id=?";
                     list = this.execSql(sql, taskId);
                 }
             }
-        }else{
+        } else {
             sql = "select y.jd as jd,y.wd as wd from kh_yh_history y left join kh_task k on y.id = k.yh_id where k.id=?";
             list = this.execSql(sql, taskId);
         }
@@ -172,7 +174,7 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
     public WebApiResponse listPhone(long taskId) {
         try {
             String sql = "SELECT Y.YHZRDWLXR AS NAME,Y.YHZRDWDH AS PHONE FROM KH_YH_HISTORY Y ,KH_TASK K where K.YH_ID = Y.ID and  K.ID=? ";
-            return WebApiResponse.success(this.execSql(sql,taskId));
+            return WebApiResponse.success(this.execSql(sql, taskId));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("数据获取失败");
@@ -182,7 +184,11 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
     public WebApiResponse appListZl(String taskId) {
         try {
             String sql = "select cl_zt from kh_task_wpqr where taskId=?";
-            return WebApiResponse.success(this.execSql(sql,taskId));
+            Map<String, Object> map = this.execSqlSingleResult(sql, taskId);
+            if (map.get("CL_ZT") == null) {
+                map.put("CL_ZT", "0,0,0,0,0,0");
+            }
+            return WebApiResponse.success(map);
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("数据获取失败");
@@ -191,14 +197,64 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
 
     public WebApiResponse appCaptainTime(String userId, long taskId, String flag) {
         try {
-            flag = flag.substring(0,flag.length()-1)+1;
+            flag = flag.substring(0, flag.length() - 2) + 0 + flag.substring(flag.length() - 1, flag.length());
             String sql = "SELECT k.REAL_END_TIME \n" +
-                    "FROM KH_SITE s,KH_TASK k WHERE s.ID=k.SITE_ID and k.id=? and s.GROUP_FLAG=?";
-            Map<String, Object> map = this.execSqlSingleResult(sql, taskId, flag);
+                    "FROM KH_SITE s,KH_TASK k WHERE s.ID=k.SITE_ID and s.GROUP_FLAG=?";
+            Map<String, Object> map = this.execSqlSingleResult(sql, flag);
+            if (map.get("REAL_END_TIME") == null) {
+                throw new Exception();
+            }
             return WebApiResponse.success(map);
         } catch (Exception e) {
-            e.printStackTrace();
             return WebApiResponse.erro("队长未交班");
+        }
+    }
+
+    public WebApiResponse appListTaskDone(String userId, long taskId) {
+        try {
+            String sql = "SELECT k.TASK_NAME taskname,y.YHMS ms,y.YHJB jb,k.PLAN_START_TIME starttime,k.PLAN_END_TIME endtime,u.REALNAME name,u.PHONE phone,d.DEPTNAME\n" +
+                    "from KH_TASK k,KH_YH_HISTORY y,RZTSYSUSER u,RZTSYSDEPARTMENT d\n" +
+                    "where k.YH_ID=y.id and k.USER_ID = u.id and d.ID = u.CLASSNAME\n" +
+                    "and k.id = ?";
+            return WebApiResponse.success(this.execSql(sql, taskId));
+        } catch (Exception e) {
+            return WebApiResponse.erro("数据获取失败");
+        }
+    }
+
+    public WebApiResponse appListPicture(int step, long taskId) {
+        try {
+            String sql = "SELECT FILE_PATH as path,PROCESS_NAME as step\n" +
+                    "FROM PICTURE_KH WHERE PROCESS_ID=? and TASK_ID =? ";
+            return WebApiResponse.success(this.execSql(sql, step, taskId));
+        } catch (Exception e) {
+            return WebApiResponse.erro("数据获取失败");
+        }
+    }
+
+
+    public WebApiResponse appCompareEndTime(long taskId) {
+        try {
+            String sql = "select plan_end_time as time from kh_task where id=?";
+            Map<String, Object> map = this.execSqlSingleResult(sql, taskId);
+            int time = compareDate(DateUtil.parseDate(map.get("TIME").toString()), new Date());
+            if (time != 1) {
+                return WebApiResponse.success("可以交班");
+            } else {
+                throw new Exception();
+            }
+        } catch (Exception e) {
+            return WebApiResponse.erro("不可以交班");
+        }
+    }
+
+    public int compareDate(Date dt1, Date dt2) {
+        if (dt1.getTime() > dt2.getTime()) {
+            return 1;
+        } else if (dt1.getTime() < dt2.getTime()) {
+            return -1;
+        } else {//相等
+            return 0;
         }
     }
 }
