@@ -62,12 +62,6 @@ public class KhCycle implements Serializable{
     //字段描述: 外协单位
     @Column(name = "WX_ORG")
     private String wxOrg;
-    //字段描述: 稽查人
-    @Column(name = "JC_USER_ID")
-    private String jcUserId;
-    //字段描述: 0未派发1已派发2未稽查3已稽查
-    @Column(name = "JC_STATUS")
-    private int jcStatus;
     //字段描述: 创建时间
     @Column(name = "CREATE_TIME")
     private Date createTime;
@@ -81,6 +75,14 @@ public class KhCycle implements Serializable{
     //字段描述: 隐患点半径
     @Column(name="radius")
     private String radius;
+    //字段描述: 运维单位id
+    @Column(name="TDYW_ORGID")
+    private String tdywOrgId;
+    //字段描述: 外协单位id
+    @Column(name="WX_ORGID")
+    private String wxOrgId;
+
+
     @ExcelResources(title="被稽查的任务id",order=1)
     public void setId(){
             this.id = new SnowflakeIdWorker(0,0).nextId();
@@ -138,14 +140,6 @@ public class KhCycle implements Serializable{
         return this.wxOrg;
     }
 
-    public void setJcUserId(String jcUserId){
-        this.jcUserId = jcUserId;
-    }
-    public String getJcUserId(){
-        return this.jcUserId;
-    }
-
-
     public int getStatus() {
         return status;
     }
@@ -168,14 +162,6 @@ public class KhCycle implements Serializable{
 
     public void setYhId(Long yhId) {
         this.yhId = yhId;
-    }
-
-    public int getJcStatus() {
-        return jcStatus;
-    }
-
-    public void setJcStatus(int jcStatus) {
-        this.jcStatus = jcStatus;
     }
 
     public void setCreateTime(Date createTime) {
@@ -216,5 +202,21 @@ public class KhCycle implements Serializable{
 
     public String getRadius() {
         return radius;
+    }
+
+    public String getTdywOrgId() {
+        return tdywOrgId;
+    }
+
+    public void setTdywOrgId(String tdywOrgId) {
+        this.tdywOrgId = tdywOrgId;
+    }
+
+    public String getWxOrgId() {
+        return wxOrgId;
+    }
+
+    public void setWxOrgId(String wxOrgId) {
+        this.wxOrgId = wxOrgId;
     }
 }

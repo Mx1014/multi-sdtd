@@ -18,10 +18,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by admin on 2017/12/17.
@@ -210,6 +207,54 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
             return WebApiResponse.success(map);
         } catch (Exception e) {
             return WebApiResponse.erro("队长未交班");
+        }
+    }
+
+    public WebApiResponse appListTaskDone(String userId, long taskId) {
+        try {
+            String sql = "SELECT k.TASK_NAME taskname,y.YHMS ms,y.YHJB jb,k.PLAN_START_TIME starttime,k.PLAN_END_TIME endtime,u.REALNAME name,u.PHONE phone,d.DEPTNAME\n" +
+                    "from KH_TASK k,KH_YH_HISTORY y,RZTSYSUSER u,RZTSYSDEPARTMENT d\n" +
+                    "where k.YH_ID=y.id and k.USER_ID = u.id and d.ID = u.CLASSNAME\n" +
+                    "and k.id = ?";
+            return WebApiResponse.success(this.execSql(sql, taskId));
+        } catch (Exception e) {
+            return WebApiResponse.erro("数据获取失败");
+        }
+    }
+
+    public WebApiResponse appListPicture(int step, long taskId) {
+        try {
+            String sql = "SELECT FILE_PATH as path,PROCESS_NAME as step\n" +
+                    "FROM PICTURE_KH WHERE PROCESS_ID=? and TASK_ID =? ";
+            return WebApiResponse.success(this.execSql(sql, step, taskId));
+        } catch (Exception e) {
+            return WebApiResponse.erro("数据获取失败");
+        }
+    }
+
+
+    public WebApiResponse appCompareEndTime(long taskId) {
+        try {
+            String sql = "select plan_end_time as time from kh_task where id=?";
+            Map<String, Object> map = this.execSqlSingleResult(sql, taskId);
+            int time = compareDate(DateUtil.parseDate(map.get("TIME").toString()), new Date());
+            if (time != 1) {
+                return WebApiResponse.success("可以交班");
+            } else {
+                throw new Exception();
+            }
+        } catch (Exception e) {
+            return WebApiResponse.erro("不可以交班");
+        }
+    }
+
+    public int compareDate(Date dt1, Date dt2) {
+        if (dt1.getTime() > dt2.getTime()) {
+            return 1;
+        } else if (dt1.getTime() < dt2.getTime()) {
+            return -1;
+        } else {//相等
+            return 0;
         }
     }
 }
