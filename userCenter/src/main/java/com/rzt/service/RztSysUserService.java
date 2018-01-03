@@ -181,7 +181,7 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
         String classname = user.getClassName();
         String companyid = user.getCompanyid();
         try {
-            this.reposiotry.updateUser(age, certificate, deptid, phone, realname, serialnumber, userType, username, worktype, workyear, AVATAR, classname, companyid ,id);
+            this.reposiotry.updateUser(age, certificate, deptid, phone, realname, serialnumber, userType, username, worktype, workyear, AVATAR, classname, companyid, id);
             /**
              * 修改Redis人员信息
              */
@@ -264,7 +264,6 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
      * @param request
      * @return
      */
-    @Transactional
     public WebApiResponse userLogin(String password, String account, String loginType, HttpServletRequest request) {
         String auth = "SELECT USERID FROM RZTSYSUSERAUTH WHERE IDENTITYTYPE = ?1 AND PASSWORD =?2 ";
         String user = "SELECT * FROM RZTSYSUSER  WHERE id=?1 AND USERDELETE = 1 AND USERTYPE = ?2 ";
@@ -276,19 +275,19 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
                 List<Map<String, Object>> userid = this.execSql(user, String.valueOf(stringObjectMap.get("USERID")), loginType);
                 if (userid.size() == 1) {
                     this.reposiotry.updateUserLOGINSTATUS(String.valueOf(stringObjectMap.get("USERID")));
-                    List<Map<String, Object>> userid1 = this.execSql(userAccout, String.valueOf(stringObjectMap.get("USERID")));
+                    Map userid1 = this.execSqlSingleResult(userAccout, String.valueOf(stringObjectMap.get("USERID")));
                     HashOperations hashOperations = redisTemplate.opsForHash();
                     hashOperations.put("UserInformation", stringObjectMap.get("USERID"), userid1);
-                    Object roleid = userid1.get(0).get("ROLEID");
+                    Object roleid = userid1.get("ROLEID");
                     if (!StringUtils.isEmpty(roleid)) {
                         Object object = hashOperations.get("RZTSYSDATA", roleid);
                         JSONObject jsonObject = JSONObject.parseObject(object.toString());
-                        userid1.get(0).put("ROLETYPE", jsonObject.get("TYPE"));
+                        userid1.put("ROLETYPE", jsonObject.get("TYPE"));
                     }
-                    access_token = JwtHelper.createJWT(userid1.get(0),
+                    access_token = JwtHelper.createJWT(userid1,
                             tokenProp.getExpireTime()).getAccess_token();
-                    hashOperations.put("USERTOKEN", "USER:" + userid1.get(0).get("ID") + "," + userid1.get(0).get("REALNAME"), access_token);
-                    userid1.get(0).put("TOKEN", access_token);
+                    hashOperations.put("USERTOKEN", "USER:" + userid1.get("ID") + "," + userid1.get("REALNAME"), access_token);
+                    userid1.put("TOKEN", access_token);
                     request.getSession().setAttribute("user", userid1);
                     return WebApiResponse.success(userid1);
                 }

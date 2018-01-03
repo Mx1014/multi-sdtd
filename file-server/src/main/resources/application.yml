@@ -63,17 +63,17 @@ spring:
 #文件上传路径,必须以/结尾
 my-defined:
    mapProps:
-    file-dir: /usr/share/nginx/html/
-    pic-dir: /usr/share/nginx/html/
-#    file-dir: F:/sdtd/
-#    pic-dir: F:/sdtd/
+#    file-dir: /usr/share/nginx/html/
+#    pic-dir: /usr/share/nginx/html/
+    file-dir: F:/testFile/
+    pic-dir: F:/testFile/
     thum-height: 50
     thum-width: 50
 
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://168.130.1.31:31814/eureka/
+      defaultZone: http://localhost:7002/eureka/
   instance:
     prefer-ip-address: true
     # ${server.port}为该服务的端口号

@@ -13,6 +13,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 类名称：RztSysUserRepository
@@ -42,6 +43,7 @@ public interface RztSysUserRepository extends JpaRepository<RztSysUser, String> 
     int updateUser(int age, String certificate, String deptid, String phone, String realname, String serialnumber, int userType, String username, int worktype, int workyear, String AVATAR, String classname, String companyid, String id);
 
     @Modifying
+    @Transactional
     @Query(value = " UPDATE RZTSYSUSER SET LOGINSTATUS = 1 WHERE id=?1 ", nativeQuery = true)
     int updateUserLOGINSTATUS(String id);
 
