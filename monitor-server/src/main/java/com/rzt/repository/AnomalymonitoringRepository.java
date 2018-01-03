@@ -25,48 +25,29 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface AnomalymonitoringRepository extends JpaRepository<Anomalymonitoring, String> {
     /**
-     * 二级添加
-     *
-     * @param id
-     * @param explain     告警说明
-     * @param status
-     * @param tasktype
-     * @param anomalytype
-     * @return
+     * 二级 未处理告警处理
      */
     @Modifying
-    @Query(value = " INSERT INTO ANOMALY_MONITORING (ID, TASKID, TWOCHECK_STATUS, TWOCHECK_EXPLAINZ,TASK_TYPE, ANOMALY_TYPE) VALUES (?1, ?2, 1, ?3, ?4, ?5)  ", nativeQuery = true)
-    int ejAnomalyIns(Long id, String explain, Integer status, Integer tasktype, Integer anomalytype);
+    @Query(value = " INSERT INTO ANOMALY_MONITORING (ID, TASKID, TWOCHECK_STATUS, TWOCHECK_EXPLAINZ,TWOCHECK_APP_INFO,TASK_TYPE, ANOMALY_TYPE) VALUES (?1, ?2, ?3, ?4, ?5,?6,?7)  ", nativeQuery = true)
+    int ejAnomalyIns(Long id, Long taskId, Integer s, String explain, String explainApp, Integer tasktype, Integer anomalytype);
 
     /**
-     * 一级单位处理
-     *
-     * @param id
-     * @param explain
-     * @param status
-     * @param tasktype
-     * @param anomalytype
-     * @return
+     * 一级单位处理  未处理告警处理
      */
     @Modifying
-    @Query(value = " INSERT INTO ANOMALY_MONITORING (ID, TASKID, ONECHECK_STATUS, ONECHECK_EXPLAINZ, TASK_TYPE, ANOMALY_TYPE) VALUES (?1, ?2, 1, ?3, ?4, ?5) ", nativeQuery = true)
-    int yiAnomalyIns(Long id, String explain, Integer status, Integer tasktype, Integer anomalytype);
+    @Query(value = " INSERT INTO ANOMALY_MONITORING (ID, TASKID, ONECHECK_STATUS, ONECHECK_EXPLAINZ,ONECHECK_APP_INFO, TASK_TYPE, ANOMALY_TYPE) VALUES (?1, ?2, ?3, ?4, ?5,?6,?7) ", nativeQuery = true)
+    int yiAnomalyIns(Long id, Long taskId, Integer s, String explain, String explainApp, Integer tasktype, Integer anomalytype);
 
     /**
      * 已完成处理
-     *
-     * @param id
-     * @param explain
-     * @param status
-     * @param tasktype
-     * @param anomalytype
-     * @return
      */
     @Modifying
-    @Query(value = " INSERT INTO ANOMALY_MONITORING (ID, TASKID,  TWOCHECK_STATUS, TWOCHECK_EXPLAINO,TASK_TYPE, ANOMALY_TYPE,TWOASSESSMENT) VALUES (?1, ?2, 0, ?3, ?4, ?5,?6) ", nativeQuery = true)
-    int ejAnomalyInsO(Long id, String explain, Integer status, Integer tasktype, Integer anomalytype, Integer assessment);
+    @Query(value = " UPDATE ANOMALY_MONITORING set TWOCHECK_STATUS = 0,TWOCHECK_EXPLAINO = ?1 where TASKID = ?2 and ANOMALY_TYPE = ?3", nativeQuery = true)
+    int ejAnomalyInsO(String explain, Long taskId, Integer anomalytype);
 
     @Modifying
-    @Query(value = " INSERT INTO ANOMALY_MONITORING (ID, TASKID, ONECHECK_STATUS, ONECHECK_EXPLAINZO, TASK_TYPE, ANOMALY_TYPE,ONEASSESSMENT) VALUES (?1, ?2, 0, ?3, ?4, ?5,?6); ", nativeQuery = true)
-    int yjAnomalyInsO(Long id, String explain, Integer status, Integer tasktype, Integer anomalytype, Integer assessment);
+    @Query(value = " UPDATE ANOMALY_MONITORING set ONECHECK_STATUS = 0,ONECHECK_EXPLAINO = ?1 where TASKID = ?2 and ANOMALY_TYPE = ?3 ", nativeQuery = true)
+    int yjAnomalyInsO(String explain, Long taskId, Integer anomalytype);
+
+
 }
