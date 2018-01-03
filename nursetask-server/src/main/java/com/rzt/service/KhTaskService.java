@@ -179,7 +179,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         try {
             String rootpath = request.getSession().getServletContext().getRealPath(File.separator);
             XSSFWorkbook wb = new XSSFWorkbook();
-            XSSFSheet sheet = wb.createSheet("看护周期");
+            XSSFSheet sheet = wb.createSheet("看护任务");
 
             // 设置列宽
             sheet.setColumnWidth((short) 0, (short) 6000);
@@ -245,7 +245,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
             cell.setCellValue("物品确认时间");
             cell.setCellStyle(headerStyle);
             cell = row.createCell((short) 12);
-            cell.setCellValue("实际结束时间");
+            cell.setCellValue("实际结束时间/任务取消时间");
             cell.setCellStyle(headerStyle);
             //Sheet sheet = wb.getSheetAt(0);
             for (int i = 0; i < taskList.size(); i++) {
