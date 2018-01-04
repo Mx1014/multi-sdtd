@@ -31,13 +31,21 @@ public class XSZCTASKController extends
         return service.findByTaskId(taskId);
     }
 
+
+
+
+
     /**
-     * 查询抽查表内的所有数据
+     * 根据taskId获取当前任务的隐患信息
+     * 根据taskId 查询当前任务进度
+     * @param taskId
      * @return
      */
-    @GetMapping("/getXsTaskAll")
-    public WebApiResponse getXsTaskAll(){
-        return service.getXsTaskAll();
+    @GetMapping("/fingYHByTaskId")
+    public WebApiResponse fingYHByTaskId(String taskId){
+        return service.findYHByTaskId(taskId);
     }
+
+
 
 }
