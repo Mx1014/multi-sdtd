@@ -81,8 +81,8 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
                 "FROM (SELECT *\n" +
                 "      FROM RZTSYSUSER\n" +
                 "      WHERE id = ?) t\n" +
-                "  JOIN RZTSYSDEPARTMENT tt ON t.DEPTID = tt.id\n" +
-                "  JOIN RZTSYSCOMPANY ttt ON ttt.id = t.COMPANYID";
+                " left JOIN RZTSYSDEPARTMENT tt ON t.DEPTID = tt.id\n" +
+                " left JOIN RZTSYSCOMPANY ttt ON ttt.id = t.COMPANYID";
         String deptmentSql = "select DEPTNAME from RZTSYSDEPARTMENT where id = ?";
         Map<String, Object> task = null;
         if (xslx == 0 || xslx == 1) {
@@ -263,23 +263,42 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
         List<Map<String, Object>> execDetails = null;
         Map<String,Object> resultMap = new HashMap<String,Object>();
         if(xslx == 0 || xslx == 1) {
-            String execSql = "select * from XS_ZC_TASK_EXEC where XS_ZC_TASK_ID = ? order by XS_REPEAT_NUM desc";
+            String execSql = "select * from XS_txbd_TASK_EXEC where XS_txbd_TASK_ID = ? order by XS_REPEAT_NUM desc";
             execs = this.execSql(execSql, taskId);
-            Long execId = Long.parseLong(execs.get(0).get("id").toString());
-            String execDetailId = "select * from XS_ZC_TASK_EXEC_DETAIL where XS_ZC_TASK_EXEC_ID = ? ";
+            Long execId = Long.parseLong(execs.get(0).get("ID").toString());
+            String execDetailId = "select t.*,ttt.LONGITUDE,ttt.LATITUDE from (select * from XS_txbd_TASK_EXEC_DETAIL where XS_txbd_TASK_EXEC_ID = ?) t join  CM_TOWER ttt on t.START_TOWER_ID = ttt.id order by t.id ";
             execDetails = this.execSql(execDetailId, execId);
 
         } else {
             String execSql = "select * from XS_ZC_TASK_EXEC where XS_ZC_TASK_ID = ? order by XS_REPEAT_NUM desc";
             execs = this.execSql(execSql, taskId);
             Long execId = Long.parseLong(execs.get(0).get("ID").toString());
-            String execDetailId = "select * from XS_ZC_TASK_EXEC_DETAIL where XS_ZC_TASK_EXEC_ID = ? order by id";
+            String execDetailId = "select t.*,ttt.LONGITUDE,ttt.LATITUDE from (select * from XS_ZC_TASK_EXEC_DETAIL where XS_ZC_TASK_EXEC_ID = ?) t join CM_TOWER ttt on t.START_TOWER_ID = ttt.id order by t.id";
             execDetails = this.execSql(execDetailId, execId);
         }
         resultMap.put("towerList",xsTowers);
         resultMap.put("execs",execs);
+        queryYinhuan(execDetails);
         resultMap.put("execDetails",execDetails);
         return resultMap;
+    }
+
+    private void queryYinhuan(List<Map<String, Object>> execDetails) {
+        String sql = "";
+        String[] meiyou = new String[0];
+        for (Map<String,Object> execDetail:execDetails) {
+            String end_tower_id = execDetail.get("END_TOWER_ID").toString();
+            if (end_tower_id.equals("0")) {
+                execDetail.put("yh",meiyou);
+            } else {
+                sql = "select t.yhms,t.yhzt,t.id,tt.CREATE_TIME from\n" +
+                        "(SELECT yhms,yhzt,ID\n" +
+                        "FROM KH_YH_HISTORY t\n" +
+                        "WHERE START_TOWER <= ? AND END_TOWER >= ?) t left join XS_ZC_TASK_LSYH tt on tt.EXEC_DETAIL_ID = ?and tt.YH_ID = t.id";
+                List<Map<String, Object>> maps = this.execSql(sql, execDetail.get("START_TOWER_ID").toString(), end_tower_id,Long.parseLong(execDetail.get("ID").toString()));
+                execDetail.put("yh",maps);
+            }
+        }
     }
 
 
@@ -296,15 +315,28 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
         List<Map<String, Object>> execDetails = null;
         Map<String,Object> resultMap = new HashMap<String,Object>();
         if(xslx == 0 || xslx == 1) {
-            String execDetailId = "select * from XS_ZC_TASK_EXEC_DETAIL where XS_ZC_TASK_EXEC_ID = ? ";
+            String execDetailId = "select t.*,ttt.LONGITUDE,ttt.LATITUDE from (select * from XS_txbd_TASK_EXEC_DETAIL where XS_txbd_TASK_EXEC_ID = ?) t join CM_TOWER ttt on t.START_TOWER_ID = ttt.id order by t.id  ";
             execDetails = this.execSql(execDetailId, execId);
 
         } else {
-            String execDetailId = "select * from XS_ZC_TASK_EXEC_DETAIL where XS_ZC_TASK_EXEC_ID = ? order by id";
+            String execDetailId = "select t.*,ttt.LONGITUDE,ttt.LATITUDE from (select * from XS_ZC_TASK_EXEC_DETAIL where XS_ZC_TASK_EXEC_ID = ?) t join  CM_TOWER ttt on t.START_TOWER_ID = ttt.id order by t.id";
             execDetails = this.execSql(execDetailId, execId);
         }
+        queryYinhuan(execDetails);
         resultMap.put("execDetails",execDetails);
         return resultMap;
     }
 
+
+    public static void main(String[] args) {
+       String fuck  =  "select t.yhmas,t.yhzt,t.id,tt.CREATE_TIME from\n" +
+               "(SELECT yhms,yhzt,ID\n" +
+               "FROM KH_YH_HISTORY t\n" +
+               "WHERE START_TOWER <= (SELECT TOWER_ID || ''\n" +
+               "                      FROM CM_LINE_TOWER\n" +
+               "                      WHERE id = ?) AND END_TOWER >= (SELECT TOWER_ID || ''\n" +
+               "                                                      FROM CM_LINE_TOWER\n" +
+               "                                                      WHERE id = ?)) t left join XS_ZC_TASK_LSYH tt on tt.EXEC_DETAIL_ID = ?and tt.YH_ID = t.id";
+        System.out.println(fuck);
+    }
 }

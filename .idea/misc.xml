@@ -3,9 +3,6 @@
   <component name="EntryPointsManager">
     <entry_points version="2.0" />
   </component>
-  <component name="FrameworkDetectionExcludesConfiguration">
-    <type id="Spring" />
-  </component>
   <component name="MavenProjectsManager">
     <option name="originalFiles">
       <list>
@@ -13,11 +10,11 @@
         <option value="$PROJECT_DIR$/pom.xml" />
         <option value="$PROJECT_DIR$/exam-server/pom.xml" />
         <option value="$PROJECT_DIR$/file-server/pom.xml" />
-        <option value="$PROJECT_DIR$/nursetask-server/pom.xml" />
-        <option value="$PROJECT_DIR$/eureka-server/pom.xml" />
-        <option value="$PROJECT_DIR$/census-server/pom.xml" />
-        <option value="$PROJECT_DIR$/authentication-center/pom.xml" />
         <option value="$PROJECT_DIR$/linedata-server/pom.xml" />
+        <option value="$PROJECT_DIR$/nursetask-server/pom.xml" />
+        <option value="$PROJECT_DIR$/zull/pom.xml" />
+        <option value="$PROJECT_DIR$/eureka-server/pom.xml" />
+        <option value="$PROJECT_DIR$/userCenter/pom.xml" />
       </list>
     </option>
   </component>
@@ -56,5 +53,4 @@
   <component name="SvnBranchConfigurationManager">
     <option name="mySupportsUserInfoFilter" value="true" />
   </component>
-  <component name="WebServicesPlugin" addRequiredLibraries="true" />
 </project>

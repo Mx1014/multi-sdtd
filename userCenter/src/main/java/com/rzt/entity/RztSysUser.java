@@ -31,8 +31,6 @@ import java.util.UUID;
 public class RztSysUser extends BaseEntity implements Serializable {
     //字段描述:
     @Id
-    @GeneratedValue(generator = "uuid")
-    @GenericGenerator(name = "uuid", strategy = "uuid")
     private String id;
     //字段描述: 登录账号
     @Column(name = "USERNAME")
@@ -128,13 +126,14 @@ public class RztSysUser extends BaseEntity implements Serializable {
     @Column(name = "CLASSNAME")
     private String className;
 
-    public void setId(String id) {
-        this.id = UUID.randomUUID().toString();
+    @Override
+    public String getId() {
+        return id;
     }
 
-    @ExcelResources(title = "", order = 1)
-    public String getId() {
-        return this.id;
+    @Override
+    public void setId(String id) {
+        this.id = id;
     }
 
     public void setUsername(String username) {

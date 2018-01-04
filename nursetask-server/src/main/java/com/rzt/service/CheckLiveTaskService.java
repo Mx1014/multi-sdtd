@@ -7,18 +7,18 @@
 package com.rzt.service;
 
 import com.rzt.entity.CheckLiveTask;
+import com.rzt.entity.CheckLiveTaskDetail;
+import com.rzt.repository.CheckLiveTaskDetailRepository;
 import com.rzt.repository.CheckLiveTaskRepository;
-import com.rzt.util.WebApiResponse;
+import com.rzt.utils.DateUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**      
  * 类名称：CHECKLIVETASKService    
@@ -33,130 +33,76 @@ import java.util.Map;
 @Service
 public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTaskRepository> {
 
-    @PersistenceContext
-    private EntityManager entityManager;
+    @Autowired
+    private CheckLiveTaskDetailRepository checkLiveTaskDetailRepository;
 
+    //巡视稽查列表查询展示
+    public Page<Map<String,Object>> listKhCheckPage(Pageable pageable, String lineId, String tddwId) {
 
-     public  Page<Map<String, Object>> listAllCheckTask(String startTime,String endTime,String taskName,Integer status,String userId,Pageable pageable) {
-        String result = " c1.id id,c.id cycleid,c1.task_name taskName,u.realname realName,g.DEPTNAME className,c1.tdwh_org tdwhorg, " +
-                        " c.create_time createTime,c.plan_start_time startTime,c.plan_end_time endTime,c1.task_status taskStatus ";
-        StringBuilder sb = new StringBuilder();
-        sb.append(" where 1=1 ");
+        String sql = "select s.task_id,s.TASK_NAME,h.yhms,h.yhjb,h.XLZYCD,d.DEPTNAME from CHECK_LIVE_site s " +
+                " left JOIN KH_YH_HISTORY h on s.YH_ID=h.id " +
+                " LEFT JOIN  RZTSYSDEPARTMENT d on d.ID = s.TDYW_ORGID where 1=1 ";
+
         List params = new ArrayList<>();
-         //时间段查询
-         if (!StringUtils.isEmpty(startTime) && !StringUtils.isEmpty(endTime)){
-             startTime =  startTime.substring(0, 10);
-             endTime = endTime.substring(0, 10);
-             sb.append(" and c.create_time between to_date(?,'YYYY-MM-DD') and to_date(?,'YYYY-MM-DD') ");
-             params.add(startTime);
-             params.add(endTime);
-         }
-         //任务名查询
-         if (!StringUtils.isEmpty(taskName)) {
-             sb.append(" and c.task_name like ? ");
-             params.add("%"+taskName+"%");
-         }
-        //任务状态查询
-        if (status!=null) {
-            sb.append(" and c1.task_status = ? ");
-            params.add(status);
+        //线路查询
+        if (!StringUtils.isEmpty(lineId)) {
+            params.add(lineId);
+            sql += " AND s.LINE_ID =?";
+        }
+        //通道单位查询
+        if (!StringUtils.isEmpty(tddwId)) {
+            params.add(tddwId);
+            sql += " AND s.TDYW_ORGID =?";
+        }
+        return execSqlPage(pageable, sql, params.toArray());
+    }
+
+    public Map<String, Object> xsTaskDetail(String taskId) throws Exception {
+        String sql = "select s.TASK_NAME,h.yhms,h.yhjb,h.XLZYCD,d.DEPTNAME from CHECK_LIVE_site s " +
+                "  left JOIN KH_YH_HISTORY h on s.YH_ID=h.id " +
+                "  LEFT JOIN  RZTSYSDEPARTMENT d on d.ID = s.TDYW_ORGID where s.id =?1 ";
+        Map<String, Object> map = execSqlSingleResult(sql, taskId);
+        return map;
+    }
+
+    @Transactional
+    public void paifaXsCheckTask(CheckLiveTask task ,String planStartTime,String planEndTime, String username) throws Exception {
+
+        task.setId();
+        task.setCreateTime(new Date());
+        task.setStatus(1);//0未派发  1已派发  2已消缺
+        task.setCheckType(0); //0 看护  1巡视
+        //task.setTaskType(0);//（0 正常 1保电 2 特殊）
+        task.setCheckCycle(1);
+        task.setTaskName(username+DateUtil.getCurrentDate()+"稽查任务");
+        CheckLiveTask save = reposiotry.save(task);
+
+        String[] split = save.getTaskId().split(",");
+        for (int i = 0; i < split.length; i++) {
+            Map<String,Object> map = execSqlSingleResult("select id,TDYW_ORGID,TDWX_ORGID from CHECK_LIVE_SITE where id = to_number(?1)", split[i]);
+            CheckLiveTaskDetail taskDetail = new CheckLiveTaskDetail();
+            taskDetail.setId();
+            taskDetail.setTdywOrgid(String.valueOf(map.get("TDYW_ORGID")).replace("null",""));
+            taskDetail.setTdwxOrgid(String.valueOf(map.get("TDWX_ORGID")).replace("null",""));
+            taskDetail.setPlanStartTime(DateUtil.parseDate(planStartTime));
+            taskDetail.setPlanEndTime(DateUtil.parseDate(planEndTime));
+            taskDetail.setStatus(0);// 0未开始 1进行中 2已完成 3已超期
+            taskDetail.setKhTaskType(save.getTaskType());//（（0 正常 1保电 2 特殊）
+            taskDetail.setKhTaskId(Long.valueOf(split[i]));
+            taskDetail.setTaskId(save.getId());
+            checkLiveTaskDetailRepository.save(taskDetail);
         }
 
-         //用户人查询
-         if(!StringUtils.isEmpty(userId)){
-             sb.append(" and c.user_id = ? ");
-             params.add(userId);
-         }
-
-        sb.append(" order by c.create_time desc ");
-
-        String sql = "select " + result + " from chenk_live_task_cycle c left join" +
-                     " check_live_task_exec c1 on c.id = c1.cycle_id left join rztsysuser u " +
-                     "on c.user_id = u.id left join RZTSYSDEPARTMENT  g on u.CLASSNAME = g.ID" + sb.toString();
-        Page<Map<String, Object>> maps = execSqlPage(pageable, sql, params.toArray());
-        return maps;
-
     }
 
+/*    @Scheduled(cron = "0/5 * *  * * ? ")
+    @Transactional
+    public void kh(){
 
-    public  Page<Map<String, Object>> listpaifaCheckTask(String startTime,String endTime, String userId,String taskName,Pageable pageable) {
-        String result = " c.id id,c.task_name taskName,c.TDWH_ORG tddw,r.companyname tdwxdw,k.yhms yhms,k.yhjb yhjb," +
-                        " c.task_type taskType, c.check_type checkType,d.DEPTNAME sdgs,c.create_time createTime " ;
-        StringBuilder sb = new StringBuilder();
-        sb.append(" where 1=1 ");
-        List params = new ArrayList<>();
-        //时间段查询
-        if (!StringUtils.isEmpty(startTime) && !StringUtils.isEmpty(endTime)){
-            startTime =  startTime.substring(0, 10);
-            endTime = endTime.substring(0, 10);
-            sb.append(" and c.create_time between to_date(?,'YYYY-MM-DD') and to_date(?,'YYYY-MM-DD') ");
-            params.add(startTime);
-            params.add(endTime);
-        }
-        //任务名查询
-        if (!StringUtils.isEmpty(taskName)) {
-            sb.append(" and c.task_name like ? ");
-            params.add("%"+taskName+"%");
-        }
-
-        sb.append(" and c.status = 0 ");//未派发定死
-
-        //用户人查询
-        if (!StringUtils.isEmpty(userId)) {
-            sb.append(" and c.user_id = ? ");
-            params.add(userId);
-        }
-
-        sb.append(" order by c.create_time desc  ");
-        String sql = "select " + result + " from Check_Live_Task c left join " +
-                     "RZTSYSCOMPANY r on c.tdwx_orgid = r.id LEFT JOIN  RZTSYSDEPARTMENT d on c.DEPT_ID=d.ID " +
-                     "left join KH_YH_HISTORY k " +
-                     "on c.yh_id = k.id " + sb.toString();
-        Page<Map<String, Object>> maps = execSqlPage(pageable, sql, params.toArray());
-
-        return maps;
-
-    }
+insert into CHECK_LIVE_SITE (id,TASK_ID,TASK_TYPE,CREATE_TIME,TASK_NAME,STATUS,line_id,TDYW_ORGID,TDWX_ORGID,yh_id)
+select id,id as taskid,0,sysdate,TASK_NAME,0,LINE_ID,WX_ORGID,TDYW_ORGID,YH_ID from KH_CYCLE;
+    }*/
 
 
-    public List getCheckTaskById(String id) {
-        Long ids = Long.parseLong(id);
-        String sql = "select c.id id,c.task_name taskName,c.CREATE_TIME createtime,c2.CHECK_CYCLE checkcycle, c.TDWH_ORG tddw," +
-                "c1.yhjb yhjb,u.REALNAME realname from check_live_task c left join kh_yh_history c1 on c.yh_id = c1.id " +
-                " LEFT JOIN  RZTSYSUSER u on c.USER_ID = u.ID LEFT JOIN  CHENK_LIVE_TASK_CYCLE c2 on c.CYCLE_ID = c2.ID where c.id=?";
-        return this.execSql(sql,ids);
-    }
 
-    public List getCheckTaskName() {
-        String sql = " select task_name   from CHECK_LIVE_TASK  ";
-        return this.execSql(sql);
-    }
-
-    public CheckLiveTask findLiveTask(String value) {
-        long id = Long.parseLong(value);
-        return this.reposiotry.findLiveTask(id);
-    }
-
-    public void updateLiveTask(CheckLiveTask tt, String value) {
-
-        long id = Long.parseLong(value);
-        this.reposiotry.updateLiveTask(tt.getStatus(),tt.getCycleId(),id);
-    }
-
-    public WebApiResponse deleteById(String id) {
-        try {
-            String[] split = id.split(",");
-            if (split.length>0){
-                for (int i = 0;i < split.length;i++) {
-                    this.reposiotry.deleteById(Long.parseLong(split[i]));
-                }
-            }else{
-                this.reposiotry.deleteById(Long.parseLong(id));
-            }
-            return WebApiResponse.success("删除成功");
-        }catch (Exception e){
-            e.printStackTrace();
-            return WebApiResponse.erro("删除失败");
-        }
-    }
 }

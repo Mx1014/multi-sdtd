@@ -22,6 +22,11 @@ public interface AppKhTaskRepository extends JpaRepository<KhTask, String> {
 
     @Modifying
     @Transactional
+    @Query(value = "update KH_TASK set ZXYS_NUM = ?1 where id = ?2",nativeQuery = true)
+    void updateZxnum(int i, long l);
+
+    @Modifying
+    @Transactional
     @Query(value = "UPDATE KH_TASK SET WPQR_TIME = ?2 where id = ?1",nativeQuery = true)
     void updateWpqrTime(long taskId, Date date);
 
@@ -34,6 +39,12 @@ public interface AppKhTaskRepository extends JpaRepository<KhTask, String> {
     @Transactional
     @Query(value = "update kh_task set sfqr_time = ?1 where id = ?2",nativeQuery = true)
     void updateSFQRTime(Date time, long id);
+
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE KH_TASK_WPQR SET WP_ZT =?1 WHERE TASKID =?2",nativeQuery = true)
+    void updateWp(String wpzt, long taskId);
+
 
  /*   @Query(value = "select count(*) from KH_TASK WHERE (STATUS LIKE '未开始' OR  status like '进行中') AND user_id = ?",nativeQuery = true)
     int getdbCount(String userId);

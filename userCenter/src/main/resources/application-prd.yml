@@ -6,11 +6,11 @@ token:
 spring:
     datasource:
       type: com.alibaba.druid.pool.DruidDataSource
-      url: jdbc:mysql://168.130.1.31:30624/sdtd27?useUnicode=true&characterEncoding=utf8
+      url: jdbc:oracle:thin:@168.130.1.32:1521:ORCL
 #      url: jdbc:oracle:thin:@192.168.1.111:1521:LIUZE
       username: sdtd27
       password: sdtd27
-      driver-class-name: com.mysql.jdbc.Driver
+      driver-class-name: oracle.jdbc.OracleDriver
       minIdle: 10
       maxActive: 200
       initialSize: 5
@@ -26,7 +26,6 @@ spring:
       filters: stat,wall,log4j
       connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMill
     jpa:
-      database: ORACLE
       hibernate:
         ddl-auto: none
       show-sql: true
@@ -35,17 +34,17 @@ spring:
     redis:
         database: 0
         host: 168.130.1.31
-        port: 30094
-        password: sdtd275d
+        port: 31662
+        password:
+        timeout: 0
         pool:
-          max-active: 200
-          max-wait: -1
+          max-active: 100
           max-idle: 8
           min-idle: 0
-        timeout: 0
+          max-wait: -1
 eureka:
   client:
     service-url:
-      defaultZone: http://168.130.1.31:31814/eureka/
+      defaultZone: http://localhost:7002/eureka/
 logging:
   config: classpath:logback-spring.xml

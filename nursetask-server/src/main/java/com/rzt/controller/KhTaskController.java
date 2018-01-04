@@ -42,10 +42,10 @@ public class KhTaskController extends
 	 */
 	@GetMapping("/listAllKhTask.do")
 	@ResponseBody
-	public WebApiResponse listAllKhTask(KhTaskModel task, Pageable pageable) {
+	public WebApiResponse listAllKhTask(KhTaskModel task, Pageable pageable,int roleType) {
 		try {
 			//分页参数 page size
-			Object o = this.service.listAllKhTask(task, pageable);
+			Object o = this.service.listAllKhTask(task, pageable,roleType);
 			return WebApiResponse.success(o);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -55,13 +55,13 @@ public class KhTaskController extends
 	/**
 	 * 修改已安排任务
 	 */
-	@PatchMapping("/updateTaskById")
+	@GetMapping("/updateTaskById.do")
 	@ResponseBody
-	public WebApiResponse updateTaskById(KhSite site,String id){
+	public WebApiResponse updateTaskById(String startTime,String endTime,String userId,String id){
 	// 提交申请给 管理员  如何提交待定  还是说没有修改功能
 		try {
 			//分页参数 page size
-			this.service.updateTaskById(site,id);
+ 				this.service.updateTaskById(startTime,endTime,userId,id);
 			return WebApiResponse.success("修改成功");
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -89,15 +89,42 @@ public class KhTaskController extends
 			return WebApiResponse.erro("数据获取失败" + e.getMessage());
 		}
 	}
+
+	//任务查询页面的导出文件
 	@GetMapping("/exportKhTask.do")
-	public void exportNursePlan(HttpServletRequest request, HttpServletResponse response){
+	public void exportKhTask(HttpServletRequest request, HttpServletResponse response){
 		try {
-			this.service.exportExcel(response);
+			List<Map<String, Object>> taskList = this.service.findAlls();
+			this.service.exportNursePlan(taskList,request,response);
+			//this.service.exportExcel(response);
 		}catch (Exception e){
 			e.printStackTrace();
 		}
 	}
+	/**
+	 *   获取某人当前的看护任务
+	 */
+	@GetMapping("/listCurrentTaskByUserId")
+	public WebApiResponse listCurrentTaskByUserId(String userId){
+		return this.service.listCurrentTaskByUserId(userId);
+	}
 
+	/**
+	 * 隐患台账获取看护任务详情
+	 * @param yhId
+	 * @return
+	 */
+	@GetMapping("/listTaskInfoByYhId")
+	@ResponseBody
+	public WebApiResponse listTaskInfoByYhId(String yhId){
+		return this.service.listTaskInfoByYhId(yhId);
+	}
+	//地图展示某人的具体任务信息
+	@GetMapping("/listTaskInfoById")
+	@ResponseBody
+	public WebApiResponse listTaskInfoById(String taskId){
+		return this.service.listTaskInfoById(taskId);
+	}
 }
 
 

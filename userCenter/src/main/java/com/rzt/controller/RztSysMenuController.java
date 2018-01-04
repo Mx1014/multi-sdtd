@@ -63,9 +63,22 @@ public class RztSysMenuController extends
         return WebApiResponse.success("更新成功！");
     }
 
+    /**
+     * 修改菜单
+     *
+     * @param menuname
+     * @param id
+     * @return
+     */
+    @PatchMapping("updateNodeById")
+    public WebApiResponse updateNodeById(String menuname, String id) {
+        return this.service.updateNodeById(menuname, id);
+    }
+
+
     //删除节点
-    @DeleteMapping("deleteNode/{id}")
-    public void deleteNode(@PathVariable String id) {
+    @DeleteMapping("deleteNode")
+    public void deleteNode(String id) {
         this.service.deleteNode(id);
     }
 
@@ -140,14 +153,20 @@ public class RztSysMenuController extends
      * @param id
      * @return
      */
-    @GetMapping("treeQuery")
-    public List<Map<String, Object>> treeQuery(String id) {
-        return this.service.treeQuery(id);
-    }
+//    @GetMapping("treeQuery")
+//    public List<Map<String, Object>> treeQuery(String id, Integer orgtype) {
+//        return this.service.treeQuery(id, orgtype);
+//    }
 
-    @GetMapping("userTreeQuery")
-    public List<Map<String, Object>> userTreeQuery(String id) {
-        return this.service.userTreeQuery(id);
+    /**
+     * 公共接口
+     * @param id deptID
+     * @param orgtype 专业类型
+     * @return
+     */
+    @GetMapping("treeQuery")
+    public List<Map<String, Object>> treeQuery(String id, Integer orgtype) {
+        return this.service.treeQuery(id, orgtype);
     }
 
     /**
@@ -212,7 +231,6 @@ public class RztSysMenuController extends
      */
     @PostMapping("dataByDAndi")
     public WebApiResponse dataByDAndi(String type, String roleid) {
-        int a = 2;
         return this.service.dataByDAndi(type, roleid);
     }
 }

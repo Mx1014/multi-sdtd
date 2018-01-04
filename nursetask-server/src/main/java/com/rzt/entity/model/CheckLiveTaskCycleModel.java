@@ -6,9 +6,8 @@ import com.rzt.utils.DateUtil;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-/**
- * Created by admin on 2017/12/18.
- */
+
+
 public class CheckLiveTaskCycleModel extends CheckLiveTaskCycle{
 
 

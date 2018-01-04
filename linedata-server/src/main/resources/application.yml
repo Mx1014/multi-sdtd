@@ -2,7 +2,8 @@
 ### Server
 ########################################################
 server:
-  port: 9091
+  port: 9090
+  context-path: /linedata/
 #expireTime: 30000000
 #log
 #logging:
@@ -10,7 +11,7 @@ server:
 
 spring:
   application:
-    name: sdtd27-linedata
+    name: linedata
   primary:
     datasource:
 #      url: jdbc:mysql://localhost:3306/micro_service_exam?useUnicode=true&characterEncoding=utf-8
@@ -23,7 +24,7 @@ spring:
 #      url: jdbc:oracle:thin:@localhost:1521/orcl
 #      username: sdtd
 #      password: sdtd
-      url: jdbc:oracle:thin:@47.92.67.90:1521/orcl
+      url: jdbc:oracle:thin:@168.130.1.32:1521/orcl
       username: sdtd27
       password: sdtd27
 # 下面为连接池的补充设置，应用到上面所有数据源中
@@ -50,6 +51,17 @@ spring:
     hibernate:
       ddl-auto: none
     show: true
+#  redis:
+#      database: 11
+#      host: 168.130.1.31
+#      port: 30094
+#      password:
+#      timeout: 0
+#      pool:
+#        max-active: 100
+#        max-idle: 8
+#        min-idle: 0
+#        max-wait: -1
   #文件上传
   http:
     encoding:

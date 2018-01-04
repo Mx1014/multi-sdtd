@@ -1,10 +1,14 @@
 package com.rzt.eureka;
 
+import feign.codec.Encoder;
+import feign.form.spring.SpringFormEncoder;
 import org.springframework.cloud.netflix.feign.FeignClient;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.context.annotation.Bean;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Date;
 import java.util.Map;
 
 /**
@@ -13,16 +17,27 @@ import java.util.Map;
  * @Author: liuze
  * @date: 2017-12-21 10:55
  */
-@FeignClient("FILESERVER")
+@FeignClient(value = "FILESERVER", configuration = Cmuserfile.MultipartSupportConfig.class)
 public interface Cmuserfile {
     /**
      * 人员头像上传
      *
-     * @param file
-     * @param flag
-     * @param fkId
+     * @param file       文件
+     * @param fileName   文件名字
+     * @param fileType   文件类型 0 头像
+     * @param createTime 创建时间
+     * @param fkIdStr    人员ID
      * @return
      */
-    @PostMapping("/CmFile/fileUpload")
-    Map<String,Object> userFileUpload(@RequestParam("file") MultipartFile file, @RequestParam("flag") Integer flag, @RequestParam("fkId") Long fkId);
+    @PostMapping(value = "fileserver/CmFile/fileUpload", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE},
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ResponseBody
+    Map<String, Object> userFileUpload(@RequestPart(value = "file") MultipartFile file, @RequestParam("fileName") String fileName, @RequestParam("fileType") Integer fileType, @RequestParam("createTime") Date createTime, @RequestParam("fkIdStr") String fkIdStr);
+
+    class MultipartSupportConfig {
+        @Bean
+        public Encoder feignFormEncoder() {
+            return new SpringFormEncoder();
+        }
+    }
 }

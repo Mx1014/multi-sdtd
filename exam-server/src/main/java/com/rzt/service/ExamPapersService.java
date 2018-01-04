@@ -10,14 +10,13 @@ import com.rzt.entity.ExamOptions;
 import com.rzt.entity.ExamPapers;
 import com.rzt.entity.ExamText;
 import com.rzt.entity.PaperText;
-import com.rzt.utils.DateUtil;
 import com.rzt.repository.ExamPapersRepository;
+import com.rzt.utils.DateUtil;
 import org.apache.poi.xssf.usermodel.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.text.DecimalFormat;
@@ -35,7 +34,6 @@ import java.util.Map;
  * @version        
  */
 @Service
-@Transactional
 public class ExamPapersService extends CurdService<ExamPapers,ExamPapersRepository> {
     protected static Logger LOGGER = LoggerFactory.getLogger(ExamPapersService.class);
     @Autowired

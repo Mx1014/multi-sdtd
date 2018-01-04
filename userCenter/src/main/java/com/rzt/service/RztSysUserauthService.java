@@ -10,12 +10,18 @@ import com.rzt.service.CurdService;
 import com.rzt.entity.RztSysUser;
 import com.rzt.entity.RztSysUserauth;
 import com.rzt.repository.RztSysUserauthRepository;
+import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DateUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 类名称：RztSysUserauthService
@@ -28,15 +34,18 @@ import java.util.Date;
  */
 @Service
 public class RztSysUserauthService extends CurdService<RztSysUserauth, RztSysUserauthRepository> {
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+
     public String findByUserName(RztSysUser user) {
         String flag = "1";
-        int userauth = this.reposiotry.VerificationEmail(user.getEmail());
-        if (userauth != 0)
-            flag = "该邮箱已存在";
-        int userauth1 = this.reposiotry.VerificationUsername(user.getUsername());
+//        int userauth = this.reposiotry.VerificationEmail(user.getEmail());
+//        if (userauth != 0)
+//            flag = "该邮箱已存在";
+        int userauth1 = this.reposiotry.VerificationUsername(user.getUsername(), user.getId());
         if (userauth1 != 0)
             flag = "该账号已存在";
-        int userauth2 = this.reposiotry.VerificationPhone(user.getPhone());
+        int userauth2 = this.reposiotry.VerificationPhone(user.getPhone(), user.getId());
         if (userauth2 != 0)
             flag = "该手机号已存在";
         return flag;

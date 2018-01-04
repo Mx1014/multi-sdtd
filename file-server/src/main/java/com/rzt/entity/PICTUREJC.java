@@ -63,7 +63,17 @@ public class PICTUREJC implements Serializable{
 	private String fileSmallPath;
 	//字段描述: 文件类型1图片2录音3摄像
 	@Column(name = "FILE_TYPE")
-	private String fileType;
+	private Integer fileType;
+	@Column(name = "PROCESS_TYPE")
+	private Integer processType;
+
+	public Integer getProcessType() {
+		return processType;
+	}
+
+	public void setProcessType(Integer processType) {
+		this.processType = processType;
+	}
 
 	public void setProcessName(String processName){
 		this.processName = processName;
@@ -168,10 +178,10 @@ public class PICTUREJC implements Serializable{
 
 
 
-	public void setFileType(String fileType){
+	public void setFileType(Integer fileType){
 		this.fileType = fileType;
 	}
-	public String getFileType(){
+	public Integer getFileType(){
 		return this.fileType;
 	}
 

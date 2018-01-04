@@ -26,4 +26,8 @@ public interface CmFileRepository extends JpaRepository<CmFile,String> {
     List<CmFile> findByFkId(Long fkid);
 
     CmFile findById(Long id);
+
+    void deleteById(Long id);
+
+    List<CmFile> findByFkIdStr(String fkidStr);
 }

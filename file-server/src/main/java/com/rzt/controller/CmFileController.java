@@ -34,24 +34,31 @@ public class CmFileController extends
 		CurdController<CmFile,CmFileService> {
 	protected static Logger LOGGER = LoggerFactory.getLogger(CmFileController.class);
 
-	@ApiOperation(value = "文件档案、头像等公共资源文件的上传",notes = "文件档案、头像等公共资源文件的上传")
+	@ApiOperation(value = "文件档案、头像等公共资源文件的上传",notes = "文件档案、头像等公共资源文件的上传" +
+			"必传字段（fkId、fkIdStr二选其一）、multipartFile，如果自己的文件类型多样，可传fileType区别")
 	@PostMapping("fileUpload")
-	public Map<String,Object> fileUpload(MultipartFile file,Integer flag,Long fkId) {
+	public Map<String,Object> fileUpload(MultipartFile multipartFile,CmFile cmFile) {
 
-		return service.fileUpload( file, flag, fkId);
+		return service.fileUpload( multipartFile, cmFile);
 
 	}
 
 	@ApiOperation(value = "根据fkid获取照片",notes = "根据fkid获取照片")
 	@GetMapping("getImgByFkId")
-	public Map<String,Object> getImgByFkId(Long fkid){
-		return service.getImgByFkId( fkid);
+	public Map<String,Object> getImgByFkId(String fkid){
+		return service.getImgByFkId(Long.valueOf(fkid));
+	}
+
+	@ApiOperation(value = "根据fkidStr获取照片",notes = "根据fkidStr获取照片")
+	@GetMapping("getImgByFkIdStr")
+	public Map<String,Object> getImgByFkIdStr(String fkidStr){
+		return service.getImgByFkIdStr(fkidStr);
 	}
 
 	@ApiOperation(value = "根据id获取照片",notes = "根据id获取照片")
 	@GetMapping("getImgById")
-	public Map<String,Object> getImgById(Long id){
-		return service.getImgById(id);
+	public Map<String,Object> getImgById(String id){
+		return service.getImgById(Long.valueOf(id));
 	}
 
 }

@@ -12,6 +12,9 @@ import com.rzt.entity.Rztsyscompanyfile;
 import com.rzt.service.RztsyscompanyService;
 import com.rzt.service.RztsyscompanyfileService;
 import com.rzt.util.WebApiResponse;
+import io.swagger.annotations.ApiOperation;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
@@ -20,11 +23,11 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.io.OutputStream;
+import java.util.*;
 
 /**
  * 类名称：RztsyscompanyController
@@ -43,6 +46,7 @@ public class RztsyscompanyController extends
     private RztsyscompanyfileService companyFileService;
 
     @PostMapping("addCompany")
+    @ApiOperation(value = "添加外协单位", notes = "添加外协单位")
     public WebApiResponse addUser(HttpServletRequest request, @ModelAttribute Rztsyscompany company,
                                   @RequestParam(required = false) String fileType) {
         company.setCreatetime(new Date());
@@ -88,6 +92,7 @@ public class RztsyscompanyController extends
      * @return
      */
     @GetMapping("queryRztsyscompany")
+    @ApiOperation(value = "外协队伍分页查询", notes = "外协队伍分页查询")
     public WebApiResponse queryRztsyscompany(
             Integer page,
             Integer size) {
@@ -109,6 +114,7 @@ public class RztsyscompanyController extends
      * @return
      */
     @PostMapping("addRztsyscompany")
+    @ApiOperation(value = "添加外协单位", notes = "添加外协单位")
     public WebApiResponse addRztsyscompany(String filename, String filetype, String cmpanyname, String orgid) {
         int one = 1;
         String id = UUID.randomUUID().toString().replaceAll("-", "");
@@ -130,6 +136,7 @@ public class RztsyscompanyController extends
      * @return
      */
     @PatchMapping("updateRztsyscompany")
+    @ApiOperation(value = "修改外协单位", notes = "修改外协单位")
     public WebApiResponse updateRztsyscompany(String cmpanyname, String orgid, String id, String filetype, String filename) {
         int one = 1;
         int updateRztsyscompany = this.service.updateRztsyscompany(cmpanyname, orgid, id, filetype, filename);
@@ -147,14 +154,18 @@ public class RztsyscompanyController extends
      * @return
      */
     @DeleteMapping("deleteRztsyscompany")
+    @ApiOperation(value = "外协队伍删除", notes = "外协队伍删除")
     public WebApiResponse deleteRztsyscompany(String id) {
-        int deleteRztsyscompany = this.service.deleteRztsyscompany(id);
-        int one = 1;
-        if (deleteRztsyscompany == one) {
+        String[] split = id.split(",");
+        try {
+            for (int i = 0; i < split.length; i++) {
+                this.service.deleteRztsyscompany(split[i]);
+            }
             return WebApiResponse.success("Note[Data deleted successfully]");
-        } else {
-            return WebApiResponse.erro("Note[Data deletion failed]");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return WebApiResponse.erro("Note[Data deletion failed]");
     }
 
     /**
@@ -163,6 +174,7 @@ public class RztsyscompanyController extends
      * @return
      */
     @GetMapping("queryCompanyname")
+    @ApiOperation(value = "公共外协队伍查询", notes = "公共外协队伍查询")
     public WebApiResponse queryCompanyname() {
         return this.service.queryCompanyname();
     }
@@ -174,18 +186,87 @@ public class RztsyscompanyController extends
      * @return
      */
     @GetMapping("queryCompanynameById")
+    @ApiOperation(value = "根据单位ID查询外协队伍查询", notes = "根据单位ID查询外协队伍查询")
     public WebApiResponse queryCompanynameById(String id) {
         return this.service.queryCompanynameById(id);
     }
 
-//    /**
-//     * 查询ID
-//     *
-//     * @param id 外协DI
-//     * @return
-//     */
-//    @GetMapping("updateComQuery")
-//    public WebApiResponse updateComQuery(String id) {
-//        return this.service.updateComQuery(id);
-//    }
+    /**
+     * 外协单位导出
+     *
+     * @param request
+     * @param response
+     * @return
+     */
+    @GetMapping("exportXlsCompany")
+    @ApiOperation(value = "外协单位导出", notes = "外协单位导出")
+    public WebApiResponse exportXlsCompany(HttpServletRequest request, HttpServletResponse response) {
+        try {
+            //读取excel模板
+            String rootpath = request.getSession().getServletContext().getRealPath(File.separator);
+            XSSFWorkbook wb = new XSSFWorkbook();
+            XSSFSheet sheet = wb.createSheet("外协队伍");
+            final List<Map<String, Object>> list1 = this.service.exportXlsCompany();
+            // 设置列宽
+            sheet.setColumnWidth((short) 0, (short) 6000);
+            sheet.setColumnWidth((short) 1, (short) 6000);
+            sheet.setColumnWidth((short) 2, (short) 6000);
+            sheet.setColumnWidth((short) 3, (short) 2000);
+            // 设置表头样式
+            XSSFCellStyle cellstyle = wb.createCellStyle();
+            // 设置居中
+            cellstyle.setAlignment(XSSFCellStyle.ALIGN_CENTER);
+            // 创建标题样式
+            XSSFCellStyle headerStyle = wb.createCellStyle();
+            //设置垂直居中
+            headerStyle.setVerticalAlignment(XSSFCellStyle.VERTICAL_CENTER);
+            //设置水平居中
+            headerStyle.setAlignment(XSSFCellStyle.ALIGN_CENTER);
+            //创建字体样式
+            XSSFFont headerFont = wb.createFont();
+            // 字体加粗
+            headerFont.setBoldweight(XSSFFont.BOLDWEIGHT_BOLD);
+            //设置字体类型
+            headerFont.setFontName("Times New Roman");
+            //设置字体大小
+            headerFont.setFontHeightInPoints((short) 12);
+            //为标题样式设置字体样式
+            headerStyle.setFont(headerFont);
+            XSSFRow row = sheet.createRow(0);
+            XSSFCell cell = row.createCell((short) 0);
+            cell.setCellValue("外协名称");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 1);
+            cell.setCellValue("所属单位");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 2);
+            cell.setCellValue("创建时间");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 3);
+            cell.setCellValue("修改时间");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 4);
+            cell.setCellStyle(headerStyle);
+            for (int i = 0; i < list1.size(); i++) {
+                row = sheet.createRow(i + 1);
+                Map<String, Object> map = list1.get(i);
+                row.createCell(0).setCellValue(String.valueOf(map.get("COMPANYNAME")));
+                row.createCell(1).setCellValue(String.valueOf(map.get("CREATETIME")));
+                row.createCell(2).setCellValue(String.valueOf(map.get("UPDATETIME")));
+                row.createCell(3).setCellValue(String.valueOf(map.get("ORGNAME")));
+            }
+            OutputStream output = response.getOutputStream();
+            response.reset();
+//            response.setHeader("content-Type", "application/vnd.ms-excel");
+            response.setHeader("Content-disposition", "attachment;filename=" + new String("外协队伍.xlsx".getBytes("gbk"), "iso8859-1"));
+            response.setContentType("Content-Type:application/vnd.ms-excel");
+            wb.write(output);
+            output.close();
+            return WebApiResponse.success("true");
+        } catch (Exception e) {
+            WebApiResponse.erro("false");
+            e.printStackTrace();
+        }
+        return null;
+    }
 }

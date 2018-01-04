@@ -8,6 +8,7 @@ import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
 
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /***
@@ -49,5 +50,28 @@ public class DateUtil {
         return SDF.format(new Date());
     }
 
+    /***
+    * @Method stringToDate
+    * @Description   字符串转日期格式
+    * @param [time]
+    * @return java.util.Date
+    * @date 2017/12/25 13:19
+    * @author nwz
+    */
+    public static Date stringToDate(String time)  {
+        try {
+            return DateUtils.parseDate(time,partterns);
+        } catch (ParseException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return new Date();
+    }
+
+    public static void main(String[] args) throws ParseException {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        Date parse = sdf.parse("2017-12-30 00:00:00");
+        System.out.println(parse);
+    }
 
 }

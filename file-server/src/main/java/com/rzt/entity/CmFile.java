@@ -9,10 +9,7 @@ package com.rzt.entity;
 import com.rzt.util.excelUtil.ExcelResources;
 import com.rzt.utils.SnowflakeIdWorker;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -44,10 +41,13 @@ public class CmFile implements Serializable{
      private Integer fileType;
     	//字段描述: 
    	 @Column(name = "CREATE_TIME")
-     private Date createTime;
+	 private Date createTime;
     	//字段描述: 
    	 @Column(name = "FK_ID")
      private Long fkId;
+
+   	 @Column(name = "FK_ID_STR")
+   	 private String fkIdStr;
     
 	public void setId(Long id){
 		if(id==null||id==0){
@@ -101,4 +101,11 @@ public class CmFile implements Serializable{
 		return this.fkId;
 	}
 
+	public String getFkIdStr() {
+		return fkIdStr;
+	}
+
+	public void setFkIdStr(String fkIdStr) {
+		this.fkIdStr = fkIdStr;
+	}
 }

@@ -49,8 +49,13 @@ public interface KhTaskRepository extends JpaRepository<KhTask,String> {
     @Query(value = "SELECT COUNT(*) FROM kh_task where status = 1",nativeQuery = true)
     int getCount2();
 
-    @Modifying
+  /*  @Modifying
     @Transactional
     @Query(value = "update kh_site set khfzr_id1 = ?2, khfzr_id2 = ?3,khdy_id1 = ?4,khdy_id2 = ?5 where id = ?1",nativeQuery = true)
-    void updateTaskById(long id, String khfzrId1, String khfzrId2, String khdyId1, String khdyId2);
+    void updateTaskById(long id, String khfzrId1, String khfzrId2, String khdyId1, String khdyId2);*/
+
+    @Modifying
+    @Transactional
+    @Query(value = "update kh_site set user_id = ?1,plan_start_time=?3,plan_end_time=?4 where id = ?2",nativeQuery = true)
+    void updateSiteById(String userId, String id,String startTime,String endTime);
 }

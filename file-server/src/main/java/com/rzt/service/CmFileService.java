@@ -32,14 +32,13 @@ import java.util.Map;
  * @version        
  */
 @Service
-@Transactional
 public class CmFileService extends CurdService<CmFile,CmFileRepository> {
 
     protected static Logger LOGGER = LoggerFactory.getLogger(CmFileService.class);
 
-    public Map<String,Object> fileUpload(MultipartFile file, Integer flag, Long fkId) {
+    @Transactional
+    public Map<String,Object> fileUpload(MultipartFile file, CmFile cmFile) {
         HashMap<String, Object> result = new HashMap<>();
-        CmFile cmFile = new CmFile();
         try {
             Map<String, Object> map = StorageUtils.storageFiles(file);
             if("true".equals(map.get("success").toString())){
@@ -50,12 +49,10 @@ public class CmFileService extends CurdService<CmFile,CmFileRepository> {
                 cmFile.setCreateTime(new Date(System.currentTimeMillis()));
                 cmFile.setFileName(fileName);
                 cmFile.setFilePath(filePath);
-                cmFile.setFileType(flag);
-                cmFile.setFkId(fkId);
-
 
                 add(cmFile);
                 result.put("success",true);
+                result.put("id",String.valueOf(cmFile.getId()));
                 result.put("filePath",filePath);
 
             }
@@ -72,7 +69,13 @@ public class CmFileService extends CurdService<CmFile,CmFileRepository> {
         List<CmFile> list = reposiotry.findByFkId(fkid);
         result.put("success",true);
         result.put("object",list);
-
+        return result;
+    }
+    public Map<String,Object> getImgByFkIdStr(String fkidStr) {
+        Map<String, Object> result = new HashMap<>();
+        List<CmFile> list = reposiotry.findByFkIdStr(fkidStr);
+        result.put("success",true);
+        result.put("object",list);
         return result;
     }
 
@@ -83,4 +86,20 @@ public class CmFileService extends CurdService<CmFile,CmFileRepository> {
         result.put("object",cmFile);
         return result;
     }
+
+    @Transactional
+    public Map<String,Object> deleteImgById(Long id) {
+        Map<String, Object> result = new HashMap<>();
+        try{
+            CmFile one = reposiotry.findById(id);
+            StorageUtils.deleteImg(one.getFilePath());
+            reposiotry.deleteById(id);
+            result.put("success",true);
+        }catch (Exception e){
+            LOGGER.error("图片删除失败！",e);
+            result.put("success",false);
+        }
+        return result;
+    }
+
 }

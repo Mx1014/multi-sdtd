@@ -1,12 +1,17 @@
 server:
-    port: 12345
+    port: 12346
     context-path: /xsTask
 
 eureka:
   client:
     service-url:
-      defaultZone: http://127.0.0.1:7002/eureka/
+#      defaultZone: http://127.0.0.1:7002/eureka
+#      defaultZone: http://eureka:31814/eureka
+#      defaultZone: http://
+#  insthostance:
 
+#    prefer-ip-address: true
+#    instance-id: ${spring.cloud.client.ipAddress}:${server.port}
 spring:
   application:
             name: xsTask

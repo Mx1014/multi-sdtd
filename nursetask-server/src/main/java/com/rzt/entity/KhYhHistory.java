@@ -47,12 +47,11 @@ public class KhYhHistory implements Serializable {
 
     //字段描述: 关联线路id
     @Column(name = "LINE_ID")
-    private String lineId;
+    private long lineId;
 
     //字段描述: 起始杆塔号
     @Column(name = "START_TOWER")
     private String startTower;
-
 
     //字段描述: 终止杆塔号
     @Column(name = "END_TOWER")
@@ -106,7 +105,7 @@ public class KhYhHistory implements Serializable {
     //字段描述: 管控措施
     @Column(name = "GKCS")
     private String gkcs;
-    //字段描述: 维护单位（通道单位）
+        //字段描述: 维护单位（通道单位）
     @Column(name = "TDYW_ORG")
     private String tdywOrg;
     //字段描述: 通道外协单位
@@ -117,7 +116,7 @@ public class KhYhHistory implements Serializable {
     private String sbywOrg;
     //字段描述: 是否定级
     @Column(name = "SFDJ")
-    private String sfdj;
+    private int sfdj;
     //字段描述: 数据创建时间
     @Column(name = "CREATE_TIME")
     private Date createTime;
@@ -129,7 +128,7 @@ public class KhYhHistory implements Serializable {
     private String yhzt;
     //字段描述: 看护任务id
     @Column(name = "TASK_ID")
-    private String taskId;
+    private Long taskId;
     //字段描述: 更新时间
     @Column(name = "UPDATE_TIME")
     private Date updateTime;
@@ -156,16 +155,7 @@ public class KhYhHistory implements Serializable {
     private String jd;
     //字段描述: 填报时间
     @Column(name = "TBSJ")
-    private String tbsj;
-    //字段描述: 填报部门
-    @Column(name = "TBBM")
-    private String tbbm;
-    //字段描述: 填报部门ID
-    @Column(name = "TBBMID")
-    private String tbbmid;
-    //字段描述: 填报人
-    @Column(name = "TBR")
-    private String tbr;
+    private Date tbsj;
     //字段描述: 填报人ID
     @Column(name = "TBRID")
     private String tbrid;
@@ -208,6 +198,18 @@ public class KhYhHistory implements Serializable {
     //字段描述: 照片修改时间
     @Column(name = "ZPXGSJ")
     private String zpxgsj;
+    //字段描述: 施工情况
+    @Column(name = "SGQK")
+    private String sgqk;
+    //字段描述：通道单位id
+    @Column(name = "YWORG_ID")
+    private String yworgId;
+    //字段描述: 外协单位id
+    @Column(name = "WXORG_ID")
+    private String wxorgId;
+    //字段描述: 隐患点半径
+    @Column(name="radius")
+    private String radius;
 
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
@@ -290,12 +292,12 @@ public class KhYhHistory implements Serializable {
         return this.sdgs;
     }
 
-    public void setLineId(String lineId) {
+    public void setLineId(long lineId) {
         this.lineId = lineId;
     }
 
     @ExcelResources(title = "关联线路id", order = 10)
-    public String getLineId() {
+    public long getLineId() {
         return this.lineId;
     }
 
@@ -380,41 +382,15 @@ public class KhYhHistory implements Serializable {
         return this.yhzt;
     }
 
-    public void setTbsj(String tbsj) {
+    public void setTbsj(Date tbsj) {
         this.tbsj = tbsj;
     }
 
     @ExcelResources(title = "填报时间", order = 20)
-    public String getTbsj() {
+    public Date getTbsj() {
         return this.tbsj;
     }
 
-    public void setTbbm(String tbbm) {
-        this.tbbm = tbbm;
-    }
-
-    @ExcelResources(title = "填报部门", order = 21)
-    public String getTbbm() {
-        return this.tbbm;
-    }
-
-    public void setTbbmid(String tbbmid) {
-        this.tbbmid = tbbmid;
-    }
-
-    @ExcelResources(title = "填报部门ID", order = 22)
-    public String getTbbmid() {
-        return this.tbbmid;
-    }
-
-    public void setTbr(String tbr) {
-        this.tbr = tbr;
-    }
-
-    @ExcelResources(title = "填报人", order = 23)
-    public String getTbr() {
-        return this.tbr;
-    }
 
     public void setTbrid(String tbrid) {
         this.tbrid = tbrid;
@@ -542,12 +518,12 @@ public class KhYhHistory implements Serializable {
         return this.yhfxsj;
     }
 
-    public void setTaskId(String taskId) {
+    public void setTaskId(Long taskId) {
         this.taskId = taskId;
     }
 
     @ExcelResources(title = "看护任务id", order = 38)
-    public String getTaskId() {
+    public Long getTaskId() {
         return this.taskId;
     }
 
@@ -673,11 +649,11 @@ public class KhYhHistory implements Serializable {
         return xlzycd;
     }
 
-    public String getSfdj() {
+    public int getSfdj() {
         return sfdj;
     }
 
-    public void setSfdj(String SFDJ) {
+    public void setSfdj(int SFDJ) {
         this.sfdj = SFDJ;
     }
 
@@ -702,5 +678,37 @@ public class KhYhHistory implements Serializable {
 
     public void setYhlb(String yhlb) {
         this.yhlb = yhlb;
+    }
+
+    public String getSgqk() {
+        return sgqk;
+    }
+
+    public void setSgqk(String sgqk) {
+        this.sgqk = sgqk;
+    }
+
+    public String getTdorgId() {
+        return yworgId;
+    }
+
+    public void setTdorgId(String tdorgId) {
+        this.yworgId = tdorgId;
+    }
+
+    public String getWxorgId() {
+        return wxorgId;
+    }
+
+    public void setWxorgId(String wxorgId) {
+        this.wxorgId = wxorgId;
+    }
+
+    public void setRadius(String radius) {
+        this.radius = radius;
+    }
+
+    public String getRadius() {
+        return radius;
     }
 }

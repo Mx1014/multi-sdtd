@@ -178,9 +178,9 @@ public class XsZcTaskwpqrController extends CurdController<XsZcTaskwpqr, XsZcTas
      */
     @ApiOperation(value = "更新轮详情数据", notes = "更新轮详情数据 ")
     @PatchMapping("updateExecDetail")
-    public Object updateExecDetail(Integer xslx,Integer sfdw,String reason,Long execDetailId) {
+    public Object updateExecDetail(Integer xslx,Integer sfdw,String reason,Long execDetailId,String longtitude,String latitude) {
         try {
-            this.service.updateExecDetail(xslx,sfdw, reason,execDetailId);
+            this.service.updateExecDetail(xslx,sfdw, reason,execDetailId,longtitude,latitude);
             return WebApiResponse.success("数据更新成功");
         } catch (Exception var3) {
             return WebApiResponse.erro("数据更新失败" + var3.getMessage());
@@ -201,6 +201,26 @@ public class XsZcTaskwpqrController extends CurdController<XsZcTaskwpqr, XsZcTas
     public Object updateTaskStatus(Integer xslx,Long id) {
         try {
             this.service.updateTaskStatus(xslx,id);
+            return WebApiResponse.success("数据更新成功");
+        } catch (Exception var3) {
+            return WebApiResponse.erro("数据更新失败" + var3.getMessage());
+        }
+    }
+
+
+    /**
+     * xslx 巡视类型
+     * 到达现场时间修改
+     *
+     * @param xslx  巡视类型
+     * @param id 任务id
+     * @return
+     */
+    @ApiOperation(value = "更新任务状态", notes = "更新任务状态 ")
+    @PostMapping("lsyhInXs")
+    public Object lsyhInXs(Integer xslx,Long id,Long execId,Long execDetailId,Long yhId,String yhInfo) {
+        try {
+            this.service.lsyhInXs(xslx,id,execId,execDetailId,yhId,yhInfo);
             return WebApiResponse.success("数据更新成功");
         } catch (Exception var3) {
             return WebApiResponse.erro("数据更新失败" + var3.getMessage());
