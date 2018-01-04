@@ -1,6 +1,8 @@
-package com.rzt.TimedTask;
+package com.rzt.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.springframework.scheduling.Trigger;
 import org.springframework.scheduling.TriggerContext;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
@@ -8,23 +10,17 @@ import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Component;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 
 /**
- * 负责白天定时周期的副定时器
+ * 主定时器    负责周期性的定时执行
+ *      周期逻辑由副定时器负责
  */
 @Component
-public class DayDynamicScheduledTask implements SchedulingConfigurer {
+public class DynamicScheduledTask implements SchedulingConfigurer {
   private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
-  //默认早8点开始
-  //private String cron = "0 0 8 * * ?";
-  private String cron = "0 10 * * * ?";
-  private String time = "3";
-  //注入主定时器
-  @Autowired
-  private DynamicScheduledTask dyn;
+  //默认两小时一次
+  //private String cron = "0 0 0/2 * * ?";
+  private String cron = "0 0/2 * * * ?";
 
 
   @Override
@@ -32,13 +28,11 @@ public class DayDynamicScheduledTask implements SchedulingConfigurer {
     taskRegistrar.addTriggerTask(new Runnable() {
       @Override
       public void run() {
-          /**
-           * 更改白天时段  起始定时时间
-         *  结束时段由夜晚起始时间控制
+        /**
+         * 序号	抽查时间	通道公司	外协单位	任务详情	责任人	联系方式	抽查类型
+         * 获取当前巡查对象   故障多发线路  隐患集中地区   评分较低人员
          */
-        //dyn.setCron("0 0 0/"+time+" * * ?");
-        dyn.setCron("0 0/"+time+" * * * ?");
-        System.out.println("白天时间：" + dateFormat.format(new Date()));
+        System.out.println("主定时器时间：" + dateFormat.format(new Date()));
         System.out.println("表达式"+cron);
 
 
@@ -54,13 +48,7 @@ public class DayDynamicScheduledTask implements SchedulingConfigurer {
     });
   }
 
-  public void setCron(String cron,String time) {
-    if(null != cron && !"".equals(cron)){
-      this.cron = cron;
-    }
-    if(null != time && !"".equals(time)){
-      this.time=time;
-    }
-
+  public void setCron(String cron) {
+    this.cron = cron;
   }
 }

@@ -1,4 +1,4 @@
-package com.rzt.TimedTask;
+package com.rzt.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.Trigger;
@@ -13,32 +13,29 @@ import java.util.Date;
 
 
 /**
- * 负责白天定时周期的副定时器
+ * 负责夜晚定时周期的副定时器
  */
 @Component
-public class DayDynamicScheduledTask implements SchedulingConfigurer {
+public class NightDynamicScheduledTask implements SchedulingConfigurer {
   private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
-  //默认早8点开始
-  //private String cron = "0 0 8 * * ?";
-  private String cron = "0 10 * * * ?";
-  private String time = "3";
+  //默认晚5点开始
+  private String cron = "0 0 17 * * ?";
+  private Integer time = 4;
   //注入主定时器
   @Autowired
   private DynamicScheduledTask dyn;
-
 
   @Override
   public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
     taskRegistrar.addTriggerTask(new Runnable() {
       @Override
       public void run() {
-          /**
-           * 更改白天时段  起始定时时间
+        /**
+         * 更改夜晚时段  起始定时时间
          *  结束时段由夜晚起始时间控制
          */
-        //dyn.setCron("0 0 0/"+time+" * * ?");
-        dyn.setCron("0 0/"+time+" * * * ?");
-        System.out.println("白天时间：" + dateFormat.format(new Date()));
+        dyn.setCron("0 0 0/"+time+" * * ?");
+        System.out.println("夜晚时间：" + dateFormat.format(new Date()));
         System.out.println("表达式"+cron);
 
 
@@ -54,13 +51,12 @@ public class DayDynamicScheduledTask implements SchedulingConfigurer {
     });
   }
 
-  public void setCron(String cron,String time) {
+  public void setCron(String cron,Integer time) {
     if(null != cron && !"".equals(cron)){
       this.cron = cron;
     }
-    if(null != time && !"".equals(time)){
+    if(null != time && time>0){
       this.time=time;
     }
-
   }
 }
