@@ -20,7 +20,7 @@ public class DayDynamicScheduledTask implements SchedulingConfigurer {
   private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
   //默认早8点开始
   private String cron = "0 0 8 * * ?";
-  private Integer time = 3;
+  private Integer time = 2;
   //注入主定时器
   @Autowired
   private DynamicScheduledTask dyn;

@@ -23,8 +23,6 @@ public class Timing  {
     private NightDynamicScheduledTask night;
     @Autowired
     private DayDynamicScheduledTask day;
-    //计算天数用
-    private Integer num = 0;
 
     /**
      * 动态修改定时器内变量
@@ -32,6 +30,7 @@ public class Timing  {
      */
     @GetMapping("setCron")
     public WebApiResponse setCron(Integer nightTime, Integer daytime, Integer startTime, Integer endTime){
+
         try{
             //夜晚
             if((null != nightTime && nightTime>0) || (null != endTime && endTime>0)){//当更改某时段定时周期时  更改当前定时周期时间和当前时段中的定时周期
@@ -42,6 +41,9 @@ public class Timing  {
                     cron = "0 0 "+endTime+" * * ?";
                 }
                 night.setCron(cron,nightTime);
+                System.out.println("夜晚");
+                System.out.println(nightTime);
+                System.out.println(cron);
             }
             //白天
             if((null != daytime && daytime>0) || (null != startTime && startTime>0)){//当更改某时段定时周期时  更改当前定时周期时间和当前时段中的定时周期
@@ -52,6 +54,9 @@ public class Timing  {
                     cron = "0 0 "+startTime+" * * ?";
                 }
                 day.setCron(cron,daytime);
+                System.out.println("白天");
+                System.out.println(cron);
+                System.out.println(daytime);
             }
             return WebApiResponse.success("success");
         }catch (Exception e){
@@ -63,15 +68,12 @@ public class Timing  {
 
     /**
      * 每三天刷新一次
-     * 在每天12点时刷新  当刷新时为变量num加一   当变量模3得0时证明时间过了三天
+     * 0点刷新
      */
-    @Scheduled(cron="0 0 12 * * ?")
-    private void a(){
-        System.out.println("中午12点一次刷新");
-        num++;
-        if(num%3 == 0){//三天  写入逻辑
-            System.out.println("三天到了 ");
-        }
+    @Scheduled(cron="0 0 0 0/2  * ? ")
+    private void threeDayScheduledTask(){
+        System.out.println("0点刷新");
+
     }
 
 
