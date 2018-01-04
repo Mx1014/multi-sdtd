@@ -95,7 +95,7 @@ public class RztsyscompanyController extends
     @ApiOperation(value = "外协队伍分页查询", notes = "外协队伍分页查询")
     public WebApiResponse queryRztsyscompany(Integer page, Integer size, String userId, String companyname, String orgid) {
         try {
-            return WebApiResponse.success(this.service.queryRztsyscompany(page, size, userId, companyname, orgid));
+            return WebApiResponse.success(this.service.queryRztsyscompany(page, size,userId,companyname,orgid));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("Data Error");
