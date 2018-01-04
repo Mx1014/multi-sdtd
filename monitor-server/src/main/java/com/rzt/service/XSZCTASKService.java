@@ -25,9 +25,63 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
     protected static Logger LOGGER = LoggerFactory.getLogger(XSZCTASKService.class);
     @Autowired
     private XSZCTASKRepository repository;
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
 
-
+    /**
+     *
+     * @param taskType 任务类型  条件查询使用
+     * @param status  任务状态   条件查询使用
+     * @return
+     */
+    public WebApiResponse getXsTaskAll(String taskType,Integer status){
+        String sql = " SELECT   " +
+                "  TASKID,   " +
+                "  CREATETIME,   " +
+                "  USER_ID,   " +
+                "  TASKNAME,   " +
+                "  TASKTYPE   " +
+                "FROM TIMED_TASK   " +
+                "WHERE (CREATETIME BETWEEN (SELECT max(CREATETIME)   " +
+                "     FROM TIMED_TASK) - 10 / (1 * 24 * 60 * 60) AND (SELECT max(CREATETIME)   " +
+                "       FROM TIMED_TASK)) ";
+        List<Object> list = new ArrayList<>();
+        if(taskType!=null && !"".equals(taskType.trim())){
+            list.add(taskType);
+            sql+= " AND TASKTYPE = ?"+list.size();
+        }
+        if(status!=null){
+            list.add(status);
+            sql+="  AND STATUS = ?"+list.size();
+        }
+        List<Map<String, Object>> maps = null;
+        try {
+            maps = this.execSql(sql, list.toArray());
+        }catch (Exception e){
+            LOGGER.error("定时任务查询添加失败"+e.getStackTrace());
+            return WebApiResponse.erro("定时任务查询添加失败"+e.getStackTrace());
+        }
+        List<Map<String, Object>> result = new ArrayList<>();
+        HashOperations hashOperations = redisTemplate.opsForHash();
+        for (Map<String,Object> map:maps) {
+            Map<String,Object> m = new HashMap<>();
+            String userID =(String)map.get("USER_ID");
+            JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", userID).toString());
+            if(jsonObject!=null){
+                System.out.println(jsonObject);
+                m.put("CREATETIME",map.get("CREATETIME"));
+                m.put("DEPT",jsonObject.get("DEPT"));
+                m.put("COMPANYNAME",jsonObject.get("COMPANYNAME"));
+                m.put("TASK_NAME",map.get("TASK_NAME"));
+                m.put("REALNAME",jsonObject.get("REALNAME"));
+                m.put("PHONE",jsonObject.get("PHONE"));
+                m.put("CHTYPE"," "); // 抽查类型
+            }
+            result.add(m);
+        }
+        return WebApiResponse.success(result);
+    }
 
     /**
      * 按照taskId查询当前任务的详情
@@ -117,6 +171,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
     public WebApiResponse findYHByTaskId(String taskId) {
         ArrayList<String> strings = new ArrayList<>();
         List<Map<String, Object>> maps = null;
+        List<Map<String, Object>> maps2 = null;
         List<Map<String, Object>> maps3 = null;
         String sql = "SELECT yh.YHMS,li.LINE_NAME,li.SECTION" +
                 "       from KH_YH_HISTORY yh" +
@@ -143,9 +198,11 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                        "                   LEFT JOIN XS_ZC_CYCLE xc" +
                        "                       on xc.ID = xt.XS_ZC_CYCLE_ID" +
                        "                           WHERE xt.ID = ?"+strings.size()+")";
+               maps = this.execSql(sql, strings.toArray());
+               maps3 = this.execSql(sql3, strings.toArray());
+               maps2 = (List<Map<String, Object>>) findExecDetallByTaskId(taskId).getData();
            }
-           maps = this.execSql(sql, strings.toArray());
-           maps3 = this.execSql(sql3, strings.toArray());
+
        }catch (Exception e){
             LOGGER.error("查询任务隐患错误"+e.getStackTrace());
            return WebApiResponse.erro("查询任务隐患错误"+e.getStackTrace());
@@ -153,7 +210,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
         LOGGER.info("查询任务隐患信息");
         Map<String, Object> stringMapHashMap = new HashMap<>();
         stringMapHashMap.put("YH",maps);
-        stringMapHashMap.put("XQ",findExecDetallByTaskId(taskId).getData());
+        stringMapHashMap.put("XQ",maps2);
         stringMapHashMap.put("THWZ",maps3);
         return WebApiResponse.success(stringMapHashMap);
     }

@@ -19,8 +19,6 @@ import java.text.ParseException;
 public class XSZCTASKController extends
         CurdController<XSZCTASKController,XSZCTASKService>{
 
-
-
     /**
      * 按照taskId查询当前任务的详细信息
      * @param taskId
@@ -30,10 +28,6 @@ public class XSZCTASKController extends
     public WebApiResponse getTASkXQ(String taskId){
         return service.findByTaskId(taskId);
     }
-
-
-
-
 
     /**
      * 根据taskId获取当前任务的隐患信息
@@ -46,6 +40,15 @@ public class XSZCTASKController extends
         return service.findYHByTaskId(taskId);
     }
 
-
+    /**
+     * 查询抽查表内的所有数据
+     * @param taskType  任务类型
+     * @param status  查询状态
+     * @return
+     */
+    @GetMapping("/getXsTaskAll")
+    public WebApiResponse getXsTaskAll(String taskType,Integer status){
+        return service.getXsTaskAll(taskType,status);
+    }
 
 }
