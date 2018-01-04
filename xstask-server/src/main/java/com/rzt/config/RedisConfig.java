@@ -5,7 +5,6 @@ import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonRedisSerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,8 +23,8 @@ import java.lang.reflect.Method;
  * Created by Administrator on 2017/12/12.
  */
 @Configuration
-@EnableCaching
-public class RedisConfig {
+public class
+RedisConfig {
 
     @Value("${spring.redis.host}")
     private String host;
@@ -56,12 +55,12 @@ public class RedisConfig {
      * @return
      */
     @Bean
-    public KeyGenerator sdtd27Gernerator() {
+    public KeyGenerator wiselyKeyGenerator() {
         return new KeyGenerator() {
             @Override
             public Object generate(Object target, Method method, Object... params) {
                 StringBuilder sb = new StringBuilder();
-//                sb.append(target.getClass().getName());
+                sb.append(target.getClass().getName());
                 sb.append(method.getName());
                 for (Object obj : params) {
                     sb.append(obj.toString());

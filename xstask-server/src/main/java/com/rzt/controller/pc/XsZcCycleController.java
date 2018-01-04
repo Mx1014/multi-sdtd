@@ -54,11 +54,11 @@ public class XsZcCycleController extends
     */
     @ApiOperation(value = "周期维护 新增周期",notes = "pc端新增周期")
     @PostMapping("addCycle")
-    public Object addCycle( XsZcCycle xsZcCycle) {
+    public Object addCycle( XsZcCycle xsZcCycle,String userId) {
 		try {
 			xsZcCycle.setTotalTaskNum(0);
 			xsZcCycle.setCreateTime(DateUtil.dateNow());
-			this.service.addCycle(xsZcCycle);
+			this.service.addCycle(xsZcCycle,userId);
 			return WebApiResponse.success("周期新增成功");
 		} catch (Exception var) {
 			return WebApiResponse.erro("周期新增失败" + var.getMessage());
@@ -75,9 +75,9 @@ public class XsZcCycleController extends
 	 */
 	@ApiOperation(value = "周期维护页面列表",notes = "周期维护页面列表 查询的接口")
 	@PostMapping("listCycle")
-	public Object cycleList(Pageable pageable,XsTaskSCh xsTaskSCh) {
+	public Object cycleList(Pageable pageable,XsTaskSCh xsTaskSCh,String userId) {
 		try {
-			Object cycleList = this.service.cycleList(pageable, xsTaskSCh);
+			Object cycleList = this.service.cycleList(pageable, xsTaskSCh,userId);
 			return WebApiResponse.success(cycleList);
 		} catch (Exception var7) {
 			return WebApiResponse.erro("数据查询失败" + var7.getMessage());
@@ -146,8 +146,8 @@ public class XsZcCycleController extends
 	 * @author nwz
 	 */
 	@PostMapping("addPlan")
-	public Object addPlan(XSZCTASK xszctask) {
-		return this.service.addPlan(xszctask);
+	public Object addPlan(XSZCTASK xszctask,String userId) {
+		return this.service.addPlan(xszctask,userId);
 	}
 
 	/**
@@ -160,9 +160,9 @@ public class XsZcCycleController extends
 	 */
 	@ApiOperation(value = "pc端任务派发列表",notes = "pc端任务派发列表")
 	@GetMapping("listPlan")
-	public Object listPlan(Pageable pageable, XsTaskSCh xsTaskSch) {
+	public Object listPlan(Pageable pageable, XsTaskSCh xsTaskSch,String userId) {
 		try {
-			return this.service.listPlan(pageable,xsTaskSch);
+			return this.service.listPlan(pageable,xsTaskSch,userId);
 		} catch (Exception var7) {
 			return WebApiResponse.erro("数据查询失败" + var7.getMessage());
 		}
@@ -225,6 +225,14 @@ public class XsZcCycleController extends
 	}
 
 
+	@GetMapping("fuck")
+	public Object fuck(Long execId) {
+		try {
+			return WebApiResponse.success(this.service.listExecDetail(execId));
+		} catch (Exception var) {
+			return WebApiResponse.erro("图片查找失败" + var.getMessage());
+		}
+	}
 
 
 	@InitBinder

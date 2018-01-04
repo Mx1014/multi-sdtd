@@ -109,9 +109,9 @@ public class XSZCTASKController extends
      */
     @GetMapping("personCollection")
     @ApiOperation(value = "人员信息采集查询", notes = "xslx 巡视类型 0 特殊巡视 1 保电巡视 2 正常巡视， id 任务ID")
-    public WebApiResponse personCollection(Integer xslx, Long id) {
+    public WebApiResponse personCollection(Integer xslx, Long id,Long cycleId,String userId) {
         try {
-            return WebApiResponse.success(this.service.personCollection(xslx, id));
+            return WebApiResponse.success(this.service.personCollection(xslx, id,cycleId,userId));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("数据请求失败");
@@ -145,7 +145,7 @@ public class XSZCTASKController extends
             return WebApiResponse.success(this.service.xsTowerList(xslx, id));
         } catch (Exception e) {
             e.printStackTrace();
-            return WebApiResponse.erro("数据库请求失败");
+            return WebApiResponse.erro("数据库请求失败" + e.getMessage());
         }
     }
 
@@ -161,4 +161,18 @@ public class XSZCTASKController extends
             return WebApiResponse.erro("数据库请求失败");
         }
     }
+
+
+    @GetMapping("shangbaoYh")
+    @ApiOperation(value = "上报隐患", notes = "上报隐患")
+    public WebApiResponse shangbaoYh(Integer xslx, Long taskId,String userId) {
+        try {
+            return WebApiResponse.success(this.service.shangbaoYh(xslx, taskId,userId));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("数据库请求失败");
+        }
+    }
+
+
 }
