@@ -141,11 +141,8 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
 
     public WebApiResponse listCurrentTaskByUserId(String userId) {
         try {
-            String date = DateUtil.getCurrentDate();
             String sql = "select k.id as taskId,k.status as status,k.task_name as taskname from kh_task k where k.user_id = ? and trunc(k.plan_start_time)>=trunc(sysdate)"; //to_date(?,'yyyy-mm-dd hh24:mi:ss') and k.plan_start_time<=to_date(?,'yyyy-mm-dd hh24:mi:ss')";
-            String start = date + " 00:00:00";
-            String end = date + " 23:59:59";
-            return WebApiResponse.success(this.execSql(sql, userId));//, start, end));
+            return WebApiResponse.success(this.execSql(sql, userId));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("数据获取失败");
@@ -153,9 +150,8 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
     }
     public WebApiResponse listTaskInfoById(String taskId) {
         try {
-            String date = DateUtil.getCurrentDate();
             String sql = "SELECT TASK_NAME TASKNAME,CREATE_TIME PDTIME,TDYW_ORG YWORG,WX_ORG WXORG,PLAN_START_TIME STARTTIME,PLAN_END_TIME ENDTIME,STATUS from KH_TASK WHERE ID=?";
-            return WebApiResponse.success(this.execSql(sql, taskId));//, start, end));
+            return WebApiResponse.success(this.execSql(sql, taskId));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("数据获取失败");
