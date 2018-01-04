@@ -39,7 +39,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
     @Autowired
     private KhSiteRepository siteRepository;
 
-    public Object listAllKhTask(KhTaskModel task, Pageable pageable, int roleType) {
+    public Object listAllKhTask(KhTaskModel task,String status, Pageable pageable, int roleType) {
         task = timeUtil(task);
         String result = "k.id as id, k.task_name as taskName,k.tdyw_org as yworg,k.CREATE_TIME as createTime,k.plan_start_time as startTime,k.plan_end_time as endTime,k.status as status,u.realname as userName,d.DEPTNAME as class";
         List params = new ArrayList<>();
@@ -56,10 +56,10 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
             params.add(task.getTaskName());
         }
         //此处的状态要改
-        if (task.getStatus() != null && !task.getStatus().equals("")) {
-            task.setStatus("%" + task.getStatus() + "%");
-            buffer.append(" and k.status like ? ");
-            params.add(task.getStatus());
+        if (status != null && !status.equals("")) {
+           // task.setStatus("%" + task.getStatus() + "%");
+            buffer.append(" and k.status = ? ");
+            params.add(Integer.parseInt(status));
         }
         if (task.getUserName() != null && !task.getUserName().equals("")) {
             task.setUserName("%" + task.getUserName() + "%");
@@ -290,9 +290,9 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
                 if (task.get("WX_ORG") != null) {
                     row.createCell(6).setCellValue(task.get("WX_ORG").toString());//巡视人员
                 }
-                if (task.get("STATUS") != null) {
+                /*if (task.get("STATUS") != null) {
                     row.createCell(7).setCellValue(task.get("STATUS").toString());
-                }
+                }*/
                 if (task.get("REAL_START_TIME") != null) {
                     row.createCell(8).setCellValue(task.get("REAL_START_TIME").toString().substring(0,task.get("REAL_START_TIME").toString().length()-2));
                 }
@@ -305,16 +305,18 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
                 if (task.get("REAL_END_TIME") != null) {
                     row.createCell(11).setCellValue(task.get("REAL_END_TIME").toString().substring(0,task.get("REAL_END_TIME").toString().length()-2));
                 }
-                //int status = Integer.parseInt(task.get("STATUS").toString());
+                int status = Integer.parseInt(task.get("STATUS").toString());
                 //该次执行状态(0待办,1进行中,2完成)
 
-                /*if (status == 0) {
-                    row.createCell(8).setCellValue("未开始");
+                if (status == 0) {
+                    row.createCell(7).setCellValue("未开始");
                 } else if (status == 1) {
-                    row.createCell(8).setCellValue("已派发");
+                    row.createCell(7).setCellValue("进行中");
                 } else if (status == 2) {
-                    row.createCell(8).setCellValue("已消缺");
-                }*/
+                    row.createCell(7).setCellValue("已完成");
+                }else {
+                    row.createCell(7).setCellValue("已取消");
+                }
 
             }
             OutputStream output = response.getOutputStream();

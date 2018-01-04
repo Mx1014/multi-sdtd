@@ -162,16 +162,6 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
     }
 
     public List listKhtaskByid(long id) {
-        /*String sql = "select k.task_name,y.yhms as ms,y.yhjb as jb,a.name as khfzr1,b.name as khfzr2,c.name as khdy1,d.name as khdy2 from kh_site k left join " +
-                " (select u.realname as name,k1.id from kh_site k1 left join rztsysuser u on u.id =k1.khfzr_id1) a " +
-                " on a.id=k.id left join " +
-                " (select u.realname as name,k1.id from kh_site k1 left join rztsysuser u on u.id =k1.khfzr_id2) b " +
-                " on b.id=k.id left join  " +
-                " (select u.realname as name,k1.id from kh_site k1 left join rztsysuser u on u.id =k1.khdy_id1) c " +
-                " on c.id=k.id left join " +
-                " (select u.realname as name,k1.id from kh_site k1 left join rztsysuser u on u.id =k1.khdy_id2) d " +
-                " on d.id=k.id " +
-                " left join kh_yh_history y on k.yh_id = y.id  where k.id=? ";*/
         String result = "k.task_name as taskname,y.yhms as ms,y.yhjb as jb,u.realname as name";
         String sql = "select " + result + " from kh_site k left join rztsysuser u on u.id = k.user_id left join kh_yh_history y on y.id = k.yh_id where k.id=?";
         return this.execSql(sql, id);
@@ -286,7 +276,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                 task.setWxOrg(cycle.getWxOrg());
                 task.setTdywOrg(cycle.getTdywOrg());
                 task.setCreateTime(new Date());
-                task.setStatus("未开始");
+                task.setStatus(0);
                 task.setSiteId(site.getId());
                 task.setYhId(cycle.getYhId());
                 task.setTaskName(cycle.getTaskName());

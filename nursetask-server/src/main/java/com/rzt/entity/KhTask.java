@@ -82,7 +82,7 @@ public class KhTask implements Serializable{
 	private String wpqrTime;
 	//字段描述: 任务状态 0未开始 1进行中 2已完成
 	@Column(name = "STATUS")
-	private String status;
+	private int status;
 
 	@Column(name="ZXYS_NUM")
 	private int zxysNum;
@@ -222,11 +222,11 @@ public class KhTask implements Serializable{
 		return this.wpqrTime;
 	}
 
-	public void setStatus(String status){
+	public void setStatus(int status){
 		this.status = status;
 	}
 	@ExcelResources(title="任务状态 0未开始 1进行中 2已完成 ",order=20)
-	public String getStatus(){
+	public int getStatus(){
 		return this.status;
 	}
 
