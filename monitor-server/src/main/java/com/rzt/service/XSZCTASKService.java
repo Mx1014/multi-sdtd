@@ -7,6 +7,9 @@ import com.rzt.util.WebApiResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -28,14 +31,14 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
-
     /**
      *
      * @param taskType 任务类型  条件查询使用
      * @param status  任务状态   条件查询使用
      * @return
      */
-    public WebApiResponse getXsTaskAll(String taskType,Integer status){
+    public WebApiResponse getXsTaskAll(Integer page,Integer size, String taskType,Integer status){
+        Pageable pageable = new PageRequest(page, size, null);
         String sql = " SELECT   " +
                 "  TASKID,   " +
                 "  CREATETIME,   " +
@@ -55,40 +58,42 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
             list.add(status);
             sql+="  AND STATUS = ?"+list.size();
         }
-        List<Map<String, Object>> maps = null;
+        Page<Map<String, Object>> pageResult = null;
         try {
-            maps = this.execSql(sql, list.toArray());
-        }catch (Exception e){
-            LOGGER.error("定时任务查询添加失败"+e.getStackTrace());
-            return WebApiResponse.erro("定时任务查询添加失败"+e.getStackTrace());
-        }
-        List<Map<String, Object>> result = new ArrayList<>();
-        HashOperations hashOperations = redisTemplate.opsForHash();
-        for (Map<String,Object> map:maps) {
-            Map<String,Object> m = new HashMap<>();
-            String userID =(String)map.get("USER_ID");
-            JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", userID).toString());
-            if(jsonObject!=null){
-                System.out.println(jsonObject);
-                m.put("CREATETIME",map.get("CREATETIME"));
-                m.put("DEPT",jsonObject.get("DEPT"));
-                m.put("COMPANYNAME",jsonObject.get("COMPANYNAME"));
-                m.put("TASK_NAME",map.get("TASK_NAME"));
-                m.put("REALNAME",jsonObject.get("REALNAME"));
-                m.put("PHONE",jsonObject.get("PHONE"));
-                m.put("CHTYPE"," "); // 抽查类型
+            pageResult = this.execSqlPage(pageable, sql, list.toArray());
+            Iterator<Map<String, Object>> iterator = pageResult.iterator();
+            HashOperations hashOperations = redisTemplate.opsForHash();
+            while (iterator.hasNext()){
+                Map<String, Object> next = iterator.next();
+                String userID =(String)next.get("USER_ID");
+                Object userInformation = hashOperations.get("UserInformation", userID);
+                if(userInformation==null){
+                    System.out.println(userInformation);
+                    continue;
+                }
+                JSONObject jsonObject = JSONObject.parseObject(userInformation.toString());
+                if(jsonObject!=null){
+                    next.put("DEPT",jsonObject.get("DEPT"));
+                    next.put("COMPANYNAME",jsonObject.get("COMPANYNAME"));
+                    next.put("REALNAME",jsonObject.get("REALNAME"));
+                    next.put("PHONE",jsonObject.get("PHONE"));
+                    next.put("CHTYPE"," "); // 抽查类型
+                }
             }
-            result.add(m);
+       }catch (Exception e){
+            LOGGER.error("抽查任务查询失败"+e.getStackTrace().toString());
+            return WebApiResponse.erro("抽查任务查询失败"+e.getStackTrace().toString());
         }
-        return WebApiResponse.success(result);
+        return WebApiResponse.success(pageResult);
     }
+
 
     /**
      * 按照taskId查询当前任务的详情
      * @param taskId
      * @return
      */
-    public WebApiResponse findByTaskId(String taskId) {
+    /*public WebApiResponse findByTaskId(String taskId) {
         ArrayList<Object> objects = new ArrayList<>();
         List<Map<String, Object>> maps = null;
         String sql = "";
@@ -104,12 +109,12 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
             }
         LOGGER.info("查询成功");
         return WebApiResponse.success(maps);
-    }
+    }*/
 
     /**
      * 供定时器使用   先查询需要的数据 查询后将数据添加进定时任务表
      */
-    @Transactional
+   @Transactional
     public void xsTaskAddAndFind()  {
 
         try {
@@ -192,7 +197,6 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                        "       from KH_YH_HISTORY yh" +
                        "          LEFT JOIN" +
                        "            CM_LINE li on li.ID = yh.LINE_ID" +
-                       "" +
                        "             WHERE yh.LINE_ID = (SELECT  xc.LINE_ID" +
                        "                FROM XS_ZC_TASK xt" +
                        "                   LEFT JOIN XS_ZC_CYCLE xc" +

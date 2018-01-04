@@ -23,7 +23,8 @@ public class DynamicScheduledTask implements SchedulingConfigurer {
   private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
   protected static Logger LOGGER = LoggerFactory.getLogger(XSZCTASKService.class);
   //默认两小时一次
-  private String cron = "0 0 0/2 * * ?";
+  //private String cron = "0 0 0/2 * * ?";
+  private String cron = "0 0/2 * * * ?";
 
   private XSZCTASKService service;
 
@@ -33,14 +34,11 @@ public class DynamicScheduledTask implements SchedulingConfigurer {
     taskRegistrar.addTriggerTask(new Runnable() {
       @Override
       public void run() {
-        /**
-         * 序号	抽查时间	通道公司	外协单位	任务详情	责任人	联系方式	抽查类型
-         * 获取当前巡查对象   故障多发线路  隐患集中地区   评分较低人员
-         */
-        service.xsTaskAddAndFind();
+        //定时器启动时抓取任务信息
+        //service.xsTaskAddAndFind();
         LOGGER.info("主定时器查询数据");
-        /*System.out.println("主定时器时间：" + dateFormat.format(new Date()));
-        System.out.println("表达式"+cron);*/
+        System.out.println("主定时器时间：" + dateFormat.format(new Date()));
+        System.out.println("表达式"+cron);
 
 
       }

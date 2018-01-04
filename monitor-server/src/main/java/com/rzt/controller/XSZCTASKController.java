@@ -4,6 +4,7 @@ import com.netflix.discovery.converters.Auto;
 import com.rzt.service.XSZCTASKService;
 import com.rzt.util.WebApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,10 +25,10 @@ public class XSZCTASKController extends
      * @param taskId
      * @return
      */
-    @GetMapping("/getTASkXQ")
+  /*  @GetMapping("/getTASkXQ")
     public WebApiResponse getTASkXQ(String taskId){
         return service.findByTaskId(taskId);
-    }
+    }*/
 
     /**
      * 根据taskId获取当前任务的隐患信息
@@ -37,7 +38,10 @@ public class XSZCTASKController extends
      */
     @GetMapping("/fingYHByTaskId")
     public WebApiResponse fingYHByTaskId(String taskId){
-        return service.findYHByTaskId(taskId);
+        if(null!= taskId && !"".equals(taskId)){
+            return service.findYHByTaskId(taskId);
+        }
+        return WebApiResponse.erro("参数错误");
     }
 
     /**
@@ -47,8 +51,8 @@ public class XSZCTASKController extends
      * @return
      */
     @GetMapping("/getXsTaskAll")
-    public WebApiResponse getXsTaskAll(String taskType,Integer status){
-        return service.getXsTaskAll(taskType,status);
+    public WebApiResponse getXsTaskAll(Integer page,Integer size, String taskType,Integer status){
+        return service.getXsTaskAll(page,size,taskType,status);
     }
 
 }

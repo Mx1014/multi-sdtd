@@ -17,6 +17,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @ComponentScan
 @EnableEurekaClient
 @EnableFeignClients
+@EnableScheduling
 public class MonitorServerApplication {
 
     public static void main(String[] args) {
