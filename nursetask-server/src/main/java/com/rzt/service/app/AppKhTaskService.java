@@ -158,7 +158,7 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
                 }
             }
         } else {
-            sql = "select y.jd as jd,y.wd as wd from kh_yh_history y left join kh_task k on y.id = k.yh_id where k.id=?";
+            sql = "select y.radius as ROUND,y.jd as jd,y.wd as wd from kh_yh_history y left join kh_task k on y.id = k.yh_id where k.id=?";
             list = this.execSql(sql, taskId);
         }
         for (Map map : list) {
