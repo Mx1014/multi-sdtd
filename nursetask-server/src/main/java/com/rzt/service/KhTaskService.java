@@ -141,7 +141,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
 
     public WebApiResponse listCurrentTaskByUserId(String userId) {
         try {
-            String sql = "select k.id as taskId,k.status as status,k.task_name as taskname from kh_task k where k.user_id = ? and trunc(k.plan_start_time)>=trunc(sysdate)"; //to_date(?,'yyyy-mm-dd hh24:mi:ss') and k.plan_start_time<=to_date(?,'yyyy-mm-dd hh24:mi:ss')";
+            String sql = "select k.id as id,k.status as status,k.task_name as task_name from kh_task k where k.user_id = ? and trunc(k.plan_start_time)>=trunc(sysdate)"; //to_date(?,'yyyy-mm-dd hh24:mi:ss') and k.plan_start_time<=to_date(?,'yyyy-mm-dd hh24:mi:ss')";
             return WebApiResponse.success(this.execSql(sql, userId));
         } catch (Exception e) {
             e.printStackTrace();
@@ -269,8 +269,10 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
                 }
                 if (task.get("USER_ID") != null) {
                     String sql = "select realname from rztsysuser where id=?";
-                    Map<String, Object> map = this.execSqlSingleResult(sql, task.get("USER_ID").toString());
-                    row.createCell(1).setCellValue(map.get("REALNAME").toString());//通道单位
+                    List<Map<String, Object>> list  = this.execSql(sql, task.get("USER_ID").toString());
+                    if (!list.isEmpty()){
+                        row.createCell(1).setCellValue(list.get(0).get("REALNAME").toString());//通道单位
+                    }
                 }
                 if (task.get("CREATE_TIME") != null) {
                     row.createCell(2).setCellValue(task.get("CREATE_TIME").toString().substring(0,task.get("CREATE_TIME").toString().length()-2));//计划开始时间
@@ -326,6 +328,16 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
 
         {
             e.printStackTrace();
+        }
+    }
+
+    public WebApiResponse appListPicture(long taskId,Integer zj) {
+        try {
+            String sql = "select PROCESS_NAME \\\"name\\\",FILE_SMALL_PATH \\\"smallFilePath\\\",FILE_PATH \\\"filePath\\\",CREATE_TIME \\\"createTime\\\" from PICTURE_KH WHERE TASK_ID = ? order by PROCESS_ID  ";
+            return WebApiResponse.success(this.execSql(sql, taskId));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("数据获取失败");
         }
     }
 }
