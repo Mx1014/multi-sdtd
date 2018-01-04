@@ -142,10 +142,20 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
     public WebApiResponse listCurrentTaskByUserId(String userId) {
         try {
             String date = DateUtil.getCurrentDate();
-            String sql = "select * from kh_task k where k.user_id = ? and k.plan_start_time>=to_date(?,'yyyy-mm-dd hh24:mi:ss') and k.plan_start_time<=to_date(?,'yyyy-mm-dd hh24:mi:ss')";
+            String sql = "select k.id as taskId,k.status as status,k.task_name as taskname from kh_task k where k.user_id = ? and trunc(k.plan_start_time)>=trunc(sysdate)"; //to_date(?,'yyyy-mm-dd hh24:mi:ss') and k.plan_start_time<=to_date(?,'yyyy-mm-dd hh24:mi:ss')";
             String start = date + " 00:00:00";
             String end = date + " 23:59:59";
-            return WebApiResponse.success(this.execSql(sql, userId, start, end));
+            return WebApiResponse.success(this.execSql(sql, userId));//, start, end));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("数据获取失败");
+        }
+    }
+    public WebApiResponse listTaskInfoById(String taskId) {
+        try {
+            String date = DateUtil.getCurrentDate();
+            String sql = "SELECT TASK_NAME TASKNAME,CREATE_TIME PDTIME,TDYW_ORG YWORG,WX_ORG WXORG,PLAN_START_TIME STARTTIME,PLAN_END_TIME ENDTIME,STATUS from KH_TASK WHERE ID=?";
+            return WebApiResponse.success(this.execSql(sql, taskId));//, start, end));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("数据获取失败");
@@ -153,7 +163,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
     }
 
     //电压等级  任务执行人 线路名称  杆塔号 开始时间  通道单位 外协单位  区段
-    public WebApiResponse listTaskInfoById(String yhId) {
+    public WebApiResponse listTaskInfoByYhId(String yhId) {
         try {
             String sql = "select l.v_level as voltage,l.line_name as linename,s.section as section,s.tdyw_org as yworg,y.TDWX_ORG as wxorg,U.REALNAME as name,T.PLAN_START_TIME as starttime,T.PLAN_END_TIME as endtime \n" +
                     "from KH_SITE S,KH_YH_HISTORY y,KH_TASK T,RZTSYSUSER U,cm_line l \n" +
@@ -166,7 +176,13 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
     }
 
     public void CreateTask() {
-        siteRepository.findSites();
+        List<KhSite> list = siteRepository.findSites();
+        for (KhSite site:list) {
+            int cycle = site.getCycle();  //一轮任务时长
+            String planStartTime = site.getPlanStartTime();
+            String planEndTime = site.getPlanEndTime();
+//            if (planStartTime)
+        }
     }
 
     public List<Map<String, Object>> findAlls() {
