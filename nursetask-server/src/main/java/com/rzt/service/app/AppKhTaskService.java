@@ -33,11 +33,11 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
         String result = " k.id as taskId,k.plan_start_time as startTime,k.task_name as taskName,k.status as status,u.realname as name,k.zxys_num as num";
         StringBuffer buffer = new StringBuffer();
         if (dbyb == 1) {
-            buffer.append("where (status like '未开始' or status like '进行中')");
+            buffer.append("where (status like '未开始' or status like '进行中')  and user_id = ? order by k.plan_start_time");
         } else if (dbyb == 2) {
-            buffer.append(" where (status like '已完成' or status like '已取消')");
+            buffer.append(" where (status like '已完成' or status like '已取消')  and user_id = ? order by k.real_end_time desc");
         }
-        String sql = "select " + result + " from kh_task k left join rztsysuser u on u.id = k.user_id " + buffer.toString() + " and user_id = ? order by k.plan_start_time";
+        String sql = "select " + result + " from kh_task k left join rztsysuser u on u.id = k.user_id " + buffer.toString();
         return this.execSqlPage(pageable, sql, userId);
     }
 
@@ -158,7 +158,7 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
                 }
             }
         } else {
-            sql = "select y.jd as jd,y.wd as wd from kh_yh_history y left join kh_task k on y.id = k.yh_id where k.id=?";
+            sql = "select y.radius as ROUND,y.jd as jd,y.wd as wd from kh_yh_history y left join kh_task k on y.id = k.yh_id where k.id=?";
             list = this.execSql(sql, taskId);
         }
         for (Map map : list) {

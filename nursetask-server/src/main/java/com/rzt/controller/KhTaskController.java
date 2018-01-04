@@ -11,6 +11,7 @@ import com.rzt.entity.model.KhTaskModel;
 import com.rzt.service.KhTaskService;
 import com.rzt.service.KhYhHistoryService;
 import com.rzt.util.WebApiResponse;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
@@ -102,7 +103,7 @@ public class KhTaskController extends
 		}
 	}
 	/**
-	 *   获取当前
+	 *   获取某人当前的看护任务
 	 */
 	@GetMapping("/listCurrentTaskByUserId")
 	public WebApiResponse listCurrentTaskByUserId(String userId){
@@ -116,8 +117,21 @@ public class KhTaskController extends
 	 */
 	@GetMapping("/listTaskInfoByYhId")
 	@ResponseBody
-	public WebApiResponse listTaskInfoById(String yhId){
-		return this.service.listTaskInfoById(yhId);
+	public WebApiResponse listTaskInfoByYhId(String yhId){
+		return this.service.listTaskInfoByYhId(yhId);
+	}
+	//地图展示某人的具体任务信息
+	@GetMapping("/listTaskInfoById")
+	@ResponseBody
+	public WebApiResponse listTaskInfoById(String taskId){
+		return this.service.listTaskInfoById(taskId);
+	}
+
+	@ApiOperation(value = "获取人员头像", notes = "获取人员头像  ")
+	@GetMapping("/appListPicture")
+	@ResponseBody
+	public WebApiResponse appListPicture(long taskId,Integer zj){
+		return this.service.appListPicture(taskId,zj);
 	}
 }
 

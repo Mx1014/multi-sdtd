@@ -22,4 +22,8 @@ public class CreateTask extends TimerTask{
         }
     }
 
+    //定时生成任务的逻辑
+    public void createTask(){
+//        String sql =
+    }
 }

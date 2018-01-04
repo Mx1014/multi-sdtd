@@ -107,12 +107,12 @@ public class KhSiteController extends
     //消缺未派发的任务
     @PatchMapping("/xiaoQueCycle.do")
     @ResponseBody
-    public WebApiResponse updateCycle(String id) {
+    public WebApiResponse xiaoQueCycle(String id) {
         try {
             String[] split = id.split(",");
             if (split.length > 0) {
                 for (int i = 0; i < split.length; i++) {
-                    this.service.updateCycle(Long.parseLong(split[i]));
+                    this.service.xiaoQueCycle(Long.parseLong(split[i]));
                 }
             }
             return WebApiResponse.success("任务消缺成功");
@@ -260,8 +260,10 @@ public class KhSiteController extends
 
 				if (task.get("USER_ID") != null) {
 				    String sql = "select realname from rztsysuser where id=?";
-                    Map<String, Object> map = this.service.execSqlSingleResult(sql, task.get("USER_ID").toString());
-                    row.createCell(4).setCellValue(map.get("REALNAME").toString());//通道单位
+                    List<Map<String, Object>> list = this.service.execSql(sql, task.get("USER_ID").toString());
+                    if (!list.isEmpty()){
+                        row.createCell(4).setCellValue(list.get(0).get("REALNAME").toString());//通道单位
+                    }
 				}
 				if (task.get("TDYW_ORG") != null) {
 					row.createCell(5).setCellValue(task.get("TDYW_ORG").toString());//班组

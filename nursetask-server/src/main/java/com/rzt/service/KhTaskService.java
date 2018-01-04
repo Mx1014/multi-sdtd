@@ -141,11 +141,17 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
 
     public WebApiResponse listCurrentTaskByUserId(String userId) {
         try {
-            String date = DateUtil.getCurrentDate();
-            String sql = "select * from kh_task k where k.user_id = ? and k.plan_start_time>=to_date(?,'yyyy-mm-dd hh24:mi:ss') and k.plan_start_time<=to_date(?,'yyyy-mm-dd hh24:mi:ss')";
-            String start = date + " 00:00:00";
-            String end = date + " 23:59:59";
-            return WebApiResponse.success(this.execSql(sql, userId, start, end));
+            String sql = "select k.id as id,k.status as status,k.task_name as task_name from kh_task k where k.user_id = ? and trunc(k.plan_start_time)>=trunc(sysdate)"; //to_date(?,'yyyy-mm-dd hh24:mi:ss') and k.plan_start_time<=to_date(?,'yyyy-mm-dd hh24:mi:ss')";
+            return WebApiResponse.success(this.execSql(sql, userId));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("数据获取失败");
+        }
+    }
+    public WebApiResponse listTaskInfoById(String taskId) {
+        try {
+            String sql = "SELECT TASK_NAME TASKNAME,CREATE_TIME PDTIME,TDYW_ORG YWORG,WX_ORG WXORG,PLAN_START_TIME STARTTIME,PLAN_END_TIME ENDTIME,STATUS from KH_TASK WHERE ID=?";
+            return WebApiResponse.success(this.execSql(sql, taskId));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("数据获取失败");
@@ -153,7 +159,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
     }
 
     //电压等级  任务执行人 线路名称  杆塔号 开始时间  通道单位 外协单位  区段
-    public WebApiResponse listTaskInfoById(String yhId) {
+    public WebApiResponse listTaskInfoByYhId(String yhId) {
         try {
             String sql = "select l.v_level as voltage,l.line_name as linename,s.section as section,s.tdyw_org as yworg,y.TDWX_ORG as wxorg,U.REALNAME as name,T.PLAN_START_TIME as starttime,T.PLAN_END_TIME as endtime \n" +
                     "from KH_SITE S,KH_YH_HISTORY y,KH_TASK T,RZTSYSUSER U,cm_line l \n" +
@@ -166,7 +172,13 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
     }
 
     public void CreateTask() {
-        siteRepository.findSites();
+        List<KhSite> list = siteRepository.findSites();
+        for (KhSite site:list) {
+            int cycle = site.getCycle();  //一轮任务时长
+            String planStartTime = site.getPlanStartTime();
+            String planEndTime = site.getPlanEndTime();
+//            if (planStartTime)
+        }
     }
 
     public List<Map<String, Object>> findAlls() {
@@ -257,8 +269,10 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
                 }
                 if (task.get("USER_ID") != null) {
                     String sql = "select realname from rztsysuser where id=?";
-                    Map<String, Object> map = this.execSqlSingleResult(sql, task.get("USER_ID").toString());
-                    row.createCell(1).setCellValue(map.get("REALNAME").toString());//通道单位
+                    List<Map<String, Object>> list  = this.execSql(sql, task.get("USER_ID").toString());
+                    if (!list.isEmpty()){
+                        row.createCell(1).setCellValue(list.get(0).get("REALNAME").toString());//通道单位
+                    }
                 }
                 if (task.get("CREATE_TIME") != null) {
                     row.createCell(2).setCellValue(task.get("CREATE_TIME").toString().substring(0,task.get("CREATE_TIME").toString().length()-2));//计划开始时间
@@ -314,6 +328,16 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
 
         {
             e.printStackTrace();
+        }
+    }
+
+    public WebApiResponse appListPicture(long taskId,Integer zj) {
+        try {
+            String sql = "select PROCESS_NAME \\\"name\\\",FILE_SMALL_PATH \\\"smallFilePath\\\",FILE_PATH \\\"filePath\\\",CREATE_TIME \\\"createTime\\\" from PICTURE_KH WHERE TASK_ID = ? order by PROCESS_ID  ";
+            return WebApiResponse.success(this.execSql(sql, taskId));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("数据获取失败");
         }
     }
 }

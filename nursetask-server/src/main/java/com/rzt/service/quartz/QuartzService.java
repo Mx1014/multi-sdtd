@@ -16,7 +16,7 @@ import java.util.TimerTask;
 public class QuartzService {
 
     //    每分钟启动
-  /*  @Scheduled(cron = "0 0/1 * * * ?")
+  // @Scheduled(cron = "0 0/1 * * * ?")
     public void timerToNow(){
         System.out.println("now time:" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
     }
@@ -31,9 +31,9 @@ public class QuartzService {
         Timer timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
             public void run() {
-                System.out.println("-------设定要指定任务--------");
+
             }
         }, time, 1000 * 60 * 60 * 24);// 这里设定将延时每天固定执行
-    }*/
+    }
 
 }
