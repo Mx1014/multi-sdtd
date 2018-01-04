@@ -7,6 +7,8 @@
 package com.rzt.repository;
 import com.rzt.entity.KhYhHistory;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -19,6 +21,10 @@ import org.springframework.stereotype.Repository;
  * 修改备注：    
  * @version        
  */
- @Repository
+@Repository
 public interface KhYhHistoryRepository extends JpaRepository<KhYhHistory,String> {
+
+    @Modifying
+    @Query(value = "UPDATE PICTURE_YH SET YH_ID = ?2,TASK_ID=?3,YH_ORIGIN = 0 WHERE ID =?1",nativeQuery = true)
+    void updateYhPicture(long id, Long yhId, long xstaskId);
 }

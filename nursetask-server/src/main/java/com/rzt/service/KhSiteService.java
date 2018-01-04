@@ -198,7 +198,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             KhCycle task = new KhCycle();
             task.setId();
             yh.setTaskId(task.getId());
-            yh.setYhzt("0");//隐患未消除
+            yh.setYhzt(0);//隐患未消除
             yh.setId(0L);
             yh.setCreateTime(DateUtil.dateNow());
             yh.setSection(startTowerName + "-" + endTowerName);
@@ -304,7 +304,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
 
     public WebApiResponse listJpgById(String taskId) {
         try {
-            String sql = "select file_path,create_time as createtime from picture_kh where task_id = ?";
+            String sql = "select file_path,create_time,PROCESS_NAME,FILE_SMALL_PATH as smallPath from picture_kh where task_id = ? order by PROCESS_ID";
             return WebApiResponse.success(this.execSql(sql, Long.parseLong(taskId)));
         } catch (Exception e) {
             e.printStackTrace();

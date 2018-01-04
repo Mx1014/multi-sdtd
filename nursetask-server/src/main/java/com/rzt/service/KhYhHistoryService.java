@@ -11,6 +11,8 @@ import com.rzt.entity.KhYhHistory;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DateUtil;
 import com.rzt.utils.MapUtil;
+import org.apache.commons.lang.StringUtils;
+import org.apache.poi.util.StringUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,9 +44,11 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         }
     }
 
-    public WebApiResponse saveYh(KhYhHistory yh,String fxtime,String startTowerName,String endTowerName) {
+    @Transactional
+    public WebApiResponse saveYh(KhYhHistory yh,String fxtime,String startTowerName,String endTowerName,String pictureId) {
         try {
-            yh.setYhfxsj(DateUtil.parseDate(fxtime));
+            yh.setYhfxsj(DateUtil.dateNow());
+            //yh.setYhfxsj(DateUtil.parseDate(fxtime));
             yh.setId(0l);
             if (!yh.getStartTower().isEmpty()) {
                 String startTower = "select longitude,latitude from cm_tower where id = ?";
@@ -59,14 +63,22 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 yh.setJd(jd+"");
                 yh.setWd(wd+"");
             }
-            yh.setSdgs("1");
-            yh.setSfdj(0);  //是否定级
-            yh.setYhzt("0");//隐患未消除
+            yh.setYhjb("一般");
+            yh.setSdgs(1);//手机导入
+            yh.setSfdj(0);  //未定级
+            yh.setYhzt(0);//隐患未消除
             yh.setCreateTime(DateUtil.dateNow());
             yh.setSection(startTowerName + "-" + endTowerName);
+            if (null != pictureId || "" != pictureId){
+                String[] split = pictureId.split(",");
+                for (int i =0; i < split.length;i++){
+                    this.reposiotry.updateYhPicture(Long.parseLong(split[i]),yh.getId(),yh.getXstaskId());
+                }
+            }
             this.add(yh);
             return WebApiResponse.success("数据保存成功");
         } catch (Exception e) {
+            e.printStackTrace();
             return WebApiResponse.erro("数据保存失败");
         }
     }
