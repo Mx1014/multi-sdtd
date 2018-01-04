@@ -12,6 +12,7 @@ import com.rzt.util.WebApiResponse;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -33,27 +34,9 @@ import javax.persistence.PersistenceContext;
 public class KhYhHistoryController extends
 		CurdController<KhYhHistory, KhYhHistoryService> {
 
-	/*@ApiOperation(notes = "今日治理、新增、修改隐患数量",value = "今日治理、新增、修改隐患数量")
-	@GetMapping("/listYhCount")
-	public WebApiResponse listYhCount(){
-		return this.service.listYhCount();
-	}
-
 	@ApiOperation(notes = "施工情况",value = "施工情况")
-	@GetMapping("/listSgCount")
-	public WebApiResponse listSgCount(){
-		return this.service.listSgCount();
-	}
-
-	@ApiOperation(notes = "施工情况",value = "施工情况")
-	@GetMapping("/listGkqk")
-	public WebApiResponse listGkqk(){
-		return this.service.listGkqk();
-	}*/
-
-	@ApiOperation(notes = "施工情况",value = "施工情况")
-	@GetMapping("/saveYh")
-	public WebApiResponse saveYh(KhYhHistory yh,String fxtime,String startTowerName,String endTowerName){
-		return this.service.saveYh(yh,fxtime,startTowerName,endTowerName);
+	@PostMapping("/saveYh")
+	public WebApiResponse saveYh(KhYhHistory yh,String fxtime,String startTowerName,String endTowerName,String pictureId){
+		return this.service.saveYh(yh,fxtime,startTowerName,endTowerName,pictureId);
 	}
 }
