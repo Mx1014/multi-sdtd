@@ -1,15 +1,17 @@
 package com.rzt.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.TimedTask;
 import com.rzt.repository.XSZCTASKRepository;
 import com.rzt.util.WebApiResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -22,6 +24,9 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
     protected static Logger LOGGER = LoggerFactory.getLogger(XSZCTASKService.class);
     @Autowired
     private XSZCTASKRepository repository;
+
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
 /*
     public WebApiResponse findXSTASK(String id){
@@ -97,17 +102,52 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
      * 时间可能会有差异 所以在最近时间到最近时间的前10秒之内都算最新数据
      * @return
      */
-    public WebApiResponse getXsTaskAll(){
-        String sql = "SELECT * from TIMED_TASK WHERE CREATETIME BETWEEN (SELECT max(CREATETIME) from TIMED_TASK) - 10/(1*24*60*60) and (SELECT max(CREATETIME) from TIMED_TASK) ";
+    public WebApiResponse getXsTaskAll(String taskType,Integer status){
+        String sql = " SELECT   " +
+                "  TASKID,   " +
+                "  CREATETIME,   " +
+                "  USER_ID,   " +
+                "  TASKNAME,   " +
+                "  TASKTYPE   " +
+                "FROM TIMED_TASK   " +
+                "WHERE (CREATETIME BETWEEN (SELECT max(CREATETIME)   " +
+                "     FROM TIMED_TASK) - 10 / (1 * 24 * 60 * 60) AND (SELECT max(CREATETIME)   " +
+                "       FROM TIMED_TASK)) ";
+        List<Object> list = new ArrayList<>();
+        if(taskType!=null && !"".equals(taskType.trim())){
+            list.add(taskType);
+            sql+= " AND TASKTYPE = ?"+list.size();
+        }
+        if(status!=null){
+            list.add(status);
+            sql+="  AND STATUS = ?"+list.size();
+        }
         List<Map<String, Object>> maps = null;
         try {
-             maps = this.execSql(sql, null);
+            maps = this.execSql(sql, list.toArray());
         }catch (Exception e){
             LOGGER.error("定时任务查询添加失败"+e.getStackTrace());
             return WebApiResponse.erro("定时任务查询添加失败"+e.getStackTrace());
         }
-
-    return WebApiResponse.success(maps);
+        List<Map<String, Object>> result = new ArrayList<>();
+        HashOperations hashOperations = redisTemplate.opsForHash();
+        for (Map<String,Object> map:maps) {
+            Map<String,Object> m = new HashMap<>();
+            String userID =(String)map.get("USER_ID");
+            JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", userID).toString());
+            if(jsonObject!=null){
+                System.out.println(jsonObject);
+                m.put("CREATETIME",map.get("CREATETIME"));
+                m.put("DEPT",jsonObject.get("DEPT"));
+                m.put("COMPANYNAME",jsonObject.get("COMPANYNAME"));
+                m.put("TASK_NAME",map.get("TASK_NAME"));
+                m.put("REALNAME",jsonObject.get("REALNAME"));
+                m.put("PHONE",jsonObject.get("PHONE"));
+                m.put("CHTYPE"," "); // 抽查类型
+            }
+            result.add(m);
+        }
+    return WebApiResponse.success(result);
     }
 
 
