@@ -39,7 +39,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
     @Autowired
     private KhSiteRepository siteRepository;
 
-    public Object listAllKhTask(KhTaskModel task,String status, Pageable pageable, int roleType) {
+    public Object listAllKhTask(KhTaskModel task, String status, Pageable pageable, int roleType) {
         task = timeUtil(task);
         String result = "k.id as id, k.task_name as taskName,k.tdyw_org as yworg,k.CREATE_TIME as createTime,k.plan_start_time as startTime,k.plan_end_time as endTime,k.status as status,u.realname as userName,d.DEPTNAME as class";
         List params = new ArrayList<>();
@@ -57,7 +57,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         }
         //此处的状态要改
         if (status != null && !status.equals("")) {
-           // task.setStatus("%" + task.getStatus() + "%");
+            // task.setStatus("%" + task.getStatus() + "%");
             buffer.append(" and k.status = ? ");
             params.add(Integer.parseInt(status));
         }
@@ -148,6 +148,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
             return WebApiResponse.erro("数据获取失败");
         }
     }
+
     public WebApiResponse listTaskInfoById(String taskId) {
         try {
             String sql = "SELECT TASK_NAME TASKNAME,CREATE_TIME PDTIME,TDYW_ORG YWORG,WX_ORG WXORG,PLAN_START_TIME STARTTIME,PLAN_END_TIME ENDTIME,STATUS from KH_TASK WHERE ID=?";
@@ -171,15 +172,6 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         }
     }
 
-    public void CreateTask() {
-        List<KhSite> list = siteRepository.findSites();
-        for (KhSite site:list) {
-            int cycle = site.getCycle();  //一轮任务时长
-            String planStartTime = site.getPlanStartTime();
-            String planEndTime = site.getPlanEndTime();
-//            if (planStartTime)
-        }
-    }
 
     public List<Map<String, Object>> findAlls() {
         String sql = "select * from kh_task order by create_time desc";
@@ -187,6 +179,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         return list;
     }
 
+    //导出文件
     public void exportNursePlan(List<Map<String, Object>> taskList, HttpServletRequest request, HttpServletResponse response) {
         try {
             String rootpath = request.getSession().getServletContext().getRealPath(File.separator);
@@ -269,20 +262,20 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
                 }
                 if (task.get("USER_ID") != null) {
                     String sql = "select realname from rztsysuser where id=?";
-                    List<Map<String, Object>> list  = this.execSql(sql, task.get("USER_ID").toString());
-                    if (!list.isEmpty()){
+                    List<Map<String, Object>> list = this.execSql(sql, task.get("USER_ID").toString());
+                    if (!list.isEmpty()) {
                         row.createCell(1).setCellValue(list.get(0).get("REALNAME").toString());//通道单位
                     }
                 }
                 if (task.get("CREATE_TIME") != null) {
-                    row.createCell(2).setCellValue(task.get("CREATE_TIME").toString().substring(0,task.get("CREATE_TIME").toString().length()-2));//计划开始时间
+                    row.createCell(2).setCellValue(task.get("CREATE_TIME").toString().substring(0, task.get("CREATE_TIME").toString().length() - 2));//计划开始时间
                 }
                 if (task.get("PLAN_START_TIME") != null) {
-                    row.createCell(3).setCellValue(task.get("PLAN_START_TIME").toString().substring(0,task.get("PLAN_START_TIME").toString().length()-2));//计划结束时间
+                    row.createCell(3).setCellValue(task.get("PLAN_START_TIME").toString().substring(0, task.get("PLAN_START_TIME").toString().length() - 2));//计划结束时间
                 }
 
                 if (task.get("PLAN_END_TIME") != null) {
-                    row.createCell(4).setCellValue(task.get("PLAN_END_TIME").toString().substring(0,task.get("PLAN_END_TIME").toString().length()-2));//通道单位
+                    row.createCell(4).setCellValue(task.get("PLAN_END_TIME").toString().substring(0, task.get("PLAN_END_TIME").toString().length() - 2));//通道单位
                 }
                 if (task.get("TDYW_ORG") != null) {
                     row.createCell(5).setCellValue(task.get("TDYW_ORG").toString());//班组
@@ -294,16 +287,16 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
                     row.createCell(7).setCellValue(task.get("STATUS").toString());
                 }*/
                 if (task.get("REAL_START_TIME") != null) {
-                    row.createCell(8).setCellValue(task.get("REAL_START_TIME").toString().substring(0,task.get("REAL_START_TIME").toString().length()-2));
+                    row.createCell(8).setCellValue(task.get("REAL_START_TIME").toString().substring(0, task.get("REAL_START_TIME").toString().length() - 2));
                 }
                 if (task.get("SFQR_TIME") != null) {
-                    row.createCell(9).setCellValue(task.get("SFQR_TIME").toString().substring(0,task.get("SFQR_TIME").toString().length()-2));
+                    row.createCell(9).setCellValue(task.get("SFQR_TIME").toString().substring(0, task.get("SFQR_TIME").toString().length() - 2));
                 }
                 if (task.get("DDXC_TIME") != null) {
-                    row.createCell(10).setCellValue(task.get("DDXC_TIME").toString().substring(0,task.get("DDXC_TIME").toString().length()-2));
+                    row.createCell(10).setCellValue(task.get("DDXC_TIME").toString().substring(0, task.get("DDXC_TIME").toString().length() - 2));
                 }
                 if (task.get("REAL_END_TIME") != null) {
-                    row.createCell(11).setCellValue(task.get("REAL_END_TIME").toString().substring(0,task.get("REAL_END_TIME").toString().length()-2));
+                    row.createCell(11).setCellValue(task.get("REAL_END_TIME").toString().substring(0, task.get("REAL_END_TIME").toString().length() - 2));
                 }
                 int status = Integer.parseInt(task.get("STATUS").toString());
                 //该次执行状态(0待办,1进行中,2完成)
@@ -314,7 +307,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
                     row.createCell(7).setCellValue("进行中");
                 } else if (status == 2) {
                     row.createCell(7).setCellValue("已完成");
-                }else {
+                } else {
                     row.createCell(7).setCellValue("已取消");
                 }
 
@@ -333,14 +326,51 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         }
     }
 
-    public WebApiResponse appListPicture(long taskId,Integer zj) {
+    public WebApiResponse appListPicture(long taskId, Integer zj) {
         try {
-            String sql = "select PROCESS_NAME \\\"name\\\",FILE_SMALL_PATH \\\"smallFilePath\\\",FILE_PATH \\\"filePath\\\",CREATE_TIME \\\"createTime\\\" from PICTURE_KH WHERE TASK_ID = ? order by PROCESS_ID  ";
+            String sql = "select PROCESS_NAME \\\"name\\\",FILE_SMALL_PATH \\\"smallFilePath\\\",FILE_PATH \\\"filePath\\\",CREATE_TIME \\\"createTime\\\" from PICTURE_KH WHERE TASK_ID = ? and file_type=1 order by PROCESS_ID  ";
             return WebApiResponse.success(this.execSql(sql, taskId));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("数据获取失败");
         }
+    }
+
+    //生成任务的逻辑
+    public void CreateTask() {
+        List<KhSite> list = siteRepository.findSites();
+        for (KhSite site : list) {
+            int cycle = site.getCycle();  //一轮任务时长
+            String startTime = site.getPlanStartTime();
+            String endTime = site.getPlanEndTime();
+            if (cycle > 24) {
+                //如果下次任务开始时间是今天
+                if (DateUtil.addDate(startTime, cycle) < DateUtil.getBiggest()) {
+                    this.saveTask(site);
+                } else if (0 >0) {
+
+                }
+            } else if (cycle <= 24) {
+
+            }
+            //if (DateUtil.addDate())
+        }
+    }
+
+    public void saveTask(KhSite site) {
+        KhTask task = new KhTask();
+        task.setId();
+        task.setWxOrg(site.getWxOrg());
+        task.setSiteId(site.getId());
+        task.setTdywOrg(site.getTdywOrg());
+        int count = this.getCount(site.getId(), site.getUserid());
+        task.setCount(count);
+        task.setUserId(site.getUserid());
+        task.setTaskName(site.getTaskName());
+        task.setCreateTime(DateUtil.dateNow());
+        task.setYhId(site.getYhId());
+        task.setStatus(0);
+        this.add(task);
     }
 }
 

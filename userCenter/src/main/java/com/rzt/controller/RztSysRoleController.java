@@ -23,13 +23,12 @@ import java.util.List;
 
 /**
  * 类名称：RztSysRoleController
- * 类描述：    
- * 创建人：张虎成   
- * 创建时间：2017/10/11 18:51:02 
- * 修改人：张虎成    
- * 修改时间：2017/10/11 18:51:02    
- * 修改备注：    
- * @version
+ * 类描述：
+ * 创建人：张虎成
+ * 创建时间：2017/10/11 18:51:02
+ * 修改人：张虎成
+ * 修改时间：2017/10/11 18:51:02
+ * 修改备注：
  */
 @RestController
 @RequestMapping("RztSysRole")
@@ -84,6 +83,11 @@ public class RztSysRoleController extends
             e.printStackTrace();
         }
         return WebApiResponse.success("删除成功！");
+    }
+
+    @GetMapping("roleDistribution")
+    public WebApiResponse roleDistribution(String userId) {
+        return this.service.roleDistribution(userId);
     }
 
 }
