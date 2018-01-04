@@ -102,7 +102,7 @@ public class KhTaskController extends
 		}
 	}
 	/**
-	 *   获取当前
+	 *   获取某人当前的看护任务
 	 */
 	@GetMapping("/listCurrentTaskByUserId")
 	public WebApiResponse listCurrentTaskByUserId(String userId){
@@ -116,8 +116,14 @@ public class KhTaskController extends
 	 */
 	@GetMapping("/listTaskInfoByYhId")
 	@ResponseBody
-	public WebApiResponse listTaskInfoById(String yhId){
-		return this.service.listTaskInfoById(yhId);
+	public WebApiResponse listTaskInfoByYhId(String yhId){
+		return this.service.listTaskInfoByYhId(yhId);
+	}
+	//地图展示某人的具体任务信息
+	@GetMapping("/listTaskInfoById")
+	@ResponseBody
+	public WebApiResponse listTaskInfoById(String taskId){
+		return this.service.listTaskInfoById(taskId);
 	}
 }
 

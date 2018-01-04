@@ -36,7 +36,7 @@ public class AppKhTaskController extends
     private RedisTemplate<String, Object> redisTemplate;
 
 
-    @ApiOperation(value = "看护任务展示", notes = "查看当前用户的已办和待办的任务 1 未办 进行中 2  ")
+    @ApiOperation(value = "看护任务展示", notes = "查看当前用户的已办和待办的任务 1 未办 进行中 2 已完成 已取消 ")
     @GetMapping("/appListkhTask.do")
     @ResponseBody
     public WebApiResponse appListkhTask(int dbyb, Pageable pageable,String userId){
@@ -112,7 +112,7 @@ public class AppKhTaskController extends
     }
 
 
-    @ApiOperation(value = "查看接班人", notes = "查看队长是否交接班  ")
+    @ApiOperation(value = "查看队长是否交接班", notes = "查看队长是否交接班  ")
     @GetMapping("/appCaptainTime.do")
     @ResponseBody
     public WebApiResponse appCaptainTime(String userId,long taskId,String flag){
