@@ -36,11 +36,15 @@ public interface RztSysUserRepository extends JpaRepository<RztSysUser, String> 
     int logicUser(String id);
 
     @Modifying
+    @Query(value = "UPDATE RZTSYSUSERAUTH SET USERDELETE=0 WHERE userid=?1", nativeQuery = true)
+    int logicUsers(String id);
+
+    @Modifying
     @Query(value = " UPDATE RZTSYSUSER " +
             "SET AGE    = ?1, CERTIFICATE = ?2, DEPTID = ?3, PHONE = ?4, REALNAME = ?5, SERIALNUMBER = ?6, USERTYPE = ?7, " +
-            "  USERNAME = ?8, WORKTYPE = ?9, WORKYEAR = ?10,AVATAR=?11,CLASSNAME = ?12,COMPANYID=?13 " +
-            "WHERE ID = ?14 ", nativeQuery = true)
-    int updateUser(int age, String certificate, String deptid, String phone, String realname, String serialnumber, int userType, String username, int worktype, int workyear, String AVATAR, String classname, String companyid, String id);
+            "  USERNAME = ?8, WORKTYPE = ?9, WORKYEAR = ?10,AVATAR=?11,CLASSNAME = ?12,COMPANYID=?13,ROLEID=?14 " +
+            "WHERE ID = ?15 ", nativeQuery = true)
+    int updateUser(int age, String certificate, String deptid, String phone, String realname, String serialnumber, int userType, String username, int worktype, int workyear, String AVATAR, String classname, String companyid, String roleid, String id);
 
     @Modifying
     @Transactional

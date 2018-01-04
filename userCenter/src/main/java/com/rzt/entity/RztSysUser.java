@@ -125,6 +125,40 @@ public class RztSysUser extends BaseEntity implements Serializable {
     //字段描述: 所属班组
     @Column(name = "CLASSNAME")
     private String className;
+    @Column(name = "GROUPID")
+    private String groupid;
+    @Column(name = "ROLEID")
+    private String roleid;
+    @Column(name = "ALLEYWAY")
+    private String alleyway;
+
+    @ExcelResources(title = "", order = 16)
+    public String getAlleyway() {
+        return alleyway;
+    }
+
+    public void setAlleyway(String alleyway) {
+        this.alleyway = alleyway;
+    }
+
+    @ExcelResources(title = "", order = 15)
+    public String getGroupid() {
+        return groupid;
+    }
+
+    public void setGroupid(String groupid) {
+        this.groupid = groupid;
+    }
+
+    @ExcelResources(title = "", order = 14)
+    public String getRoleid() {
+        return roleid;
+    }
+
+    public void setRoleid(String roleid) {
+        this.roleid = roleid;
+    }
+
 
     @Override
     public String getId() {
