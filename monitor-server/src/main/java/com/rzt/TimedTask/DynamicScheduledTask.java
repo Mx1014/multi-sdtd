@@ -3,6 +3,11 @@ package com.rzt.TimedTask;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import com.rzt.controller.CurdController;
+import com.rzt.entity.CheckResult;
+import com.rzt.entity.TimedTask;
+import com.rzt.service.CheckResultService;
+import com.rzt.service.TimedService;
 import com.rzt.service.XSZCTASKService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,12 +24,12 @@ import org.springframework.stereotype.Component;
  *      周期逻辑由副定时器负责
  */
 @Component
-public class DynamicScheduledTask implements SchedulingConfigurer {
+public class DynamicScheduledTask extends CurdController<TimedTask,TimedService> implements SchedulingConfigurer {
   private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
   protected static Logger LOGGER = LoggerFactory.getLogger(XSZCTASKService.class);
   //默认两小时一次
-  //private String cron = "0 0 0/2 * * ?";
-  private String cron = "0 0/2 * * * ?";
+  private String cron = "0 0 0/2 * * ?";
+  //private String cron = "0 0/2 * * * ?";
 
   private XSZCTASKService service;
 
@@ -35,10 +40,10 @@ public class DynamicScheduledTask implements SchedulingConfigurer {
       @Override
       public void run() {
         //定时器启动时抓取任务信息
-        //service.xsTaskAddAndFind();
+        service.xsTaskAddAndFind();
         LOGGER.info("主定时器查询数据");
-        System.out.println("主定时器时间：" + dateFormat.format(new Date()));
-        System.out.println("表达式"+cron);
+     /*   System.out.println("主定时器时间：" + dateFormat.format(new Date()));
+        System.out.println("表达式"+cron);*/
 
 
       }

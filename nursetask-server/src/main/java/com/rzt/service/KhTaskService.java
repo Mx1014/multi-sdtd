@@ -346,7 +346,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
             if (cycle > 24) {
                 //如果下次任务开始时间是今天
                 if (DateUtil.addDate(startTime, cycle) < DateUtil.getBiggest()) {
-                    this.saveTask(site);
+                    //this.saveTask(site,);
                 } else if (0 >0) {
 
                 }
@@ -357,7 +357,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         }
     }
 
-    public void saveTask(KhSite site) {
+    public void saveTask(KhSite site,String startTime,String endTime) {
         KhTask task = new KhTask();
         task.setId();
         task.setWxOrg(site.getWxOrg());
