@@ -126,7 +126,7 @@ public class RztSysDepartmentController extends
      */
     @GetMapping("queryOrgName")
     @ApiOperation(value = "查询通道运维单位", notes = "查询通道运维单位")
-    public WebApiResponse queryOrgName() {
-        return this.service.queryOrgName();
+    public WebApiResponse queryOrgName(String userId) {
+        return this.service.queryOrgName(userId);
     }
 }
