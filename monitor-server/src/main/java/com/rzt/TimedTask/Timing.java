@@ -46,13 +46,11 @@ public class Timing  extends
                 //更改夜晚定时起始时间
                 String cron = null;
                 if(null != endTime && !"".equals(endTime)){
-                    //cron = "0 0 "+endTime+" * * ?";
-                    cron = "0 "+endTime+" * * * ?";
+                    cron = "0 0 "+endTime+" * * ?";
+                    //cron = "0 "+endTime+" * * * ?";
                 }
                 night.setCron(cron,nightTime);
-                System.out.println("夜晚");
-                System.out.println(nightTime);
-                System.out.println(cron);
+
             }
             //白天
             if((null != daytime && !"".equals(daytime)) || (null != startTime && !"".equals(startTime))){//当更改某时段定时周期时  更改当前定时周期时间和当前时段中的定时周期
@@ -60,13 +58,11 @@ public class Timing  extends
                 //day.setCron("0 0 "+startTime+" * * ?",daytime);
                 String cron = null;
                 if(null != startTime && !"".equals(startTime)){
-                    //cron = "0 0 "+startTime+" * * ?";
-                    cron = "0 "+startTime+" * * * ?";
+                    cron = "0 0 "+startTime+" * * ?";
+                    //cron = "0 "+startTime+" * * * ?";
                 }
                 day.setCron(cron,daytime);
-                System.out.println("白天");
-                System.out.println(cron);
-                System.out.println(daytime);
+
             }
              timedConfig = service.updateTimedConfig(nightTime, daytime, startTime, endTime);
 

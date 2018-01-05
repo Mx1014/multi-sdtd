@@ -19,9 +19,9 @@ import java.util.Date;
 public class NightDynamicScheduledTask implements SchedulingConfigurer {
   private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
   //默认晚5点开始
-  //private String cron = "0 0 20 * * ?";
-  private String cron = "0 20 * * * ?";
-  private String time = "4";
+  private String cron = "0 0 20 * * ?";
+  //private String cron = "0 20 * * * ?";
+  private String time = "3";
   //注入主定时器
   @Autowired
   private DynamicScheduledTask dyn;
@@ -35,8 +35,8 @@ public class NightDynamicScheduledTask implements SchedulingConfigurer {
          * 更改夜晚时段  起始定时时间
          *  结束时段由夜晚起始时间控制
          */
-        //dyn.setCron("0 0 0/"+time+" * * ?");
-        dyn.setCron("0 0/"+time+" * * * ?");
+        dyn.setCron("0 0 0/"+time+" * * ?");
+        //dyn.setCron("0 0/"+time+" * * * ?");
         System.out.println("夜晚时间：" + dateFormat.format(new Date()));
         System.out.println("表达式"+cron);
 
