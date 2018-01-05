@@ -93,5 +93,17 @@ public class CheckResult implements Serializable {
 	public Integer getQuestionType(){
 		return this.questionType;
 	}
-	
+
+	@Override
+	public String toString() {
+		return "CheckResult{" +
+				"id=" + id +
+				", photoIds='" + photoIds + '\'' +
+				", questionInfo='" + questionInfo + '\'' +
+				", createTime=" + createTime +
+				", lineId=" + lineId +
+				", checkDetailID=" + checkDetailID +
+				", questionType=" + questionType +
+				'}';
+	}
 }

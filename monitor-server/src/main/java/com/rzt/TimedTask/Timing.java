@@ -13,6 +13,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
 /**
  * 李成阳
  * 2017/12/29
@@ -23,7 +28,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class Timing  extends
         CurdController<Timing,TimedService> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
     @Autowired
     private NightDynamicScheduledTask night;
     @Autowired
@@ -78,6 +82,26 @@ public class Timing  extends
     public WebApiResponse getTimeConfig(){
         return service.getTimedConfig();
     }
+
+    /**
+     * 获取当前定时器的刷新周期  小时为单位  当前权限为地市 总局查看时暂时固定为3天一次刷新
+     * @return
+     */
+    @GetMapping("/getScheduledTime")
+    public WebApiResponse getScheduledTime(){
+        WebApiResponse timedConfig = service.getTimedConfig();
+        List<Map<String, Object>> data = (List<Map<String, Object>>) timedConfig.getData();
+        Map<String, Object> map = data.get(0);
+        Date date = new Date();
+        SimpleDateFormat hh = new SimpleDateFormat("HH");
+        int i = Integer.parseInt(hh.format(date));
+        if(i>=Integer.parseInt((String) map.get("START_TIME")) && i<Integer.parseInt((String) map.get("END_TIME"))){
+            return WebApiResponse.success( map.get("DAY_ZQ"));
+        }else{
+            return WebApiResponse.success(map.get("NIGHT_ZQ"));
+        }
+    }
+
 
     /**
      * 每三天刷新一次

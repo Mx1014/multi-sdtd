@@ -95,7 +95,7 @@ public class RztsyscompanyController extends
     @ApiOperation(value = "外协队伍分页查询", notes = "外协队伍分页查询")
     public WebApiResponse queryRztsyscompany(Integer page, Integer size, String userId, String companyname, String orgid) {
         try {
-            return WebApiResponse.success(this.service.queryRztsyscompany(page, size,userId,companyname,orgid));
+            return WebApiResponse.success(this.service.queryRztsyscompany(page, size, userId, companyname, orgid));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("Data Error");
@@ -113,10 +113,9 @@ public class RztsyscompanyController extends
      */
     @PostMapping("addRztsyscompany")
     @ApiOperation(value = "添加外协单位", notes = "添加外协单位")
-    public WebApiResponse addRztsyscompany(String filename, String filetype, String cmpanyname, String orgid) {
+    public WebApiResponse addRztsyscompany(String id, String cmpanyname, String orgid, String filetype1, String filetype2, String filename1, String filename2, String filepath1, String filepath2) {
         int one = 1;
-        String id = UUID.randomUUID().toString().replaceAll("-", "");
-        int addRztsyscompany = this.service.addRztsyscompany(id, filename, filetype, cmpanyname, orgid);
+        int addRztsyscompany = this.service.addRztsyscompany(id, cmpanyname, orgid, filetype1, filetype2, filename1, filename2, filepath1, filepath2);
         if (addRztsyscompany == one) {
             return WebApiResponse.success("Note[Data addition success]");
         }
@@ -135,9 +134,9 @@ public class RztsyscompanyController extends
      */
     @PatchMapping("updateRztsyscompany")
     @ApiOperation(value = "修改外协单位", notes = "修改外协单位")
-    public WebApiResponse updateRztsyscompany(String cmpanyname, String orgid, String id, String filetype, String filename) {
+    public WebApiResponse updateRztsyscompany(String id, String cmpanyname, String orgid, String filetype1, String filetype2, String filename1, String filename2, String filepath1, String filepath2) {
         int one = 1;
-        int updateRztsyscompany = this.service.updateRztsyscompany(cmpanyname, orgid, id, filetype, filename);
+        int updateRztsyscompany = this.service.updateRztsyscompany(id, cmpanyname, orgid, filetype1, filetype2, filename1, filename2, filepath1, filepath2);
         if (updateRztsyscompany == one) {
             return WebApiResponse.success("Note[Data modification success]");
         } else {

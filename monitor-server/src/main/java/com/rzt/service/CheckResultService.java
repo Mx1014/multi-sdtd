@@ -28,6 +28,7 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
 	 */
 	@Transactional
 	public void addResult(CheckResult checkResult){
+
 		//为checkResult设置id
 		checkResult.setId(Long.valueOf(new SnowflakeIdWorker(0,0).nextId()));
 		//添加创建时间

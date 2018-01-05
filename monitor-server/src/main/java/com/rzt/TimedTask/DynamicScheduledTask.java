@@ -11,6 +11,7 @@ import com.rzt.service.TimedService;
 import com.rzt.service.XSZCTASKService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.Trigger;
 import org.springframework.scheduling.TriggerContext;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
@@ -30,7 +31,7 @@ public class DynamicScheduledTask extends CurdController<TimedTask,TimedService>
   //默认两小时一次
   private String cron = "0 0 0/2 * * ?";
   //private String cron = "0 0/2 * * * ?";
-
+  @Autowired
   private XSZCTASKService service;
 
 

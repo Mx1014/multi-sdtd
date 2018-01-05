@@ -281,8 +281,10 @@ public class RztSysMenuService extends CurdService<RztSysMenu, RztSysMenuReposit
         if (!StringUtils.isEmpty(roleid) && !StringUtils.isEmpty(menuid)) {
             String sql = "SELECT id FROM RZTMENUPRIVILEGE WHERE MENUID=?1 AND ROLEID=?2";
             try {
-                Map map = this.execSqlSingleResult(sql, menuid, roleid);
-                this.reposiotry.deleteRztsysbuttonz(map.get("ID").toString());
+                List<Map<String, Object>> list = this.execSql(sql, menuid, roleid);
+                for (int i = 0; i < list.size(); i++) {
+                    this.reposiotry.deleteRztsysbuttonz(list.get(0).get("ID").toString());
+                }
                 this.reposiotry.deleteRztmenuprivilege(roleid, menuid);
                 return WebApiResponse.success("删除成功");
             } catch (Exception e) {

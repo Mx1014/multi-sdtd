@@ -6,6 +6,7 @@ import com.rzt.service.CheckDetailService;
 import com.rzt.service.CheckResultService;
 import com.rzt.util.WebApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,10 +27,14 @@ public class CheckResultController extends CurdController<CheckResult,CheckResul
 	 *@author huyuening
 	 *@date 2017年12月18日
 	 */
-	@RequestMapping("/add")
-	public Object add(CheckResult checkResult,CheckDetail checkDetail){
-		
+	@PostMapping("/add")
+	public WebApiResponse add(CheckResult checkResult,CheckDetail checkDetail){
+		System.out.println(checkResult);
+		System.out.println(checkDetail);
+		String tdOrg = "";
 		try {
+
+
 			//根据审核人id和问题任务id查询该条审核记录是否存在
 			Long detailID = detailService.findByCheckUserAndQuestionTaskId(checkDetail.getCheckUser(),checkDetail.getQuestionTaskId());
 			Long checkDetailID = null;

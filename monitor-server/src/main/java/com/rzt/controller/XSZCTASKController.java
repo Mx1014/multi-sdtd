@@ -37,9 +37,9 @@ public class XSZCTASKController extends
      * @return
      */
     @GetMapping("/fingYHByTaskId")
-    public WebApiResponse fingYHByTaskId(String taskId){
+    public WebApiResponse fingYHByTaskId(String taskId,String TASKTYPE){
         if(null!= taskId && !"".equals(taskId)){
-            return service.findYHByTaskId(taskId);
+            return service.findYHByTaskId(taskId,TASKTYPE);
         }
         return WebApiResponse.erro("参数错误");
     }
