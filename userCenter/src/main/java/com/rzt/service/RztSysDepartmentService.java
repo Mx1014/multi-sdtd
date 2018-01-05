@@ -6,6 +6,7 @@
  */
 package com.rzt.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.rzt.service.CurdService;
 import com.rzt.entity.RztSysDepartment;
 import com.rzt.repository.RztSysDepartmentRepository;
@@ -14,6 +15,9 @@ import com.rzt.utils.DateUtil;
 import com.rzt.utils.DbUtil;
 import com.rzt.utils.PageUtil;
 import com.sun.org.apache.regexp.internal.RE;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +43,10 @@ import java.util.Map;
 public class RztSysDepartmentService extends CurdService<RztSysDepartment, RztSysDepartmentRepository> {
     @PersistenceContext
     private EntityManager entityManager;
+
+    @Autowired
+
+    private RedisTemplate<String, Object> redisTemplate;
 
     //添加子节点
     @Transactional
@@ -169,13 +177,28 @@ public class RztSysDepartmentService extends CurdService<RztSysDepartment, RztSy
      *
      * @return
      */
-    public WebApiResponse queryOrgName() {
-        String sql = "SELECT * FROM RZTSYSDEPARTMENT WHERE DEPTPID='402881e6603a69b801603a6ab1d70000' ";
-        try {
-            return WebApiResponse.success(this.execSql(sql));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return WebApiResponse.erro("数据修改失败");
-        }
+    public WebApiResponse queryOrgName(String userId) {
+        HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
+        JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", userId).toString());
+        Integer roletype = Integer.valueOf(jsonObject.get("ROLETYPE").toString());
+        String deptid = String.valueOf(jsonObject.get("DEPTID"));
+//        if (roletype == 0) {
+            String sql = "SELECT * FROM RZTSYSDEPARTMENT WHERE DEPTPID='402881e6603a69b801603a6ab1d70000' ";
+            try {
+                return WebApiResponse.success(this.execSql(sql));
+            } catch (Exception e) {
+                e.printStackTrace();
+                return WebApiResponse.erro("数据查询失败");
+            }
+//        } else if (roletype == 1 || roletype == 2) {
+//            String sql = "SELECT * FROM RZTSYSDEPARTMENT WHERE DEPTPID=?1 ";
+//            try {
+//                return WebApiResponse.success(this.execSql(sql, deptid));
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//                return WebApiResponse.erro("数据查询失败");
+//            }
+//        }
+//        return WebApiResponse.erro("");
     }
 }

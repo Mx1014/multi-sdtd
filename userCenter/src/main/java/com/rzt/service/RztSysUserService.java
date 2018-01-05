@@ -115,7 +115,7 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
                 "  LEFT JOIN RZTSYSDEPARTMENT y ON u.DEPTID = y.ID " +
                 "  LEFT JOIN RZTSYSDEPARTMENT t ON u.CLASSNAME = t.ID " +
                 "  LEFT JOIN RZTSYSCOMPANY m ON m.ID = u.COMPANYID " +
-                "WHERE USERDELETE = 1" + s;
+                "WHERE USERDELETE = 1" + s + " order by u.CREATETIME desc ";
         return this.execSqlPage(pageable, sql, arrayList.toArray());
     }
 
@@ -335,10 +335,10 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
         try {
             this.reposiotry.quitUserLOGINSTATUS(id);
             request.getSession().removeAttribute("user");
-            List<Map<String, Object>> maps = this.execSql(userAccout, id);
+            Map<String, Object> stringObjectMap = this.execSqlSingleResult(userAccout, id);
             HashOperations hashOperations = redisTemplate.opsForHash();
-            hashOperations.put("UserInformation", id, maps);
-            hashOperations.delete("USERTOKEN", "USER:" + maps.get(0).get("ID") + "," + maps.get(0).get("REALNAME"));
+            hashOperations.put("UserInformation", id, stringObjectMap);
+            hashOperations.delete("USERTOKEN", "USER:" + stringObjectMap.get("ID") + "," + stringObjectMap.get("REALNAME"));
             return WebApiResponse.success("");
         } catch (Exception e) {
             e.printStackTrace();

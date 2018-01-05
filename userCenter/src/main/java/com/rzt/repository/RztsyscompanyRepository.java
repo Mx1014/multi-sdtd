@@ -29,16 +29,20 @@ public interface RztsyscompanyRepository extends JpaRepository<Rztsyscompany, St
     int addRztsyscompany(String id, String cmpanyname, String orgid, String orgname);
 
     @Modifying
-    @Query(value = "INSERT INTO RZTSYSCOMPANYFILE (ID, COMPANYID, FILENAME, FILETYPE) VALUES (?1,?2,?3,?4)", nativeQuery = true)
-    int addpanyFile(String fid, String id, String filename, String filetype);
+    @Query(value = "INSERT INTO RZTSYSCOMPANYFILE (ID, COMPANYID, FILENAME, FILETYPE,FILEPATH) VALUES (?1,?2,?3,?4,?5)", nativeQuery = true)
+    int addpanyFile(String fid, String id, String filename, String filetype, String filepath);
 
     @Modifying
     @Query(value = "UPDATE RZTSYSCOMPANY SET COMPANYNAME=?1 ,ORGID=?2 ,ORGNAME=?3,UPDATETIME=sysdate WHERE ID=?4", nativeQuery = true)
-    int updateRztsyscompany(String cmpanyname, String orgid, String orgname,String id);
+    int updateRztsyscompany(String cmpanyname, String orgid, String orgname, String id);
 
     @Modifying
-    @Query(value = "DELETE FROM RZTSYSCOMPANYFILE WHERE COMPANYID=?1", nativeQuery = true)
+    @Query(value = "DELETE FROM RZTSYSCOMPANYFILE WHERE COMPANYID=?1 ", nativeQuery = true)
     int deletePanyFile(String id);
+
+    @Modifying
+    @Query(value = "DELETE FROM RZTSYSCOMPANYFILE WHERE COMPANYID=?1 AND FILETYPE =?2", nativeQuery = true)
+    int deleteUpadtePanyFile(String id, String filetype);
 
     @Modifying
     @Query(value = " delete from RZTSYSCOMPANY where id=?1", nativeQuery = true)
