@@ -30,7 +30,7 @@ public interface KhTaskRepository extends JpaRepository<KhTask,String> {
 
 
 
-    @Query(value = "SELECT COUNT(*) FROM kh_task where status not in ('已消缺')",nativeQuery = true)
+    @Query(value = "SELECT COUNT(*) FROM kh_task where status != 3",nativeQuery = true)
     int getcount();
 
     @Query(value = "SELECT COUNT(*) FROM kh_task where site_id=?1 and user_id=?2",nativeQuery = true)

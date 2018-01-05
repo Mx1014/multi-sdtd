@@ -98,6 +98,24 @@ public class RztSysDepartmentService extends CurdService<RztSysDepartment, RztSy
         return list;
     }
 
+    /**
+     * 根据ID查询子父节点
+     *
+     * @return
+     */
+    public List<Map<String, Object>> findDeptListByPidZiFu(String id) {
+        String sql = "   SELECT *" +
+                "  FROM RZTSYSDEPARTMENT" +
+                "  START WITH ID = ?1" +
+                "  CONNECT BY NOCYCLE PRIOR DEPTPID = ID AND DEPTPID!='0'" +
+                "  UNION ALL" +
+                "  SELECT *" +
+                "  FROM RZTSYSDEPARTMENT" +
+                "  START WITH DEPTPID = ?2" +
+                "  CONNECT BY NOCYCLE PRIOR ID = DEPTPID AND DEPTPID!='0' ";
+        return this.execSql(sql, id, id);
+    }
+
     //根据父节点id查询所有子节点
     public List<RztSysDepartment> findByDeptPid(String menuPid) {
         return this.reposiotry.findByDeptpid(menuPid);

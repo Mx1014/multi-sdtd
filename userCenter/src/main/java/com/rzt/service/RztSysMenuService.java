@@ -6,6 +6,7 @@
  */
 package com.rzt.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.RztSysMenu;
 import com.rzt.repository.RztSysMenuRepository;
 import com.rzt.util.WebApiResponse;
@@ -182,6 +183,27 @@ public class RztSysMenuService extends CurdService<RztSysMenu, RztSysMenuReposit
         String sql = " select id as \"value\",DEPTNAME as \"label\",DEPTPID,ID,ORGTYPE,LASTNODE from RZTSYSDEPARTMENT start with id= ?1 CONNECT by prior id =  DEPTPID " + s;
         List<Map<String, Object>> list2 = this.execSql(sql, list.toArray());
         List list1 = treeOrgList(list2, list2.get(0).get("ID").toString());
+        return list1;
+
+    }
+
+    public List<Map<String, Object>> treeQuerys(String userId) {
+        HashOperations hashOperations = redisTemplate.opsForHash();
+        JSONObject userInformation = JSONObject.parseObject(hashOperations.get("UserInformation", userId).toString());
+        Integer roletype = Integer.valueOf(userInformation.get("ROLETYPE").toString());
+        String orgId = null;
+        if (roletype == 0) {
+            orgId = "402881e6603a31e701603a48b5240000";
+        } else {
+            orgId = String.valueOf(userInformation.get("DEPTID").toString());
+        }
+        String sql = " select id as \"value\",DEPTNAME as \"label\",DEPTPID,ID,ORGTYPE,LASTNODE from RZTSYSDEPARTMENT start with id= ?1 CONNECT by prior id =  DEPTPID ";
+        List<Map<String, Object>> list2 = this.execSql(sql, orgId);
+        if (roletype == 0) {
+            List list1 = treeOrgList(list2, list2.get(0).get("ID").toString());
+            return list1;
+        }
+        List list1 = treeOrgList(list2, list2.get(0).get("DEPTPID").toString());
         return list1;
 
     }
@@ -382,7 +404,7 @@ public class RztSysMenuService extends CurdService<RztSysMenu, RztSysMenuReposit
             String sql = " SELECT * FROM RZTSYSDATA ";
             List<Map<String, Object>> maps = this.execSql(sql);
             HashOperations hashOperations = redisTemplate.opsForHash();
-            hashOperations.delete("RZTSYSDATA");
+
             for (Map map : maps) {
                 hashOperations.put("RZTSYSDATA", map.get("ROLEID"), map);
             }

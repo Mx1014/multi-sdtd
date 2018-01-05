@@ -6,16 +6,21 @@
  */
 package com.rzt.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.rzt.repository.RztsyscompanyRepository;
 import com.rzt.entity.Rztsyscompany;
 import com.rzt.util.WebApiResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -32,8 +37,28 @@ import java.util.UUID;
 @Service
 //@Transactional
 public class RztsyscompanyService extends CurdService<Rztsyscompany, RztsyscompanyRepository> {
-    public Page<Map<String, Object>> queryRztsyscompany(int page, int size) {
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+
+    public Page<Map<String, Object>> queryRztsyscompany(int page, int size, String userId, String companyname, String orgid) {
+        HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
+        JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", userId).toString());
+        Integer roletype = Integer.valueOf(jsonObject.get("ROLETYPE").toString());
         Pageable pageable = new PageRequest(page, size);
+        List list = new ArrayList();
+        String s = "";
+        if (!StringUtils.isEmpty(orgid)) {
+            list.add("%" + orgid + "%");
+            s += " AND c.ORGID like ?" + list.size();
+        }
+        if (!StringUtils.isEmpty(companyname)) {
+            list.add("%" + companyname + "%");
+            s += " AND c.COMPANYNAME like ?" + list.size();
+        }
+        if (roletype == 1 || roletype == 2) {
+            list.add("%" + String.valueOf(jsonObject.get("DEPTID")) + "%");
+            s += " AND c.COMPANYNAME like ?" + list.size();
+        }
         String sql = "SELECT " +
                 "  c.ID, " +
                 "  c.COMPANYNAME, " +
@@ -41,8 +66,8 @@ public class RztsyscompanyService extends CurdService<Rztsyscompany, Rztsyscompa
                 "  c.ORGID,c.UPDATETIME, " +
                 "  wm_concat(e.FILENAME) AS FILENAME, " +
                 "  wm_concat(e.FILETYPE) AS FILETYPE,c.ORGNAME " +
-                "FROM RZTSYSCOMPANY c LEFT JOIN RZTSYSCOMPANYFILE e ON c.ID = e.COMPANYID " +
-                "GROUP BY c.ID,c.COMPANYNAME,c.CREATETIME,c.ORGID,c.UPDATETIME,c.ORGNAME";
+                " FROM RZTSYSCOMPANY c LEFT JOIN RZTSYSCOMPANYFILE e ON c.ID = e.COMPANYID WHERE 1=1 " + s +
+                " GROUP BY c.ID,c.COMPANYNAME,c.CREATETIME,c.ORGID,c.UPDATETIME,c.ORGNAME";
         return this.execSqlPage(pageable, sql);
     }
 

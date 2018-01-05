@@ -33,9 +33,9 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
         String result = " k.id as taskId,k.plan_start_time as startTime,k.task_name as taskName,k.status as status,u.realname as name,k.zxys_num as num";
         StringBuffer buffer = new StringBuffer();
         if (dbyb == 1) {
-            buffer.append("where (status like '未开始' or status like '进行中')  and user_id = ? order by k.plan_start_time");
+            buffer.append("where (status = 0 or status = 1)  and user_id = ? order by k.plan_start_time");
         } else if (dbyb == 2) {
-            buffer.append(" where (status like '已完成' or status like '已取消')  and user_id = ? order by k.real_end_time desc");
+            buffer.append(" where (status = 2 or status = 3)  and user_id = ? order by k.real_end_time desc");
         }
         String sql = "select " + result + " from kh_task k left join rztsysuser u on u.id = k.user_id " + buffer.toString();
         return this.execSqlPage(pageable, sql, userId);
@@ -115,7 +115,7 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
 
     public WebApiResponse getDbCount(String userId) {
         try {
-            String sql = "select a.count as db,b.count as yb from (select count(*) as count from KH_TASK WHERE (STATUS LIKE '未开始' OR  status like '进行中') AND USER_ID = ? ) a , (select count(*) as count from KH_TASK WHERE STATUS LIKE '已完成' AND USER_ID=?) b";
+            String sql = "select a.count as db,b.count as yb from (select count(*) as count from KH_TASK WHERE (STATUS = 0 OR  status = 1) AND USER_ID = ? ) a , (select count(*) as count from KH_TASK WHERE (STATUS =2 or status=3) AND USER_ID=?) b";
             List<Map<String, Object>> list = this.execSql(sql, userId, userId);
             //保存现场照片    this.reposiotry.getdbCount(userId)
             return WebApiResponse.success(list);

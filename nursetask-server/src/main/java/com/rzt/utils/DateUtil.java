@@ -107,7 +107,7 @@ public class DateUtil {
         return s;
     }
 
-    public static String addDate(String day, int hour){
+    public static Long addDate(String day, int hour){
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date date = null;
         try {
@@ -115,8 +115,6 @@ public class DateUtil {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        if (date == null)
-            return "";
 //        System.out.println("front:" + format.format(date)); //显示输入的日期
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
@@ -124,11 +122,38 @@ public class DateUtil {
         date = cal.getTime();
         System.out.println("after:" + format.format(date));  //显示更新后的日期
         cal = null;
-        return format.format(date);
+       // return format.format(date);
+        return date.getTime();
 
     }
 
+    public static Long getBiggest(){
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+        String d = df.format(new Date());
+        String s = d + " 23:59:59";
+        return DateUtil.parseDate(s).getTime();
+    }
+
     public static void main(String[] args) {
-        System.out.println(dateNow());
+        System.out.println(getDatePoor(DateUtil.parseDate("2018-01-04 00:00:00"),new Date()));
+
+    }
+    public static long getDatePoor(Date endDate, Date nowDate) {
+
+        long nd = 1000 * 24 * 60 * 60;
+        long nh = 1000 * 60 * 60;
+        long nm = 1000 * 60;
+        // long ns = 1000;
+        // 获得两个时间的毫秒时间差异
+        long diff = endDate.getTime() - nowDate.getTime();
+        // 计算差多少天
+        long day = diff / nd;
+        // 计算差多少小时
+        long hour = diff % nd / nh;
+        // 计算差多少分钟
+        long min = diff % nd % nh / nm;
+        // 计算差多少秒//输出结果
+        // long sec = diff % nd % nh % nm / ns;
+        return  hour;//day + "天" + hour + "小时" + min + "分钟";
     }
 }
