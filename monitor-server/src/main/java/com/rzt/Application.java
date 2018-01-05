@@ -8,7 +8,6 @@ import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.annotation.EnableScheduling;
 
 @ServletComponentScan
 @Configuration
@@ -17,9 +16,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @ComponentScan
 @EnableEurekaClient
 @EnableFeignClients
-public class MonitorServerApplication {
+public class Application {
 
     public static void main(String[] args) {
-        SpringApplication.run(MonitorServerApplication.class, args);
+        SpringApplication.run(Application.class, args);
     }
 }
