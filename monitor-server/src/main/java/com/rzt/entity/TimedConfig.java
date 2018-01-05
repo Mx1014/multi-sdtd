@@ -4,6 +4,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.io.Serializable;
 
 /**
  * 李成阳
@@ -11,7 +12,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "TIMED_CONFIG")
-public class TimedConfig {
+public class TimedConfig implements Serializable {
 
     @Id
     @Column(name = "ID")
