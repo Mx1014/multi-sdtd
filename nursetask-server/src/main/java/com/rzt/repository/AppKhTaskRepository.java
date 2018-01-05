@@ -17,7 +17,7 @@ public interface AppKhTaskRepository extends JpaRepository<KhTask, String> {
 
     @Modifying
     @Transactional
-    @Query(value = "UPDATE KH_TASK SET REAL_START_TIME = ?2,STATUS ='进行中' where id = ?1",nativeQuery = true)
+    @Query(value = "UPDATE KH_TASK SET REAL_START_TIME = ?2,STATUS = 2 where id = ?1",nativeQuery = true)
     void updateRealStartTime(Long taskId, Date date);
 
     @Modifying

@@ -162,16 +162,6 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
     }
 
     public List listKhtaskByid(long id) {
-        /*String sql = "select k.task_name,y.yhms as ms,y.yhjb as jb,a.name as khfzr1,b.name as khfzr2,c.name as khdy1,d.name as khdy2 from kh_site k left join " +
-                " (select u.realname as name,k1.id from kh_site k1 left join rztsysuser u on u.id =k1.khfzr_id1) a " +
-                " on a.id=k.id left join " +
-                " (select u.realname as name,k1.id from kh_site k1 left join rztsysuser u on u.id =k1.khfzr_id2) b " +
-                " on b.id=k.id left join  " +
-                " (select u.realname as name,k1.id from kh_site k1 left join rztsysuser u on u.id =k1.khdy_id1) c " +
-                " on c.id=k.id left join " +
-                " (select u.realname as name,k1.id from kh_site k1 left join rztsysuser u on u.id =k1.khdy_id2) d " +
-                " on d.id=k.id " +
-                " left join kh_yh_history y on k.yh_id = y.id  where k.id=? ";*/
         String result = "k.task_name as taskname,y.yhms as ms,y.yhjb as jb,u.realname as name";
         String sql = "select " + result + " from kh_site k left join rztsysuser u on u.id = k.user_id left join kh_yh_history y on y.id = k.yh_id where k.id=?";
         return this.execSql(sql, id);
@@ -198,7 +188,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             KhCycle task = new KhCycle();
             task.setId();
             yh.setTaskId(task.getId());
-            yh.setYhzt("0");//隐患未消除
+            yh.setYhzt(0);//隐患未消除
             yh.setId(0L);
             yh.setCreateTime(DateUtil.dateNow());
             yh.setSection(startTowerName + "-" + endTowerName);
@@ -246,6 +236,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             List<Map<Object, String>> list = (List<Map<Object, String>>) JSONObject.parse(tasks);
             KhCycle cycle = this.cycleRepository.findCycle(Long.parseLong(id));
             String groupFlag = System.currentTimeMillis() + "";
+//            int cycle1 =
             for (Map map : list) {
                 KhTask task = new KhTask();
                 KhSite site = new KhSite();
@@ -256,6 +247,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                 site.setId();
                 site.setVtype(cycle.getVtype());
                 site.setLineName(cycle.getLineName());
+//                site.setCycle(list.get(0).get("p"));
                 site.setLineId(cycle.getLineId());
                 site.setSection(cycle.getSection());
                 site.setStatus(1);
@@ -286,7 +278,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                 task.setWxOrg(cycle.getWxOrg());
                 task.setTdywOrg(cycle.getTdywOrg());
                 task.setCreateTime(new Date());
-                task.setStatus("未开始");
+                task.setStatus(0);
                 task.setSiteId(site.getId());
                 task.setYhId(cycle.getYhId());
                 task.setTaskName(cycle.getTaskName());
@@ -304,7 +296,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
 
     public WebApiResponse listJpgById(String taskId) {
         try {
-            String sql = "select file_path,create_time as createtime from picture_kh where task_id = ?";
+            String sql = "select file_path,create_time,PROCESS_NAME,FILE_SMALL_PATH as smallPath from picture_kh where task_id = ? and file_type=1 order by PROCESS_ID";
             return WebApiResponse.success(this.execSql(sql, Long.parseLong(taskId)));
         } catch (Exception e) {
             e.printStackTrace();

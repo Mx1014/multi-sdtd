@@ -122,10 +122,10 @@ public class KhYhHistory implements Serializable {
     private Date createTime;
     //字段描述: 0：pc 1：手机 2:excel导入
     @Column(name = "SDGS")
-    private String sdgs;
+    private int sdgs;
     //字段描述: 隐患状态(0未消除1消除)
     @Column(name = "YHZT")
-    private String yhzt;
+    private int yhzt;
     //字段描述: 看护任务id
     @Column(name = "TASK_ID")
     private Long taskId;
@@ -200,7 +200,7 @@ public class KhYhHistory implements Serializable {
     private String zpxgsj;
     //字段描述: 施工情况
     @Column(name = "SGQK")
-    private String sgqk;
+    private int sgqk;
     //字段描述：通道单位id
     @Column(name = "YWORG_ID")
     private String yworgId;
@@ -210,6 +210,9 @@ public class KhYhHistory implements Serializable {
     //字段描述: 隐患点半径
     @Column(name="radius")
     private String radius;
+    //字段描述: 隐患点半径
+    @Column(name="XSTASK_ID")
+    private long xstaskId;
 
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
@@ -283,12 +286,12 @@ public class KhYhHistory implements Serializable {
         return this.updateTime;
     }
 
-    public void setSdgs(String sdgs) {
+    public void setSdgs(int sdgs) {
         this.sdgs = sdgs;
     }
 
     @ExcelResources(title = "0：pc 1：手机 2:excel导入", order = 9)
-    public String getSdgs() {
+    public int getSdgs() {
         return this.sdgs;
     }
 
@@ -373,12 +376,12 @@ public class KhYhHistory implements Serializable {
         return this.jd;
     }
 
-    public void setYhzt(String yhzt) {
+    public void setYhzt(int yhzt) {
         this.yhzt = yhzt;
     }
 
     @ExcelResources(title = "隐患状态(0未消除1消除)", order = 19)
-    public String getYhzt() {
+    public int getYhzt() {
         return this.yhzt;
     }
 
@@ -680,11 +683,11 @@ public class KhYhHistory implements Serializable {
         this.yhlb = yhlb;
     }
 
-    public String getSgqk() {
+    public int getSgqk() {
         return sgqk;
     }
 
-    public void setSgqk(String sgqk) {
+    public void setSgqk(int sgqk) {
         this.sgqk = sgqk;
     }
 
@@ -710,5 +713,13 @@ public class KhYhHistory implements Serializable {
 
     public String getRadius() {
         return radius;
+    }
+
+    public void setXstaskId(long xstaskId) {
+        this.xstaskId = xstaskId;
+    }
+
+    public long getXstaskId() {
+        return xstaskId;
     }
 }

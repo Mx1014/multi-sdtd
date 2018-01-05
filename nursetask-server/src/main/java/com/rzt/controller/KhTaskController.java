@@ -11,6 +11,7 @@ import com.rzt.entity.model.KhTaskModel;
 import com.rzt.service.KhTaskService;
 import com.rzt.service.KhYhHistoryService;
 import com.rzt.util.WebApiResponse;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
@@ -42,10 +43,10 @@ public class KhTaskController extends
 	 */
 	@GetMapping("/listAllKhTask.do")
 	@ResponseBody
-	public WebApiResponse listAllKhTask(KhTaskModel task, Pageable pageable,int roleType) {
+	public WebApiResponse listAllKhTask(KhTaskModel task, String status,Pageable pageable,int roleType) {
 		try {
 			//分页参数 page size
-			Object o = this.service.listAllKhTask(task, pageable,roleType);
+			Object o = this.service.listAllKhTask(task, status,pageable,roleType);
 			return WebApiResponse.success(o);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -124,6 +125,13 @@ public class KhTaskController extends
 	@ResponseBody
 	public WebApiResponse listTaskInfoById(String taskId){
 		return this.service.listTaskInfoById(taskId);
+	}
+
+	@ApiOperation(value = "获取人员头像", notes = "获取人员头像  ")
+	@GetMapping("/appListPicture")
+	@ResponseBody
+	public WebApiResponse appListPicture(long taskId,Integer zj){
+		return this.service.appListPicture(taskId,zj);
 	}
 }
 

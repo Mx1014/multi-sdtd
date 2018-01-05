@@ -16,7 +16,7 @@ import java.util.Date;
 public interface AppKhUpdateRepository extends JpaRepository<KhTask, String> {
     @Modifying
     @Transactional
-    @Query(value = "UPDATE KH_TASK SET REAL_START_TIME = ?2,STATUS ='进行中' where id = ?1",nativeQuery = true)
+    @Query(value = "UPDATE KH_TASK SET REAL_START_TIME = ?2,STATUS =1 where id = ?1",nativeQuery = true)
     void updateRealStartTime(Long taskId, Date date);
 
     @Modifying
@@ -51,7 +51,7 @@ public interface AppKhUpdateRepository extends JpaRepository<KhTask, String> {
 
     @Modifying
     @Transactional
-    @Query(value = "UPDATE KH_TASK SET STATUS ='已完成',real_end_time = ?1 WHERE id =?2",nativeQuery = true)
+    @Query(value = "UPDATE KH_TASK SET STATUS = 2,real_end_time = ?1 WHERE id =?2",nativeQuery = true)
     void updateEndTime(Date date, long taskId);
 
     @Query(value = "select ZXYS_NUM  FROM KH_TASK where id=?1",nativeQuery = true)

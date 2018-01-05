@@ -25,12 +25,10 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * 类名称：RztSysUserController
@@ -172,9 +170,9 @@ public class RztSysUserController extends
      */
     @GetMapping("findAllUser")
     @ApiOperation(value = "人员分页查询", notes = "人员分页查询")
-    public WebApiResponse findAllUser(int page, int size, String id, String realname, String companyid, String worktype) {
+    public WebApiResponse findAllUser(String userId, int page, int size, String id, String realname, String companyid, String worktype) {
         try {
-            return WebApiResponse.success(this.service.findUserList(page, size, id, realname, companyid, worktype));
+            return WebApiResponse.success(this.service.findUserList(userId, page, size, id, realname, companyid, worktype));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("数据错误");
@@ -188,8 +186,8 @@ public class RztSysUserController extends
      */
     @GetMapping("userQuertDeptZero")
     @ApiOperation(value = "人员分页查询下拉框", notes = "人员分页查询下拉框")
-    public WebApiResponse userQuertDeptZero() {
-        return this.service.userQuertDeptZero();
+    public WebApiResponse userQuertDeptZero(String userId) {
+        return this.service.userQuertDeptZero(userId);
     }
 
     /**
@@ -199,8 +197,8 @@ public class RztSysUserController extends
      */
     @GetMapping("companyPage")
     @ApiOperation(value = "下拉框外协单位", notes = "下拉框外协单位")
-    public WebApiResponse companyPage() {
-        return this.service.companyPage();
+    public WebApiResponse companyPage(String userId) {
+        return this.service.companyPage(userId);
     }
 
     @GetMapping("findUserById/{id}")

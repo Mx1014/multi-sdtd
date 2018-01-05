@@ -96,6 +96,9 @@ public class CMINSTALLController extends
         return map;
     }
 
+    /**
+     * 告警信息展示
+     */
     @GetMapping("tourAlarm")
     public WebApiResponse tourAlarm() {
         String sql = "SELECT *  " +
@@ -157,4 +160,113 @@ public class CMINSTALLController extends
             return WebApiResponse.erro("erro");
         }
     }
+
+
+    /**
+     * 离线人员
+     *
+     * @return
+     */
+    @GetMapping("offLineUser")
+    public Object offLineUser() {
+
+        String sql = "SELECT " +
+                "  u.REALNAME, " +
+                "  d.DEPTNAME, " +
+                "  d2.DEPTNAME classname, " +
+                "  u.PHONE, " +
+                "  u.EMAIL, " +
+                "CASE WORKTYPE " +
+                "    WHEN 1 THEN '看护' " +
+                "    WHEN 2 THEN '巡视' " +
+                "    WHEN 3 THEN '现场稽查' " +
+                "    WHEN 4 THEN '后台稽查' END  as WORKTYPE, " +
+                "u.AGE " +
+                "FROM RZTSYSUSER u LEFT JOIN RZTSYSDEPARTMENT d ON u.DEPTID = d.ID " +
+                "  LEFT JOIN RZTSYSDEPARTMENT d2 ON u.CLASSNAME = d2.ID " +
+                "WHERE LOGINSTATUS = 0 AND USERDELETE = 1";
+
+        try {
+            return WebApiResponse.success(this.service.execSql(sql));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("erro");
+        }
+    }
+
+    /**
+     * 未按时开始任务
+     *
+     * @return
+     */
+    @GetMapping("notOnTime")
+    public Object notOnTime() {
+
+        String sql = "SELECT " +
+                "  xs.TASK_NAME, " +
+                "  r.PHONE, " +
+                "  d.DEPTNAME, " +
+                "  d2.DEPTNAME classname, " +
+                "  r.REALNAME,r.EMAIL,CASE r.LOGINSTATUS WHEN 1 THEN '在线' WHEN 0 THEN '离线' END  AS LOGINSTATUS " +
+                "FROM " +
+                "  (SELECT " +
+                "     ZC.ID, " +
+                "     ZC.TASK_NAME, " +
+                "     ZC.CM_USER_ID " +
+                "   FROM xs_zc_task ZC " +
+                "   WHERE trunc(ZC.plan_start_time) = trunc(sysdate) AND trunc(ZC.plan_start_time) < nvl(ZC.real_start_time, sysdate) " +
+                "   UNION ALL " +
+                "   SELECT " +
+                "     TX.ID, " +
+                "     TX.TASK_NAME, " +
+                "     TX.CM_USER_ID " +
+                "   FROM xs_txbd_task TX " +
+                "   WHERE trunc(TX.plan_start_time) = trunc(sysdate) AND TX.plan_start_time < nvl(TX.real_start_time, sysdate)) xs " +
+                "  LEFT JOIN RZTSYSUSER r ON CM_USER_ID = r.ID " +
+                "  LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = r.DEPTID " +
+                "  LEFT JOIN RZTSYSDEPARTMENT d2 ON d2.ID = r.CLASSNAME";
+
+        try {
+            return WebApiResponse.success(this.service.execSql(sql));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("erro");
+        }
+    }
+
+    /**
+     * 巡视不合格
+     */
+    @GetMapping("xsbhg")
+    public Object xsbhg() {
+        String sql = "SELECT " +
+                "  a.TASK_NAME, " +
+                "  nvl(a.REASON, '未填写原因') AS REASON, " +
+                "  u.REALNAME, " +
+                "  r.DEPTNAME, " +
+                "  tt.DEPTNAME            AS classname, " +
+                "  u.PHONE, " +
+                "  CASE u.LOGINSTATUS " +
+                "  WHEN 1 " +
+                "    THEN '在线' " +
+                "  WHEN 0 " +
+                "    THEN '离线' END        AS LOGINSTATUS " +
+                "FROM (SELECT " +
+                "        ta.ID, " +
+                "        z.REASON, " +
+                "        ta.TASK_NAME, " +
+                "        ta.CM_USER_ID " +
+                "      FROM XS_ZC_TASK_EXEC_DETAIL z LEFT JOIN XS_ZC_TASK_EXEC e ON z.XS_ZC_TASK_EXEC_ID = e.ID " +
+                "        LEFT JOIN XS_ZC_TASK ta ON ta.ID = e.XS_ZC_TASK_ID " +
+                "      WHERE z.IS_DW = 1) a LEFT JOIN RZTSYSUSER u ON u.ID = a.CM_USER_ID " +
+                "  LEFT JOIN RZTSYSDEPARTMENT r ON r.ID = u.DEPTID " +
+                "  LEFT JOIN RZTSYSDEPARTMENT tt ON tt.ID = u.CLASSNAME";
+        try {
+            return WebApiResponse.success(this.service.execSql(sql));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("erro");
+        }
+    }
+
 }

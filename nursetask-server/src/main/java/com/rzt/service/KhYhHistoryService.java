@@ -11,6 +11,8 @@ import com.rzt.entity.KhYhHistory;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DateUtil;
 import com.rzt.utils.MapUtil;
+import org.apache.commons.lang.StringUtils;
+import org.apache.poi.util.StringUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,9 +44,11 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         }
     }
 
-    public WebApiResponse saveYh(KhYhHistory yh,String fxtime,String startTowerName,String endTowerName) {
+    @Transactional
+    public WebApiResponse saveYh(KhYhHistory yh,String fxtime,String startTowerName,String endTowerName,String pictureId) {
         try {
-            yh.setYhfxsj(DateUtil.parseDate(fxtime));
+            yh.setYhfxsj(DateUtil.dateNow());
+            //yh.setYhfxsj(DateUtil.parseDate(fxtime));
             yh.setId(0l);
             if (!yh.getStartTower().isEmpty()) {
                 String startTower = "select longitude,latitude from cm_tower where id = ?";
@@ -59,54 +63,33 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 yh.setJd(jd+"");
                 yh.setWd(wd+"");
             }
-            yh.setSdgs("1");
-            yh.setSfdj(0);  //是否定级
-            yh.setYhzt("0");//隐患未消除
+            if (yh.getVtype().equals("0")){
+                yh.setVtype("35kV");
+            }else if (yh.getVtype().equals("1")){
+                yh.setVtype("110kV");
+            }else if (yh.getVtype().equals("2")){
+                yh.setVtype("220kV");
+            }else if (yh.getVtype().equals("3")){
+                yh.setVtype("550kV");
+            }
+            yh.setYhjb("一般");
+            yh.setSdgs(1);//手机导入
+            yh.setSfdj(0);  //未定级
+            yh.setYhzt(0);//隐患未消除
             yh.setCreateTime(DateUtil.dateNow());
             yh.setSection(startTowerName + "-" + endTowerName);
+            if (null != pictureId || "" != pictureId){
+                String[] split = pictureId.split(",");
+                for (int i =0; i < split.length;i++){
+                    this.reposiotry.updateYhPicture(Long.parseLong(split[i]),yh.getId(),yh.getXstaskId());
+                }
+            }
             this.add(yh);
             return WebApiResponse.success("数据保存成功");
         } catch (Exception e) {
+            e.printStackTrace();
             return WebApiResponse.erro("数据保存失败");
         }
     }
 
-   /* public WebApiResponse listYhCount() {
-        try {
-            String date = DateUtil.getCurrentDate();
-            String handlesql = "(SELECT COUNT(*) as count FROM KH_YH_HISTORY WHERE to_char(YHXQ_TIME) >=? and to_char(YHXQ_TIME) <=?)  a,";
-            String addedsql = "(SELECT COUNT(*) as count FROM KH_YH_HISTORY WHERE to_char(create_time) >=? and to_char(create_time) <=?) b,";
-            String updateSql = "(SELECT COUNT(*) as count FROM KH_YH_HISTORY WHERE to_char(update_time) >=? and to_char(update_time) <=?) c,";
-            String allSql = "(select count(*) as count from kh_yh_history where yhzt=0 ) d";
-            String sql = "select a.count as handle,b.count as addcount,c.count as updatecount,d.count as allcount from " +
-                    handlesql + addedsql + updateSql + allSql;
-            System.out.println(sql);
-            return WebApiResponse.success(this.execSql(sql, date + " 00:00:00", date + " 23:59:59", date + " 00:00:00", date + " 23:59:59", date + " 00:00:00", date + " 23:59:59"));
-        } catch (Exception e) {
-            return WebApiResponse.erro("数据获取失败");
-        }
-    }
-
-
-    public WebApiResponse listSgCount() {
-        try {
-            String doingSql = "(select count(*) as count from kh_yh_history where sgqk = 1) a,";
-            String doneSql = "(select count(*) as count from kh_yh_history where sgqk = 2) b,";
-            String sql = "select a.count as doing,b.count as done from "+doingSql+doneSql;
-            return WebApiResponse.success("");
-        } catch (Exception e) {
-            return WebApiResponse.erro("数据获取失败");
-        }
-    }
-
-    public WebApiResponse listGkqk() {
-        try {
-            String doingSql = "select count(*) from  left join ";
-            String doneSql = "(select count(*) as count from kh_yh_history where sgqk = 2) b,";
-            String sql = "select a.count as doing,b.count as done from "+doingSql+doneSql;
-            return WebApiResponse.success("");
-        } catch (Exception e) {
-            return WebApiResponse.erro("数据获取失败");
-        }
-    }*/
 }
