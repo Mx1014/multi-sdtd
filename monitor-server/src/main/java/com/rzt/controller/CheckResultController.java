@@ -7,6 +7,7 @@ import com.rzt.service.CheckResultService;
 import com.rzt.util.WebApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,8 +34,6 @@ public class CheckResultController extends CurdController<CheckResult,CheckResul
 		System.out.println(checkDetail);
 		String tdOrg = "";
 		try {
-
-
 			//根据审核人id和问题任务id查询该条审核记录是否存在
 			Long detailID = detailService.findByCheckUserAndQuestionTaskId(checkDetail.getCheckUser(),checkDetail.getQuestionTaskId());
 			Long checkDetailID = null;
@@ -72,6 +71,33 @@ public class CheckResultController extends CurdController<CheckResult,CheckResul
 			return WebApiResponse.erro("查询失败！"+e.getMessage());
 		}
 	}
-	
+
+	/**
+	 *@Author hyn
+	 *@Method getQuestion
+	 *@Params [taskId]
+	 *@Date 2018/1/5 16:18
+	 */
+	@GetMapping("getQuestion")
+	public WebApiResponse getQuestion(Long taskId){
+		try {
+			return WebApiResponse.success(resultservice.getQuestion(taskId));
+		}catch (Exception e){
+			return WebApiResponse.erro("查询失败："+e.getMessage());
+		}
+	}
+
+	/**
+	 * 检查记录
+	 */
+	@RequestMapping("/getCheckRecord")
+	public WebApiResponse getCheckRecord(Integer page, Integer size,String startDate,String endDate,Integer taskType,Integer status){
+		try {
+			return WebApiResponse.success(resultservice.getCheckRecord(page,size,startDate,endDate,taskType,status));
+		} catch (Exception e) {
+			return WebApiResponse.erro("查询失败！"+e.getMessage());
+		}
+	}
+
 	
 }
