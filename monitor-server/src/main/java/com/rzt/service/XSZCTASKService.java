@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.transaction.Transactional;
 import java.text.ParseException;
@@ -38,8 +39,10 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
      * @return
      */
     public WebApiResponse getXsTaskAll(Integer page,Integer size, String taskType,Integer status){
+        List<Object> list = new ArrayList<>();
         Pageable pageable = new PageRequest(page, size, null);
-        String sql = " SELECT   " +
+        //sql 中 拉取数据为刷新时间至刷新时间前10秒
+        String sql = " SELECT  ID, " +
                 "  TASKID,   " +
                 "  CREATETIME,   " +
                 "  USER_ID,   " +
@@ -48,8 +51,8 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                 "FROM TIMED_TASK   " +
                 "WHERE (CREATETIME BETWEEN (SELECT max(CREATETIME)   " +
                 "     FROM TIMED_TASK) - 10 / (1 * 24 * 60 * 60) AND (SELECT max(CREATETIME)   " +
-                "       FROM TIMED_TASK)) ";
-        List<Object> list = new ArrayList<>();
+                "       FROM TIMED_TASK)) AND STATUS =  0";
+
         if(taskType!=null && !"".equals(taskType.trim())){
             list.add(taskType);
             sql+= " AND TASKTYPE = ?"+list.size();
@@ -87,29 +90,6 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
         return WebApiResponse.success(pageResult);
     }
 
-
-    /**
-     * 按照taskId查询当前任务的详情
-     * @param taskId
-     * @return
-     */
-    /*public WebApiResponse findByTaskId(String taskId) {
-        ArrayList<Object> objects = new ArrayList<>();
-        List<Map<String, Object>> maps = null;
-        String sql = "";
-            try {
-                if(null != taskId && !"".equals(taskId)){
-                    objects.add(taskId);
-                    sql+="TASKID = ?"+objects.size();
-                    maps = this.execSql(sql, objects);
-                }
-            }catch (Exception e){
-                LOGGER.error("查询错误"+e.getStackTrace());
-                return WebApiResponse.erro("查询错误"+e.getStackTrace());
-            }
-        LOGGER.info("查询成功");
-        return WebApiResponse.success(maps);
-    }*/
 
     /**
      * 供定时器使用   先查询需要的数据 查询后将数据添加进定时任务表
@@ -157,7 +137,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
         try {
             if(null != taskId && !"".equals(taskId)){
                 strings.add(taskId);
-                sql += "  and  xd.XS_ZC_TASK_EXEC_ID = (select xe.ID from XS_ZC_TASK_EXEC xe where xe.XS_ZC_TASK_ID = ?"+strings.size()+") ORDER BY xd.START_TIME ";
+                sql += "  and  xd.XS_ZC_TASK_EXEC_ID in (select xe.ID from XS_ZC_TASK_EXEC xe where xe.XS_ZC_TASK_ID in ?"+strings.size()+") ORDER BY xd.START_TIME";
             }
             maps = this.execSql(sql, strings.toArray());
         }catch (Exception e){
@@ -173,38 +153,71 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
      * @param taskId
      * @return
      */
-    public WebApiResponse findYHByTaskId(String taskId) {
+    public WebApiResponse findYHByTaskId(String taskId,String TASKTYPE) {
         ArrayList<String> strings = new ArrayList<>();
         List<Map<String, Object>> maps = null;
         List<Map<String, Object>> maps2 = null;
         List<Map<String, Object>> maps3 = null;
-        String sql = "SELECT yh.YHMS,li.LINE_NAME,li.SECTION" +
-                "       from KH_YH_HISTORY yh" +
-                "          LEFT JOIN" +
-                "            CM_LINE li on li.ID = yh.LINE_ID ";
-        String sql3 = "";
+
        try {
            if(null != taskId && !"".equals(taskId)){
-               strings.add(taskId);
-               //取到当前隐患的详细信息
-               sql += "             WHERE yh.LINE_ID = (SELECT  xc.LINE_ID" +
-                       "                FROM XS_ZC_TASK xt" +
-                       "                   LEFT JOIN XS_ZC_CYCLE xc" +
-                       "                       on xc.ID = xt.XS_ZC_CYCLE_ID" +
-                       "                           WHERE xt.ID = ?"+strings.size()+")";
-               //取当前隐患的位置  去重
-                sql3 = "SELECT distinct li.LINE_NAME,li.SECTION" +
-                       "       from KH_YH_HISTORY yh" +
-                       "          LEFT JOIN" +
-                       "            CM_LINE li on li.ID = yh.LINE_ID" +
-                       "             WHERE yh.LINE_ID = (SELECT  xc.LINE_ID" +
-                       "                FROM XS_ZC_TASK xt" +
-                       "                   LEFT JOIN XS_ZC_CYCLE xc" +
-                       "                       on xc.ID = xt.XS_ZC_CYCLE_ID" +
-                       "                           WHERE xt.ID = ?"+strings.size()+")";
-               maps = this.execSql(sql, strings.toArray());
-               maps3 = this.execSql(sql3, strings.toArray());
-               maps2 = (List<Map<String, Object>>) findExecDetallByTaskId(taskId).getData();
+               if (null != TASKTYPE && !"".equals(TASKTYPE)){//判断当前任务类型   1 巡视 2 看护 其他待定
+                if("1".equals(TASKTYPE)){
+                    String sql = "SELECT yh.YHMS,li.LINE_NAME,li.SECTION" +
+                            "       from KH_YH_HISTORY yh" +
+                            "          LEFT JOIN" +
+                            "            CM_LINE li on li.ID = yh.LINE_ID ";
+                    strings.add(taskId);
+                    //取到当前隐患的详细信息
+                    sql += "             WHERE yh.LINE_ID = (SELECT  xc.LINE_ID" +
+                            "                FROM XS_ZC_TASK xt" +
+                            "                   LEFT JOIN XS_ZC_CYCLE xc" +
+                            "                       on xc.ID = xt.XS_ZC_CYCLE_ID" +
+                            "                           WHERE xt.ID = ?"+strings.size()+")";
+                    //取当前隐患的位置  去重
+                    String sql3 = "SELECT distinct li.LINE_NAME,li.SECTION" +
+                            "       from KH_YH_HISTORY yh" +
+                            "          LEFT JOIN" +
+                            "            CM_LINE li on li.ID = yh.LINE_ID" +
+                            "             WHERE yh.LINE_ID = (SELECT  xc.LINE_ID" +
+                            "                FROM XS_ZC_TASK xt" +
+                            "                   LEFT JOIN XS_ZC_CYCLE xc" +
+                            "                       on xc.ID = xt.XS_ZC_CYCLE_ID" +
+                            "                           WHERE xt.ID = ?"+strings.size()+")";
+                    maps = this.execSql(sql, strings.toArray());
+                    maps3 = this.execSql(sql3, strings.toArray());
+                    maps2 = (List<Map<String, Object>>) findExecDetallByTaskId(taskId).getData();
+                    LOGGER.info("巡视任务详情查询");
+                }
+
+                   if("2".equals(TASKTYPE)){ //看护
+
+                       strings.add(taskId);
+                       //取到当前隐患的详细信息
+                       String sql = "SELECT yh.YHMS,li.LINE_NAME,li.SECTION" +
+                               "                                             from KH_YH_HISTORY yh" +
+                               "                                               LEFT JOIN" +
+                               "                                               CM_LINE li on li.ID = yh.LINE_ID" +
+                               "                                             WHERE yh.ID = (SELECT k.YH_ID FROM KH_SITE k LEFT JOIN KH_TASK kh ON kh.SITE_ID = k.ID" +
+                               "             WHERE kh.ID = ?"+strings.size()+")";
+                       //取当前隐患的位置  去重
+                       String sql3 = "SELECT distinct li.LINE_NAME,li.SECTION" +
+                               "       from KH_YH_HISTORY yh" +
+                               "          LEFT JOIN" +
+                               "            CM_LINE li on li.ID = yh.LINE_ID" +
+                               "             WHERE yh.ID = (SELECT k.YH_ID FROM KH_SITE k LEFT JOIN KH_TASK kh ON kh.SITE_ID = k.ID" +
+                               "             WHERE kh.ID = ?"+strings.size()+")";
+                       //获取任务详情
+                       String sql4 = "SELECT p.PROCESS_NAME OPERATE_NAME,p.CREATE_TIME START_TIME,p.ID from PICTURE_KH p LEFT JOIN KH_TASK k ON  k.ID = p.TASK_ID  where k.ID = ?"+strings.size()+" ORDER BY p.CREATE_TIME";
+
+                       maps = this.execSql(sql, strings.toArray());
+                       maps3 = this.execSql(sql3, strings.toArray());
+                       maps2 = this.execSql(sql4,strings.toArray());
+                       LOGGER.info("看护任务详情查询");
+                   }
+               }
+
+
            }
 
        }catch (Exception e){
