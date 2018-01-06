@@ -1,5 +1,6 @@
 package com.rzt.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.CheckDetail;
 import com.rzt.entity.CheckResult;
 import com.rzt.repository.CheckResultRepository;
@@ -9,13 +10,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 
@@ -23,6 +23,9 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
 	
 	@Autowired
 	private CheckResultRepository checkResultRepository;
+
+	@Autowired
+	private RedisTemplate<String,Object> redisTemplate;
 	
 	/*
 	 * 添加审核结果
@@ -73,26 +76,27 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
         return maps;
     }
 
-    public Object getCheckRecord(Integer page, Integer size,String startDate,String endDate,Integer taskType,Integer status) {
+    public Object getCheckRecord(Integer page, Integer size,String startDate,String endDate,Integer taskType,String vLevel,Integer lineId) {
         Pageable pageable = new PageRequest(page,size);
         //暂时去数据库查，之后从redis拿就可以
-        String sql = "SELECT ud.*,co.COMPANYNAME FROM   " +
-				"  (SELECT uc.*,d.DEPTNAME FROM   " +
-				"  (SELECT tc.*,u.DEPTID,u.COMPANYID,u.PHONE,u.REALNAME FROM   " +
-				"  (SELECT t.TASKID,t.TASKNAME,c.CHECK_USER,c.CREATE_TIME,t.TASKTYPE,t.STATUS FROM TIMED_TASK t   " +
-				"    JOIN CHECK_DETAIL c ON t.TASKID = c.QUESTION_TASK_ID WHERE t.STATUS=1) tc   " +
-				"LEFT JOIN RZTSYSUSER u ON tc.CHECK_USER = u.ID) uc   " +
-				"LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = uc.DEPTID) ud   " +
-				"LEFT JOIN RZTSYSCOMPANY co ON ud.COMPANYID = co.ID";
+        String sql = "SELECT tcr.*,cm.V_LEVEL FROM   " +
+				"  (SELECT DISTINCT tc.TASKID,tc.TASKNAME,tc.CHECK_USER,tc.CREATE_TIME,tc.ID,tc.TASKTYPE,cr.LINE_ID FROM   " +
+				"(SELECT   " +
+				"  t.TASKID,   " +
+				"  t.TASKNAME,   " +
+				"  c.CHECK_USER,   " +
+				"  c.CREATE_TIME,   " +
+				"  c.ID,   " +
+				"  t.TASKTYPE   " +
+				"FROM TIMED_TASK t   " +
+				"RIGHT JOIN CHECK_DETAIL c ON t.TASKID = c.QUESTION_TASK_ID   " +
+				"WHERE t.STATUS = 1) tc LEFT JOIN CHECK_RESULT cr ON tc.ID = cr.CHECK_DETAIL_ID) tcr   " +
+				"LEFT JOIN CM_LINE cm ON tcr.LINE_ID = cm.ID";
         List<Object> list = new ArrayList<>();
         String s = "";
         if(taskType!=null){
             list.add(taskType);
             s+=" AND TASKTYPE =?"+list.size();
-        }
-        if(status!=null){
-            list.add(status);
-            s+="  AND STATUS =?"+list.size();
         }
         if (startDate!=null && !"".equals(startDate) && endDate!=null && !"".equals(endDate)){
             list.add(startDate);
@@ -100,10 +104,38 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
             list.add(endDate);
             s+="  AND to_date( ?" + list.size() + ",'yyyy-MM-dd hh24:mi:ss')  ";
         }
+		if(vLevel!=null && !"".equals(vLevel)){
+			list.add(vLevel);
+			s+=" AND V_LEVEL = ?"+list.size();
+		}
+		if(lineId!=null){
+			list.add(lineId);
+			s+=" AND LINE_ID =?"+list.size();
+		}
         Page<Map<String, Object>> pageResult = null;
         try {
             String sqll = " select * from ( "+sql+" ) where 1=1 "+s;
             pageResult = this.execSqlPage(pageable, sqll,list.toArray());
+			Iterator<Map<String, Object>> iterator = pageResult.iterator();
+			HashOperations hashOperations = redisTemplate.opsForHash();
+
+			while (iterator.hasNext()){
+				Map<String, Object> next = iterator.next();
+
+				String userID =(String)next.get("CHECK_USER");
+				Object userInformation = hashOperations.get("UserInformation", userID);
+				if(userInformation==null){
+					System.out.println(userInformation);
+					continue;
+				}
+				JSONObject jsonObject = JSONObject.parseObject(userInformation.toString());
+				if(jsonObject!=null){
+					next.put("DEPT",jsonObject.get("DEPT"));
+					next.put("COMPANYNAME",jsonObject.get("COMPANYNAME"));
+					next.put("REALNAME",jsonObject.get("REALNAME"));
+					next.put("PHONE",jsonObject.get("PHONE"));
+				}
+			}
         }catch (Exception e){
             return WebApiResponse.erro("查询失败"+e.getStackTrace());
         }
