@@ -1,15 +1,11 @@
 package com.rzt.controller;
 
-import com.netflix.discovery.converters.Auto;
 import com.rzt.service.XSZCTASKService;
 import com.rzt.util.WebApiResponse;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.text.ParseException;
 
 /**
  * 李成阳
@@ -53,6 +49,16 @@ public class XSZCTASKController extends
     @GetMapping("/getXsTaskAll")
     public WebApiResponse getXsTaskAll(Integer page,Integer size, String taskType,Integer status){
         return service.getXsTaskAll(page,size,taskType,status);
+    }
+
+    @PostMapping("checkOff")
+    public WebApiResponse checkOff(Long questionTaskId){
+        try {
+            service.checkOff(questionTaskId);
+            return WebApiResponse.success("success");
+        }catch (Exception e){
+            return WebApiResponse.erro("更改状态失败："+e.getMessage());
+        }
     }
 
 }
