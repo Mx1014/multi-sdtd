@@ -52,6 +52,11 @@ public class PcMapShowController {
             //准备要返回的list
             List<Object> menInMap = null;
             HashOperations<String, String, Object> hashOperations = redisTemplate.opsForHash();
+            //0 根据人查
+            if(userId != null) {
+                return hashOperations.get("menInMap",userId);
+
+            }
             //1.初始数据权限
             String deptId = pcMapShowService.dataAccessByUserId(currentUserId);
             if("err".equals(deptId)) {
@@ -107,8 +112,10 @@ public class PcMapShowController {
     public Object menPath(String userId,Date startTime,Date endTime) {
         try {
             ZSetOperations<String, Object> zSetOperations = redisTemplate.opsForZSet();
-
             String prefixDate = DateUtil.dateFormatToDay(startTime);
+            if(endTime == null) {
+                endTime = DateUtil.dateNow();
+            }
             Set<Object> set = zSetOperations.rangeByScore( prefixDate + "_" + userId, startTime.getTime(), endTime.getTime());
             return WebApiResponse.success(set);
         } catch (Exception e) {
