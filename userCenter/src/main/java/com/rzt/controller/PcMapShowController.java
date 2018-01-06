@@ -52,13 +52,18 @@ public class PcMapShowController {
             //准备要返回的list
             List<Object> menInMap = null;
             HashOperations<String, String, Object> hashOperations = redisTemplate.opsForHash();
-            //0 根据人查
+            //0 根据人查 有人就直接结束
             if(userId != null) {
                 return hashOperations.get("menInMap",userId);
 
             }
+            String deptId = "";
+            if(tdOrg != null) {
+                deptId = tdOrg;
+            } else {
+                deptId = pcMapShowService.dataAccessByUserId(currentUserId);
+            }
             //1.初始数据权限
-            String deptId = pcMapShowService.dataAccessByUserId(currentUserId);
             if("err".equals(deptId)) {
 
             } else if("all".equals(deptId)) {
