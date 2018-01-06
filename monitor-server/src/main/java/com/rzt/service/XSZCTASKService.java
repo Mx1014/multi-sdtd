@@ -45,10 +45,10 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                 "  CREATETIME,   " +
                 "  USER_ID,   " +
                 "  TASKNAME,   " +
-                "  TASKTYPE   " +
+                "  TASKTYPE,CHECKSTATUS ,TARGETSTATUS  " +
                 "FROM TIMED_TASK   " +
                 "WHERE (CREATETIME BETWEEN (SELECT max(CREATETIME)   " +
-                "     FROM TIMED_TASK) - 10 / (1 * 24 * 60 * 60) AND (SELECT max(CREATETIME)   " +
+                "     FROM TIMED_TASK) - 100 / (1 * 24 * 60 * 60) AND (SELECT max(CREATETIME)   " +
                 "       FROM TIMED_TASK)) AND STATUS =  0";
 
         if(taskType!=null && !"".equals(taskType.trim())){
@@ -64,8 +64,10 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
             pageResult = this.execSqlPage(pageable, sql, list.toArray());
             Iterator<Map<String, Object>> iterator = pageResult.iterator();
             HashOperations hashOperations = redisTemplate.opsForHash();
+
             while (iterator.hasNext()){
                 Map<String, Object> next = iterator.next();
+
                 String userID =(String)next.get("USER_ID");
                 Object userInformation = hashOperations.get("UserInformation", userID);
                 if(userInformation==null){
@@ -97,21 +99,45 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
 
         try {
             //巡视sql
-            String findSql1 = "select TASK_NAME,STAUTS,ID,CM_USER_ID from XS_ZC_TASK ";
+            String findSql1 = "select x.TASK_NAME,x.STAUTS,x.ID,x.CM_USER_ID from XS_ZC_TASK x" +
+                    "  WHERE x.ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 ) AND  x.STAUTS != 0 ";
             //看护sql
-            String findSql2 = "SELECT kht.TASK_NAME,kht.ID,kht.STATUS,USER_ID FROM KH_TASK kht";
+            String findSql2 = "SELECT kht.TASK_NAME,kht.ID,kht.STATUS,USER_ID FROM KH_TASK kht WHERE kht.ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1)  AND kht.STATUS != 0 ";
             List<Map<String, Object>> maps = this.execSql(findSql1, null);
             List<Map<String, Object>> maps2 = this.execSql(findSql2, null);
-            maps.stream().forEach(a->repository.xsTaskAdd(null!= a.get("STAUTS")?a.get("STAUTS").toString():"4"
+            Iterator<Map<String, Object>> iterator = maps.iterator();
+            while (iterator.hasNext()){
+                Map<String, Object> a = iterator.next();
+                Integer CheckStatus = 0;
+                //任务状态  0 未开始   1 进行中  2 已完成  3 未知或值为空
+                if("2".equals( a.get("STAUTS").toString())){
+                    CheckStatus = 1;
+                }
+                repository.xsTaskAdd(null!= a.get("STAUTS")?a.get("STAUTS").toString():"4"
                         ,new SimpleDateFormat("YYYY-MM-dd HH:mm:ss").format(new Date()),
-                            null!= a.get("ID")?a.get("ID").toString():"",UUID.randomUUID().toString(),
-                                null!=a.get("CM_USER_ID")?a.get("CM_USER_ID").toString():"","1" ,
-                                    null!=a.get("TASK_NAME")?a.get("TASK_NAME").toString():""));
+                        null!= a.get("ID")?a.get("ID").toString():"",UUID.randomUUID().toString(),
+                        null!=a.get("CM_USER_ID")?a.get("CM_USER_ID").toString():"","1" ,
+                        null!=a.get("TASK_NAME")?a.get("TASK_NAME").toString():"",CheckStatus);
+
+
+
+
+            }
             //     看护任务状态标识为中文
-           maps2.stream().forEach(b->repository.xsTaskAdd(
-                    null!=b.get("STATUS")?b.get("STATUS").toString():"4",
+
+            Iterator<Map<String, Object>> iterator1 = maps2.iterator();
+            while (iterator1.hasNext()){
+                Map<String, Object> b = iterator1.next();
+                Integer CheckStatus = 0;
+                if("2".equals(b.get("STATUS").toString())){
+                    CheckStatus = 1;
+                }
+               repository.xsTaskAdd(
+                        null!=b.get("STATUS")?b.get("STATUS").toString():"4",
                         new SimpleDateFormat("YYYY-MM-dd HH:mm:ss").format(new Date()),null != b.get("ID")?b.get("ID").toString():"",UUID.randomUUID().toString(),
-                            null != b.get("USER_ID")? b.get("USER_ID").toString():"","2" ,null != b.get("TASK_NAME")?b.get("TASK_NAME").toString():""));
+                        null != b.get("USER_ID")? b.get("USER_ID").toString():"","2" ,null != b.get("TASK_NAME")?b.get("TASK_NAME").toString():"",CheckStatus);
+
+            }
 
         }catch (Exception e){
             LOGGER.error("定时任务查询添加失败"+e.getStackTrace());
