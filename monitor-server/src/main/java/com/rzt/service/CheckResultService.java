@@ -65,25 +65,25 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
 	}
 
 
-	public Object getQuestion(Long taskId) {
+	public Object getQuestion(Long questionTaskId) {
 		String sql = "SELECT r.*  " +
 				"FROM CHECK_RESULT r LEFT JOIN CHECK_DETAIL d ON r.CHECK_DETAIL_ID = d.ID  " +
 				"WHERE d.QUESTION_TASK_ID = ?1";
-        List<Map<String, Object>> maps = execSql(sql, taskId);
+        List<Map<String, Object>> maps = execSql(sql, questionTaskId);
         return maps;
     }
 
     public Object getCheckRecord(Integer page, Integer size,String startDate,String endDate,Integer taskType,Integer status) {
         Pageable pageable = new PageRequest(page,size);
         //暂时去数据库查，之后从redis拿就可以
-        String sql = "SELECT ud.*,co.COMPANYNAME FROM  " +
-                "  (SELECT uc.*,d.DEPTNAME FROM  " +
-                "  (SELECT tc.*,u.DEPTID,u.COMPANYID,u.PHONE,u.REALNAME FROM  " +
-                "  (SELECT t.TASKID,t.TASKNAME,c.CHECK_USER,c.CREATE_TIME,t.TASKTYPE,t.STATUS FROM TIMED_TASK t  " +
-                "    LEFT JOIN CHECK_DETAIL c ON t.TASKID = c.QUESTION_TASK_ID) tc  " +
-                "LEFT JOIN RZTSYSUSER u ON tc.CHECK_USER = u.ID) uc  " +
-                "LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = uc.DEPTID) ud  " +
-                "LEFT JOIN RZTSYSCOMPANY co ON ud.COMPANYID = co.ID";
+        String sql = "SELECT ud.*,co.COMPANYNAME FROM   " +
+				"  (SELECT uc.*,d.DEPTNAME FROM   " +
+				"  (SELECT tc.*,u.DEPTID,u.COMPANYID,u.PHONE,u.REALNAME FROM   " +
+				"  (SELECT t.TASKID,t.TASKNAME,c.CHECK_USER,c.CREATE_TIME,t.TASKTYPE,t.STATUS FROM TIMED_TASK t   " +
+				"    JOIN CHECK_DETAIL c ON t.TASKID = c.QUESTION_TASK_ID WHERE t.STATUS=1) tc   " +
+				"LEFT JOIN RZTSYSUSER u ON tc.CHECK_USER = u.ID) uc   " +
+				"LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = uc.DEPTID) ud   " +
+				"LEFT JOIN RZTSYSCOMPANY co ON ud.COMPANYID = co.ID";
         List<Object> list = new ArrayList<>();
         String s = "";
         if(taskType!=null){
@@ -109,4 +109,6 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
         }
         return WebApiResponse.success(pageResult);
     }
+
+
 }
