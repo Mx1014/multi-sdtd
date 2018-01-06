@@ -1,15 +1,12 @@
 package com.rzt.repository;
 
-import java.util.List;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
 import com.rzt.entity.CheckResult;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CheckResultRepository extends JpaRepository<CheckResult,String> {
 
-	
 
 }
