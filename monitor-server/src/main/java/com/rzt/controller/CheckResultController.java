@@ -6,9 +6,10 @@ import com.rzt.service.CheckDetailService;
 import com.rzt.service.CheckResultService;
 import com.rzt.util.WebApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -63,9 +64,8 @@ public class CheckResultController extends CurdController<CheckResult,CheckResul
 	 *@date 2017年12月19日
 	 */
 	@RequestMapping("/getCheckResult")
-	public WebApiResponse getCheckResult(Integer page,Integer size,CheckDetail checkDetail){
+	public WebApiResponse getCheckResult(@RequestParam(value = "page",defaultValue = "0") Integer page, @RequestParam(value = "size",defaultValue = "8") Integer size,CheckDetail checkDetail){
 		try {
-
 			return WebApiResponse.success(resultservice.getCheckResult(page,size,checkDetail));
 		} catch (Exception e) {
 			return WebApiResponse.erro("查询失败！"+e.getMessage());
@@ -79,9 +79,9 @@ public class CheckResultController extends CurdController<CheckResult,CheckResul
 	 *@Date 2018/1/5 16:18
 	 */
 	@GetMapping("getQuestion")
-	public WebApiResponse getQuestion(Long questionTaskId){
+	public WebApiResponse getQuestion(Long taskId){
 		try {
-			return WebApiResponse.success(resultservice.getQuestion(questionTaskId));
+			return WebApiResponse.success(resultservice.getQuestion(taskId));
 		}catch (Exception e){
 			return WebApiResponse.erro("查询失败："+e.getMessage());
 		}
@@ -98,9 +98,6 @@ public class CheckResultController extends CurdController<CheckResult,CheckResul
 			return WebApiResponse.erro("查询失败！"+e.getMessage());
 		}
 	}
-
-
-
 
 	
 }
