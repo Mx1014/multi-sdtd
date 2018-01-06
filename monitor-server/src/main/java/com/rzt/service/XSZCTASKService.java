@@ -255,4 +255,10 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
         stringMapHashMap.put("THWZ",maps3);
         return WebApiResponse.success(stringMapHashMap);
     }
+
+
+    @Transactional
+    public void checkOff(Long questionTaskId) {
+        repository.xsTaskUpdate(questionTaskId);
+    }
 }
