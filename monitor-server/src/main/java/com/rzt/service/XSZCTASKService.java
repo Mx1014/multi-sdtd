@@ -40,7 +40,6 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
         List<Object> list = new ArrayList<>();
         Pageable pageable = new PageRequest(page, size, null);
         //sql 中 拉取数据为刷新时间至刷新时间前10分钟
-        Integer taskTime = 10*60;
         String sql = " SELECT  ID, " +
                 "  TASKID,   " +
                 "  CREATETIME,   " +
@@ -49,7 +48,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                 "  TASKTYPE,CHECKSTATUS ,TARGETSTATUS  " +
                 "FROM TIMED_TASK   " +
                 "WHERE (CREATETIME BETWEEN (SELECT max(CREATETIME)   " +
-                "     FROM TIMED_TASK) - "+taskTime+" / (1 * 24 * 60 * 60) AND (SELECT max(CREATETIME)   " +
+                "     FROM TIMED_TASK) - 600 / (1 * 24 * 60 * 60) AND (SELECT max(CREATETIME)   " +
                 "       FROM TIMED_TASK)) AND STATUS =  0";
 
         if(taskType!=null && !"".equals(taskType.trim())){
