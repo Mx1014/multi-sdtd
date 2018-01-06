@@ -23,5 +23,4 @@ public interface XSZCTASKRepository extends JpaRepository<TimedTask, String> {
     int xsTaskUpdate(Long TASKID);
 
 
-
 }

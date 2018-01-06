@@ -13,10 +13,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.transaction.Transactional;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -257,5 +255,11 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
         stringMapHashMap.put("XQ",maps2);
         stringMapHashMap.put("THWZ",maps3);
         return WebApiResponse.success(stringMapHashMap);
+    }
+
+
+    @Transactional
+    public void checkOff(Long questionTaskId) {
+        repository.xsTaskUpdate(questionTaskId);
     }
 }
