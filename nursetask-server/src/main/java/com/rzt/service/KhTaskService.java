@@ -325,6 +325,9 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         }
     }
 
+
+
+
     //生成任务的逻辑
     public void createTask() {
         List<KhSite> list = siteRepository.findSites();
@@ -332,23 +335,22 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
             double cycle = site.getCycle();  //一轮任务时长
             Date startTime = DateUtil.parseDate(site.getPlanStartTime());
             Date endTime = DateUtil.parseDate(site.getPlanEndTime());
-            if (cycle > 24) {
+            if (cycle > 0) {
                 //如果下次任务开始时间是今天  生成任务
-                if (DateUtil.addDate(startTime, cycle).getTime() < DateUtil.getBiggest()) {
-                    startTime = DateUtil.addDate(startTime, cycle);
-                    endTime = DateUtil.addDate(endTime, cycle);
-                    this.saveTask(site, startTime, endTime);
-                    //如果不是不生成
-                }
-                //如果周期小于24
-            } else if (cycle <= 24 && cycle > 0) {
                 while (DateUtil.addDate(startTime, cycle).getTime() < DateUtil.getBiggest()) {
                     startTime = DateUtil.addDate(startTime, cycle);
                     endTime = DateUtil.addDate(endTime, cycle);
-                    this.saveTask(site, startTime, endTime);
+                    saveTask(site, startTime, endTime);
                 }
-            }
+                //如果周期小于24
+            } /*else if (cycle <= 24 && cycle > 0) {
+                while (DateUtil.addDate(startTime, cycle).getTime() < DateUtil.getBiggest()) {
+                    startTime = DateUtil.addDate(startTime, cycle);
+                    endTime = DateUtil.addDate(endTime, cycle);
+                    saveTask(site, startTime, endTime);
+                }*/
         }
+
     }
 
 
@@ -367,10 +369,10 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         task.setCreateTime(DateUtil.dateNow());
         task.setYhId(site.getYhId());
         task.setStatus(0);
-        this.reposiotry.addTask(task.getId(),task.getSiteId(),task.getUserId(),task.getTaskName(),task.getYhId(),
-               task.getPlanStartTime(),task.getPlanEndTime(),task.getWxOrg(),task.getCount(),task.getTdywOrg());
+        this.reposiotry.addTask(task.getId(), task.getSiteId(), task.getUserId(), task.getTaskName(), task.getYhId(),
+                task.getPlanStartTime(), task.getPlanEndTime(), task.getWxOrg(), task.getCount(), task.getTdywOrg());
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        this.reposiotry.updateSite(formatter.format(startTime), formatter.format(endTime), site.getId());
+        this.reposiotry.updateSite(formatter.format(startTime), formatter.format(endTime), site.getId(),count);
     }
 
 }

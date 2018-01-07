@@ -51,7 +51,7 @@ public class TimedService  extends CurdService<TimedTask,XSZCTASKRepository>{
      * @param nightTime 夜间周期
      * @param daytime   白天周期
      * @param startTime 开始时间 代表白天的刷新点
-     * @param endTime  结束时间代表夜间刷新点
+     * @param endTime   结束时间 代表夜间刷新点
      * @return
      */
     @Transactional

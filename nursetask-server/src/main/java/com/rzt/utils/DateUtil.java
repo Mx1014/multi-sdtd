@@ -118,7 +118,6 @@ public class DateUtil {
       // cal.setTime(date);
       //  cal.add(Calendar.L, hour);// 24小时制
         date = cal.getTime();
-        System.out.println("after:" + date);  //显示更新后的日期
        // return format.format(date);
         return date;
     }

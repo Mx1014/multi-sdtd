@@ -69,14 +69,21 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
 
 
 	public Object getQuestion(Long questionTaskId) {
-        ArrayList<Long> longs = new ArrayList<>();
-        longs.add(questionTaskId);
-        String sql = "SELECT r.*  " +
-				"FROM CHECK_RESULT r LEFT JOIN CHECK_DETAIL d ON r.CHECK_DETAIL_ID = d.ID  " +
-				"WHERE d.QUESTION_TASK_ID = ?"+longs.size();
+        ArrayList<String> longs = new ArrayList<>();
+        longs.add(questionTaskId+"");
+        String sql = "SELECT r.*,d.CHECK_DETAIL_TYPE  " +
+				" FROM CHECK_RESULT r LEFT JOIN CHECK_DETAIL d ON r.CHECK_DETAIL_ID = d.ID  " +
+				" WHERE d.QUESTION_TASK_ID = ?"+longs.size();
         List<Map<String, Object>> maps = execSql(sql, longs.toArray());
         return maps;
     }
+
+    public static void main(String[] args) {
+        String ids = "399188390399967232,,399188359655718912,,399187987696451584,,399187952967614464,,399187454755602432,399187415350116352,";
+        String substring = ids.substring(0, ids.length() - 1);
+        System.out.println(substring);
+    }
+
 
     public Object getCheckRecord(Integer page, Integer size,String startDate,String endDate,Integer taskType,String vLevel,Integer lineId) {
         Pageable pageable = new PageRequest(page,size);
