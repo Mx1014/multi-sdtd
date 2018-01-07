@@ -68,10 +68,5 @@ public class DateUtil {
         return new Date();
     }
 
-    public static void main(String[] args) throws ParseException {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-        Date parse = sdf.parse("2017-12-30 00:00:00");
-        System.out.println(parse);
-    }
 
 }

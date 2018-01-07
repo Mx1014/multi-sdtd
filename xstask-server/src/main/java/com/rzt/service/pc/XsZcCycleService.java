@@ -6,6 +6,8 @@
  */
 package com.rzt.service.pc;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.app.XSZCTASK;
 import com.rzt.entity.pc.XsZcCycle;
 import com.rzt.entity.pc.XsZcCycleLineTower;
@@ -15,12 +17,13 @@ import com.rzt.service.CurdService;
 import com.rzt.service.app.XSZCTASKService;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DateUtil;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,12 +46,15 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
     private XSZCTASKService xszctaskService;
     @Autowired
     private XsZcCycleLineTowerService xsZcCycleLineTowerService;
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
     /***
     * @Method
      * addCycle
     * @Description 新增周期
     * @param xsZcCycle
-    * @return java.lang.Object
+    * @param userId
+     * @return java.lang.Object
     * @date 2017/12/8 9:18
     * @author nwz
     */
@@ -57,10 +63,13 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
 
     @Modifying
     @Transactional
-    public void addCycle(XsZcCycle xsZcCycle) {
+    public void addCycle(XsZcCycle xsZcCycle, String userId) throws Exception {
+//        Map<String,Object> userInfo = userInfoFromRedis(userId);
+//        String deptid = userInfo.get("DEPTID").toString();
         //添加周期
         xsZcCycle.setId();
-        xsZcCycle.setCreateTime(new Date());
+        xsZcCycle.setCreateTime(DateUtil.dateNow());
+//        xsZcCycle.setTdywOrg(deptid);
         this.add(xsZcCycle);
         //添加周期表关联的线路杆塔
         Long xsZcCycleId = xsZcCycle.getId();
@@ -83,6 +92,12 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
     @Transactional
     public Object addPlan(XSZCTASK xszctask) {
         try {
+            String userId = xszctask.getCmUserId();
+            Map<String,Object> jsonObject = userInfoFromRedis(userId);
+            String deptid = jsonObject.get("DEPTID").toString();
+            String classid = jsonObject.get("CLASSID").toString();
+            String companyid = jsonObject.get("COMPANYID").toString();
+
             //拿到周期相关的信息
             Long xsZcCycleId = xszctask.getXsZcCycleId();
             String sql = "select task_name,section,plan_xs_num,cycle,total_task_num from xs_zc_cycle where id = ?1";
@@ -102,15 +117,18 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
                 xszctask.setTaskNumInCycle(0);
                 xszctask.setStauts(0);
                 xszctask.setPdTime(DateUtil.dateNow());
+                xszctask.setTdOrg(deptid);
+                xszctask.setWxOrg(companyid);
+                xszctask.setClassId(classid);
 
                 xszctaskService.add(xszctask);
-                this.reposiotry.updateTotalTaskNum(xsZcCycleId);
+                this.reposiotry.updateTotalTaskNum(xsZcCycleId,classid,companyid,userId);
             }
 
 
             return WebApiResponse.success("数据保存成功!");
         } catch (Exception var3) {
-            return WebApiResponse.erro("数据保存失败" + var3.getMessage());
+            return WebApiResponse.erro("数据保存失败" + var3.getStackTrace());
         }
     }
 
@@ -119,15 +137,18 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
     * @Method cycleList
     * @Description 巡视任务周期列表
     * @param [pageable, xsTaskSch]
-    * @return java.lang.Object
+    * @param userId
+     * @return java.lang.Object
     * @date 2017/12/14 10:34
     * @author nwz
     */
-    public Object cycleList(Pageable pageable, XsTaskSCh xsTaskSch) throws Exception {
+    public Object cycleList(Pageable pageable, XsTaskSCh xsTaskSch, String userId) throws Exception {
+        String authoritySql = userAuthority(userId);//把权限的sql给我
+
         StringBuffer sqlBuffer = new StringBuffer();
         ArrayList arrList = new ArrayList();
-        sqlBuffer.append("SELECT id,plan_xs_num xspl,plan_start_time,plan_end_time,v_level \"vLevel\",task_name \"taskName\",section,cycle,tdyw_org \"tdywOrg\",in_use \"inUse\",total_task_num \"totalTaskNum\",create_time \"createTime\" FROM xs_zc_cycle where 1 = 1 and is_delete = 0");
-
+        sqlBuffer.append("SELECT id,plan_xs_num xspl,plan_start_time,plan_end_time,v_level \"vLevel\",task_name \"taskName\",section,cycle,td_org \"tdywOrg\",in_use \"inUse\",total_task_num \"totalTaskNum\",create_time \"createTime\" FROM xs_zc_cycle where 1 = 1 and is_delete = 0");
+        sqlBuffer.append(authoritySql);//我是权限
         //开始日期  结束日期
         Date startDate = xsTaskSch.getStartDate();
         Date endDate = xsTaskSch.getEndDate();
@@ -175,6 +196,70 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
         return maps;
     }
 
+
+    /***
+    * @Method userAuthority
+    * @Description  权限模块
+    * @param [userId]
+    * @return void
+    * @date 2018/1/3 10:12
+    * @author nwz
+    */
+    public String userAuthority(String userId) throws Exception {
+        String authoritySql = "";
+        if(userId != null) {
+            //从reids中拿userInfo
+            Map<String,Object> jsonObject = userInfoFromRedis(userId);
+            try {
+                Integer roletype = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
+                String deptid = jsonObject.get("DEPTID").toString();
+                String classid = jsonObject.get("CLASSID").toString();
+                String companyid = jsonObject.get("COMPANYID").toString();
+                switch (roletype) {
+                    case 0:
+                        break;
+                    case 1:
+                        break;
+                    case 2:
+                        authoritySql = " and td_org = '" + deptid + "'";
+                        break;
+                    case 3:
+                        authoritySql = " and wx_org = '" + companyid + "'";
+                        break;
+                    case 4:
+                        authoritySql = " and class_id = '" + classid + "'";
+                        break;
+                    case 5:
+                        authoritySql = " and cm_user_id = '" + userId + "'";
+                        break;
+                }
+                return authoritySql;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return authoritySql;
+            }
+
+        }
+        //拼权限的sql
+        return authoritySql;
+
+    }
+
+    public Map<String, Object> userInfoFromRedis(String userId) throws Exception {
+        HashOperations hashOperations = redisTemplate.opsForHash();
+
+        Map<String,Object> jsonObject = null;
+        Object userInformation = hashOperations.get("UserInformation", userId);
+        if(userInformation == null) {
+            String sql = "select * from userinfo where id = ?";
+            jsonObject = this.execSqlSingleResult(sql, userId);
+            hashOperations.put("UserInformation",userId,jsonObject);
+        } else {
+            jsonObject = JSON.parseObject(userInformation.toString(),Map.class);
+        }
+        return jsonObject;
+    }
+
     /**
     * @Method logicalDelete
     * @Description 逻辑删除
@@ -191,15 +276,18 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
     * @Method listPlan
     * @Description 任务列表
     * @param [pageable, xsTaskSch]
-    * @return java.lang.Object
+    * @param userId
+     * @return java.lang.Object
     * @date 2017/12/14 14:17
     * @author nwz
     */
-    public Object listPlan(Pageable pageable, XsTaskSCh xsTaskSch) {
+    public Object listPlan(Pageable pageable, XsTaskSCh xsTaskSch, String userId1) throws Exception {
+        String authoritySql = userAuthority(userId1);//把权限的sql给我
+
         StringBuffer sqlBuffer = new StringBuffer();
         ArrayList arrList = new ArrayList();
         sqlBuffer.append("SELECT * FROM xs_zc_task where 1 = 1 and is_delete = 0 ");
-
+        sqlBuffer.append(authoritySql);//拼上权限的sql
         //开始日期 结束日期
         Date startDate = xsTaskSch.getStartDate();
         Date endDate = xsTaskSch.getEndDate();
@@ -226,8 +314,8 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
 
         //线路id
         Long lineId = xsTaskSch.getLineId();
-        if (userId != null) {
-            sqlBuffer.append("and cm_user_id = ? ");
+        if (lineId != null) {
+            sqlBuffer.append("and line_id = ? ");
             arrList.add(userId);
         }
 
@@ -246,14 +334,14 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
     * @date 2017/12/15 16:56
     * @author nwz
     */
-    @Cacheable(value = "xsZcCycles" , key = "#id")
+//    @Cacheable(value = "xsZcCycles" , key = "#id")
     public Object getCycle(Long id) throws Exception{
         String sql = "select * from xs_zc_cycle where id = ?";
         Map<String, Object> cycle = this.execSqlSingleResult(sql, id);
         return cycle;
     }
 
-    @CacheEvict(value = "xsZcCycles" , key = "#id")
+//    @CacheEvict(value = "xsZcCycles" , key = "#id")
     public void updateCycle(Long id, Integer cycle, Integer inUse, Integer planXsNum, String planStartTime, String planEndTime) {
         this.reposiotry.updateCycle(id,cycle,inUse,planXsNum,planStartTime,planEndTime);
     }
@@ -282,4 +370,5 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
     public void logicalDeletePlan(Long[] ids) {
         this.reposiotry.logicalDeletePlan(ids);
     }
+
 }

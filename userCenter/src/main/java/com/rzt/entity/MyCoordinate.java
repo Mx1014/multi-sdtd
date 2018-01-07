@@ -42,6 +42,16 @@ public class MyCoordinate {
 
     private String imei2;
 
+    private String groupId;
+
+    public String getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
+    }
+
     private float longitude;
     private float latitude;
 

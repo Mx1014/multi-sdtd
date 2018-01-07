@@ -107,24 +107,22 @@ public class DateUtil {
         return s;
     }
 
-    public static Long addDate(String day, int hour){
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    public static Date addDate(Date date, int hour){
+        /*SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date date = null;
         try {
             date = format.parse(day);
         } catch (Exception ex) {
             ex.printStackTrace();
-        }
+        }*/
 //        System.out.println("front:" + format.format(date)); //显示输入的日期
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
         cal.add(Calendar.HOUR, hour);// 24小时制
         date = cal.getTime();
-        System.out.println("after:" + format.format(date));  //显示更新后的日期
-        cal = null;
+        System.out.println("after:" + date);  //显示更新后的日期
        // return format.format(date);
-        return date.getTime();
-
+        return date;
     }
 
     public static Long getBiggest(){

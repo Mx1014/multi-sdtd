@@ -13,10 +13,12 @@ import com.rzt.entity.model.KhTaskModel;
 import com.rzt.repository.KhCycleRepository;
 import com.rzt.repository.KhSiteRepository;
 import com.rzt.repository.KhTaskRepository;
+import com.rzt.repository.KhYhHistoryRepository;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DateUtil;
 import com.rzt.utils.MapUtil;
 import com.rzt.utils.RedisUtil;
+import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +31,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import redis.clients.jedis.Jedis;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -49,18 +55,14 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
     @Autowired
     private KhYhHistoryService yhservice;
     @Autowired
-    private CheckLiveTaskService checkService;
-    @Autowired
-    private KhSiteRepository siteRepository;
+    private KhYhHistoryRepository yhRepository;
     @Autowired
     private KhTaskService taskService;
     @Autowired
     private KhCycleService cycleService;
     @Autowired
     private KhCycleRepository cycleRepository;
-    @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
-    private Map<String, Object> map;
+
 
     public Object listAllTaskNotDo(KhTaskModel task, Pageable pageable, String userName, String deptId, String roleType) {
         List params = new ArrayList<>();
@@ -140,8 +142,6 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
         this.reposiotry.updateDoingTask(yhid, DateUtil.dateNow());
         this.reposiotry.updateYH(yhid, DateUtil.dateNow());
         this.reposiotry.updateKhCycle(yhid);
-        //将带稽查 已完成稽查的看护任务状态修改
-        // this.reposiotry.updateCheckTask(id, DateUtil.dateNow());
     }
 
 
@@ -150,25 +150,22 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
         KhCycle site = this.cycleRepository.findCycle(id);
         this.reposiotry.updateYH(site.getYhId(), DateUtil.dateNow());
         this.reposiotry.updateKhCycle(id);
-        //将带稽查 已完成稽查的看护任务状态修改
-        // this.reposiotry.updateCheckTask(id, DateUtil.dateNow());
     }
 
     public List<Map<String, Object>> findAlls() {
         String sql = "select * from kh_site";
         List<Map<String, Object>> maps = this.execSql(sql);
-        //List<KhSite> all = this.reposiotry.findAll();
         return maps;
     }
 
     public List listKhtaskByid(long id) {
-        String result = "k.task_name as taskname,y.yhms as ms,y.yhjb as jb,u.realname as name";
-        String sql = "select " + result + " from kh_site k left join rztsysuser u on u.id = k.user_id left join kh_yh_history y on y.id = k.yh_id where k.id=?";
+        String result = "k.task_name as taskname,k.plan_start_time starttime,k.plan_end_time endtime,d.deptname deptname,y.yhms as ms,y.yhjb as jb,u.realname as name";
+        String sql = "select " + result + " from kh_site k left join rztsysuser u on u.id = k.user_id left join kh_yh_history y on y.id = k.yh_id left join rztsysdepartment d on d.id=u.classname where k.id=?";
         return this.execSql(sql, id);
     }
 
     @Transactional
-    public WebApiResponse saveYh(KhYhHistory yh, String fxtime, String startTowerName, String endTowerName) {
+    public WebApiResponse saveYh(KhYhHistory yh, String fxtime, String startTowerName, String endTowerName,String pictureId) {
         try {
             yh.setYhfxsj(DateUtil.parseDate(fxtime));
             yh.setSfdj(0);
@@ -181,9 +178,9 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                 double jd = (Double.parseDouble(map.get("LONGITUDE").toString()) + Double.parseDouble(map1.get("LONGITUDE").toString())) / 2;
                 double wd = (Double.parseDouble(map.get("LATITUDE").toString()) + Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
                 double radius = MapUtil.GetDistance(Double.parseDouble(map.get("LONGITUDE").toString()), Double.parseDouble(map.get("LATITUDE").toString()), Double.parseDouble(map1.get("LONGITUDE").toString()), Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
-                yh.setRadius(radius + "");
-                yh.setJd(jd + "");
-                yh.setWd(wd + "");
+                yh.setRadius("100.0");
+                yh.setJd(map.get("LONGITUDE").toString());
+                yh.setWd(map.get("LATITUDE").toString());
             }
             KhCycle task = new KhCycle();
             task.setId();
@@ -193,6 +190,9 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             yh.setCreateTime(DateUtil.dateNow());
             yh.setSection(startTowerName + "-" + endTowerName);
             yhservice.add(yh);
+            if (yh.getVtype().contains("kV")){
+                yh.setVtype(yh.getVtype().substring(0,yh.getVtype().indexOf("k")));
+            }
             String taskName = yh.getVtype() + yh.getLineName() + startTowerName + "-" + endTowerName + " 号杆塔看护任务";
             task.setVtype(yh.getVtype());
             task.setLineName(yh.getLineName());
@@ -207,6 +207,13 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             task.setYhId(yh.getId());
             task.setCreateTime(DateUtil.dateNow());
             this.cycleService.add(task);
+            if (null!=pictureId && !pictureId.equals("")){
+                String[] split = pictureId.split(",");
+                for (int i = 0;i<split.length;i++){
+                    yhRepository.updatePicture(Long.parseLong(split[i]),yh.getId());
+                    //审批完成后   为图片添加taskId
+                }
+            }
             return WebApiResponse.success("保存成功");
         } catch (Exception e) {
             e.printStackTrace();
@@ -236,7 +243,10 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             List<Map<Object, String>> list = (List<Map<Object, String>>) JSONObject.parse(tasks);
             KhCycle cycle = this.cycleRepository.findCycle(Long.parseLong(id));
             String groupFlag = System.currentTimeMillis() + "";
-//            int cycle1 =
+            Date time1=DateUtil.parseDate(list.get(0).get("planStartTime").toString());
+            Date time2=DateUtil.parseDate(list.get(list.size()-1).get("planEndTime").toString());
+            int cycle1 = (int)DateUtil.getDatePoor(time1,time2);
+//            int cycle1 =List.get(0).get("planStartTime").toString();
             for (Map map : list) {
                 KhTask task = new KhTask();
                 KhSite site = new KhSite();
@@ -247,7 +257,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                 site.setId();
                 site.setVtype(cycle.getVtype());
                 site.setLineName(cycle.getLineName());
-//                site.setCycle(list.get(0).get("p"));
+                site.setCycle(cycle1);
                 site.setLineId(cycle.getLineId());
                 site.setSection(cycle.getSection());
                 site.setStatus(1);
@@ -296,7 +306,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
 
     public WebApiResponse listJpgById(String taskId) {
         try {
-            String sql = "select file_path,create_time,PROCESS_NAME,FILE_SMALL_PATH as smallPath from picture_kh where task_id = ? and file_type=1 order by PROCESS_ID";
+            String sql = "select file_path,PROCESS_ID,create_time,PROCESS_NAME,FILE_SMALL_PATH as smallPath from picture_kh where task_id = ? and file_type=1 order by PROCESS_ID";
             return WebApiResponse.success(this.execSql(sql, Long.parseLong(taskId)));
         } catch (Exception e) {
             e.printStackTrace();
@@ -313,6 +323,143 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("图片获取失败" + e.getMessage());
+        }
+    }
+
+    public void exportNursePlan(HttpServletRequest request, HttpServletResponse response) {
+        try {
+            List<Map<String, Object>> taskList = this.findAlls();
+            //this.service.exportExcel(response);
+
+            //String ecxcelModelPath = rootpath + "excelModels"+File.separator+"看护任务导出表.xlsx";
+            //InputStream in = new FileInputStream(ecxcelModelPath);
+            //XSSFWorkbook wb = new XSSFWorkbook(in);
+            String rootpath = request.getSession().getServletContext().getRealPath(File.separator);
+            XSSFWorkbook wb = new XSSFWorkbook();
+            XSSFSheet sheet = wb.createSheet("看护周期");
+
+            // 设置列宽
+            sheet.setColumnWidth((short) 0, (short) 6000);
+            sheet.setColumnWidth((short) 1, (short) 6000);
+            sheet.setColumnWidth((short) 2, (short) 6000);
+            sheet.setColumnWidth((short) 3, (short) 6000);
+            sheet.setColumnWidth((short) 4, (short) 6000);
+            sheet.setColumnWidth((short) 5, (short) 6000);// 空列设置小一些
+            sheet.setColumnWidth((short) 6, (short) 6000);// 设置列宽
+            sheet.setColumnWidth((short) 7, (short) 6000);
+            sheet.setColumnWidth((short) 8, (short) 6000);
+            sheet.setColumnWidth((short) 9, (short) 6000);
+
+            XSSFCellStyle cellstyle = wb.createCellStyle();// 设置表头样式
+            cellstyle.setAlignment(XSSFCellStyle.ALIGN_CENTER);// 设置居中
+
+            XSSFCellStyle headerStyle = wb.createCellStyle();// 创建标题样式
+            headerStyle.setVerticalAlignment(XSSFCellStyle.VERTICAL_CENTER);    //设置垂直居中
+            headerStyle.setAlignment(XSSFCellStyle.ALIGN_CENTER);   //设置水平居中
+            XSSFFont headerFont = wb.createFont(); //创建字体样式
+            headerFont.setBoldweight(XSSFFont.BOLDWEIGHT_BOLD); // 字体加粗
+            headerFont.setFontName("Times New Roman");  //设置字体类型
+            headerFont.setFontHeightInPoints((short) 12);    //设置字体大小
+            headerStyle.setFont(headerFont);    //为标题样式设置字体样式
+
+            XSSFRow row = sheet.createRow(0);
+            XSSFCell cell = row.createCell((short) 0);
+            cell.setCellValue("任务名称");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 1);
+            cell.setCellValue("电压等级");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 2);
+            cell.setCellValue("线路名称");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 3);
+            cell.setCellValue("段落");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 4);
+            cell.setCellValue("看护人");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 5);
+            cell.setCellValue("所属队伍");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 6);
+            cell.setCellValue("通道运维单位");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 7);
+            cell.setCellValue("外协单位");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 8);
+            cell.setCellValue("创建时间");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 9);
+            cell.setCellValue("几班倒");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 10);
+            cell.setCellValue("任务状态");
+            cell.setCellStyle(headerStyle);
+            //Sheet sheet = wb.getSheetAt(0);
+            for (int i = 0; i < taskList.size(); i++) {
+                row = sheet.createRow(i + 1);
+                //Row row = sheet.getRow(i+1);
+                Map<String, Object> task = taskList.get(i);
+                if (task.get("TASK_NAME") != null) {
+                    row.createCell(0).setCellValue(task.get("TASK_NAME").toString());//任务名称
+                }
+                if (task.get("VTYPE") != null) {
+                    row.createCell(1).setCellValue(task.get("VTYPE").toString());//派发时间
+                }
+                if (task.get("LINE_NAME") != null) {
+                    row.createCell(2).setCellValue(task.get("LINE_NAME").toString());//计划开始时间
+                }
+                if (task.get("SECTION") != null) {
+                    row.createCell(3).setCellValue(task.get("SECTION").toString());//计划结束时间
+                }
+
+                if (task.get("USER_ID") != null) {
+                    String sql = "select u.realname REALNAME,d.deptname DEPTNAME from rztsysuser u left join rztsysdepartment d on d.id = u.classname where u.id=?";
+                    List<Map<String, Object>> list = this.execSql(sql, task.get("USER_ID").toString());
+                    if (!list.isEmpty()) {
+                        row.createCell(4).setCellValue(list.get(0).get("REALNAME").toString());//通道单位
+                        try {
+                            String deptname = list.get(0).get("DEPTNAME").toString();
+                            row.createCell(5).setCellValue(list.get(0).get("DEPTNAME").toString());
+                        } catch (Exception e) {
+                            row.createCell(5).setCellValue("");
+                        }
+                    }
+                }
+                if (task.get("TDYW_ORG") != null) {
+                    row.createCell(6).setCellValue(task.get("TDYW_ORG").toString());//班组
+                }
+                if (task.get("WX_ORG") != null) {
+                    row.createCell(7).setCellValue(task.get("WX_ORG").toString());//巡视人员
+                }
+                if (task.get("CREATE_TIME") != null) {
+                    row.createCell(8).setCellValue(task.get("CREATE_TIME").toString());
+                }
+                if (task.get("JBD") != null) {
+                    row.createCell(9).setCellValue(task.get("JBD").toString());
+                }
+                int status = Integer.parseInt(task.get("STATUS").toString());
+                //该次执行状态(0待办,1进行中,2完成)
+
+                if (status == 0) {
+                    row.createCell(10).setCellValue("未派发");
+                } else if (status == 1) {
+                    row.createCell(10).setCellValue("已派发");
+                } else if (status == 2) {
+                    row.createCell(10).setCellValue("已消缺");
+                }
+
+            }
+
+            OutputStream output = response.getOutputStream();
+            response.reset();
+            response.setHeader("Content-disposition", "attachment; filename=" + new String("看护任务导出表.xlsx".getBytes("utf-8"), "iso8859-1"));
+            response.setContentType("Content-Type:application/vnd.ms-excel ");
+            wb.write(output);
+            output.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

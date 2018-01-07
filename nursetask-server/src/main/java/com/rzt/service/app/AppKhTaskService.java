@@ -212,7 +212,7 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
 
     public WebApiResponse appListTaskDone(String userId, long taskId) {
         try {
-            String sql = "SELECT k.TASK_NAME taskname,y.YHMS ms,y.YHJB jb,k.PLAN_START_TIME starttime,k.PLAN_END_TIME endtime,u.REALNAME name,u.PHONE phone,d.DEPTNAME\n" +
+            String sql = "SELECT k.status status,k.TASK_NAME taskname,y.YHMS ms,y.YHJB jb,k.PLAN_START_TIME starttime,k.PLAN_END_TIME endtime,u.REALNAME name,u.PHONE phone,d.DEPTNAME\n" +
                     "from KH_TASK k,KH_YH_HISTORY y,RZTSYSUSER u,RZTSYSDEPARTMENT d\n" +
                     "where k.YH_ID=y.id and k.USER_ID = u.id and d.ID = u.CLASSNAME\n" +
                     "and k.id = ?";

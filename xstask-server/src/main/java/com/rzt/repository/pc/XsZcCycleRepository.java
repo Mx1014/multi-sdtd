@@ -41,8 +41,8 @@ public interface XsZcCycleRepository extends JpaRepository<XsZcCycle,String> {
 
     @Modifying
     @Transactional
-    @Query(value = "update xs_zc_cycle set TOTAL_TASK_NUM = 1 where id= ?1", nativeQuery = true)
-    void updateTotalTaskNum(Long xsZcCycleId);
+    @Query(value = "update xs_zc_cycle set TOTAL_TASK_NUM = 1,class_id = ?2,wx_org = ?3,cm_user_id = ?4 where id= ?1", nativeQuery = true)
+    void updateTotalTaskNum(Long xsZcCycleId, String classid, String companyid, String userId);
 
 
     @Modifying
