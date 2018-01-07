@@ -7,6 +7,7 @@
 package com.rzt.entity;
 import com.rzt.util.excelUtil.ExcelResources;
 import com.rzt.utils.SnowflakeIdWorker;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -64,9 +65,30 @@ public class CheckLiveTask  implements Serializable{
 	//字段描述: 是否设置了电子围栏（0是 1否）
 	@Column(name = "DZWL")
 	private Integer dzwl;
+	//字段描述: 计划开始时间
+	@Column(name = "PLAN_START_TIME")
+	@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+	private Date planStartTime;
+	//字段描述: 计划结束时间
+	@Column(name = "PLAN_END_TIME")
+	@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+	private Date planEndTime;
 
+	public Date getPlanStartTime() {
+		return planStartTime;
+	}
 
+	public void setPlanStartTime(Date planStartTime) {
+		this.planStartTime = planStartTime;
+	}
 
+	public Date getPlanEndTime() {
+		return planEndTime;
+	}
+
+	public void setPlanEndTime(Date planEndTime) {
+		this.planEndTime = planEndTime;
+	}
 
 	public void setId( ){
 		this.id =   new SnowflakeIdWorker(3,0).nextId();

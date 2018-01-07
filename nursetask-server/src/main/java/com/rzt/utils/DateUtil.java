@@ -106,27 +106,26 @@ public class DateUtil {
         s =  d.substring(0,4)+"年"+d.substring(5,7)+"月"+d.substring(8,10)+"日";
         return s;
     }
-
-    public static Long addDate(String day, int hour){
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Date date = null;
-        try {
-            date = format.parse(day);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-//        System.out.println("front:" + format.format(date)); //显示输入的日期
+    /**
+     * 算出写一个时间
+     * @return
+     */
+    public static Date addDate(Date date, double hour){
         Calendar cal = Calendar.getInstance();
-        cal.setTime(date);
-        cal.add(Calendar.HOUR, hour);// 24小时制
+        long hour1 =(long) (hour * 3600000);
+        long l = date.getTime() + hour1;
+        cal.setTimeInMillis(l);
+      // cal.setTime(date);
+      //  cal.add(Calendar.L, hour);// 24小时制
         date = cal.getTime();
-        System.out.println("after:" + format.format(date));  //显示更新后的日期
-        cal = null;
        // return format.format(date);
-        return date.getTime();
-
+        return date;
     }
 
+    /**
+     * 获取一天的最大时间
+     * @return
+     */
     public static Long getBiggest(){
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         String d = df.format(new Date());
@@ -135,25 +134,30 @@ public class DateUtil {
     }
 
     public static void main(String[] args) {
-        System.out.println(getDatePoor(DateUtil.parseDate("2018-01-04 00:00:00"),new Date()));
-
     }
-    public static long getDatePoor(Date endDate, Date nowDate) {
+
+    /**
+     *  获取两个时间差多少小时的工具方法
+     * @param endDate
+     * @param nowDate
+     * @return double类型的小时
+     */
+    public static double getDatePoor(Date endDate, Date nowDate) {
 
         long nd = 1000 * 24 * 60 * 60;
-        long nh = 1000 * 60 * 60;
+        double nh = 1000 * 60 * 60;
         long nm = 1000 * 60;
         // long ns = 1000;
         // 获得两个时间的毫秒时间差异
-        long diff = endDate.getTime() - nowDate.getTime();
+        double diff = endDate.getTime() - nowDate.getTime();
         // 计算差多少天
-        long day = diff / nd;
+      //  long day = diff / nd;
         // 计算差多少小时
-        long hour = diff % nd / nh;
+        double hour = diff / nh;
         // 计算差多少分钟
-        long min = diff % nd % nh / nm;
+        //long min = diff % nd % nh / nm;
         // 计算差多少秒//输出结果
         // long sec = diff % nd % nh % nm / ns;
-        return  hour;//day + "天" + hour + "小时" + min + "分钟";
+        return  hour;
     }
 }

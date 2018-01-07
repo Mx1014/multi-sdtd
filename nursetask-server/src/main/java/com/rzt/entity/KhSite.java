@@ -86,10 +86,10 @@ public class KhSite  implements Serializable{
 	private int capatain;
 	//字段描述: 计划开始时段
 	@Column(name = "PLAN_START_TIME")
-	private String planStartTime;
+	private Date planStartTime;
 	//字段描述: 计划结束时段
 	@Column(name = "PLAN_END_TIME")
-	private String planEndTime;
+	private Date planEndTime;
 	//字段描述: 计划开始时段
 	@Column(name = "WX_ORGID")
 	private String wxOrgId;
@@ -98,7 +98,7 @@ public class KhSite  implements Serializable{
 	private String tdywOrgId;
 	//字段描述: 一轮任务总时长
 	@Column(name = "CYCLE")
-	private int cycle;
+	private double cycle;
 
 	public void setId(){
 		this.id = new SnowflakeIdWorker(0,0).nextId();
@@ -210,19 +210,19 @@ public class KhSite  implements Serializable{
 
 
 
-	public void setPlanStartTime(String planStartTime){
+	public void setPlanStartTime(Date planStartTime){
 		this.planStartTime = planStartTime;
 	}
-	public String getPlanStartTime(){
+	public Date getPlanStartTime(){
 		return this.planStartTime;
 	}
 
 
 
-	public void setPlanEndTime(String planEndTime){
+	public void setPlanEndTime(Date planEndTime){
 		this.planEndTime = planEndTime;
 	}
-	public String getPlanEndTime(){
+	public Date getPlanEndTime(){
 		return this.planEndTime;
 	}
 
@@ -298,11 +298,11 @@ public class KhSite  implements Serializable{
 		this.tdywOrgId = tdywOrgId;
 	}
 
-	public int getCycle() {
+	public double getCycle() {
 		return cycle;
 	}
 
-	public void setCycle(int cycle) {
+	public void setCycle(double cycle) {
 		this.cycle = cycle;
 	}
 }

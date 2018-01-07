@@ -68,8 +68,22 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
             List<Map<String, Object>> map = this.execSql(sql, taskId);
             if (map.isEmpty()) {
                 Map map1 = new HashMap<>();
-                map1.put("wp_zt", "1,1,1,1,1");
+                map1.put("WP_ZT", "0,0,0,0,0");
                 map.add(map1);
+            }
+            return WebApiResponse.success(map);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("数据获取失败");
+        }
+    }
+
+    public WebApiResponse appListZl(String taskId) {
+        try {
+            String sql = "select cl_zt from kh_task_wpqr where taskId=?";
+            Map<String, Object> map = this.execSqlSingleResult(sql, taskId);
+            if (map.get("CL_ZT") == null) {
+                map.put("CL_ZT", "0,0,0,0,0,0");
             }
             return WebApiResponse.success(map);
         } catch (Exception e) {
@@ -181,23 +195,11 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
         }
     }
 
-    public WebApiResponse appListZl(String taskId) {
-        try {
-            String sql = "select cl_zt from kh_task_wpqr where taskId=?";
-            Map<String, Object> map = this.execSqlSingleResult(sql, taskId);
-            if (map.get("CL_ZT") == null) {
-                map.put("CL_ZT", "0,0,0,0,0,0");
-            }
-            return WebApiResponse.success(map);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return WebApiResponse.erro("数据获取失败");
-        }
-    }
+
 
     public WebApiResponse appCaptainTime(String userId, long taskId, String flag) {
         try {
-            flag = flag.substring(0, flag.length() - 2) + 0 + flag.substring(flag.length() - 1, flag.length());
+            flag = flag.substring(0, flag.length() - 1) + 1;//0 + flag.substring(flag.length() - 1, flag.length())
             String sql = "SELECT k.REAL_END_TIME \n" +
                     "FROM KH_SITE s,KH_TASK k WHERE s.ID=k.SITE_ID and s.GROUP_FLAG=?";
             Map<String, Object> map = this.execSqlSingleResult(sql, flag);
@@ -212,7 +214,7 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
 
     public WebApiResponse appListTaskDone(String userId, long taskId) {
         try {
-            String sql = "SELECT k.TASK_NAME taskname,y.YHMS ms,y.YHJB jb,k.PLAN_START_TIME starttime,k.PLAN_END_TIME endtime,u.REALNAME name,u.PHONE phone,d.DEPTNAME\n" +
+            String sql = "SELECT k.status status,k.TASK_NAME taskname,y.YHMS ms,y.YHJB jb,k.PLAN_START_TIME starttime,k.PLAN_END_TIME endtime,u.REALNAME name,u.PHONE phone,d.DEPTNAME\n" +
                     "from KH_TASK k,KH_YH_HISTORY y,RZTSYSUSER u,RZTSYSDEPARTMENT d\n" +
                     "where k.YH_ID=y.id and k.USER_ID = u.id and d.ID = u.CLASSNAME\n" +
                     "and k.id = ?";

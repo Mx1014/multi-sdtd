@@ -55,7 +55,6 @@ public class PcMapShowController {
             //0 根据人查 有人就直接结束
             if(userId != null) {
                 return hashOperations.get("menInMap",userId);
-
             }
             String deptId = "";
             if(tdOrg != null) {

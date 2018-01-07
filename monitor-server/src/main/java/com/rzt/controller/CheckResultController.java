@@ -79,9 +79,9 @@ public class CheckResultController extends CurdController<CheckResult,CheckResul
 	 *@Date 2018/1/5 16:18
 	 */
 	@GetMapping("getQuestion")
-	public WebApiResponse getQuestion(Long taskId){
+	public WebApiResponse getQuestion(Long questionTaskId){
 		try {
-			return WebApiResponse.success(resultservice.getQuestion(taskId));
+			return WebApiResponse.success(resultservice.getQuestion(questionTaskId));
 		}catch (Exception e){
 			return WebApiResponse.erro("查询失败："+e.getMessage());
 		}
