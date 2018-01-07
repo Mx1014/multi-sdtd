@@ -29,10 +29,10 @@ public class QuartzService  {
     private KhTaskService service;
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 
-    @Scheduled(cron = "0 0 1 * * ?") // 每20秒执行一次
+    @Scheduled(cron = "0 0 1 * * ?") // 每天1点执行一次
+    // @Scheduled(cron = "*/60 * * * * ?") // 每60秒执行一次
     public void reportCurrentTime() {
         service.createTask();
-        System.out.println("当前时间：" + dateFormat.format(new Date()));
     }
     /*//每天0点执行
     private String cron = "0 0 0 * * ?";
