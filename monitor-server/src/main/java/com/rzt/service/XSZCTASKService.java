@@ -66,7 +66,22 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
             HashOperations hashOperations = redisTemplate.opsForHash();
 
             while (iterator.hasNext()){
+
                 Map<String, Object> next = iterator.next();
+                Object taskid = next.get("TASKID");
+                Integer tasktype = (Integer) next.get("TASKTYPE");
+                //巡视
+                if(tasktype == 1){
+                    String sqll = "SELECT  c.LINE_ID FROM XS_ZC_TASK x LEFT JOIN XS_ZC_CYCLE c ON c.ID = x.XS_ZC_CYCLE_ID WHERE ID =?1";
+                    List<Map<String, Object>> maps = execSql(sqll,taskid);
+                    next.put("LINE_ID",maps.get(0).get("LINE_ID"));
+                }else if (tasktype==2){ //看护
+                    String sqlll = "SELECT LINE_ID FROM KH_YH_HISTORY WHERE TASK_ID =1?";
+                    List<Map<String, Object>> maps = execSql(sqlll, taskid);
+                    next.put("LINE_ID",maps.get(0).get("LINE_ID"));
+                }else if (tasktype==3){ //稽查
+
+                }
 
                 String userID =(String)next.get("USER_ID");
                 Object userInformation = hashOperations.get("UserInformation", userID);
