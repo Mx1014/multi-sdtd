@@ -201,6 +201,28 @@ public class AnomalymonitoringService extends CurdService<Anomalymonitoring, Ano
                 "   AND (ceil((sysdate - PLAN_START_TIME) * 24 * 60) < 40 or a.ONECHECK_STATUS = 0)) xx " +
                 "  JOIN RZTSYSUSER us ON xx.CM_USER_ID = us.ID) xxx " +
                 "  JOIN RZTSYSCOMPANY c ON c.ID = xxx.COMPANYID ) cc JOIN RZTSYSDEPARTMENT d on d.ID = cc.DEPTID";
+        //正常巡视 不在杆塔范围内
+        String sql7 = "select cc.*,d.DEPTNAME from (SELECT xxx.*,c.COMPANYNAME  FROM   " +
+                "  (SELECT xx.*,us.REALNAME, us.PHONE,us.COMPANYID,us.DEPTID FROM   " +
+                "  (SELECT x.TASK_NAME,x.PLAN_START_TIME,'3' AS xs_warning_type,a.TWOCHECK_STATUS,x.CM_USER_ID,x.ID   " +
+                "from XS_ZC_TASK x JOIN XS_ZC_TASK_EXEC e ON x.ID = e.XS_ZC_TASK_ID   " +
+                "  JOIN XS_ZC_TASK_EXEC_DETAIL ee ON e.ID = ee.XS_ZC_TASK_EXEC_ID   " +
+                " LEFT JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID   " +
+                " WHERE ee.IS_DW = 1   " +
+                "   AND (ceil((sysdate - ee.end_time) * 24 * 60) < 40 or a.ONECHECK_STATUS = 0)) xx   " +
+                "  JOIN RZTSYSUSER us ON xx.CM_USER_ID = us.ID) xxx   " +
+                "  JOIN RZTSYSCOMPANY c ON c.ID = xxx.COMPANYID ) cc JOIN RZTSYSDEPARTMENT d on d.ID = cc.DEPTID";
+        //保电巡视 不在杆塔范围内
+        String sql8 = "select cc.*,d.DEPTNAME from (SELECT xxx.*,c.COMPANYNAME  FROM   " +
+                "  (SELECT xx.*,us.REALNAME, us.PHONE,us.COMPANYID,us.DEPTID FROM   " +
+                "  (SELECT x.TASK_NAME,x.PLAN_START_TIME,'3' AS xs_warning_type,a.TWOCHECK_STATUS,x.CM_USER_ID,x.ID   " +
+                "from XS_TXBD_TASK x JOIN XS_TXBD_TASK_EXEC e ON x.ID = e.XS_TXBD_TASK_ID   " +
+                "  JOIN XS_TXBD_TASK_EXEC_DETAIL ee ON e.ID = ee.XS_TXBD_TASK_EXEC_ID   " +
+                " LEFT JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID   " +
+                " WHERE ee.IS_DW = 1   " +
+                "   AND (ceil((sysdate - ee.end_time) * 24 * 60) < 40 or a.ONECHECK_STATUS = 0)) xx   " +
+                "  JOIN RZTSYSUSER us ON xx.CM_USER_ID = us.ID) xxx   " +
+                "  JOIN RZTSYSCOMPANY c ON c.ID = xxx.COMPANYID ) cc JOIN RZTSYSDEPARTMENT d on d.ID = cc.DEPTID";
 
         //////一级
         //一级保电任务超期警告
@@ -254,12 +276,34 @@ public class AnomalymonitoringService extends CurdService<Anomalymonitoring, Ano
                 "   AND (ceil((sysdate - PLAN_START_TIME) * 24 * 60) > 40 and a.ONECHECK_STATUS is null)) xx " +
                 "  JOIN RZTSYSUSER us ON xx.CM_USER_ID = us.ID) xxx " +
                 "  JOIN RZTSYSCOMPANY c ON c.ID = xxx.COMPANYID ) cc JOIN RZTSYSDEPARTMENT d on d.ID = cc.DEPTID";
+        //正常巡视 不在杆塔范围内 一级
+        String sql17 = "select cc.*,d.DEPTNAME from (SELECT xxx.*,c.COMPANYNAME  FROM   " +
+                "  (SELECT xx.*,us.REALNAME, us.PHONE,us.COMPANYID,us.DEPTID FROM   " +
+                "  (SELECT x.TASK_NAME,x.PLAN_START_TIME,'3' AS xs_warning_type,a.ONECHECK_STATUS,x.CM_USER_ID,x.ID   " +
+                "from XS_ZC_TASK x JOIN XS_ZC_TASK_EXEC e ON x.ID = e.XS_ZC_TASK_ID   " +
+                "  JOIN XS_ZC_TASK_EXEC_DETAIL ee ON e.ID = ee.XS_ZC_TASK_EXEC_ID   " +
+                " LEFT JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID   " +
+                " WHERE ee.IS_DW = 1   " +
+                "   AND (ceil((sysdate - ee.end_time) * 24 * 60) > 40 and a.ONECHECK_STATUS is null)) xx   " +
+                "  JOIN RZTSYSUSER us ON xx.CM_USER_ID = us.ID) xxx   " +
+                "  JOIN RZTSYSCOMPANY c ON c.ID = xxx.COMPANYID ) cc JOIN RZTSYSDEPARTMENT d on d.ID = cc.DEPTID";
+        //保电巡视 不在杆塔范围内  一级
+        String sql18 = "select cc.*,d.DEPTNAME from (SELECT xxx.*,c.COMPANYNAME  FROM   " +
+                "  (SELECT xx.*,us.REALNAME, us.PHONE,us.COMPANYID,us.DEPTID FROM   " +
+                "  (SELECT x.TASK_NAME,x.PLAN_START_TIME,'3' AS xs_warning_type,a.ONECHECK_STATUS,x.CM_USER_ID,x.ID   " +
+                "from XS_TXBD_TASK x JOIN XS_TXBD_TASK_EXEC e ON x.ID = e.XS_TXBD_TASK_ID   " +
+                "  JOIN XS_TXBD_TASK_EXEC_DETAIL ee ON e.ID = ee.XS_TXBD_TASK_EXEC_ID   " +
+                " LEFT JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID   " +
+                " WHERE ee.IS_DW = 1   " +
+                "   AND (ceil((sysdate - ee.end_time) * 24 * 60) > 40 and a.ONECHECK_STATUS is null)) xx   " +
+                "  JOIN RZTSYSUSER us ON xx.CM_USER_ID = us.ID) xxx   " +
+                "  JOIN RZTSYSCOMPANY c ON c.ID = xxx.COMPANYID ) cc JOIN RZTSYSDEPARTMENT d on d.ID = cc.DEPTID";
         //type == 0 为一级
         String sql = "";
         if(orgtype!=0){
-            sql="SELECT * FROM (" +sql1+" UNION ALL "+sql2+" UNION ALL "+sql3+" UNION ALL "+sql4+" UNION ALL "+sql5+" UNION ALL "+sql6+") where 1=1 "+s;
+            sql="SELECT * FROM (" +sql1+" UNION ALL "+sql2+" UNION ALL "+sql3+" UNION ALL "+sql4+" UNION ALL "+sql5+" UNION ALL "+sql6+" UNION ALL "+sql7+" UNION ALL "+sql8+") where 1=1 "+s;
         }else if (orgtype==0){
-            sql = "SELECT * FROM (" +sql11+" UNION ALL "+sql12+" UNION ALL "+sql13+" UNION ALL "+sql14+" UNION ALL "+sql15+" UNION ALL "+sql16+") where 1=1 "+s;
+            sql = "SELECT * FROM (" +sql11+" UNION ALL "+sql12+" UNION ALL "+sql13+" UNION ALL "+sql14+" UNION ALL "+sql15+" UNION ALL "+sql16+" UNION ALL "+sql17+" UNION ALL "+sql18+") where 1=1 "+s;
         }
         Page<Map<String, Object>> maps = execSqlPage(pageable, sql,list.toArray());
         return maps;
@@ -297,7 +341,7 @@ public class AnomalymonitoringService extends CurdService<Anomalymonitoring, Ano
 
         //二级正常巡视任务超期警告
         String sql2 = "select cc.*,d.DEPTNAME from ( SELECT xxx.*,c.COMPANYNAME FROM(SELECT xx.*,us.REALNAME, us.PHONE,us.COMPANYID,us.DEPTID  " +
-                "   FROM(SELECT x.TASK_NAME,x.PLAN_START_TIME,'1' AS xs_warning_type,a.TWOCHECK_STATUS,x.CM_USER_ID,x.ID " +
+                "   FROM (SELECT x.TASK_NAME,x.PLAN_START_TIME,'1' AS xs_warning_type,a.TWOCHECK_STATUS,x.CM_USER_ID,x.ID " +
                 "      FROM xs_zc_task x  LEFT JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID " +
                 "      WHERE (stauts = 0 OR stauts = 1) AND trunc(plan_end_time) < trunc(sysdate) " +
                 "       and a.TWOCHECK_STATUS = 0) xx " +
@@ -338,20 +382,42 @@ public class AnomalymonitoringService extends CurdService<Anomalymonitoring, Ano
                 "   AND  a.TWOCHECK_STATUS = 0) xx " +
                 "  JOIN RZTSYSUSER us ON xx.CM_USER_ID = us.ID) xxx " +
                 "  JOIN RZTSYSCOMPANY c ON c.ID = xxx.COMPANYID ) cc JOIN RZTSYSDEPARTMENT d on d.ID = cc.DEPTID";
+        //正常巡视 不在杆塔范围内 二级
+        String sql7 = "select cc.*,d.DEPTNAME from (SELECT xxx.*,c.COMPANYNAME  FROM   " +
+                "  (SELECT xx.*,us.REALNAME, us.PHONE,us.COMPANYID,us.DEPTID FROM   " +
+                "  (SELECT x.TASK_NAME,x.PLAN_START_TIME,'3' AS xs_warning_type,a.TWOCHECK_STATUS,x.CM_USER_ID,x.ID   " +
+                "from XS_ZC_TASK x JOIN XS_ZC_TASK_EXEC e ON x.ID = e.XS_ZC_TASK_ID   " +
+                "  JOIN XS_ZC_TASK_EXEC_DETAIL ee ON e.ID = ee.XS_ZC_TASK_EXEC_ID   " +
+                " LEFT JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID   " +
+                " WHERE ee.IS_DW = 1   " +
+                "   AND a.TWOCHECK_STATUS = 0) xx   " +
+                "  JOIN RZTSYSUSER us ON xx.CM_USER_ID = us.ID) xxx   " +
+                "  JOIN RZTSYSCOMPANY c ON c.ID = xxx.COMPANYID ) cc JOIN RZTSYSDEPARTMENT d on d.ID = cc.DEPTID";
+        //保电巡视 不在杆塔范围内 二级
+        String sql8 = "select cc.*,d.DEPTNAME from (SELECT xxx.*,c.COMPANYNAME  FROM   " +
+                "  (SELECT xx.*,us.REALNAME, us.PHONE,us.COMPANYID,us.DEPTID FROM   " +
+                "  (SELECT x.TASK_NAME,x.PLAN_START_TIME,'3' AS xs_warning_type,a.TWOCHECK_STATUS,x.CM_USER_ID,x.ID   " +
+                "from XS_TXBD_TASK x JOIN XS_TXBD_TASK_EXEC e ON x.ID = e.XS_TXBD_TASK_ID   " +
+                "  JOIN XS_TXBD_TASK_EXEC_DETAIL ee ON e.ID = ee.XS_TXBD_TASK_EXEC_ID   " +
+                " LEFT JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID   " +
+                " WHERE ee.IS_DW = 1   " +
+                "   AND  a.TWOCHECK_STATUS = 0) xx   " +
+                "  JOIN RZTSYSUSER us ON xx.CM_USER_ID = us.ID) xxx   " +
+                "  JOIN RZTSYSCOMPANY c ON c.ID = xxx.COMPANYID ) cc JOIN RZTSYSDEPARTMENT d on d.ID = cc.DEPTID";
 
         //////一级
         //一级保电任务超期警告
         String sql11 = "select cc.*,d.DEPTNAME from ( SELECT xxx.*,c.COMPANYNAME " +
-                "FROM(SELECT xx.*,us.REALNAME, us.PHONE,us.COMPANYID,us.DEPTID  " +
-                "   FROM(SELECT x.TASK_NAME,x.PLAN_START_TIME,'1' AS xs_warning_type,a.ONECHECK_STATUS,x.CM_USER_ID,x.ID " +
+                "FROM (SELECT xx.*,us.REALNAME, us.PHONE,us.COMPANYID,us.DEPTID  " +
+                "   FROM (SELECT x.TASK_NAME,x.PLAN_START_TIME,'1' AS xs_warning_type,a.ONECHECK_STATUS,x.CM_USER_ID,x.ID " +
                 "      FROM xs_txbd_task x LEFT JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID " +
                 "      WHERE (stauts = 0 OR stauts = 1) AND trunc(plan_end_time) < trunc(sysdate) " +
                 "       and  a.ONECHECK_STATUS=0)xx " +
                 "     JOIN RZTSYSUSER us ON xx.cm_user_id = us.id) xxx " +
                 "  JOIN RZTSYSCOMPANY c ON c.ID = xxx.COMPANYID ) cc JOIN RZTSYSDEPARTMENT d on d.ID = cc.DEPTID";
         //一级正常巡视任务超期警告
-        String sql12 = "select cc.*,d.DEPTNAME from ( SELECT xxx.*,c.COMPANYNAME FROM(SELECT xx.*,us.REALNAME, us.PHONE,us.COMPANYID,us.DEPTID  " +
-                "   FROM(SELECT x.TASK_NAME,x.PLAN_START_TIME,'1' AS xs_warning_type,a.ONECHECK_STATUS,x.CM_USER_ID,x.ID " +
+        String sql12 = "select cc.*,d.DEPTNAME from ( SELECT xxx.*,c.COMPANYNAME FROM (SELECT xx.*,us.REALNAME, us.PHONE,us.COMPANYID,us.DEPTID  " +
+                "   FROM (SELECT x.TASK_NAME,x.PLAN_START_TIME,'1' AS xs_warning_type,a.ONECHECK_STATUS,x.CM_USER_ID,x.ID " +
                 "      FROM xs_zc_task x  LEFT JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID " +
                 "      WHERE (stauts = 0 OR stauts = 1) AND trunc(plan_end_time) < trunc(sysdate) " +
                 "       and  a.ONECHECK_STATUS=0) xx " +
@@ -391,13 +457,36 @@ public class AnomalymonitoringService extends CurdService<Anomalymonitoring, Ano
                 "   AND  a.ONECHECK_STATUS =0) xx " +
                 "  JOIN RZTSYSUSER us ON xx.CM_USER_ID = us.ID) xxx " +
                 "  JOIN RZTSYSCOMPANY c ON c.ID = xxx.COMPANYID ) cc JOIN RZTSYSDEPARTMENT d on d.ID = cc.DEPTID";
+        //正常巡视 不在杆塔范围内 一级
+        String sql17 = "select cc.*,d.DEPTNAME from (SELECT xxx.*,c.COMPANYNAME  FROM   " +
+                "  (SELECT xx.*,us.REALNAME, us.PHONE,us.COMPANYID,us.DEPTID FROM   " +
+                "  (SELECT x.TASK_NAME,x.PLAN_START_TIME,'3' AS xs_warning_type,a.ONECHECK_STATUS,x.CM_USER_ID,x.ID   " +
+                "from XS_ZC_TASK x JOIN XS_ZC_TASK_EXEC e ON x.ID = e.XS_ZC_TASK_ID   " +
+                "  JOIN XS_ZC_TASK_EXEC_DETAIL ee ON e.ID = ee.XS_ZC_TASK_EXEC_ID   " +
+                " LEFT JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID   " +
+                " WHERE ee.IS_DW = 1   " +
+                "   AND a.ONECHECK_STATUS = 0) xx   " +
+                "  JOIN RZTSYSUSER us ON xx.CM_USER_ID = us.ID) xxx   " +
+                "  JOIN RZTSYSCOMPANY c ON c.ID = xxx.COMPANYID ) cc JOIN RZTSYSDEPARTMENT d on d.ID = cc.DEPTID";
+        //保电巡视 不在杆塔范围内 一级
+        String sql18 = "select cc.*,d.DEPTNAME from (SELECT xxx.*,c.COMPANYNAME  FROM   " +
+                "  (SELECT xx.*,us.REALNAME, us.PHONE,us.COMPANYID,us.DEPTID FROM   " +
+                "  (SELECT x.TASK_NAME,x.PLAN_START_TIME,'3' AS xs_warning_type,a.ONECHECK_STATUS,x.CM_USER_ID,x.ID   " +
+                "from XS_TXBD_TASK x JOIN XS_TXBD_TASK_EXEC e ON x.ID = e.XS_TXBD_TASK_ID   " +
+                "  JOIN XS_TXBD_TASK_EXEC_DETAIL ee ON e.ID = ee.XS_TXBD_TASK_EXEC_ID   " +
+                " LEFT JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID   " +
+                " WHERE ee.IS_DW = 1   " +
+                "   AND  a.ONECHECK_STATUS = 0) xx   " +
+                "  JOIN RZTSYSUSER us ON xx.CM_USER_ID = us.ID) xxx   " +
+                "  JOIN RZTSYSCOMPANY c ON c.ID = xxx.COMPANYID ) cc JOIN RZTSYSDEPARTMENT d on d.ID = cc.DEPTID";
+
 
         //type == 0 为一级
         String sql = "";
         if(orgtype!=0){
-            sql="SELECT * FROM (" +sql1+" UNION ALL "+sql2+" UNION ALL "+sql3+" UNION ALL "+sql4+" UNION ALL "+sql5+" UNION ALL "+sql6+") where 1=1 "+s;
+            sql="SELECT * FROM (" +sql1+" UNION ALL "+sql2+" UNION ALL "+sql3+" UNION ALL "+sql4+" UNION ALL "+sql5+" UNION ALL "+sql6+" UNION ALL "+sql7+" UNION ALL "+sql8+") where 1=1 "+s;
         }else if (orgtype==0){
-            sql = "SELECT * FROM (" +sql11+" UNION ALL "+sql12+" UNION ALL "+sql13+" UNION ALL "+sql14+" UNION ALL "+sql15+" UNION ALL "+sql16+") where 1=1 "+s;
+            sql = "SELECT * FROM (" +sql11+" UNION ALL "+sql12+" UNION ALL "+sql13+" UNION ALL "+sql14+" UNION ALL "+sql15+" UNION ALL "+sql16+" UNION ALL "+sql17+" UNION ALL "+sql18+") where 1=1 "+s;
         }
         Page<Map<String, Object>> maps = execSqlPage(pageable, sql,list.toArray());
         return maps;
@@ -425,8 +514,8 @@ public class AnomalymonitoringService extends CurdService<Anomalymonitoring, Ano
 
         //二级保电任务超期警告
         String sql1 = "select cc.*,d.DEPTNAME from ( SELECT xxx.*,c.COMPANYNAME " +
-                "FROM(SELECT xx.*,us.REALNAME, us.PHONE,us.COMPANYID,us.DEPTID  " +
-                "   FROM(SELECT x.TASK_NAME,x.PLAN_START_TIME,'1' AS xs_warning_type,a.TWOCHECK_STATUS,x.CM_USER_ID,x.ID " +
+                "FROM (SELECT xx.*,us.REALNAME, us.PHONE,us.COMPANYID,us.DEPTID  " +
+                "   FROM (SELECT x.TASK_NAME,x.PLAN_START_TIME,'1' AS xs_warning_type,a.TWOCHECK_STATUS,x.CM_USER_ID,x.ID " +
                 "      FROM xs_txbd_task x LEFT JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID " +
                 "      WHERE (stauts = 0 OR stauts = 1) AND trunc(plan_end_time) < trunc(sysdate) " +
                 "       and  a.TWOCHECK_STATUS = 1) xx " +
@@ -435,7 +524,7 @@ public class AnomalymonitoringService extends CurdService<Anomalymonitoring, Ano
 
         //二级正常巡视任务超期警告
         String sql2 = "select cc.*,d.DEPTNAME from ( SELECT xxx.*,c.COMPANYNAME FROM(SELECT xx.*,us.REALNAME, us.PHONE,us.COMPANYID,us.DEPTID  " +
-                "   FROM(SELECT x.TASK_NAME,x.PLAN_START_TIME,'1' AS xs_warning_type,a.TWOCHECK_STATUS,x.CM_USER_ID,x.ID " +
+                "   FROM (SELECT x.TASK_NAME,x.PLAN_START_TIME,'1' AS xs_warning_type,a.TWOCHECK_STATUS,x.CM_USER_ID,x.ID " +
                 "      FROM xs_zc_task x  LEFT JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID " +
                 "      WHERE (stauts = 0 OR stauts = 1) AND trunc(plan_end_time) < trunc(sysdate) " +
                 "       and  a.TWOCHECK_STATUS = 1) xx " +
@@ -476,12 +565,35 @@ public class AnomalymonitoringService extends CurdService<Anomalymonitoring, Ano
                 "   AND  a.TWOCHECK_STATUS = 1) xx " +
                 "  JOIN RZTSYSUSER us ON xx.CM_USER_ID = us.ID) xxx " +
                 "  JOIN RZTSYSCOMPANY c ON c.ID = xxx.COMPANYID ) cc JOIN RZTSYSDEPARTMENT d on d.ID = cc.DEPTID";
+        //正常巡视 不在杆塔范围内 二级
+        String sql7 = "select cc.*,d.DEPTNAME from (SELECT xxx.*,c.COMPANYNAME  FROM   " +
+                "  (SELECT xx.*,us.REALNAME, us.PHONE,us.COMPANYID,us.DEPTID FROM   " +
+                "  (SELECT x.TASK_NAME,x.PLAN_START_TIME,'3' AS xs_warning_type,a.TWOCHECK_STATUS,x.CM_USER_ID,x.ID   " +
+                "from XS_ZC_TASK x JOIN XS_ZC_TASK_EXEC e ON x.ID = e.XS_ZC_TASK_ID   " +
+                "  JOIN XS_ZC_TASK_EXEC_DETAIL ee ON e.ID = ee.XS_ZC_TASK_EXEC_ID   " +
+                " LEFT JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID   " +
+                " WHERE ee.IS_DW = 1   " +
+                "   AND a.TWOCHECK_STATUS = 1) xx   " +
+                "  JOIN RZTSYSUSER us ON xx.CM_USER_ID = us.ID) xxx   " +
+                "  JOIN RZTSYSCOMPANY c ON c.ID = xxx.COMPANYID ) cc JOIN RZTSYSDEPARTMENT d on d.ID = cc.DEPTID";
+        //保电巡视 不在杆塔范围内 二级
+        String sql8 = "select cc.*,d.DEPTNAME from (SELECT xxx.*,c.COMPANYNAME  FROM   " +
+                "  (SELECT xx.*,us.REALNAME, us.PHONE,us.COMPANYID,us.DEPTID FROM   " +
+                "  (SELECT x.TASK_NAME,x.PLAN_START_TIME,'3' AS xs_warning_type,a.TWOCHECK_STATUS,x.CM_USER_ID,x.ID   " +
+                "from XS_TXBD_TASK x JOIN XS_TXBD_TASK_EXEC e ON x.ID = e.XS_TXBD_TASK_ID   " +
+                "  JOIN XS_TXBD_TASK_EXEC_DETAIL ee ON e.ID = ee.XS_TXBD_TASK_EXEC_ID   " +
+                " LEFT JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID   " +
+                " WHERE ee.IS_DW = 1   " +
+                "   AND  a.TWOCHECK_STATUS = 1) xx   " +
+                "  JOIN RZTSYSUSER us ON xx.CM_USER_ID = us.ID) xxx   " +
+                "  JOIN RZTSYSCOMPANY c ON c.ID = xxx.COMPANYID ) cc JOIN RZTSYSDEPARTMENT d on d.ID = cc.DEPTID";
+
 
         //////一级
         //一级保电任务超期警告
         String sql11 = "select cc.*,d.DEPTNAME from ( SELECT xxx.*,c.COMPANYNAME " +
-                "FROM(SELECT xx.*,us.REALNAME, us.PHONE,us.COMPANYID,us.DEPTID  " +
-                "   FROM(SELECT x.TASK_NAME,x.PLAN_START_TIME,'1' AS xs_warning_type,a.ONECHECK_STATUS,x.CM_USER_ID,x.ID " +
+                "FROM (SELECT xx.*,us.REALNAME, us.PHONE,us.COMPANYID,us.DEPTID  " +
+                "   FROM (SELECT x.TASK_NAME,x.PLAN_START_TIME,'1' AS xs_warning_type,a.ONECHECK_STATUS,x.CM_USER_ID,x.ID " +
                 "      FROM xs_txbd_task x LEFT JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID " +
                 "      WHERE (stauts = 0 OR stauts = 1) AND trunc(plan_end_time) < trunc(sysdate) " +
                 "        and a.ONECHECK_STATUS=1)xx " +
@@ -489,7 +601,7 @@ public class AnomalymonitoringService extends CurdService<Anomalymonitoring, Ano
                 "  JOIN RZTSYSCOMPANY c ON c.ID = xxx.COMPANYID ) cc JOIN RZTSYSDEPARTMENT d on d.ID = cc.DEPTID";
         //一级正常巡视任务超期警告
         String sql12 = "select cc.*,d.DEPTNAME from ( SELECT xxx.*,c.COMPANYNAME FROM(SELECT xx.*,us.REALNAME, us.PHONE,us.COMPANYID,us.DEPTID  " +
-                "   FROM(SELECT x.TASK_NAME,x.PLAN_START_TIME,'1' AS xs_warning_type,a.ONECHECK_STATUS,x.CM_USER_ID,x.ID " +
+                "   FROM (SELECT x.TASK_NAME,x.PLAN_START_TIME,'1' AS xs_warning_type,a.ONECHECK_STATUS,x.CM_USER_ID,x.ID " +
                 "      FROM xs_zc_task x  LEFT JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID " +
                 "      WHERE (stauts = 0 OR stauts = 1) AND trunc(plan_end_time) < trunc(sysdate) " +
                 "       and a.ONECHECK_STATUS=1) xx " +
@@ -529,13 +641,35 @@ public class AnomalymonitoringService extends CurdService<Anomalymonitoring, Ano
                 "   AND  a.ONECHECK_STATUS =1) xx " +
                 "  JOIN RZTSYSUSER us ON xx.CM_USER_ID = us.ID) xxx " +
                 "  JOIN RZTSYSCOMPANY c ON c.ID = xxx.COMPANYID ) cc JOIN RZTSYSDEPARTMENT d on d.ID = cc.DEPTID";
+        //正常巡视 不在杆塔范围内 一级
+        String sql17 = "select cc.*,d.DEPTNAME from (SELECT xxx.*,c.COMPANYNAME  FROM   " +
+                "  (SELECT xx.*,us.REALNAME, us.PHONE,us.COMPANYID,us.DEPTID FROM   " +
+                "  (SELECT x.TASK_NAME,x.PLAN_START_TIME,'3' AS xs_warning_type,a.ONECHECK_STATUS,x.CM_USER_ID,x.ID   " +
+                "from XS_ZC_TASK x JOIN XS_ZC_TASK_EXEC e ON x.ID = e.XS_ZC_TASK_ID   " +
+                "  JOIN XS_ZC_TASK_EXEC_DETAIL ee ON e.ID = ee.XS_ZC_TASK_EXEC_ID   " +
+                " LEFT JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID   " +
+                " WHERE ee.IS_DW = 1   " +
+                "   AND a.ONECHECK_STATUS = 1) xx   " +
+                "  JOIN RZTSYSUSER us ON xx.CM_USER_ID = us.ID) xxx   " +
+                "  JOIN RZTSYSCOMPANY c ON c.ID = xxx.COMPANYID ) cc JOIN RZTSYSDEPARTMENT d on d.ID = cc.DEPTID";
+        //保电巡视 不在杆塔范围内 一级
+        String sql18 = "select cc.*,d.DEPTNAME from (SELECT xxx.*,c.COMPANYNAME  FROM   " +
+                "  (SELECT xx.*,us.REALNAME, us.PHONE,us.COMPANYID,us.DEPTID FROM   " +
+                "  (SELECT x.TASK_NAME,x.PLAN_START_TIME,'3' AS xs_warning_type,a.ONECHECK_STATUS,x.CM_USER_ID,x.ID   " +
+                "from XS_TXBD_TASK x JOIN XS_TXBD_TASK_EXEC e ON x.ID = e.XS_TXBD_TASK_ID   " +
+                "  JOIN XS_TXBD_TASK_EXEC_DETAIL ee ON e.ID = ee.XS_TXBD_TASK_EXEC_ID   " +
+                " LEFT JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID   " +
+                " WHERE ee.IS_DW = 1   " +
+                "   AND  a.ONECHECK_STATUS = 1) xx   " +
+                "  JOIN RZTSYSUSER us ON xx.CM_USER_ID = us.ID) xxx   " +
+                "  JOIN RZTSYSCOMPANY c ON c.ID = xxx.COMPANYID ) cc JOIN RZTSYSDEPARTMENT d on d.ID = cc.DEPTID";
 
         //type == 0 为一级
         String sql = "";
         if(orgtype!=0){
-            sql="SELECT * FROM (" +sql1+" UNION ALL "+sql2+" UNION ALL "+sql3+" UNION ALL "+sql4+" UNION ALL "+sql5+" UNION ALL "+sql6+") where 1=1 "+s;
+            sql="SELECT * FROM (" +sql1+" UNION ALL "+sql2+" UNION ALL "+sql3+" UNION ALL "+sql4+" UNION ALL "+sql5+" UNION ALL "+sql6+" UNION ALL "+sql7+" UNION ALL "+sql8+") where 1=1 "+s;
         }else if (orgtype==0){
-            sql = "SELECT * FROM (" +sql11+" UNION ALL "+sql12+" UNION ALL "+sql13+" UNION ALL "+sql14+" UNION ALL "+sql15+" UNION ALL "+sql16+") where 1=1 "+s;
+            sql = "SELECT * FROM (" +sql11+" UNION ALL "+sql12+" UNION ALL "+sql13+" UNION ALL "+sql14+" UNION ALL "+sql15+" UNION ALL "+sql16+" UNION ALL "+sql17+" UNION ALL "+sql18+") where 1=1 "+s;
         }
         Page<Map<String, Object>> maps = execSqlPage(pageable, sql,list.toArray());
         return maps;
