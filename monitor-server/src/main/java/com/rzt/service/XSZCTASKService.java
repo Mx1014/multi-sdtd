@@ -89,8 +89,6 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
         }
         return WebApiResponse.success(pageResult);
     }
-
-
     /**
      * 供定时器使用   先查询需要的数据 查询后将数据添加进定时任务表
      */
@@ -123,7 +121,6 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
 
 
             }
-            //     看护任务状态标识为中文
 
             Iterator<Map<String, Object>> iterator1 = maps2.iterator();
             while (iterator1.hasNext()){
@@ -261,4 +258,6 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
     public void checkOff(Long questionTaskId) {
         repository.xsTaskUpdate(questionTaskId);
     }
+
+
 }
