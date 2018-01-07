@@ -10,6 +10,8 @@ import com.rzt.entity.CheckLiveTask;
 import com.rzt.service.CheckLiveTaskService;
 import com.rzt.util.WebApiResponse;
 import io.swagger.annotations.ApiOperation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -33,7 +35,8 @@ import java.util.Map;
 @RequestMapping("CheckLiveTask")
 public class CheckLiveTaskController extends CurdController<CheckLiveTask, CheckLiveTaskService> {
 
-	@ApiOperation(value = "看护稽查任务派发前，看护任务列表接口",notes = "看护稽查任务派发前，看护任务列表分页查询，条件搜索")
+	protected static Logger LOGGER = LoggerFactory.getLogger(CheckLiveTaskController.class);
+	@ApiOperation(value = "看护稽查任务未派发看护任务列表接口",notes = "看护稽查任务未派发看护任务列表分页查询，条件搜索")
 	@GetMapping("/listKhCheckPage")
 	public WebApiResponse listKhCheckPage(@RequestParam(value = "page",defaultValue = "0") Integer page,
 										  @RequestParam(value = "size",defaultValue = "15") Integer size,
@@ -52,7 +55,7 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 	public WebApiResponse khTaskDetail(String taskId){
 		Map<String, Object> map = new HashMap<>();
 		try {
-			map = service.xsTaskDetail(taskId);
+			map = service.khTaskDetail(taskId);
 		} catch (Exception e) {
 			WebApiResponse.erro(e.getMessage());
 		}
@@ -61,10 +64,10 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 
 	@ApiOperation(value = "看护稽查任务派发",notes = "看护稽查任务派发")
 	@GetMapping("/paifaKhCheckTask")
-	public WebApiResponse paifaKhCheckTask(CheckLiveTask task ,String planStartTime,String planEndTime, String username){
+	public WebApiResponse paifaKhCheckTask(CheckLiveTask task , String username){
 		try {
 
-			this.service.paifaXsCheckTask(task, planStartTime, planEndTime,username);
+			this.service.paifaKhCheckTask(task,username);
 			return WebApiResponse.success("任务派发成功");
 		}catch (Exception e){
 			return WebApiResponse.erro("任务派发失败");
@@ -72,16 +75,55 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 
 	}
 
-	@GetMapping("/test")
-	public Map<String, Object> test(){
-		try {
-			Map<String, Object> map = service.execSqlSingleResult("select id,TDYW_ORGID,TDWX_ORGID from CHECK_LIVE_SITE where id = ?1", "397703564270501888");
-			System.out.println("成功");
-			return map;
-		} catch (Exception e) {
-			e.printStackTrace();
+	@ApiOperation(value = "看护稽查任务已派发看护任务列表接口",notes = "看护稽查任务已派发看护任务列表分页查询，条件搜索")
+	@GetMapping("/listKhCheckTaskPage")
+	public WebApiResponse listKhCheckTaskPage(@RequestParam(value = "page",defaultValue = "0") Integer page,
+											  @RequestParam(value = "size",defaultValue = "15") Integer size,
+											  String userId,String tddwId){
+		try{
+			Pageable pageable = new PageRequest(page, size);
+			Page<Map<String, Object>> list = this.service.listKhCheckTaskPage(pageable, userId, tddwId);
+			return WebApiResponse.success(list);
+		}catch (Exception e){
+			return WebApiResponse.erro("数据获取失败"+e.getMessage());
 		}
-		return null;
 	}
+
+
+	/**
+	 * app任务列表
+	 * @param page
+	 * @param size
+	 * @param userId
+	 * @return
+	 */
+	@ApiOperation(value = "app任务列表",notes = "app任务列表")
+	@GetMapping("/appCheckList")
+	public WebApiResponse appCheckList(@RequestParam(value = "page",defaultValue = "0") Integer page,
+										  @RequestParam(value = "size",defaultValue = "15") Integer size,
+										  String userId,String taskType){
+		try{
+			Pageable pageable = new PageRequest(page, size);
+			Page<Map<String, Object>> list = this.service.appCheckList(pageable, userId,taskType);
+			return WebApiResponse.success(list);
+		}catch (Exception e){
+			LOGGER.error("app任务列表",e);
+			return WebApiResponse.erro("数据获取失败"+e.getMessage());
+		}
+	}
+
+	@ApiOperation(value = "看护人员信息",notes = "看护人员信息")
+	@GetMapping("/userInfo")
+	public WebApiResponse userInfo(String userId){
+		try{
+			Map<String,Object> map = this.service.userInfo(userId);
+			return WebApiResponse.success(map);
+		}catch (Exception e){
+			LOGGER.error("看护人员信息数据获取失败",e);
+			return WebApiResponse.erro("看护人员信息数据获取失败");
+		}
+	}
+
+
 
 }
