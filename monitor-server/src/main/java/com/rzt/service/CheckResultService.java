@@ -69,10 +69,12 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
 
 
 	public Object getQuestion(Long questionTaskId) {
-		String sql = "SELECT r.*  " +
+        ArrayList<Long> longs = new ArrayList<>();
+        longs.add(questionTaskId);
+        String sql = "SELECT r.*  " +
 				"FROM CHECK_RESULT r LEFT JOIN CHECK_DETAIL d ON r.CHECK_DETAIL_ID = d.ID  " +
-				"WHERE d.QUESTION_TASK_ID = ?1";
-        List<Map<String, Object>> maps = execSql(sql, questionTaskId);
+				"WHERE d.QUESTION_TASK_ID = ?"+longs.size();
+        List<Map<String, Object>> maps = execSql(sql, longs.toArray());
         return maps;
     }
 
