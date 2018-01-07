@@ -141,11 +141,11 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
      * @param userId
      * @return
      */
-    public Object personCollection(Integer xslx, Long aLong, Long id, String userId) throws Exception {
+    public Object personCollection(Integer xslx, Long id) throws Exception {
         String bdtxSql = "SELECT ID,cm_user_id AS userid,SFQR_TIME AS sfqr FROM xs_txbd_task WHERE id = ?1";
         String zcxsSql = "SELECT ID, cm_user_id AS userid,SFQR_TIME AS sfqr FROM xs_zc_task   WHERE id = ?1";
         String userSql = "SELECT\n" +
-                "  t.REALNAME,\n" +
+                "     t.REALNAME,\n" +
                 "  tt.DEPTNAME,\n" +
                 "  t.PHONE\n" +
                 "FROM (SELECT *\n" +
@@ -407,6 +407,17 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
         map.put("yworgId",map1.get("DEPTID"));
         map.put("tdwxOrg",map1.get("COMPANYNAME"));
         map.put("wxorgId",map1.get("COMPANYID"));
+        return map;
+    }
+
+    public Object getExecDetail(Integer xslx, Long execDetailId) throws Exception {
+        String sql =  "";
+        if(xslx == 0 || xslx == 1) {
+            sql = "select * from XS_TXBD_TASK_EXEC_DETAIL where id = ?";
+        } else {
+            sql = "select * from XS_ZC_TASK_EXEC_DETAIL where id = ?";
+        }
+        Map<String, Object> map = this.execSqlSingleResult(sql, execDetailId);
         return map;
     }
 }

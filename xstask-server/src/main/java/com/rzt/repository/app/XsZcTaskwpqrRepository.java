@@ -441,4 +441,20 @@ public interface XsZcTaskwpqrRepository extends JpaRepository<XsZcTaskwpqr, Stri
     @Transactional
     @Query(value = "insert into xs_zc_task_lsyh (id,task_id,exec_id,exec_detail_id,yh_id,yh_info,create_time) VALUES (?1,?2,?3,?4,?5,?6,sysdate)", nativeQuery = true)
     void addXsZcTaskLsyh(long nextId, Long id, Long execId, Long execDetailId, Long yhId, String yhInfo);
+
+
+    /***
+     * @Method insertException
+     * @Description
+     * @param
+     * @return void
+     * @date 2017/12/31 13:57
+     * @author nwz
+     */
+    @Modifying
+    @Transactional
+    @Query(value = "insert into XS_ZC_EXCEPTION (id,task_id,ycms,ycdata,create_time) VALUES (?1,?2,?3,?4,sysdate)", nativeQuery = true)
+    void insertException(long nextId, Long taskId, String ycms, String ycdata);
+
+
 }

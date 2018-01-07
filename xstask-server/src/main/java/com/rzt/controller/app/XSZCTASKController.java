@@ -53,13 +53,13 @@ public class XSZCTASKController extends
         try {
             return WebApiResponse.success(this.service.xsTask(page, size, userId, dbyb));
         } catch (Exception e) {
-            return WebApiResponse.erro("数据异常");
+            return WebApiResponse.erro("数据异常" + e.getMessage());
         }
     }
     /**
      * @Method xsTaskCount
      * @Description  返回待办/已办任务数 0 待办 1 已办
-     * @param [userid, status]
+     * @param [userId, status]
      * @return java.lang.Object
      * @date 2017/12/15 11:58
      * @author nwz
@@ -73,7 +73,7 @@ public class XSZCTASKController extends
         try {
             return WebApiResponse.success(this.service.xsTaskCount( userId, dbyb));
         } catch (Exception e) {
-            return WebApiResponse.erro("数据异常");
+            return WebApiResponse.erro("数据异常" + e.getMessage());
         }
     }
 
@@ -96,7 +96,7 @@ public class XSZCTASKController extends
             return WebApiResponse.success(this.service.tourMissionDetails(xslx, id));
         } catch (Exception e) {
             e.printStackTrace();
-            return WebApiResponse.erro("数据请求");
+            return WebApiResponse.erro("数据请求" + e.getMessage());
         }
     }
 
@@ -111,10 +111,10 @@ public class XSZCTASKController extends
     @ApiOperation(value = "人员信息采集查询", notes = "xslx 巡视类型 0 特殊巡视 1 保电巡视 2 正常巡视， id 任务ID")
     public WebApiResponse personCollection(Integer xslx, Long id,Long cycleId,String userId) {
         try {
-            return WebApiResponse.success(this.service.personCollection(xslx, id,cycleId,userId));
+            return WebApiResponse.success(this.service.personCollection(xslx, id));
         } catch (Exception e) {
             e.printStackTrace();
-            return WebApiResponse.erro("数据请求失败");
+            return WebApiResponse.erro("数据请求失败" + e.getMessage());
         }
     }
 
@@ -132,7 +132,7 @@ public class XSZCTASKController extends
             return WebApiResponse.success(this.service.itemsToRemind(xslx, id));
         } catch (Exception e) {
             e.printStackTrace();
-            return WebApiResponse.erro("数据库请求失败");
+            return WebApiResponse.erro("数据库请求失败" + e.getMessage());
         }
     }
 
@@ -143,6 +143,18 @@ public class XSZCTASKController extends
     public WebApiResponse xsTowerList(Integer xslx, Long id) {
         try {
             return WebApiResponse.success(this.service.xsTowerList(xslx, id));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("数据库请求失败"  + e.getMessage());
+        }
+    }
+
+    @GetMapping("getExecDetail")
+    @ApiOperation(value = "巡视页面", notes = "xslx 0 特殊 1 保电 2 正常")
+//    @DataEncode(includes = {"ID","TOWER_NAME"})
+    public WebApiResponse getExecDetail(Integer xslx, Long execDetailId) {
+        try {
+            return WebApiResponse.success(this.service.getExecDetail(xslx, execDetailId));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("数据库请求失败" + e.getMessage());
@@ -158,7 +170,7 @@ public class XSZCTASKController extends
             return WebApiResponse.success(this.service.historyXsTowerList(xslx, execId));
         } catch (Exception e) {
             e.printStackTrace();
-            return WebApiResponse.erro("数据库请求失败");
+            return WebApiResponse.erro("数据库请求失败" + e.getMessage());
         }
     }
 
@@ -170,7 +182,7 @@ public class XSZCTASKController extends
             return WebApiResponse.success(this.service.shangbaoYh(xslx, taskId,userId));
         } catch (Exception e) {
             e.printStackTrace();
-            return WebApiResponse.erro("数据库请求失败");
+            return WebApiResponse.erro("数据库请求失败" + e.getMessage());
         }
     }
 

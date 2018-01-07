@@ -64,12 +64,12 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
     @Modifying
     @Transactional
     public void addCycle(XsZcCycle xsZcCycle, String userId) throws Exception {
-        Map<String,Object> jsonObject = userInfoFromRedis(userId);
-        String deptid = jsonObject.get("DEPTID").toString();
+//        Map<String,Object> userInfo = userInfoFromRedis(userId);
+//        String deptid = userInfo.get("DEPTID").toString();
         //添加周期
         xsZcCycle.setId();
         xsZcCycle.setCreateTime(DateUtil.dateNow());
-        xsZcCycle.setTdywOrg(deptid);
+//        xsZcCycle.setTdywOrg(deptid);
         this.add(xsZcCycle);
         //添加周期表关联的线路杆塔
         Long xsZcCycleId = xsZcCycle.getId();
@@ -90,8 +90,9 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
 
     @Modifying
     @Transactional
-    public Object addPlan(XSZCTASK xszctask, String userId) {
+    public Object addPlan(XSZCTASK xszctask) {
         try {
+            String userId = xszctask.getCmUserId();
             Map<String,Object> jsonObject = userInfoFromRedis(userId);
             String deptid = jsonObject.get("DEPTID").toString();
             String classid = jsonObject.get("CLASSID").toString();
@@ -127,7 +128,7 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
 
             return WebApiResponse.success("数据保存成功!");
         } catch (Exception var3) {
-            return WebApiResponse.erro("数据保存失败" + var3.getMessage());
+            return WebApiResponse.erro("数据保存失败" + var3.getStackTrace());
         }
     }
 

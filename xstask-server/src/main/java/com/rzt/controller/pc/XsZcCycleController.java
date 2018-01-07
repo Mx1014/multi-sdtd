@@ -61,7 +61,7 @@ public class XsZcCycleController extends
 			this.service.addCycle(xsZcCycle,userId);
 			return WebApiResponse.success("周期新增成功");
 		} catch (Exception var) {
-			return WebApiResponse.erro("周期新增失败" + var.getMessage());
+			return WebApiResponse.erro("周期新增失败" + var.getStackTrace());
 		}
 	}
 
@@ -75,12 +75,12 @@ public class XsZcCycleController extends
 	 */
 	@ApiOperation(value = "周期维护页面列表",notes = "周期维护页面列表 查询的接口")
 	@PostMapping("listCycle")
-	public Object cycleList(Pageable pageable,XsTaskSCh xsTaskSCh,String userId) {
+	public Object cycleList(Pageable pageable,XsTaskSCh xsTaskSCh,String currentUserId) {
 		try {
-			Object cycleList = this.service.cycleList(pageable, xsTaskSCh,userId);
+			Object cycleList = this.service.cycleList(pageable, xsTaskSCh,currentUserId);
 			return WebApiResponse.success(cycleList);
 		} catch (Exception var7) {
-			return WebApiResponse.erro("数据查询失败" + var7.getMessage());
+			return WebApiResponse.erro("数据查询失败" + var7.getStackTrace());
 		}
 	}
 
@@ -92,7 +92,7 @@ public class XsZcCycleController extends
 			Object cycle = this.service.getCycle(id);
 			return WebApiResponse.success(cycle);
 		} catch (Exception var3) {
-			return WebApiResponse.erro("数据查询失败" + var3.getMessage());
+			return WebApiResponse.erro("数据查询失败" + var3.getStackTrace());
 		}
 
 	}
@@ -106,7 +106,7 @@ public class XsZcCycleController extends
 			this.service.logicalDelete(ids);
             return WebApiResponse.success("数据删除成功");
         } catch (Exception var3) {
-            return WebApiResponse.erro("数据删除失败" + var3.getMessage());
+            return WebApiResponse.erro("数据删除失败" + var3.getStackTrace());
         }
 
     }
@@ -119,7 +119,7 @@ public class XsZcCycleController extends
 			this.service.logicalDeletePlan(ids);
             return WebApiResponse.success("数据删除成功");
         } catch (Exception var3) {
-            return WebApiResponse.erro("数据删除失败" + var3.getMessage());
+            return WebApiResponse.erro("数据删除失败" + var3.getStackTrace());
         }
 
     }
@@ -131,7 +131,7 @@ public class XsZcCycleController extends
             this.service.updateCycle(id,cycle,inUse,planXsNum,planStartTime,planEndTime);
             return WebApiResponse.success("数据保存成功");
         } catch (Exception var3) {
-            return WebApiResponse.erro("数据保存失败" + var3.getMessage());
+            return WebApiResponse.erro("数据保存失败" + var3.getStackTrace());
         }
 
     }
@@ -146,8 +146,8 @@ public class XsZcCycleController extends
 	 * @author nwz
 	 */
 	@PostMapping("addPlan")
-	public Object addPlan(XSZCTASK xszctask,String userId) {
-		return this.service.addPlan(xszctask,userId);
+	public Object addPlan(XSZCTASK xszctask) {
+		return this.service.addPlan(xszctask);
 	}
 
 	/**
@@ -160,11 +160,11 @@ public class XsZcCycleController extends
 	 */
 	@ApiOperation(value = "pc端任务派发列表",notes = "pc端任务派发列表")
 	@GetMapping("listPlan")
-	public Object listPlan(Pageable pageable, XsTaskSCh xsTaskSch,String userId) {
+	public Object listPlan(Pageable pageable, XsTaskSCh xsTaskSch,String currentUserId) {
 		try {
-			return this.service.listPlan(pageable,xsTaskSch,userId);
+			return this.service.listPlan(pageable,xsTaskSch,currentUserId);
 		} catch (Exception var7) {
-			return WebApiResponse.erro("数据查询失败" + var7.getMessage());
+			return WebApiResponse.erro("数据查询失败" + var7.getStackTrace());
 		}
 
 	}
@@ -183,7 +183,7 @@ public class XsZcCycleController extends
 		try {
 			return WebApiResponse.success(this.service.listPictureById(taskId,zj));
 		} catch (Exception var) {
-			return WebApiResponse.erro("图片查找失败" + var.getMessage());
+			return WebApiResponse.erro("图片查找失败" + var.getStackTrace());
 		}
 	}
 
@@ -202,7 +202,7 @@ public class XsZcCycleController extends
 		try {
 			return WebApiResponse.success(this.service.listExecByTaskid(taskId));
 		} catch (Exception var) {
-			return WebApiResponse.erro("图片查找失败" + var.getMessage());
+			return WebApiResponse.erro("图片查找失败" + var.getStackTrace());
 		}
 	}
 
@@ -220,7 +220,7 @@ public class XsZcCycleController extends
 		try {
 			return WebApiResponse.success(this.service.listExecDetail(execId));
 		} catch (Exception var) {
-			return WebApiResponse.erro("图片查找失败" + var.getMessage());
+			return WebApiResponse.erro("图片查找失败" + var.getStackTrace());
 		}
 	}
 
@@ -230,7 +230,7 @@ public class XsZcCycleController extends
 		try {
 			return WebApiResponse.success(this.service.listExecDetail(execId));
 		} catch (Exception var) {
-			return WebApiResponse.erro("图片查找失败" + var.getMessage());
+			return WebApiResponse.erro("图片查找失败" + var.getStackTrace());
 		}
 	}
 

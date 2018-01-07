@@ -302,4 +302,9 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
         long nextId = new SnowflakeIdWorker(18, 21).nextId();
         this.reposiotry.addXsZcTaskLsyh(nextId,id,execId,execDetailId,yhId,yhInfo);
     }
+
+    public void insertException(Long taskId, String ycms, String ycdata) {
+        long nextId = new SnowflakeIdWorker(18, 21).nextId();
+        this.reposiotry.insertException(nextId,taskId,ycms,ycdata);
+    }
 }
