@@ -64,11 +64,11 @@ spring:
 my-defined:
    mapProps:
    #docker
-#    file-dir: /usr/share/nginx/html/
-#    pic-dir: /usr/share/nginx/html/
+    file-dir: /usr/share/nginx/html/
+    pic-dir: /usr/share/nginx/html/
 #ali
-    file-dir: /usr/local/nginx-fileserver/html/
-    pic-dir: /usr/local/nginx-fileserver/html/
+#    file-dir: /usr/local/nginx-fileserver/html/
+#    pic-dir: /usr/local/nginx-fileserver/html/
 #    file-dir: F:/testFile/
 #    pic-dir: F:/testFile/
     thum-height: 50
