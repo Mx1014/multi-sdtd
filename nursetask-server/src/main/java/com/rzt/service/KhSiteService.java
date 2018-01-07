@@ -18,6 +18,7 @@ import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DateUtil;
 import com.rzt.utils.MapUtil;
 import com.rzt.utils.RedisUtil;
+import com.rzt.utils.SnowflakeIdWorker;
 import com.sun.tools.internal.ws.wsdl.document.soap.SOAPUse;
 import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -255,7 +256,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
         try {
             List<Map<Object, String>> list = (List<Map<Object, String>>) JSONObject.parse(tasks);
             KhCycle cycle = this.cycleRepository.findCycle(Long.parseLong(id));
-            String groupFlag = System.currentTimeMillis() + "";
+            String groupFlag = new SnowflakeIdWorker(0,0).nextId() + "";
             Date time1=DateUtil.parseDate(list.get(0).get("planStartTime").toString());
             Date time2=DateUtil.parseDate(list.get(list.size()-1).get("planEndTime").toString());
             double cycle1 = DateUtil.getDatePoor(time2,time1);
