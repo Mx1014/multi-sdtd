@@ -278,6 +278,8 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                 site.setSection(cycle.getSection());
                 site.setStatus(1);
                 site.setUserid(userId);
+                site.setPlanStartTime(DateUtil.parseDate(startTime));
+                site.setPlanEndTime(DateUtil.parseDate(endTime));
                 site.setTaskName(cycle.getTaskName());
                 site.setTdywOrg(cycle.getTdywOrg());
                 site.setYhId(cycle.getYhId());
@@ -293,8 +295,6 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                 } else {
                     site.setCapatain(0);
                 }
-                site.setPlanStartTime(startTime);//.substring(11, 19));
-                site.setPlanEndTime(endTime);//.substring(11, 19));
                 this.add(site);
                 int count = taskService.getCount(Long.parseLong(id), userId);
                 task.setPlanStartTime(DateUtil.getPlanStartTime(startTime));
