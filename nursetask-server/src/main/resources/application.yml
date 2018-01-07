@@ -43,7 +43,7 @@ spring:
 #      password: Rzt82890758-Rzt82890758
 #      timeout: 0
   redis:
-        database: 0
+        database: 1
         host: 168.130.1.31
         port: 31662
         password:
@@ -56,12 +56,11 @@ spring:
 eureka:
   client:
     service-url:
+#       defaultZone: http://168.130.1.31:7003/eureka/
     #  defaultZone: http://168.130.1.31:7003/eureka/
-    #  defaultZone: http://168.130.1.31:7003/eureka/
-     #  defaultZone: http://192.168.21.31:7002/eureka/
-      defaultZone: http://192.168.21.25:7002/eureka/
-  instance:
-    prefer-ip-address: true
+    #  defaultZone: http://192.168.22.65:7002/eureka/
+      defaultZone: http://eureka-eureka:7002/eureka/
+
 #spring:
 #  profiles:
 #    active: prd

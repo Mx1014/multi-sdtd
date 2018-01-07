@@ -87,7 +87,7 @@ public class CheckLiveTaskXsService extends CurdService<CheckLiveTaskXs, CheckLi
         task.setTdwhOrg(String.valueOf(map.get("TD_ORG")).replace("null",""));
         task.setTdwxOrgid(String.valueOf(map.get("WX_ORG")).replace("null",""));
         task.setCreateTime(new Date());
-        task.setStatus(1);//0未派发  1已派发  2已消缺
+        task.setStatus(0);//任务派发状态  0未接单 1进行中 2已完成 3超期
         task.setCheckType(1); //0 看护  1巡视
         //task.setTaskType(0);//（0 正常 1保电 2 特殊）
         task.setCheckCycle(1);
@@ -108,5 +108,30 @@ public class CheckLiveTaskXsService extends CurdService<CheckLiveTaskXs, CheckLi
     }
 
 
+    public Page<Map<String,Object>> listXsCheckTaskPage(Pageable pageable, String startTime, String endTime, String userId, String tddwId) {
+        String sql = "select t.id,t.TASK_ID,t.CREATE_TIME,t.TASK_NAME,u.REALNAME,td.PLAN_START_TIME,td.PLAN_END_TIME,d.DEPTNAME,CASE t.TASK_TYPE WHEN 0 THEN '正常' WHEN 1 THEN '保电' WHEN 2 THEN '特殊' END aaa from CHECK_LIVE_TASKXS t " +
+                "  LEFT JOIN CHECK_LIVE_TASK_DETAILXS td ON t.id=td.task_id " +
+                "  LEFT JOIN  rztsysuser u on u.id=t.USER_ID " +
+                "  LEFT JOIN  RZTSYSDEPARTMENT d on d.ID = u.DEPTID where 1=1 ";
 
+        List params = new ArrayList<>();
+        //时间段查询
+        if (!StringUtils.isEmpty(startTime) && !StringUtils.isEmpty(endTime)){
+            params.add(endTime);
+            params.add(startTime);
+            sql += " and to_date(?,'yyyy-MM-dd HH24:mi') > td.plan_start_time and to_date(?,'yyyy-MM-dd HH24:mi') < td.plan_end_time";
+        }
+        //稽查人查询
+        if (!StringUtils.isEmpty(userId)) {
+            params.add(userId);
+            sql += " AND u.id =?";
+        }
+        //通道单位查询
+        if (!StringUtils.isEmpty(tddwId)) {
+            params.add(tddwId);
+            sql += " AND d.ID =?";
+        }
+
+        return execSqlPage(pageable, sql, params.toArray());
+    }
 }

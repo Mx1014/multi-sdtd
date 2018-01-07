@@ -66,6 +66,16 @@ public class PICTUREJC implements Serializable{
 	private Integer fileType;
 	@Column(name = "PROCESS_TYPE")
 	private Integer processType;
+	@Column(name = "JSON_STR")
+	private String jsonStr;
+
+	public String getJsonStr() {
+		return jsonStr;
+	}
+
+	public void setJsonStr(String jsonStr) {
+		this.jsonStr = jsonStr;
+	}
 
 	public Integer getProcessType() {
 		return processType;

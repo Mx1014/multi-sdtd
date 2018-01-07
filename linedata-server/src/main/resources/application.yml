@@ -24,9 +24,9 @@ spring:
 #      url: jdbc:oracle:thin:@localhost:1521/orcl
 #      username: sdtd
 #      password: sdtd
-      url: jdbc:oracle:thin:@47.94.131.120:1521/sdt
-      username: sdtd
-      password: sdtd
+      url: jdbc:oracle:thin:@47.94.131.120:1521/orcl
+      username: sdtd27
+      password: sdtd27
 # 下面为连接池的补充设置，应用到上面所有数据源中
 # 初始化大小，最小，最大
       initialSize: 5
