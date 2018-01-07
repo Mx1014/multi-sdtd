@@ -175,21 +175,21 @@ public class RztSysDepartmentService extends CurdService<RztSysDepartment, RztSy
     /**
      * 查询通道运维单位
      *
-     * @return
+     * @returnString userId
      */
-    public WebApiResponse queryOrgName(String userId) {
-        HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
-        JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", userId).toString());
-        Integer roletype = Integer.valueOf(jsonObject.get("ROLETYPE").toString());
-        String deptid = String.valueOf(jsonObject.get("DEPTID"));
+    public WebApiResponse queryOrgName() {
+//        HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
+//        JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", userId).toString());
+//        Integer roletype = Integer.valueOf(jsonObject.get("ROLETYPE").toString());
+//        String deptid = String.valueOf(jsonObject.get("DEPTID"));
 //        if (roletype == 0) {
-            String sql = "SELECT * FROM RZTSYSDEPARTMENT WHERE DEPTPID='402881e6603a69b801603a6ab1d70000' ";
-            try {
-                return WebApiResponse.success(this.execSql(sql));
-            } catch (Exception e) {
-                e.printStackTrace();
-                return WebApiResponse.erro("数据查询失败");
-            }
+        String sql = "SELECT * FROM RZTSYSDEPARTMENT WHERE DEPTPID='402881e6603a69b801603a6ab1d70000' ";
+//            try {
+        return WebApiResponse.success(this.execSql(sql));
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//                return WebApiResponse.erro("数据查询失败");
+//            }
 //        } else if (roletype == 1 || roletype == 2) {
 //            String sql = "SELECT * FROM RZTSYSDEPARTMENT WHERE DEPTPID=?1 ";
 //            try {
