@@ -55,7 +55,18 @@ public interface KhTaskRepository extends JpaRepository<KhTask,String> {
     void updateTaskById(long id, String khfzrId1, String khfzrId2, String khdyId1, String khdyId2);*/
 
     @Modifying
-    @Transactional
+
     @Query(value = "update kh_site set user_id = ?1,plan_start_time=?3,plan_end_time=?4 where id = ?2",nativeQuery = true)
     void updateSiteById(String userId, String id,String startTime,String endTime);
+
+    @Modifying
+    @Transactional
+    @Query(value = "update kh_site set PLAN_START_TIME = ?1,PLAN_END_TIME=?2,COUNT=?4 where id = ?3",nativeQuery = true)
+    void updateSite(String startTime, String endTime, Long id, int count);
+
+    @Modifying
+    @Transactional
+    @Query(value ="INSERT INTO KH_TASK (ID,SITE_ID,USER_ID,TASK_NAME,YH_ID,CREATE_TIME,STATUS,PLAN_START_TIME,PLAN_END_TIME,WX_ORG,COUNT,TDYW_ORG,ZXYS_NUM) " +
+            " VALUES (?1,?2,?3,?4,?5,sysdate,0,?6,?7,?8,?9,?10,0)",nativeQuery = true)
+    void addTask(Long id, Long siteId, String userId, String taskName, Long yhId, Date planStartTime, Date planEndTime, String wxOrg, int count, String tdywOrg);
 }

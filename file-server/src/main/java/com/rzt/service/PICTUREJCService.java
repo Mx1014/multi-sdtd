@@ -108,7 +108,7 @@ public class PICTUREJCService extends CurdService<PICTUREJC,PICTUREJCRepository>
     public Map<String,Object> getImgsBytaskIdAndProcessId(String taskId, String processId,String processType) {
         Map<String, Object> result = new HashMap<>();
         ArrayList<String> params = new ArrayList<>();
-        String sql = "select id,file_path,FILE_SMALL_PATH from PICTURE_JC where 1=1 ";
+        String sql = "select id,file_path,FILE_SMALL_PATH,json_str from PICTURE_JC where 1=1 ";
         if(!StringUtils.isEmpty(taskId)){
             params.add(taskId);
             sql += " and task_id=?"+params.size();

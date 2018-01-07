@@ -59,18 +59,18 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 double jd = (Double.parseDouble(map.get("LONGITUDE").toString()) + Double.parseDouble(map1.get("LONGITUDE").toString())) / 2;
                 double wd = (Double.parseDouble(map.get("LATITUDE").toString()) + Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
                 double radius = MapUtil.GetDistance(Double.parseDouble(map.get("LONGITUDE").toString()), Double.parseDouble(map.get("LATITUDE").toString()), Double.parseDouble(map1.get("LONGITUDE").toString()), Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
-                yh.setRadius(radius+"");
-                yh.setJd(jd+"");
-                yh.setWd(wd+"");
+                yh.setRadius("100.0");
+                yh.setJd(map.get("LONGITUDE").toString());
+                yh.setWd(map.get("LATITUDE").toString());
             }
             if (yh.getVtype().equals("0")){
-                yh.setVtype("35kV");
+                yh.setVtype("35");
             }else if (yh.getVtype().equals("1")){
-                yh.setVtype("110kV");
+                yh.setVtype("110");
             }else if (yh.getVtype().equals("2")){
-                yh.setVtype("220kV");
+                yh.setVtype("220");
             }else if (yh.getVtype().equals("3")){
-                yh.setVtype("550kV");
+                yh.setVtype("550");
             }
             yh.setYhjb("一般");
             yh.setSdgs(1);//手机导入
@@ -78,7 +78,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             yh.setYhzt(0);//隐患未消除
             yh.setCreateTime(DateUtil.dateNow());
             yh.setSection(startTowerName + "-" + endTowerName);
-            if (null != pictureId || "" != pictureId){
+            if (null != pictureId && ! pictureId.equals("")){
                 String[] split = pictureId.split(",");
                 for (int i =0; i < split.length;i++){
                     this.reposiotry.updateYhPicture(Long.parseLong(split[i]),yh.getId(),yh.getXstaskId());
@@ -88,7 +88,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             return WebApiResponse.success("数据保存成功");
         } catch (Exception e) {
             e.printStackTrace();
-            return WebApiResponse.erro("数据保存失败");
+            return WebApiResponse.erro("数据保存失败"+e.getMessage());
         }
     }
 

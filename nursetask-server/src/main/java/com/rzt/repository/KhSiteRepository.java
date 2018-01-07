@@ -36,7 +36,7 @@ public interface KhSiteRepository extends JpaRepository<KhSite, String> {
     int updateQxTask(long id, Date date);
 
     @Modifying
-    @Query(value = "update kh_task set status= 3,REAL_END_TIME=?2 where yh_id= ?1 and status = 0 or status =1 ", nativeQuery = true)
+    @Query(value = "update kh_task set status= 3,REAL_END_TIME=?2 where yh_id= ?1 and status in (0,1) ", nativeQuery = true)
     @Transactional
     void updateDoingTask(long id, Date date);
 

@@ -66,7 +66,22 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
             HashOperations hashOperations = redisTemplate.opsForHash();
 
             while (iterator.hasNext()){
+
                 Map<String, Object> next = iterator.next();
+                Object taskid = next.get("TASKID");
+                Object tasktype = next.get("TASKTYPE");
+                //巡视
+                if(tasktype!=null && tasktype.equals("1")){
+                    String sqll = "SELECT  c.LINE_ID FROM XS_ZC_TASK x LEFT JOIN XS_ZC_CYCLE c ON c.ID = x.XS_ZC_CYCLE_ID WHERE x.ID =?1";
+                    List<Map<String, Object>> maps = execSql(sqll,taskid);
+                    next.put("LINE_ID",maps.get(0).get("LINE_ID"));
+                }else if (tasktype!=null && tasktype.equals("2")){ //看护
+                    String sqlll = "SELECT LINE_ID FROM KH_YH_HISTORY WHERE TASK_ID =1?";
+                    List<Map<String, Object>> maps = execSql(sqlll, taskid);
+                    next.put("LINE_ID",maps.get(0).get("LINE_ID"));
+                }else if (tasktype!=null && tasktype.equals("3")){ //稽查
+
+                }
 
                 String userID =(String)next.get("USER_ID");
                 Object userInformation = hashOperations.get("UserInformation", userID);
@@ -89,8 +104,6 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
         }
         return WebApiResponse.success(pageResult);
     }
-
-
     /**
      * 供定时器使用   先查询需要的数据 查询后将数据添加进定时任务表
      */
@@ -123,7 +136,6 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
 
 
             }
-            //     看护任务状态标识为中文
 
             Iterator<Map<String, Object>> iterator1 = maps2.iterator();
             while (iterator1.hasNext()){
@@ -261,4 +273,6 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
     public void checkOff(Long questionTaskId) {
         repository.xsTaskUpdate(questionTaskId);
     }
+
+
 }
