@@ -127,10 +127,10 @@ public class KhSiteController extends
     }
     @GetMapping("/listKhtaskById.do")
     @ResponseBody
-    public WebApiResponse listKhtaskByid(HttpServletResponse response,String id) {
+    public WebApiResponse listKhtaskById(HttpServletResponse response,String id) {
         try {
             response.setHeader("Access-Control-Allow-Origin","*");
-            List list = this.service.listKhtaskByid(Long.parseLong(id));
+            List list = this.service.listKhtaskById(Long.parseLong(id));
             return WebApiResponse.success(list);
         } catch (Exception e) {
             e.printStackTrace();
