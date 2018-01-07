@@ -36,6 +36,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.OutputStream;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -88,6 +89,8 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
         }
 
         String sql = "";
+
+        //公司本部、属地公司权限
         if (roleType.equals("1") || roleType.equals("2")) {
             if (task.getStatus().equals("1")) {
                 sql = "select " + result + " from kh_site k ,kh_yh_history y,rztsysuser u,RZTSYSDEPARTMENT d  " + buffer.toString() + " and k.yh_id = y.id and u.id = k.user_id and d.id = u.deptid and u.deptid = (select DEPTID FROM RZTSYSUSER where id =?) ";
@@ -95,6 +98,8 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                 sql = "select " + result1 + "from kh_cycle k,kh_yh_history y " + buffer.toString() + " and k.yh_id = y.id  and k.tdyw_org = (select d.deptname FROM RZTSYSUSER u,RZTSYSDEPARTMENT d where d.id= u.deptid and u.id =?) ";
             }
             params.add(task.getUserId());
+
+        //部门权限
         } else if (roleType.equals("3")) {
             if (task.getStatus().equals("1")) {
                 sql = "select " + result + " from kh_site k ,kh_yh_history y,rztsysuser u,RZTSYSCOMPANY d  " + buffer.toString() + " and  k.yh_id = y.id and u.id = k.user_id and d.id = u.COMPANYID and u.COMPANYID = (select COMPANYID FROM RZTSYSUSER where id =?) ";
@@ -102,6 +107,8 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                 sql = "select " + result1 + "from kh_cycle k,kh_yh_history y " + buffer.toString() + " and k.yh_id = y.id and k.WX_ORG = (select d.COMPANYNAME FROM RZTSYSUSER u,RZTSYSCOMPANY d where d.id= u.COMPANYID and u.id =?) ";
             }
             params.add(task.getUserId());
+
+        //组织权限
         } else if (roleType.equals("4")) {
             if (task.getStatus().equals("1")) {
                 sql = "select " + result + " from kh_site k ,kh_yh_history y,rztsysuser u,RZTSYSDEPARTMENT d  " + buffer.toString() + " and  k.yh_id = y.id and u.id = k.user_id and d.id = u.classname and u.classname = (select classname FROM RZTSYSUSER where id =?) ";
@@ -110,6 +117,8 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                 return new ArrayList<>();
             }
             params.add(task.getUserId());
+
+         //个人权限
         } else if (roleType.equals("5")) {
             if (task.getStatus().equals("1")) {
                 sql = "select " + result + " from kh_site k ,kh_yh_history y,rztsysuser u  " + buffer.toString() + " and k.yh_id = y.id and u.id = k.user_id and k.user_id = ?";
@@ -118,6 +127,8 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                 return new ArrayList<>();
             }
             params.add(task.getUserId());
+
+        //所有权限
         } else {
             if (task.getStatus().equals("1")) {
                 sql = "select " + result + " from kh_site k ,kh_yh_history y,rztsysuser u " + buffer.toString() + " and k.yh_id = y.id and u.id = k.user_id";
@@ -153,13 +164,14 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
         this.reposiotry.updateKhCycle(id);
     }
 
+    //导出返回List<Map>
     public List<Map<String, Object>> findAlls() {
         String sql = "select * from kh_site";
         List<Map<String, Object>> maps = this.execSql(sql);
         return maps;
     }
 
-    public List listKhtaskByid(long id) {
+    public List listKhtaskById(long id) {
         String result = "k.task_name as taskname,k.plan_start_time starttime,k.plan_end_time endtime,d.deptname deptname,y.yhms as ms,y.yhjb as jb,u.realname as name";
         String sql = "select " + result + " from kh_site k left join rztsysuser u on u.id = k.user_id left join kh_yh_history y on y.id = k.yh_id left join rztsysdepartment d on d.id=u.classname where k.id=?";
         return this.execSql(sql, id);
@@ -185,15 +197,15 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             }
             KhCycle task = new KhCycle();
             task.setId();
+            if (yh.getVtype().contains("kV")){
+                yh.setVtype(yh.getVtype().substring(0,yh.getVtype().indexOf("k")));
+            }
             yh.setTaskId(task.getId());
             yh.setYhzt(0);//隐患未消除
             yh.setId(0L);
             yh.setCreateTime(DateUtil.dateNow());
             yh.setSection(startTowerName + "-" + endTowerName);
             yhservice.add(yh);
-            if (yh.getVtype().contains("kV")){
-                yh.setVtype(yh.getVtype().substring(0,yh.getVtype().indexOf("k")));
-            }
             String taskName = yh.getVtype() + yh.getLineName() + startTowerName + "-" + endTowerName + " 号杆塔看护任务";
             task.setVtype(yh.getVtype());
             task.setLineName(yh.getLineName());
@@ -246,7 +258,9 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             String groupFlag = System.currentTimeMillis() + "";
             Date time1=DateUtil.parseDate(list.get(0).get("planStartTime").toString());
             Date time2=DateUtil.parseDate(list.get(list.size()-1).get("planEndTime").toString());
-            int cycle1 = (int)DateUtil.getDatePoor(time1,time2);
+            double cycle1 = DateUtil.getDatePoor(time2,time1);
+            DecimalFormat df = new DecimalFormat( "0.00");
+            cycle1=Double.parseDouble(df.format(cycle1));
 //            int cycle1 =List.get(0).get("planStartTime").toString();
             for (Map map : list) {
                 KhTask task = new KhTask();
@@ -331,7 +345,6 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
         try {
             List<Map<String, Object>> taskList = this.findAlls();
             //this.service.exportExcel(response);
-
             //String ecxcelModelPath = rootpath + "excelModels"+File.separator+"看护任务导出表.xlsx";
             //InputStream in = new FileInputStream(ecxcelModelPath);
             //XSSFWorkbook wb = new XSSFWorkbook(in);
@@ -397,10 +410,9 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             cell = row.createCell((short) 10);
             cell.setCellValue("任务状态");
             cell.setCellStyle(headerStyle);
-            //Sheet sheet = wb.getSheetAt(0);
+
             for (int i = 0; i < taskList.size(); i++) {
                 row = sheet.createRow(i + 1);
-                //Row row = sheet.getRow(i+1);
                 Map<String, Object> task = taskList.get(i);
                 if (task.get("TASK_NAME") != null) {
                     row.createCell(0).setCellValue(task.get("TASK_NAME").toString());//任务名称
