@@ -64,7 +64,7 @@ public class XsZcCycle implements Serializable{
    	 @Column(name = "CYCLE")
      private Integer cycle;
     	//字段描述: 通道运维单位
-   	 @Column(name = "TDYW_ORG")
+   	 @Column(name = "TD_ORG")
      private String tdywOrg;
     	//字段描述: 是否停用 0 不停用 1 停用
    	 @Column(name = "IN_USE")

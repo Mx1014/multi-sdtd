@@ -28,13 +28,11 @@ public class AppKhUpdateService extends CurdService<KhTask, AppKhUpdateRepositor
     //修改实际开始时间
     public WebApiResponse updateRealTime(long taskId) {
         try {
-            if (taskId != 0l) {
                 int num = this.reposiotry.findNum(taskId);
                 if (num < 1){
                     this.reposiotry.updateRealStartTime(taskId, DateUtil.dateNow());
                     this.reposiotry.updateZxnum(1, taskId);//修改执行页数
                 }
-            }
             return WebApiResponse.success("修改成功");
         } catch (Exception e) {
             e.printStackTrace();
@@ -45,13 +43,11 @@ public class AppKhUpdateService extends CurdService<KhTask, AppKhUpdateRepositor
     //修改身份确认时间
     public WebApiResponse updateSfqrTime(long taskId) {
         try {
-            if (taskId != 0l) {
                 int num = this.reposiotry.findNum(taskId);
                 if (num < 2) {
                     this.reposiotry.updateSFQRTime(DateUtil.dateNow(), taskId);
                     this.reposiotry.updateZxnum(2, taskId);//修改执行页数
                 }
-            }
             return WebApiResponse.success("修改成功");
         } catch (Exception e) {
             e.printStackTrace();
@@ -71,7 +67,7 @@ public class AppKhUpdateService extends CurdService<KhTask, AppKhUpdateRepositor
             wpqrService.add(task);
             this.reposiotry.updateWpqrTime(task.getTaskId(), DateUtil.dateNow());
             this.reposiotry.updateZxnum(3, task.getTaskId());
-            return WebApiResponse.success("修改成功");
+            return WebApiResponse.success("添加成功");
         }
     }
 

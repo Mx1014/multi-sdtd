@@ -27,4 +27,8 @@ public interface KhYhHistoryRepository extends JpaRepository<KhYhHistory,String>
     @Modifying
     @Query(value = "UPDATE PICTURE_YH SET YH_ID = ?2,TASK_ID=?3,YH_ORIGIN = 0 WHERE ID =?1",nativeQuery = true)
     void updateYhPicture(long id, Long yhId, long xstaskId);
+    @Modifying
+    @Query(value = "UPDATE PICTURE_YH SET YH_ID = ?2,YH_ORIGIN = 0 WHERE ID =?1",nativeQuery = true)
+    void updatePicture(long id, Long yhId);
+
 }

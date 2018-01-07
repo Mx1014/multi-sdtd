@@ -7,6 +7,7 @@
 package com.rzt.controller;
 
 import com.rzt.entity.Cmcoordinate;
+import com.rzt.entity.MyCoordinate;
 import com.rzt.service.CmcoordinateService;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.Constances;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 类名称：CMCOORDINATEController
@@ -43,24 +45,36 @@ public class CmcoordinateController extends
 
     @PostMapping("addCmcoordinate")
     @Transactional
-    public WebApiResponse addCmcoordinate(Cmcoordinate cmcoordinate) {
+    public WebApiResponse addCmcoordinate(MyCoordinate myCoordinate) {
         try {
+            //1.处理数据
             Date date = DateUtil.dateNow();
+            Cmcoordinate cmcoordinate = new Cmcoordinate();
             cmcoordinate.setId(UUID.randomUUID().toString().replaceAll("-", ""));
             cmcoordinate.setCreatetime(date);
-            //添加用户坐标到redis geo,用于范围查询，和最新位置查询。
+            cmcoordinate.setUserid(myCoordinate.getID());
+            cmcoordinate.setGzlx(myCoordinate.getWORKTYPE());
+            cmcoordinate.setImei2(myCoordinate.getImei2());
+            cmcoordinate.setLongitude(myCoordinate.getLongitude());
+            cmcoordinate.setLatitude(myCoordinate.getLatitude());
+            cmcoordinate.setOnLine(myCoordinate.getLOGINSTATUS());
+            cmcoordinate.setUserName(myCoordinate.getUSERNAME());
+
+            //2.添加用户坐标到redis geo,用于范围查询，和最新位置查询。
             Point point = new Point(cmcoordinate.getLongitude(), cmcoordinate.getLatitude());
             GeoOperations geoOperations = redisTemplate.opsForGeo();
             geoOperations.geoAdd(Constances.LOCATION_OBJ, point, cmcoordinate.getUserid());
 
-            //临时用map geo放一放
+            //3.用来展示pc端地图的key
             HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
-            hashOperations.put("temporyCoordinateMap",cmcoordinate.getUserid(),cmcoordinate);
+//            String coorKey = myCoordinate.getDEPTID() + "_" + myCoordinate.getCOMPANYID() + "_" + myCoordinate.getCLASSID() + "_" + "temporyCoordinateMap";
+            hashOperations.put("menInMap",cmcoordinate.getUserid(),cmcoordinate);
 
-            //为每个用户每天创建一个key，用于保存当天的坐标。
+            //4.为每个用户每天创建一个key，用于保存当天的坐标  暂定三天失效
             ZSetOperations setOperations = redisTemplate.opsForZSet();
-            String key = cmcoordinate.getUserid() + "-" + DateUtil.getCurrentDate();
+            String key = DateUtil.getCurrentDate() + "_" + cmcoordinate.getUserid();
             setOperations.add(key, cmcoordinate, date.getTime());
+            redisTemplate.expire(key,3, TimeUnit.DAYS);
 
             this.service.add(cmcoordinate);
             return WebApiResponse.success("添加成功");
@@ -100,5 +114,9 @@ public class CmcoordinateController extends
         GeoOperations geoOperations = redisTemplate.opsForGeo();
         List<Point> list = geoOperations.geoPos(Constances.LOCATION_OBJ,str);
         return list;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(null + "-");
     }
 }
