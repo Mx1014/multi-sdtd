@@ -132,6 +132,13 @@ public class KhTaskController extends
 	public WebApiResponse appListPicture(long taskId,Integer zj){
 		return this.service.appListPicture(taskId,zj);
 	}
+
+	//地图展示某人的具体任务信息
+	@GetMapping("/createTask")
+	@ResponseBody
+	public void createTask(String taskId){
+		this.service.createTask();
+	}
 }
 
 
