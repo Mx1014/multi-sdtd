@@ -74,7 +74,7 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
         String sql = "SELECT r.*  " +
 				"FROM CHECK_RESULT r LEFT JOIN CHECK_DETAIL d ON r.CHECK_DETAIL_ID = d.ID  " +
 				"WHERE d.QUESTION_TASK_ID = ?"+longs.size();
-        List<Map<String, Object>> maps = execSql(sql, longs.size());
+        List<Map<String, Object>> maps = execSql(sql, longs.toArray());
         return maps;
     }
 
