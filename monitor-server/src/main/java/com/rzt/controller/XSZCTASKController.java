@@ -1,15 +1,14 @@
 package com.rzt.controller;
 
-import com.netflix.discovery.converters.Auto;
+import com.rzt.entity.CheckDetail;
+import com.rzt.service.CheckDetailService;
 import com.rzt.service.XSZCTASKService;
 import com.rzt.util.WebApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.text.ParseException;
 
 /**
  * 李成阳
@@ -37,9 +36,9 @@ public class XSZCTASKController extends
      * @return
      */
     @GetMapping("/fingYHByTaskId")
-    public WebApiResponse fingYHByTaskId(String taskId){
+    public WebApiResponse fingYHByTaskId(String taskId,String TASKTYPE){
         if(null!= taskId && !"".equals(taskId)){
-            return service.findYHByTaskId(taskId);
+            return service.findYHByTaskId(taskId,TASKTYPE);
         }
         return WebApiResponse.erro("参数错误");
     }
@@ -53,6 +52,24 @@ public class XSZCTASKController extends
     @GetMapping("/getXsTaskAll")
     public WebApiResponse getXsTaskAll(Integer page,Integer size, String taskType,Integer status){
         return service.getXsTaskAll(page,size,taskType,status);
+    }
+
+    @Autowired
+    private CheckDetailService detailService;
+    @PostMapping("checkOff")
+    public WebApiResponse checkOff(CheckDetail checkDetail){
+        try {
+            //根据审核人id和问题任务id查询该条审核记录是否存在
+            Long detailID = detailService.findByCheckUserAndQuestionTaskId(checkDetail.getCheckUser(),checkDetail.getQuestionTaskId());
+            if(detailID==null){
+                 detailService.addCheckDetail(checkDetail);
+            }
+
+            service.checkOff(checkDetail.getQuestionTaskId());
+            return WebApiResponse.success("success");
+        }catch (Exception e){
+            return WebApiResponse.erro("更改状态失败："+e.getMessage());
+        }
     }
 
 }

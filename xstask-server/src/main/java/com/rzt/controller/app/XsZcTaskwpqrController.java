@@ -227,4 +227,25 @@ public class XsZcTaskwpqrController extends CurdController<XsZcTaskwpqr, XsZcTas
         }
     }
 
+    /**
+     * xslx 巡视类型
+     * 插入异常状态
+     *
+     * @param xslx  巡视类型
+     * @param id 任务id
+     * @return
+     */
+    @ApiOperation(value = "插入异常状态", notes = "插入异常状态 ")
+    @PostMapping("insertException")
+    public Object insertException(Long taskId,String ycms,String ycdata) {
+        try {
+            this.service.insertException(taskId,ycms,ycdata);
+            return WebApiResponse.success("数据更新成功");
+        } catch (Exception var3) {
+            return WebApiResponse.erro("数据更新失败" + var3.getMessage());
+        }
+    }
+
+
+
 }
