@@ -285,6 +285,8 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
         resultMap.put("execs",execs);
         queryYinhuan(execDetails);
         resultMap.put("execDetails",execDetails);
+        //判断标准
+        resultMap.put("judge",xsZcCycleService.judgeFromRedis());
         return resultMap;
     }
 
@@ -329,6 +331,8 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
         }
         queryYinhuan(execDetails);
         resultMap.put("execDetails",execDetails);
+        //判断标准
+        resultMap.put("judge",xsZcCycleService.judgeFromRedis());
         return resultMap;
     }
 
