@@ -68,7 +68,7 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
             List<Map<String, Object>> map = this.execSql(sql, taskId);
             if (map.isEmpty()) {
                 Map map1 = new HashMap<>();
-                map1.put("wp_zt", "1,1,1,1,1");
+                map1.put("wp_zt", "0,0,0,0,0");
                 map.add(map1);
             }
             return WebApiResponse.success(map);

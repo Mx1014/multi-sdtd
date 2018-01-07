@@ -329,7 +329,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
     public void createTask() {
         List<KhSite> list = siteRepository.findSites();
         for (KhSite site : list) {
-            int cycle = (int)site.getCycle();  //一轮任务时长
+            double cycle = site.getCycle();  //一轮任务时长
             Date startTime = DateUtil.parseDate(site.getPlanStartTime());
             Date endTime = DateUtil.parseDate(site.getPlanEndTime());
             if (cycle > 24) {
