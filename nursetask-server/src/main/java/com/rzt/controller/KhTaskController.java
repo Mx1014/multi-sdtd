@@ -5,37 +5,37 @@
  * Copyright 融智通科技(北京)股份有限公司 版权所有    
  */
 package com.rzt.controller;
+import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.KhSite;
 import com.rzt.entity.KhTask;
 import com.rzt.entity.model.KhTaskModel;
 import com.rzt.service.KhTaskService;
 import com.rzt.service.KhYhHistoryService;
 import com.rzt.util.WebApiResponse;
+import com.rzt.utils.DateUtil;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
-/**
- * 类名称：KhTaskController
- * 类描述：    
- * 创建时间：2017/11/28 14:43:44
- * 修改时间：2017/11/28 14:43:44
- * 修改备注：    
- * @version        
- */
 @RestController
 @RequestMapping("KhTask")
 public class KhTaskController extends
 		CurdController<KhTask,KhTaskService> {
 	@Autowired
 	private KhYhHistoryService yhservice;
+	@Autowired
+	private RedisTemplate<String, Object> redisTemplate;
 
 	/***
 	 * 所有看护计划查询
@@ -43,10 +43,12 @@ public class KhTaskController extends
 	 */
 	@GetMapping("/listAllKhTask.do")
 	@ResponseBody
-	public WebApiResponse listAllKhTask(KhTaskModel task, String status,Pageable pageable,int roleType) {
+	public WebApiResponse listAllKhTask(KhTaskModel task, String status,Pageable pageable) {
 		try {
 			//分页参数 page size
-			Object o = this.service.listAllKhTask(task, status,pageable,roleType);
+			HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
+			JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", task.getUserId()).toString());
+			Object o = this.service.listAllKhTask(task, status,pageable,Integer.valueOf(jsonObject.get("ROLETYPE").toString()));
 			return WebApiResponse.success(o);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -71,10 +73,6 @@ public class KhTaskController extends
 	}
 
 	/**
-	 * 删除已安排任务 KhTask/{id}  请求方式 DELETE
-	 */
-
-	/**
 	 * 查看已安排任务详情
 	 * @param id
 	 * @return
@@ -97,7 +95,6 @@ public class KhTaskController extends
 		try {
 			List<Map<String, Object>> taskList = this.service.findAlls();
 			this.service.exportNursePlan(taskList,request,response);
-			//this.service.exportExcel(response);
 		}catch (Exception e){
 			e.printStackTrace();
 		}
@@ -120,6 +117,7 @@ public class KhTaskController extends
 	public WebApiResponse listTaskInfoByYhId(String yhId){
 		return this.service.listTaskInfoByYhId(yhId);
 	}
+
 	//地图展示某人的具体任务信息
 	@GetMapping("/listTaskInfoById")
 	@ResponseBody
@@ -127,7 +125,8 @@ public class KhTaskController extends
 		return this.service.listTaskInfoById(taskId);
 	}
 
-	@ApiOperation(value = "获取人员头像", notes = "获取人员头像  ")
+
+	@ApiOperation(value = "获取任务图片", notes = "获取任务图片  ")
 	@GetMapping("/appListPicture")
 	@ResponseBody
 	public WebApiResponse appListPicture(long taskId,Integer zj){

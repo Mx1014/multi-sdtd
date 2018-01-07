@@ -11,10 +11,7 @@ import com.rzt.service.KhYhHistoryService;
 import com.rzt.util.WebApiResponse;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -36,6 +33,7 @@ public class KhYhHistoryController extends
 
 	@ApiOperation(notes = "施工情况",value = "施工情况")
 	@PostMapping("/saveYh")
+	@ResponseBody
 	public WebApiResponse saveYh(KhYhHistory yh,String fxtime,String startTowerName,String endTowerName,String pictureId){
 		return this.service.saveYh(yh,fxtime,startTowerName,endTowerName,pictureId);
 	}

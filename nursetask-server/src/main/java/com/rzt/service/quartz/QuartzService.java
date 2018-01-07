@@ -1,7 +1,16 @@
 package com.rzt.service.quartz;
 
+import com.rzt.service.KhTaskService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.Trigger;
+import org.springframework.scheduling.TriggerContext;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.annotation.SchedulingConfigurer;
+import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -13,8 +22,18 @@ import java.util.TimerTask;
  * Created by admin on 2018/1/1.
  */
 @Component
-public class QuartzService {
+@EnableScheduling
+public class QuartzService  {
 
+    @Autowired
+    private KhTaskService service;
+    /*//每天0点执行
+    private String cron = "0 0 0 * * ?";
+
+    private String time = "2";
+    //注入主定时器
+    @Autowired
+    private CreateTask task;
     //    每分钟启动
   // @Scheduled(cron = "0 0/1 * * * ?")
     public void timerToNow(){
@@ -36,4 +55,26 @@ public class QuartzService {
         }, time, 1000 * 60 * 60 * 24);// 这里设定将延时每天固定执行
     }
 
+    @Override
+    public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
+        taskRegistrar.addTriggerTask(new Runnable() {
+            @Override
+            public void run() {
+                task.setCron(cron);
+            }
+        }, new Trigger() {
+            @Override
+            public Date nextExecutionTime(TriggerContext triggerContext) {
+                return null;
+            }
+        });
+    }*/
+
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+
+    @Scheduled(cron = "0 0 1 * * ?") // 每20秒执行一次
+    public void reportCurrentTime() {
+        service.createTask();
+        System.out.println("当前时间：" + dateFormat.format(new Date()));
+    }
 }
