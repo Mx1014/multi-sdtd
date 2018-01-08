@@ -22,6 +22,7 @@ public class DSRedis {
     @Autowired
     JedisPool jedisPool;
 
+
     @Autowired
     private RedisTemplate<String,String> redisTemplate;
 
