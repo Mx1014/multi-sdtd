@@ -168,6 +168,28 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
         return execSqlSingleResult(sql, userId);
     }
 
+    public Page<Map<String,Object>> checkChildrenList(Pageable pageable, String taskId) {
+        String sql = "select t.TASK_NAME,t.PLAN_START_TIME,u.REALNAME,CASE t.status WHEN 0 THEN '未开始' WHEN 1 THEN '进行中' END task_status " +
+                " from KH_SITE s,KH_TASK t,RZTSYSUSER u " +
+                " WHERE s.id=t.site_id and s.PLAN_START_TIME=t.PLAN_START_TIME AND t.USER_ID=u.ID AND (t.STATUS=0 OR t.STATUS=1) ";
+        if (!StringUtils.isEmpty(taskId)) {
+            sql += " and s.id in ("+taskId+")";
+        }
+        return execSqlPage(pageable, sql);
+    }
+
+    @Transactional
+    public void updateGoodsInfo(Long id, String str) {
+        reposiotry.updateWptsById(id,str);
+    }
+
+    public CheckLiveTask getById(Long id) {
+        return reposiotry.findById(id);
+    }
+
+
+
+
 
 
 /*    @Scheduled(cron = "0/5 * *  * * ? ")

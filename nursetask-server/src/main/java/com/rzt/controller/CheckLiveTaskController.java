@@ -124,6 +124,44 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 		}
 	}
 
+	@ApiOperation(value = "物品提示",notes = "物品提示")
+	@GetMapping("/updateGoodsInfo")
+	public WebApiResponse updateGoodsInfo(Long id,String wpts){
+		try{
+			this.service.updateGoodsInfo(id,wpts);
+			return WebApiResponse.success("");
+		}catch (Exception e){
+			LOGGER.error("物品提示报错",e);
+			return WebApiResponse.erro("物品提示报错");
+		}
+	}
+
+	@ApiOperation(value = "根据id获取稽查母任务",notes = "根据id获取稽查母任务")
+	@GetMapping("/getById")
+	public WebApiResponse getById(Long id){
+		try{
+			CheckLiveTask checkLiveTask = this.service.getById(id);
+			return WebApiResponse.success(checkLiveTask);
+		}catch (Exception e){
+			LOGGER.error("根据id获取稽查母任务信息数据获取失败",e);
+			return WebApiResponse.erro("根据id获取稽查母任务信息数据获取失败");
+		}
+	}
+
+	@ApiOperation(value = "看护稽查子任务列表",notes = "看护稽查子任务列表")
+	@GetMapping("/checkChildrenList")
+	public WebApiResponse checkChildrenList(@RequestParam(value = "page",defaultValue = "0") Integer page,
+											@RequestParam(value = "size",defaultValue = "15") Integer size,String taskId){
+		try{
+			Pageable pageable = new PageRequest(page, size);
+			Page<Map<String,Object>> data = this.service.checkChildrenList(pageable,taskId);
+			return WebApiResponse.success(data);
+		}catch (Exception e){
+			LOGGER.error("看护稽查子任务列表数据获取失败",e);
+			return WebApiResponse.erro("看护稽查子任务列表数据获取失败");
+		}
+	}
+
 
 
 }

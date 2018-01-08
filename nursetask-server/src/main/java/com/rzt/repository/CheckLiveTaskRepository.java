@@ -11,8 +11,6 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.Date;
-
 /**
  * 类名称：CHECKLIVETASKRepository    
  * 类描述：    
@@ -35,4 +33,10 @@ public interface CheckLiveTaskRepository extends JpaRepository<CheckLiveTask,Str
  @Modifying
  @Query(value ="DELETE FROM check_live_task  where id=?1",nativeQuery = true)
  void deleteById(long id);
+
+ @Modifying
+ @Query(value = "update check_live_task set WPTS=?2 where id =?1",nativeQuery = true)
+ void updateWptsById(Long id, String str);
+
+    CheckLiveTask findById(Long id);
 }
