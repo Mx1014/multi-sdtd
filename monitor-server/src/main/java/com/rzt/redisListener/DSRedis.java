@@ -1,17 +1,6 @@
 package com.rzt.redisListener;
 
-import com.rzt.utils.DateUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.UUID;
 
 /**
  * Created by huyuening on 2018/1/5.
@@ -19,14 +8,14 @@ import java.util.UUID;
 @Component
 public class DSRedis {
 
-    @Autowired
+  /*  @Autowired
     JedisPool jedisPool;
 
 
     @Autowired
     private RedisTemplate<String,String> redisTemplate;
 
-    @Scheduled(cron = "0/1 * * * * ? ")
+    //@Scheduled(cron = "0/1 * * * * ? ")
     public void addString(){
         Jedis jedis = jedisPool.getResource();
         try {
@@ -49,6 +38,6 @@ public class DSRedis {
         }finally {
             jedis.close();
         }
-    }
+    }*/
 
 }
