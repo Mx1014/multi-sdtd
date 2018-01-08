@@ -25,16 +25,16 @@ public class PcMapShowService {
     @Autowired
     private CmcoordinateService cmcoordinateService;
 
-    public String dataAccessByUserId(String userId) throws Exception {
-        String deptId = "err";
+    public Object dataAccessByUserId(String userId) throws Exception {
+        Object deptId = "err";
         if(userId != null) {
             //从reids中拿userInfo
             Map<String,Object> jsonObject = userInfoFromRedis(userId);
             try {
                 Integer roletype = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
-                String tdId = jsonObject.get("DEPTID").toString();
-                String classid = jsonObject.get("CLASSID").toString();
-                String companyid = jsonObject.get("COMPANYID").toString();
+                Object tdId = jsonObject.get("DEPTID");
+                Object classid = jsonObject.get("CLASSID");
+                Object companyid = jsonObject.get("COMPANYID");
                 if(roletype == null) {
                     return "err";
                 }
@@ -102,10 +102,15 @@ public class PcMapShowService {
         HashOperations hashOperations = redisTemplate.opsForHash();
 
         List userList = null;
-        Object userInformation = hashOperations.get("UserInformation", deptId);
+        Object userInformation = hashOperations.get("menInDept", deptId);
         if(userInformation == null) {
-            String userListSql = "select id,worktype from RZTSYSUSER where USERDELETE = 0 and (DEPTID = ?1 or COMPANYID = ?1 or GROUPID = ?1 or CLASSNAME = ?1 ) ";
-            userList = cmcoordinateService.execSql(userListSql, deptId);
+            if(deptId.equals("all")) {
+                String userListSql = "select id,worktype from RZTSYSUSER where USERDELETE = 0";
+                userList = cmcoordinateService.execSql(userListSql);
+            } else {
+                String userListSql = "select id,worktype from RZTSYSUSER where USERDELETE = 0 and (DEPTID = ?1 or COMPANYID = ?1 or GROUPID = ?1 or CLASSNAME = ?1 ) ";
+                userList = cmcoordinateService.execSql(userListSql, deptId);
+            }
             hashOperations.put("menInDept",deptId,userList);
         } else {
             userList = JSONObject.parseArray(userInformation.toString());

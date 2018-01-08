@@ -333,8 +333,8 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         List<KhSite> list = siteRepository.findSites();
         for (KhSite site : list) {
             double cycle = site.getCycle();  //一轮任务时长
-            Date startTime = DateUtil.parseDate(site.getPlanStartTime());
-            Date endTime = DateUtil.parseDate(site.getPlanEndTime());
+            Date startTime = site.getPlanStartTime();
+            Date endTime = site.getPlanEndTime();
             if (cycle > 0) {
                 //如果下次任务开始时间是今天  生成任务
                 while (DateUtil.addDate(startTime, cycle).getTime() < DateUtil.getBiggest()) {

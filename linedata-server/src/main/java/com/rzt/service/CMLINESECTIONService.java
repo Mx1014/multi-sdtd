@@ -111,7 +111,7 @@ public class CMLINESECTIONService extends CurdService<CMLINESECTION,CMLINESECTIO
             CMLINESECTION cmlinesection = new CMLINESECTION();
             HSSFRow row = sheet.getRow(i);
             while (row!=null&&!"".equals(row.toString().trim())){
-                HSSFCell cell = row.getCell(0);
+                HSSFCell cell = row.getCell(1);
                 if(cell==null||"".equals(ExcelUtil.getCellValue(cell))){
                     break;
                 }
@@ -124,11 +124,11 @@ public class CMLINESECTIONService extends CurdService<CMLINESECTION,CMLINESECTIO
                 String kv = ExcelUtil.getCellValue(row.getCell(3));
                 cmlinesection.setVLevel(kv);
                 try{
-                    Map<String, Object> result = execSqlSingleResult("select id from cm_line where line_name = ?1 and v_level = ?2", line_name,kv);
+                    Map<String, Object> result = execSqlSingleResult("select id from cm_line where line_name = ?1 and v_level = ?2", HanyuPinyinHelper.getPinyinString(line_name),kv);
                     cmlinesection.setLineId(Long.valueOf(String.valueOf(result.get("ID"))));
                 }catch (Exception e){
-                    LOGGER.error("线路匹配失败！请先录入此线路信息--->"+kv+line_name);
-                    //throw e;
+                    //LOGGER.error("线路匹配失败！请先录入此线路信息--->第"+(i-1)+"条数据"+kv+line_name);
+                    System.out.println("线路匹配失败！请先录入此线路信息--->第"+(i-1)+"条数据"+kv+line_name);
                     row = sheet.getRow(++i);
                     continue;
                 }
@@ -160,8 +160,9 @@ public class CMLINESECTIONService extends CurdService<CMLINESECTION,CMLINESECTIO
                     cmlinesection.setTdOrg(String.valueOf(maps.get("ID")));
                     cmlinesection.setTdOrgName(String.valueOf(maps.get("DEPTNAME")));
                 }catch (Exception e){
-                    LOGGER.error("通道单位匹配失败！");
-                    throw e;
+                    //LOGGER.error("通道单位匹配失败！--->第"+(i-1)+"条数据"+kv+line_name);
+                    System.out.println("通道单位匹配失败！--->第"+(i-1)+"条数据"+kv+line_name);
+                    continue;
                 }
 
                 //班组
@@ -169,6 +170,7 @@ public class CMLINESECTIONService extends CurdService<CMLINESECTION,CMLINESECTIO
                 cmlinesection.setWxOrg(bz);
                 add(cmlinesection);
                 row = sheet.getRow(++i);
+                System.out.print(".");
             }
 
         }catch(Exception e){
