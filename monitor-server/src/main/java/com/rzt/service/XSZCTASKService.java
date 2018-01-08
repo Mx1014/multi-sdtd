@@ -77,7 +77,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                     if(list.size()>0)
                         next.put("LINE_ID",maps.get(0).get("LINE_ID"));
                 }else if (tasktype!=null && tasktype.equals("2")){ //看护
-                    String sqlll = "SELECT LINE_ID FROM KH_YH_HISTORY WHERE TASK_ID =1?";
+                    String sqlll = "SELECT LINE_ID FROM KH_YH_HISTORY WHERE TASK_ID =?1";
                     List<Map<String, Object>> maps = execSql(sqlll, taskid);
                     if(list.size()>0)
                         next.put("LINE_ID",maps.get(0).get("LINE_ID"));
