@@ -1,7 +1,10 @@
 package com.rzt.redisListener;
 
+import com.rzt.service.Monitorcheckejservice;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPubSub;
 
 /**
@@ -9,7 +12,7 @@ import redis.clients.jedis.JedisPubSub;
  */
 public class Subscriber extends JedisPubSub {
     protected static Logger LOGGER = LoggerFactory.getLogger(Subscriber.class);
-   /* @Autowired
+    @Autowired
     private Monitorcheckejservice monitorcheckej;
 
     @Autowired
@@ -41,6 +44,6 @@ public class Subscriber extends JedisPubSub {
         }catch (Exception e){
             e.printStackTrace();
         }
-    }*/
+    }
 
 }

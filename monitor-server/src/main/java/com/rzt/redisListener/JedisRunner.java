@@ -1,17 +1,22 @@
 package com.rzt.redisListener;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
 
 /**
  * Created by huyuening on 2018/1/5.
  */
 @Component
-public class JedisRunner {
+public class JedisRunner implements CommandLineRunner {
 
-  /*  @Autowired
+    @Autowired
     JedisPool jedisPool;
-implements CommandLineRunner
+
     @Autowired
     RedisTemplate<String,String> redisTemplate;
 
@@ -28,5 +33,5 @@ implements CommandLineRunner
             jedis.close();
         }
     }
-*/
+
 }
