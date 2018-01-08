@@ -74,11 +74,13 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                 if(tasktype!=null && tasktype.equals("1")){
                     String sqll = "SELECT  c.LINE_ID FROM XS_ZC_TASK x LEFT JOIN XS_ZC_CYCLE c ON c.ID = x.XS_ZC_CYCLE_ID WHERE x.ID =?1";
                     List<Map<String, Object>> maps = execSql(sqll,taskid);
-                    next.put("LINE_ID",maps.get(0).get("LINE_ID"));
+                    if(list.size()>0)
+                        next.put("LINE_ID",maps.get(0).get("LINE_ID"));
                 }else if (tasktype!=null && tasktype.equals("2")){ //看护
                     String sqlll = "SELECT LINE_ID FROM KH_YH_HISTORY WHERE TASK_ID =1?";
                     List<Map<String, Object>> maps = execSql(sqlll, taskid);
-                    next.put("LINE_ID",maps.get(0).get("LINE_ID"));
+                    if(list.size()>0)
+                        next.put("LINE_ID",maps.get(0).get("LINE_ID"));
                 }else if (tasktype!=null && tasktype.equals("3")){ //稽查
 
                 }
@@ -100,7 +102,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
             }
        }catch (Exception e){
             LOGGER.error("抽查任务查询失败"+e.getStackTrace().toString());
-            return WebApiResponse.erro("抽查任务查询失败"+e.getStackTrace().toString());
+            return WebApiResponse.erro("抽查任务查询失败"+e.getMessage());
         }
         return WebApiResponse.success(pageResult);
     }
