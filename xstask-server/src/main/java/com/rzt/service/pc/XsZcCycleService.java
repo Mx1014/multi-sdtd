@@ -24,6 +24,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,6 +50,8 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
     private XsZcCycleLineTowerService xsZcCycleLineTowerService;
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
     /***
     * @Method
      * addCycle
@@ -260,6 +264,14 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
         return jsonObject;
     }
 
+    public Object judgeFromRedis() {
+        ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
+        Object judge = stringRedisTemplate.opsForValue().get("judge");
+        return judge;
+    }
+
+
+
     /**
     * @Method logicalDelete
     * @Description 逻辑删除
@@ -347,7 +359,7 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
     }
 
     public Object listPictureById(Long taskId, Integer zj) {
-        String sql = "select PROCESS_NAME \"name\",FILE_SMALL_PATH \"smallFilePath\",FILE_PATH \"filePath\",CREATE_TIME \"createTime\" from PICTURE_TOUR WHERE TASK_ID = ? order by id";
+        String sql = "select PROCESS_NAME \"name\",FILE_SMALL_PATH \"smallFilePath\",FILE_PATH \"filePath\",CREATE_TIME \"createTime\",lon,lat from PICTURE_TOUR WHERE TASK_ID = ? order by id";
         if(zj == 1) {
             sql += " desc";
         }
