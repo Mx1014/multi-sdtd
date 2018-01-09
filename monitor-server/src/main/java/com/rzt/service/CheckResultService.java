@@ -91,19 +91,7 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
             return "该用户无此权限";
         }
         Pageable pageable = new PageRequest(page,size);
-       /* String sql = "SELECT tcr.*,cm.V_LEVEL FROM   " +
-				"  (SELECT DISTINCT tc.TASKID,tc.TASKNAME,tc.CHECK_USER,tc.CREATE_TIME,tc.ID,tc.TASKTYPE,cr.LINE_ID FROM   " +
-				"(SELECT   " +
-				"  t.TASKID,   " +
-				"  t.TASKNAME,   " +
-				"  c.CHECK_USER,   " +
-				"  c.CREATE_TIME,   " +
-				"  c.ID,   " +
-				"  t.TASKTYPE   " +
-				"FROM TIMED_TASK t   " +
-				"RIGHT JOIN CHECK_DETAIL c ON t.TASKID = c.QUESTION_TASK_ID   " +
-				"WHERE t.STATUS = 1) tc LEFT JOIN CHECK_RESULT cr ON tc.ID = cr.CHECK_DETAIL_ID) tcr   " +
-				"LEFT JOIN CM_LINE cm ON tcr.LINE_ID = cm.ID";*/
+
         String sql = "SELECT tas.*,xs.TD_ORG,khh.TDYW_ORGID FROM    " +
                 "  (SELECT tcr.*,cm.V_LEVEL FROM    " +
                 "      (SELECT DISTINCT tc.TASKID,tc.TASKNAME,tc.CHECK_USER,tc.CREATE_TIME,tc.ID,tc.TASKTYPE,cr.LINE_ID FROM    " +
