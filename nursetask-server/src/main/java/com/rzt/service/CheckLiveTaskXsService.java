@@ -134,4 +134,5 @@ public class CheckLiveTaskXsService extends CurdService<CheckLiveTaskXs, CheckLi
 
         return execSqlPage(pageable, sql, params.toArray());
     }
+
 }

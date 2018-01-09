@@ -68,8 +68,8 @@ public class CheckLiveTaskXs implements Serializable{
 	@Column(name = "TDWX_ORGID")
 	private String tdwxOrgid;
 	//字段描述: 是否设置了电子围栏（0是 1否）
-	@Column(name = "DZWL")
-	private Integer dzwl;
+	@Column(name = "WPTS")
+	private Integer wpts;
 
 
 
@@ -180,12 +180,11 @@ public class CheckLiveTaskXs implements Serializable{
 
 
 
-	public void setDzwl(Integer dzwl){
-		this.dzwl = dzwl;
+	public void setWpts(Integer wpts){
+		this.wpts = wpts;
 	}
-	@ExcelResources(title="是否设置了电子围栏（0是 1否）",order=15)
-	public Integer getDzwl(){
-		return this.dzwl;
+	public Integer getWpts(){
+		return this.wpts;
 	}
 
 
