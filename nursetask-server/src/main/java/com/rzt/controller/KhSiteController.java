@@ -80,8 +80,9 @@ public class KhSiteController extends
     public WebApiResponse listAllTaskNotDo(HttpServletResponse response, KhTaskModel task, Pageable pageable, String userName,String deptId) {
         try {
             HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
-            JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", task.getUserId()).toString());
-            return WebApiResponse.success(this.service.listAllTaskNotDo(task, pageable, userName,deptId,jsonObject.get("ROLETYPE").toString()));
+            //JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", task.getUserId()).toString());
+           // return WebApiResponse.success(this.service.listAllTaskNotDo(task, pageable, userName,deptId,jsonObject.get("ROLETYPE").toString()));
+            return WebApiResponse.success(this.service.listAllTaskNotDo(task, pageable, userName,deptId,"0"));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("数据查询失败" + e.getMessage());
@@ -125,11 +126,14 @@ public class KhSiteController extends
             return WebApiResponse.erro("任务消缺失败" + e.getMessage());
         }
     }
+
+    /**
+     * 周期维护页面查看任务详情
+     */
     @GetMapping("/listKhtaskById.do")
     @ResponseBody
     public WebApiResponse listKhtaskById(HttpServletResponse response,String id) {
         try {
-            response.setHeader("Access-Control-Allow-Origin","*");
             List list = this.service.listKhtaskById(Long.parseLong(id));
             return WebApiResponse.success(list);
         } catch (Exception e) {
