@@ -6,6 +6,8 @@ import com.rzt.entity.CheckResult;
 import com.rzt.repository.CheckResultRepository;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.SnowflakeIdWorker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,7 +22,8 @@ import java.util.*;
 @Service
 
 public class CheckResultService extends CurdService<CheckResult, CheckResultRepository> {
-	
+
+    protected static Logger LOGGER = LoggerFactory.getLogger(CheckResultService.class);
 	@Autowired
 	private CheckResultRepository checkResultRepository;
 
@@ -31,12 +34,51 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
 	 * 添加审核结果
 	 */
 	@Transactional
-	public void addResult(CheckResult checkResult){
+	public void addResult(CheckResult checkResult,String taskId){
 
 		//为checkResult设置id
 		checkResult.setId(Long.valueOf(new SnowflakeIdWorker(0,0).nextId()));
 		//添加创建时间
+
 		checkResult.setCreateTime(new Date());
+    /*    ArrayList<String> strings = new ArrayList<>();
+        strings.add(taskId);
+        String sql = "SELECT r.PHOTO_IDS from CHECK_DETAIL d LEFT JOIN CHECK_RESULT r ON d.ID = r.CHECK_DETAIL_ID WHERE d.QUESTION_TASK_ID = ?1 ";
+        List<Map<String, Object>> maps = this.execSql(sql, strings.toArray());
+        String ids = "";
+        String photoIds = checkResult.getPhotoIds();
+        String[] split1 = photoIds.split(",");
+        for (Map<String, Object> map : maps) {
+            String photo_ids = (String) map.get("PHOTO_IDS");
+                if(null != photoIds && !"".equals(photoIds)){
+
+                    if(null != photo_ids && !"".equals(photo_ids)){
+                        for (String s : split1) {
+                            if(null != s && !"".equals(s)){
+                                photo_ids.contains(s);
+
+                            }
+                        }
+                    }
+                 *//*   String[] split = photo_ids.split(",");
+                    for (String s : split1) {
+                        for (String s1 : split) {
+                            int i = 0;
+                            i++;
+                            System.out.println(split.length);
+                            System.out.println(i);
+                            if(!s.equals(s1) && i==split.length){
+                                ids+= s +",";
+                            }
+                        }
+                    }*//*
+                }
+        }
+            if(null != ids && !"".equals(ids)){
+                checkResult.setPhotoIds(ids);
+            }*/
+
+
 		checkResultRepository.save(checkResult);
 	}
 	
@@ -71,17 +113,11 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
 	public Object getQuestion(Long questionTaskId) {
         ArrayList<String> longs = new ArrayList<>();
         longs.add(questionTaskId+"");
-        String sql = "SELECT r.*,d.CHECK_DETAIL_TYPE  " +
+        String sql = "SELECT r.*,d.CHECK_DETAIL_TYPE,d.QUESTION_TASK_ID  " +
 				" FROM CHECK_RESULT r LEFT JOIN CHECK_DETAIL d ON r.CHECK_DETAIL_ID = d.ID  " +
 				" WHERE d.QUESTION_TASK_ID = ?"+longs.size();
         List<Map<String, Object>> maps = execSql(sql, longs.toArray());
         return maps;
-    }
-
-    public static void main(String[] args) {
-        String ids = "399188390399967232,,399188359655718912,,399187987696451584,,399187952967614464,,399187454755602432,399187415350116352,";
-        String substring = ids.substring(0, ids.length() - 1);
-        System.out.println(substring);
     }
 
 
@@ -134,7 +170,6 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
 				String userID =(String)next.get("CHECK_USER");
 				Object userInformation = hashOperations.get("UserInformation", userID);
 				if(userInformation==null){
-					System.out.println(userInformation);
 					continue;
 				}
 				JSONObject jsonObject = JSONObject.parseObject(userInformation.toString());
@@ -151,5 +186,81 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
         return WebApiResponse.success(pageResult);
     }
 
+    /**
+     * 判断当前问题是否重复
+     * @param checkResult
+     * @param checkDetail
+     * @return
+     */
+	public List<Map<String, Object>> getCheckResultInfo(CheckResult checkResult, CheckDetail checkDetail) {
+		if((null != checkDetail.getQuestionTaskId() && checkDetail.getQuestionTaskId()>0) && (null!= checkResult.getQuestionType() && checkResult.getQuestionType()>0)){
+            ArrayList<Object> strings = new ArrayList<>();
+            strings.add(checkDetail.getQuestionTaskId());
+            strings.add(checkResult.getQuestionType());
+            String sql = "SELECT r.ID FROM CHECK_RESULT r LEFT JOIN CHECK_DETAIL d ON r.CHECK_DETAIL_ID = d.ID" +
+					"    WHERE QUESTION_TASK_ID = ?1 AND QUESTION_TYPE = ?2";
+            List<Map<String, Object>> maps = this.execSql(sql, strings.toArray());
+            return maps;
 
+        }
+		return null;
+
+
+	}
+
+    /**
+     * 如果当前添加的问题已存在 需要将问题中的图片id合并  并去重
+     * @param checkResult
+     * @param checkDetail
+     * @param id
+     * @return
+     */
+    @Transactional
+    public WebApiResponse updateByCheckId(CheckResult checkResult, CheckDetail checkDetail, String id) {
+           try {
+               if((null != checkDetail.getQuestionTaskId() && checkDetail.getQuestionTaskId()>0) && (null!= checkResult.getQuestionType() && checkResult.getQuestionType()>0)&& (null!= checkResult.getPhotoIds() && !"".equals(checkResult.getPhotoIds()))){
+                   ArrayList<Object> strings = new ArrayList<>();
+                   strings.add(checkDetail.getQuestionTaskId());
+                   strings.add(checkResult.getQuestionType());
+                   String sql = "SELECT r.PHOTO_IDS FROM CHECK_RESULT r LEFT JOIN CHECK_DETAIL d ON r.CHECK_DETAIL_ID = d.ID" +
+                           "    WHERE QUESTION_TASK_ID = ?1 AND QUESTION_TYPE = ?2";
+                   List<Map<String, Object>> maps = this.execSql(sql, strings.toArray());
+                   if(null != maps.get(0)){
+                       String photo_ids = (String) maps.get(0).get("PHOTO_IDS");
+                       if(null != photo_ids && !"".equals(photo_ids)){
+                           String phs = checkResult.getPhotoIds()+photo_ids;
+                           String[] split = phs.split(",");
+                           HashSet<String> set = new HashSet<>();
+                           for (String s : split) {
+                               if(null != s && !"".equals(s)){
+                                   set.add(s);
+                               }
+                           }
+                           String ids = "";
+                           ArrayList<String> strings1 = new ArrayList<>(set);
+                           for (String s : strings1) {
+                               if(null != s && !"".equals(s) ){
+                                   ids += s+",";
+                               }
+                           }
+
+
+
+                           checkResult.setPhotoIds(ids);
+                           checkResultRepository.updateByCheckId(id,checkResult.getQuestionType()+"",checkResult.getPhotoIds());
+                       }else{
+                           checkResultRepository.updateByCheckId(id,checkResult.getQuestionType()+"",checkResult.getPhotoIds());
+                       }
+                       return WebApiResponse.success("添加完成");
+                   }
+
+               }else{
+                   return WebApiResponse.erro("参数错误");
+               }
+         }catch (Exception e){
+                LOGGER.error("参数错误"+e.getMessage());
+               return WebApiResponse.erro("参数错误"+e.getMessage());
+           }
+        return WebApiResponse.erro("参数错误");
+    }
 }

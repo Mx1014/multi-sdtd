@@ -88,7 +88,6 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                 String userID =(String)next.get("USER_ID");
                 Object userInformation = hashOperations.get("UserInformation", userID);
                 if(userInformation==null){
-                    System.out.println(userInformation);
                     continue;
                 }
                 JSONObject jsonObject = JSONObject.parseObject(userInformation.toString());
@@ -101,7 +100,11 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                 }
             }
        }catch (Exception e){
+<<<<<<< HEAD
+            LOGGER.error("抽查任务查询失败"+e.getMessage());
+=======
             LOGGER.error("抽查任务查询失败"+e.getStackTrace().toString());
+>>>>>>> origin/master
             return WebApiResponse.erro("抽查任务查询失败"+e.getMessage());
         }
         return WebApiResponse.success(pageResult);
@@ -115,9 +118,9 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
         try {
             //巡视sql
             String findSql1 = "select x.TASK_NAME,x.STAUTS,x.ID,x.CM_USER_ID from XS_ZC_TASK x" +
-                    "  WHERE x.ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 ) AND  x.STAUTS != 0 ";
+                    "  WHERE x.ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 1 ) AND  x.STAUTS != 0 ";
             //看护sql
-            String findSql2 = "SELECT kht.TASK_NAME,kht.ID,kht.STATUS,USER_ID FROM KH_TASK kht WHERE kht.ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1)  AND kht.STATUS != 0 ";
+            String findSql2 = "SELECT kht.TASK_NAME,kht.ID,kht.STATUS,USER_ID FROM KH_TASK kht WHERE kht.ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 2 )  AND kht.STATUS != 0 ";
             List<Map<String, Object>> maps = this.execSql(findSql1, null);
             List<Map<String, Object>> maps2 = this.execSql(findSql2, null);
             Iterator<Map<String, Object>> iterator = maps.iterator();
@@ -154,7 +157,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
             }
 
         }catch (Exception e){
-            LOGGER.error("定时任务查询添加失败"+e.getStackTrace());
+            LOGGER.error("定时任务查询添加失败"+e.getMessage());
         }
         LOGGER.info("定时任务查询添加成功");
 
@@ -179,8 +182,8 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
             }
             maps = this.execSql(sql, strings.toArray());
         }catch (Exception e){
-            LOGGER.error("任务进度查询失败"+e.getStackTrace());
-            return WebApiResponse.erro("查询错误"+e.getStackTrace());
+            LOGGER.error("任务进度查询失败"+e.getMessage());
+            return WebApiResponse.erro("查询错误"+e.getMessage());
         }
         LOGGER.info("任务进度查询成功");
         return WebApiResponse.success(maps);
@@ -259,8 +262,8 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
            }
 
        }catch (Exception e){
-            LOGGER.error("查询任务隐患错误"+e.getStackTrace());
-           return WebApiResponse.erro("查询任务隐患错误"+e.getStackTrace());
+            LOGGER.error("查询任务隐患错误"+e.getMessage());
+           return WebApiResponse.erro("查询任务隐患错误"+e.getMessage());
        }
         LOGGER.info("查询任务隐患信息");
         Map<String, Object> stringMapHashMap = new HashMap<>();
