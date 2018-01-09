@@ -83,10 +83,15 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
     }
 
 
-    public Object getCheckRecord(Integer page, Integer size,String startDate,String endDate,Integer taskType,String vLevel,Integer lineId) {
+    public Object getCheckRecord(String loginUserId,Integer page, Integer size,String startDate,String endDate,Integer taskType,String vLevel,Integer lineId) {
+        String deptID = getDeptID(loginUserId);
+        if(deptID==null){
+            return "该用户状态为null";
+        }else if("-1".equals(deptID)){
+            return "该用户无此权限";
+        }
         Pageable pageable = new PageRequest(page,size);
-        //暂时去数据库查，之后从redis拿就可以
-        String sql = "SELECT tcr.*,cm.V_LEVEL FROM   " +
+       /* String sql = "SELECT tcr.*,cm.V_LEVEL FROM   " +
 				"  (SELECT DISTINCT tc.TASKID,tc.TASKNAME,tc.CHECK_USER,tc.CREATE_TIME,tc.ID,tc.TASKTYPE,cr.LINE_ID FROM   " +
 				"(SELECT   " +
 				"  t.TASKID,   " +
@@ -98,7 +103,25 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
 				"FROM TIMED_TASK t   " +
 				"RIGHT JOIN CHECK_DETAIL c ON t.TASKID = c.QUESTION_TASK_ID   " +
 				"WHERE t.STATUS = 1) tc LEFT JOIN CHECK_RESULT cr ON tc.ID = cr.CHECK_DETAIL_ID) tcr   " +
-				"LEFT JOIN CM_LINE cm ON tcr.LINE_ID = cm.ID";
+				"LEFT JOIN CM_LINE cm ON tcr.LINE_ID = cm.ID";*/
+        String sql = "SELECT tas.*,xs.TD_ORG,khh.TDYW_ORGID FROM    " +
+                "  (SELECT tcr.*,cm.V_LEVEL FROM    " +
+                "      (SELECT DISTINCT tc.TASKID,tc.TASKNAME,tc.CHECK_USER,tc.CREATE_TIME,tc.ID,tc.TASKTYPE,cr.LINE_ID FROM    " +
+                "    (SELECT    " +
+                "      t.TASKID,    " +
+                "      t.TASKNAME,    " +
+                "      c.CHECK_USER,    " +
+                "      c.CREATE_TIME,    " +
+                "      c.ID,    " +
+                "      t.TASKTYPE    " +
+                "    FROM TIMED_TASK t    " +
+                "    RIGHT JOIN CHECK_DETAIL c ON t.TASKID = c.QUESTION_TASK_ID    " +
+                "    WHERE t.STATUS = 1) tc LEFT JOIN CHECK_RESULT cr ON tc.ID = cr.CHECK_DETAIL_ID) tcr    " +
+                "    LEFT JOIN CM_LINE cm ON tcr.LINE_ID = cm.ID) tas    " +
+                "LEFT JOIN XS_ZC_TASK xs ON tas.TASKID = xs.ID    " +
+                "LEFT JOIN ( SELECT kh.ID,si.TDYW_ORGID FROM KH_TASK kh JOIN KH_SITE si ON kh.SITE_ID = si.ID ) khh    " +
+                "ON khh.ID = tas.TASKID";
+
         List<Object> list = new ArrayList<>();
         String s = "";
         if(taskType!=null){
@@ -122,7 +145,13 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
 
         Page<Map<String, Object>> pageResult = null;
         try {
-            String sqll = " select * from ( "+sql+" ) where 1=1 "+s;
+            String sqll = "";
+            //最高权限查询所有
+            if("0".equals(deptID)){
+                sqll = " select * from ( "+sql+" ) where 1=1 "+s;
+            }else{
+                sqll = " select * from ( "+sql+" ) where TD_ORG="+deptID+" OR TDYW_ORGID="+deptID+s;
+            }
             pageResult = this.execSqlPage(pageable, sqll,list.toArray());
 			Iterator<Map<String, Object>> iterator = pageResult.iterator();
 			HashOperations hashOperations = redisTemplate.opsForHash();
@@ -224,4 +253,27 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
            }
         return WebApiResponse.success("添加成功");
     }
+
+
+	//获取当前登录用户的deptId，如果是全部查询则返回0  权限使用
+	public String getDeptID(String userId){
+		HashOperations<String, Object, Object> hash = redisTemplate.opsForHash();
+		Object userInformation = hash.get("UserInformation", userId);
+		if(userInformation==null){
+			return null;
+		}
+		JSONObject jsonObject = JSONObject.parseObject(userInformation.toString());
+		String roletype = (String) jsonObject.get("ROLETYPE");
+		if(roletype==null){
+			return null;
+		}
+		if("0".equals(roletype)){
+			//0是查询全部
+			return "0";
+		}else if("1".equals(roletype) || "2".equals(roletype)) {
+			return (String) jsonObject.get("DEPTID");
+		}else{
+            return "-1";
+        }
+	}
 }
