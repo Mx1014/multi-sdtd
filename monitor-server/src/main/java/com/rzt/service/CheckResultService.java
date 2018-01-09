@@ -119,6 +119,7 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
 			list.add(lineId);
 			s+=" AND LINE_ID =?"+list.size();
 		}
+
         Page<Map<String, Object>> pageResult = null;
         try {
             String sqll = " select * from ( "+sql+" ) where 1=1 "+s;
