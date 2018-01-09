@@ -33,16 +33,19 @@ public class CheckResultController extends CurdController<CheckResult,CheckResul
 	 */
 	@PostMapping("/add")
 	public WebApiResponse add(CheckResult checkResult,CheckDetail checkDetail){
-		System.out.println(checkResult);
-		System.out.println(checkDetail);
 		String tdOrg = "";
         List<Map<String, Object>> checkResultInfo = service.getCheckResultInfo(checkResult, checkDetail);
         if(null != checkResultInfo && checkResultInfo.size()>0){
+                try{
                     Map<String, Object> stringObjectMap = checkResultInfo.get(0);
                     String id = stringObjectMap.get("ID").toString();
                     if(null != id && !"".equals(id)){
                         service.updateByCheckId(checkResult,checkDetail,id);
                     }
+                }catch (Exception e){
+
+                    return WebApiResponse.erro("参数错误");
+                }
         }else{
             try {
                 //根据审核人id和问题任务id查询该条审核记录是否存在
