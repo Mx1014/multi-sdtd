@@ -40,8 +40,8 @@ public class TimedService  extends CurdService<TimedTask,XSZCTASKRepository>{
             maps = this.execSql(sql, null);
             LOGGER.info("定时器配置查询成功");
         }catch (Exception e){
-            LOGGER.error("定时器配置查询失败"+e.getStackTrace());
-            return WebApiResponse.erro("定时器配置查询失败"+e.getStackTrace());
+            LOGGER.error("定时器配置查询失败"+e.getMessage());
+            return WebApiResponse.erro("定时器配置查询失败"+e.getMessage());
         }
         return WebApiResponse.success(maps);
     }
@@ -60,8 +60,8 @@ public class TimedService  extends CurdService<TimedTask,XSZCTASKRepository>{
         try {
              i = repository.updateTimedConfig(nightTime, daytime, startTime, endTime, TIMED_CONFIG);
         }catch (Exception e){
-            LOGGER.error("修改定时器配置失败"+e.getStackTrace());
-            return WebApiResponse.erro("修改定时器配置失败"+e.getStackTrace());
+            LOGGER.error("修改定时器配置失败"+e.getMessage());
+            return WebApiResponse.erro("修改定时器配置失败"+e.getMessage());
         }
         return WebApiResponse.success(i==0?"失败":"成功");
     }
