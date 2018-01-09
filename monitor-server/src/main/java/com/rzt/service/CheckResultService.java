@@ -210,9 +210,9 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
 
 
                            checkResult.setPhotoIds(ids);
-                           checkResultRepository.updateByCheckId(id,checkResult.getQuestionType()+"",checkResult.getPhotoIds());
+                           checkResultRepository.updateByCheckId(id,checkResult.getQuestionType()+"",checkResult.getPhotoIds(),checkResult.getQuestionInfo());
                        }else{
-                           checkResultRepository.updateByCheckId(id,checkResult.getQuestionType()+"",checkResult.getPhotoIds());
+                           checkResultRepository.updateByCheckId(id,checkResult.getQuestionType()+"",checkResult.getPhotoIds(),checkResult.getQuestionInfo());
                        }
                        return WebApiResponse.success("添加完成");
                    }
