@@ -34,51 +34,13 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
 	 * 添加审核结果
 	 */
 	@Transactional
-	public void addResult(CheckResult checkResult,String taskId){
+	public void addResult(CheckResult checkResult ){
 
 		//为checkResult设置id
 		checkResult.setId(Long.valueOf(new SnowflakeIdWorker(0,0).nextId()));
 		//添加创建时间
 
 		checkResult.setCreateTime(new Date());
-    /*    ArrayList<String> strings = new ArrayList<>();
-        strings.add(taskId);
-        String sql = "SELECT r.PHOTO_IDS from CHECK_DETAIL d LEFT JOIN CHECK_RESULT r ON d.ID = r.CHECK_DETAIL_ID WHERE d.QUESTION_TASK_ID = ?1 ";
-        List<Map<String, Object>> maps = this.execSql(sql, strings.toArray());
-        String ids = "";
-        String photoIds = checkResult.getPhotoIds();
-        String[] split1 = photoIds.split(",");
-        for (Map<String, Object> map : maps) {
-            String photo_ids = (String) map.get("PHOTO_IDS");
-                if(null != photoIds && !"".equals(photoIds)){
-
-                    if(null != photo_ids && !"".equals(photo_ids)){
-                        for (String s : split1) {
-                            if(null != s && !"".equals(s)){
-                                photo_ids.contains(s);
-
-                            }
-                        }
-                    }
-                 *//*   String[] split = photo_ids.split(",");
-                    for (String s : split1) {
-                        for (String s1 : split) {
-                            int i = 0;
-                            i++;
-                            System.out.println(split.length);
-                            System.out.println(i);
-                            if(!s.equals(s1) && i==split.length){
-                                ids+= s +",";
-                            }
-                        }
-                    }*//*
-                }
-        }
-            if(null != ids && !"".equals(ids)){
-                checkResult.setPhotoIds(ids);
-            }*/
-
-
 		checkResultRepository.save(checkResult);
 	}
 	
@@ -157,6 +119,7 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
 			list.add(lineId);
 			s+=" AND LINE_ID =?"+list.size();
 		}
+
         Page<Map<String, Object>> pageResult = null;
         try {
             String sqll = " select * from ( "+sql+" ) where 1=1 "+s;
@@ -254,13 +217,11 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
                        return WebApiResponse.success("添加完成");
                    }
 
-               }else{
-                   return WebApiResponse.erro("参数错误");
                }
          }catch (Exception e){
                 LOGGER.error("参数错误"+e.getMessage());
-               return WebApiResponse.erro("参数错误"+e.getMessage());
+               return WebApiResponse.success("参数错误"+e.getMessage());
            }
-        return WebApiResponse.erro("参数错误");
+        return WebApiResponse.success("添加成功");
     }
 }

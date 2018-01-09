@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/checkResult")
 public class CheckResultController extends CurdController<CheckResult,CheckResultService> {
@@ -30,30 +33,43 @@ public class CheckResultController extends CurdController<CheckResult,CheckResul
 	 */
 	@PostMapping("/add")
 	public WebApiResponse add(CheckResult checkResult,CheckDetail checkDetail){
-		System.out.println(checkResult);
-		System.out.println(checkDetail);
 		String tdOrg = "";
-		try {
-			//根据审核人id和问题任务id查询该条审核记录是否存在
-			Long detailID = detailService.findByCheckUserAndQuestionTaskId(checkDetail.getCheckUser(),checkDetail.getQuestionTaskId());
-			Long checkDetailID = null;
-			if(detailID==null){
-				checkDetailID = detailService.addCheckDetail(checkDetail);
-			}else{
-				checkDetailID = detailID;
-			}
-			try {
-				//为检查结果添加检查详情id
-				checkResult.setCheckDetailID(checkDetailID);
-				resultservice.addResult(checkResult);
-				return WebApiResponse.success("保存成功！");
-			} catch (Exception e) {
-				return WebApiResponse.erro("保存审核信息失败！"+e.getMessage());
-			}
-		} catch (Exception e) {
-			return WebApiResponse.erro("保存审查结果失败！"+e.getMessage());
-		}
-		
+        List<Map<String, Object>> checkResultInfo = service.getCheckResultInfo(checkResult, checkDetail);
+        if(null != checkResultInfo && checkResultInfo.size()>0){
+                try{
+                    Map<String, Object> stringObjectMap = checkResultInfo.get(0);
+                    String id = stringObjectMap.get("ID").toString();
+                    if(null != id && !"".equals(id)){
+                        service.updateByCheckId(checkResult,checkDetail,id);
+                    }
+                }catch (Exception e){
+
+                    return WebApiResponse.erro("参数错误");
+                }
+        }else{
+            try {
+                //根据审核人id和问题任务id查询该条审核记录是否存在
+                Long detailID = detailService.findByCheckUserAndQuestionTaskId(checkDetail.getCheckUser(),checkDetail.getQuestionTaskId());
+                Long checkDetailID = null;
+                if(detailID==null){
+                    checkDetailID = detailService.addCheckDetail(checkDetail);
+                }else{
+                    checkDetailID = detailID;
+                }
+                try {
+                    //为检查结果添加检查详情id
+                    checkResult.setCheckDetailID(checkDetailID);
+                    resultservice.addResult(checkResult);
+                    return WebApiResponse.success("保存成功！");
+                } catch (Exception e) {
+                    return WebApiResponse.erro("保存审核信息失败！"+e.getMessage());
+                }
+            } catch (Exception e) {
+                return WebApiResponse.erro("保存审查结果失败！"+e.getMessage());
+            }
+        }
+
+		return WebApiResponse.success("添加成功");
 	}
 	
 	

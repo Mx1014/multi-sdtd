@@ -81,7 +81,7 @@ public class CMLINESECTIONService extends CurdService<CMLINESECTION,CMLINESECTIO
 
     public WebApiResponse getLineInfoCommOptions(String tdOrg, String kv) {
         List<String> list = new ArrayList<>();
-        String sql = "select line_id,line_name,line_jb from cm_line_section where is_del=0 ";
+        String sql = "select line_id,line_name,line_jb,SECTION from cm_line_section where is_del=0 ";
         if(tdOrg!=null&&!"".equals(tdOrg.trim())){
             list.add(tdOrg);
             sql += " and td_org= ?" + list.size();
@@ -118,13 +118,13 @@ public class CMLINESECTIONService extends CurdService<CMLINESECTION,CMLINESECTIO
                 cmlinesection.setId(null);
                 String line_jb = ExcelUtil.getCellValue(row.getCell(1));
                 cmlinesection.setLineJb(line_jb);
-                String line_name = ExcelUtil.getCellValue(row.getCell(2));
+                String line_name = ExcelUtil.getCellValue(row.getCell(2)).replace("线","");
                 cmlinesection.setLineName(HanyuPinyinHelper.getPinyinString(line_name));
                 cmlinesection.setLineName1(line_name);
                 String kv = ExcelUtil.getCellValue(row.getCell(3));
                 cmlinesection.setVLevel(kv);
                 try{
-                    Map<String, Object> result = execSqlSingleResult("select id from cm_line where line_name = ?1 and v_level = ?2", HanyuPinyinHelper.getPinyinString(line_name),kv);
+                    Map<String, Object> result = execSqlSingleResult("select id from cm_line where line_name = ?1 and v_level = ?2", line_name,kv);
                     cmlinesection.setLineId(Long.valueOf(String.valueOf(result.get("ID"))));
                 }catch (Exception e){
                     //LOGGER.error("线路匹配失败！请先录入此线路信息--->第"+(i-1)+"条数据"+kv+line_name);
@@ -175,8 +175,9 @@ public class CMLINESECTIONService extends CurdService<CMLINESECTION,CMLINESECTIO
 
         }catch(Exception e){
             LOGGER.error("----------导入第"+(i-1)+"条故障数据(excel第"+(i+1)+"行)时出错------");
-            throw e;
+            //throw e;
         }
+        System.out.println("导入成功！");
 
     }
 }
