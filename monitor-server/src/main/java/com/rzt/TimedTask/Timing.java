@@ -33,6 +33,8 @@ public class Timing  extends
     private NightDynamicScheduledTask night;
     @Autowired
     private DayDynamicScheduledTask day;
+    @Autowired
+    private XSZCTASKService xszctaskService;
 
     /**
      * 动态修改定时器内变量
@@ -80,28 +82,11 @@ public class Timing  extends
     }
 
     @GetMapping("/getTimeConfig")
-    public WebApiResponse getTimeConfig(){
-        return service.getTimedConfig();
+    public WebApiResponse getTimeConfig(String userId){
+        return service.getTimedConfig(userId);
     }
 
-    /**
-     * 获取当前定时器的刷新周期  小时为单位  当前权限为地市 总局查看时暂时固定为3天一次刷新
-     * @return
-     */
-    @GetMapping("/getScheduledTime")
-    public WebApiResponse getScheduledTime(){
-        WebApiResponse timedConfig = service.getTimedConfig();
-        List<Map<String, Object>> data = (List<Map<String, Object>>) timedConfig.getData();
-        Map<String, Object> map = data.get(0);
-        Date date = new Date();
-        SimpleDateFormat hh = new SimpleDateFormat("HH");
-        int i = Integer.parseInt(hh.format(date));
-        if(i>=Integer.parseInt((String) map.get("START_TIME")) && i<Integer.parseInt((String) map.get("END_TIME"))){
-            return WebApiResponse.success( map.get("DAY_ZQ"));
-        }else{
-            return WebApiResponse.success(map.get("NIGHT_ZQ"));
-        }
-    }
+
 
 
     /**
@@ -110,8 +95,7 @@ public class Timing  extends
      */
     @Scheduled(cron="0 0 0 0/3 * ? ")
     private void threeDayScheduledTask(){
-        System.out.println("0点刷新");
-
+        xszctaskService.xsTaskAddAndFindThree();
     }
 
 }
