@@ -15,12 +15,9 @@ public interface CheckResultRepository extends JpaRepository<CheckResult, String
     void xsTourScope(Long id, Long taskid, Integer warningtype, String orgid, String userid);
 
     @Modifying
-<<<<<<< Updated upstream
     @Query("UPDATE CheckResult SET PHOTO_IDS = ?3 WHERE ID = ?1 AND QUESTION_TYPE = ?2 ")
     void updateByCheckId(String id, String questionType, String photoIds);
 
-=======
     @Query("UPDATE CheckResult SET PHOTO_IDS = ?3,QUESTION_INFO=?4 WHERE ID = ?1 AND QUESTION_TYPE = ?2 ")
     void updateByCheckId(String id, String questionType, String photoIds,String QuestionInfo);
->>>>>>> Stashed changes
 }
