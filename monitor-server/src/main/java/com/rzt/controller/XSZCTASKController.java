@@ -2,6 +2,7 @@ package com.rzt.controller;
 
 import com.rzt.entity.CheckDetail;
 import com.rzt.service.CheckDetailService;
+import com.rzt.service.TimedService;
 import com.rzt.service.XSZCTASKService;
 import com.rzt.util.WebApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("XSZCTASKController")
 public class XSZCTASKController extends
         CurdController<XSZCTASKController,XSZCTASKService>{
+    @Autowired
+    private TimedService timedService;
+
 
     /**
      * 按照taskId查询当前任务的详细信息
@@ -49,8 +53,15 @@ public class XSZCTASKController extends
      * @return
      */
     @GetMapping("/getXsTaskAll")
-    public WebApiResponse getXsTaskAll(Integer page,Integer size, String taskType){
-        return service.getXsTaskAll(page,size,taskType);
+    public WebApiResponse getXsTaskAll(Integer page,Integer size, String taskType,String userId){
+        /*service.xsTaskAddAndFind();
+        service.xsTaskAddAndFindThree();*/
+//        service.xsTaskAddAndFindThree();
+        return service.getXsTaskAll(page,size,taskType,userId);
+    }
+    @GetMapping("/getTimeConfig")
+    public WebApiResponse getTimeConfig(String userId){
+        return timedService.getTimedConfig(userId);
     }
 
     @Autowired

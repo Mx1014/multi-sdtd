@@ -18,4 +18,6 @@ public interface CheckResultRepository extends JpaRepository<CheckResult, String
     @Query("UPDATE CheckResult SET PHOTO_IDS = ?3 WHERE ID = ?1 AND QUESTION_TYPE = ?2 ")
     void updateByCheckId(String id, String questionType, String photoIds);
 
+    @Query("UPDATE CheckResult SET PHOTO_IDS = ?3,QUESTION_INFO=?4 WHERE ID = ?1 AND QUESTION_TYPE = ?2 ")
+    void updateByCheckId(String id, String questionType, String photoIds,String QuestionInfo);
 }

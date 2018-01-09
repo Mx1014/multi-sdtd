@@ -36,7 +36,10 @@ public class CheckDetailService extends CurdService<CheckDetail,CheckDetailRepos
                 sql = "SELECT c.TDYW_ORGID  FROM KH_TASK a LEFT JOIN KH_SITE  c ON a.SITE_ID = c.ID  WHERE a.ID = ?"+strings1.size();
             }
             List<Map<String, Object>> maps = this.execSql(sql, strings1.toArray());
-            checkDetail.setTdOrg(maps.get(0)==null?"": (String) maps.get(0).get("TDYW_ORGID"));
+            if(null != maps && maps.size()>0){
+                checkDetail.setTdOrg(maps.get(0)!=null? (String) maps.get(0).get("TDYW_ORGID") : "");
+            }
+
         }
 
 
