@@ -208,7 +208,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             yh.setCreateTime(DateUtil.dateNow());
             yh.setSection(startTowerName + "-" + endTowerName);
             yhservice.add(yh);
-            String taskName = yh.getVtype() + "-" + yh.getLineName() + startTowerName + "-" + endTowerName + " 号杆塔看护任务";
+            String taskName = yh.getVtype() + yh.getLineName() +" "+ startTowerName + "-" + endTowerName + " 号杆塔看护任务";
             task.setVtype(yh.getVtype());
             task.setLineName(yh.getLineName());
             task.setTdywOrg(yh.getTdywOrg());
