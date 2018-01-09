@@ -224,4 +224,17 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
            }
         return WebApiResponse.success("添加成功");
     }
+
+    public WebApiResponse getQuestionInfo(String id ) {
+        ArrayList<String> strings = new ArrayList<>();
+        strings.add(id);
+        String sql = "SELECT QUESTION_INFO from CHECK_RESULT WHERE ID = ?1";
+        List<Map<String, Object>> maps = this.execSql(sql, strings);
+        if(null != strings  && strings.size()>0){
+            if(null != maps.get(0) && !"".equals(maps.get(0))){
+                    return WebApiResponse.success(maps.get(0).get("QUESTION_INFO")!=null?maps.get(0).get("QUESTION_INFO"):"");
+            }
+        }
+        return WebApiResponse.success("");
+    }
 }
