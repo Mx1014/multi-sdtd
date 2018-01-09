@@ -43,10 +43,6 @@ public class DynamicScheduledTask extends CurdController<TimedTask,TimedService>
         //定时器启动时抓取任务信息
         service.xsTaskAddAndFind();
         LOGGER.info("主定时器查询数据");
-     /*   System.out.println("主定时器时间：" + dateFormat.format(new Date()));
-        System.out.println("表达式"+cron);*/
-
-
       }
     }, new Trigger() {
       @Override
