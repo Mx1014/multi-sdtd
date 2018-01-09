@@ -9,7 +9,6 @@ import com.rzt.entity.CMLINETOWER;
 import com.rzt.service.CMLINETOWERService;
 import com.rzt.util.WebApiResponse;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,25 +39,7 @@ public class CMLINETOWERController extends
 	@GetMapping("getLineTowerPosition")
 	public WebApiResponse getLineTowerPosition(@RequestParam(value = "page",defaultValue = "0") Integer page, @RequestParam(value = "size",defaultValue = "15") Integer size, String tdOrg, String kv, String lineId) {
 		Pageable pageable = new PageRequest(page, size);
-		List<String> list = new ArrayList<>();
-		Object[] objects = list.toArray();
-		String sql = "select l.v_level,l.line_name,l.section,LT.tower_name,t.longitude,t.latitude from cm_line l,cm_line_tower lt,cm_tower t " +
-				"where l.id=LT.line_id and LT.tower_id=t.id";
-		if(tdOrg!=null&&!"".equals(tdOrg.trim())){
-			list.add(tdOrg);
-			sql += " and l.td_org= ?" + list.size();
-		}
-		if(kv!=null&&!"".equals(kv.trim())){
-			list.add(kv);
-			sql += " and v_level= ?" + list.size();
-		}
-		if(lineId!=null&&!"".equals(lineId.trim())){
-			list.add(lineId);
-			sql += " and line_id= ?" + list.size();
-		}
-		sql += " order by lt.sort";
-		Page<Map<String, Object>> maps = service.execSqlPage(pageable, sql,list.toArray());
-		return WebApiResponse.success(maps);
+		return service.getLineTowerPosition(pageable, tdOrg, kv, lineId);
 	}
 
 	@ApiOperation(value = "公共接口--下拉框线路杆塔",notes = "根据lineId获取杆塔信息")

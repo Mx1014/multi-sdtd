@@ -46,12 +46,11 @@ public class XSZCTASKController extends
     /**
      * 查询抽查表内的所有数据
      * @param taskType  任务类型
-     * @param status  查询状态
      * @return
      */
     @GetMapping("/getXsTaskAll")
-    public WebApiResponse getXsTaskAll(Integer page,Integer size, String taskType,Integer status){
-        return service.getXsTaskAll(page,size,taskType,status);
+    public WebApiResponse getXsTaskAll(Integer page,Integer size, String taskType){
+        return service.getXsTaskAll(page,size,taskType);
     }
 
     @Autowired

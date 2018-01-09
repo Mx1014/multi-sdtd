@@ -54,11 +54,11 @@ public class XsZcCycleController extends
     */
     @ApiOperation(value = "周期维护 新增周期",notes = "pc端新增周期")
     @PostMapping("addCycle")
-    public Object addCycle( XsZcCycle xsZcCycle,String userId) {
+    public Object addCycle( XsZcCycle xsZcCycle,String currentUserId) {
 		try {
 			xsZcCycle.setTotalTaskNum(0);
 			xsZcCycle.setCreateTime(DateUtil.dateNow());
-			this.service.addCycle(xsZcCycle,userId);
+			this.service.addCycle(xsZcCycle,currentUserId);
 			return WebApiResponse.success("周期新增成功");
 		} catch (Exception var) {
 			return WebApiResponse.erro("周期新增失败" + var.getStackTrace());
