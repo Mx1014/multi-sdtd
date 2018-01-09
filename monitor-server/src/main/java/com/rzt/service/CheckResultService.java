@@ -41,44 +41,6 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
 		//添加创建时间
 
 		checkResult.setCreateTime(new Date());
-    /*    ArrayList<String> strings = new ArrayList<>();
-        strings.add(taskId);
-        String sql = "SELECT r.PHOTO_IDS from CHECK_DETAIL d LEFT JOIN CHECK_RESULT r ON d.ID = r.CHECK_DETAIL_ID WHERE d.QUESTION_TASK_ID = ?1 ";
-        List<Map<String, Object>> maps = this.execSql(sql, strings.toArray());
-        String ids = "";
-        String photoIds = checkResult.getPhotoIds();
-        String[] split1 = photoIds.split(",");
-        for (Map<String, Object> map : maps) {
-            String photo_ids = (String) map.get("PHOTO_IDS");
-                if(null != photoIds && !"".equals(photoIds)){
-
-                    if(null != photo_ids && !"".equals(photo_ids)){
-                        for (String s : split1) {
-                            if(null != s && !"".equals(s)){
-                                photo_ids.contains(s);
-
-                            }
-                        }
-                    }
-                 *//*   String[] split = photo_ids.split(",");
-                    for (String s : split1) {
-                        for (String s1 : split) {
-                            int i = 0;
-                            i++;
-                            System.out.println(split.length);
-                            System.out.println(i);
-                            if(!s.equals(s1) && i==split.length){
-                                ids+= s +",";
-                            }
-                        }
-                    }*//*
-                }
-        }
-            if(null != ids && !"".equals(ids)){
-                checkResult.setPhotoIds(ids);
-            }*/
-
-
 		checkResultRepository.save(checkResult);
 	}
 	
