@@ -103,17 +103,8 @@ public class CheckResultController extends CurdController<CheckResult,CheckResul
 		}
 	}
 
-	/**
-	 * 检查记录
-	 */
-	@RequestMapping("/getCheckRecord")
-	public WebApiResponse getCheckRecord(Integer page, Integer size,String startDate,String endDate,Integer taskType,String vLevel,Integer lineId){
-		try {
-			return WebApiResponse.success(resultservice.getCheckRecord(page,size,startDate,endDate,taskType,vLevel,lineId));
-		} catch (Exception e) {
-			return WebApiResponse.erro("查询失败！"+e.getMessage());
-		}
-	}
+
+
 
 	
 }
