@@ -6,11 +6,15 @@
  */
 package com.rzt.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.CMINSTALL;
 import com.rzt.service.CMINSTALLService;
 import com.rzt.util.WebApiResponse;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,7 +22,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -184,7 +191,7 @@ public class CMINSTALLController extends
                 "u.AGE " +
                 "FROM RZTSYSUSER u LEFT JOIN RZTSYSDEPARTMENT d ON u.DEPTID = d.ID " +
                 "  LEFT JOIN RZTSYSDEPARTMENT d2 ON u.CLASSNAME = d2.ID " +
-                "WHERE LOGINSTATUS = 0 AND USERDELETE = 1";
+                "WHERE LOGINSTATUS = 0 AND USERDELETE = 1  AND USERTYPE=0 ";
 
         try {
             return WebApiResponse.success(this.service.execSql(sql));
@@ -269,4 +276,84 @@ public class CMINSTALLController extends
         }
     }
 
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+
+    @GetMapping("TaskStatusXq")
+    public WebApiResponse TaskStatusXq(Integer tasktype, Integer num) {
+        HashOperations hashOperations = redisTemplate.opsForHash();
+        /**
+         * 正常巡视未开始
+         */
+        String zcxsTask = " SELECT TASK_NAME as taskname,PLAN_START_TIME as plantime,CM_USER_ID  as userid FROM XS_ZC_TASK  WHERE STAUTS = ?1 AND trunc(PLAN_START_TIME) = trunc(sysdate) ";
+        /**
+         *保电巡视未开始
+         */
+        String bdxsTask = "SELECT   TASK_NAME as taskname,    PLAN_START_TIME as plantime,   CM_USER_ID as userid  FROM XS_TXBD_TASK  WHERE STAUTS = ?2 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+        String xstask = zcxsTask + " UNION  ALL " + bdxsTask;
+        /**
+         * 看护未开始
+         */
+        String khTask = " SELECT TASK_NAME as taskname,PLAN_START_TIME as plantime,USER_ID as userid FROM KH_TASK WHERE STATUS = ?1 AND trunc(PLAN_START_TIME) = trunc(sysdate) ";
+        /**
+         * 稽查未开始
+         */
+        String jcTask = " SELECT TASK_NAME as taskname,PLAN_START_TIME as plantime,USER_ID as userid  FROM CHECK_LIVE_TASK  WHERE STATUS = ?1 AND trunc(PLAN_START_TIME) = trunc(sysdate) ";
+
+        if (tasktype == 1) {
+            List<Map<String, Object>> list = this.service.execSql(khTask, num);
+            return taskname(hashOperations, list);
+        } else if (tasktype == 2) {
+            List<Map<String, Object>> list = this.service.execSql(xstask, num, num);
+            return taskname(hashOperations, list);
+        } else if (tasktype == 3) {
+            List<Map<String, Object>> list = this.service.execSql(jcTask, num);
+            return taskname(hashOperations, list);
+        }
+        return WebApiResponse.erro("erro");
+    }
+
+    @GetMapping("USERLOGINSTATUS")
+    public WebApiResponse USERLOGINSTATUS(Integer tasktype, Integer num) {
+        HashOperations hashOperations = redisTemplate.opsForHash();
+        String xsUser = " SELECT id as USERID  FROM RZTSYSUSER  WHERE LOGINSTATUS = ?1 AND WORKTYPE = 2 AND USERDELETE = 1 AND USERTYPE = 0 ";
+        String khUser = " SELECT id as USERID  FROM RZTSYSUSER WHERE LOGINSTATUS = ?1 AND WORKTYPE = 1 AND USERDELETE = 1  AND USERTYPE=0 ";
+        String JCUSER = " SELECT id as USERID  FROM RZTSYSUSER WHERE LOGINSTATUS = ?1 AND WORKTYPE = 3 AND USERDELETE = 1  AND USERTYPE=0 ";
+        if (tasktype == 2) {
+            List<Map<String, Object>> list = this.service.execSql(xsUser, num);
+            return taskname(hashOperations, list);
+        } else if (tasktype == 1) {
+            List<Map<String, Object>> list = this.service.execSql(khUser, num);
+            return taskname(hashOperations, list);
+        } else if (tasktype == 3) {
+            List<Map<String, Object>> list = this.service.execSql(JCUSER, num);
+            return taskname(hashOperations, list);
+        }
+        return WebApiResponse.erro("erro");
+    }
+
+    private WebApiResponse taskname(HashOperations hashOperations, List<Map<String, Object>> list) {
+        for (int i = 0; i < list.size(); i++) {
+            Object useid = list.get(i).get("USERID");
+            Object information = hashOperations.get("UserInformation", useid);
+            JSONObject jsonObject = JSONObject.parseObject(information.toString());
+            Object dept = jsonObject.get("DEPT");
+            Object classname = jsonObject.get("CLASSNAME");
+            Object realname = jsonObject.get("REALNAME");
+            Object phone = jsonObject.get("PHONE");
+            Object groupname = jsonObject.get("GROUPNAME");
+            Object loginstatus = jsonObject.get("LOGINSTATUS");
+            if (Integer.valueOf(loginstatus.toString()) == 0) {
+                list.get(i).put("LOGINSTATUS", "离线");
+            } else {
+                list.get(i).put("LOGINSTATUS", "在线");
+            }
+            list.get(i).put("CLASSNAME", classname);
+            list.get(i).put("REALNAME", realname);
+            list.get(i).put("PHONE", phone);
+            list.get(i).put("DEPT", dept);
+            list.get(i).put("GROUPNAME", groupname);
+        }
+        return WebApiResponse.success(list);
+    }
 }
