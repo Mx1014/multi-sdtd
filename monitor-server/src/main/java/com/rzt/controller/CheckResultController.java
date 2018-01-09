@@ -69,7 +69,7 @@ public class CheckResultController extends CurdController<CheckResult,CheckResul
             }
         }
 
-		return WebApiResponse.erro("参数错误");
+		return WebApiResponse.success("添加成功");
 	}
 	
 	
