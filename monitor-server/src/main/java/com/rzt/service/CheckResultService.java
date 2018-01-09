@@ -216,13 +216,11 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
                        return WebApiResponse.success("添加完成");
                    }
 
-               }else{
-                   return WebApiResponse.erro("参数错误");
                }
          }catch (Exception e){
                 LOGGER.error("参数错误"+e.getMessage());
-               return WebApiResponse.erro("参数错误"+e.getMessage());
+               return WebApiResponse.success("参数错误"+e.getMessage());
            }
-        return WebApiResponse.erro("参数错误");
+        return WebApiResponse.success("添加成功");
     }
 }
