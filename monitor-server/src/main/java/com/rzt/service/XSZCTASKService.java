@@ -100,11 +100,8 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                 }
             }
        }catch (Exception e){
-<<<<<<< HEAD
             LOGGER.error("抽查任务查询失败"+e.getMessage());
-=======
             LOGGER.error("抽查任务查询失败"+e.getStackTrace().toString());
->>>>>>> origin/master
             return WebApiResponse.erro("抽查任务查询失败"+e.getMessage());
         }
         return WebApiResponse.success(pageResult);
