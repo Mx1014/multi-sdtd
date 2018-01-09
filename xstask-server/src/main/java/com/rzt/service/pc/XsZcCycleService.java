@@ -68,12 +68,12 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
     @Modifying
     @Transactional
     public void addCycle(XsZcCycle xsZcCycle, String userId) throws Exception {
-//        Map<String,Object> userInfo = userInfoFromRedis(userId);
-//        String deptid = userInfo.get("DEPTID").toString();
+        Map<String,Object> userInfo = userInfoFromRedis(userId);
+        String deptid = userInfo.get("DEPTID").toString();
         //添加周期
         xsZcCycle.setId();
         xsZcCycle.setCreateTime(DateUtil.dateNow());
-//        xsZcCycle.setTdywOrg(deptid);
+        xsZcCycle.setTdywOrg(deptid);
         this.add(xsZcCycle);
         //添加周期表关联的线路杆塔
         Long xsZcCycleId = xsZcCycle.getId();
@@ -216,22 +216,22 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
             Map<String,Object> jsonObject = userInfoFromRedis(userId);
             try {
                 Integer roletype = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
-                String deptid = jsonObject.get("DEPTID").toString();
-                String classid = jsonObject.get("CLASSID").toString();
-                String companyid = jsonObject.get("COMPANYID").toString();
+                Object tdId = jsonObject.get("DEPTID");
+                Object classid = jsonObject.get("CLASSID");
+                Object companyid = jsonObject.get("COMPANYID");
                 switch (roletype) {
                     case 0:
                         break;
                     case 1:
                         break;
                     case 2:
-                        authoritySql = " and td_org = '" + deptid + "'";
+                        authoritySql = " and td_org = '" + tdId.toString() + "'";
                         break;
                     case 3:
-                        authoritySql = " and wx_org = '" + companyid + "'";
+                        authoritySql = " and wx_org = '" + companyid.toString() + "'";
                         break;
                     case 4:
-                        authoritySql = " and class_id = '" + classid + "'";
+                        authoritySql = " and class_id = '" + classid.toString() + "'";
                         break;
                     case 5:
                         authoritySql = " and cm_user_id = '" + userId + "'";
