@@ -11,10 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
-/**
- * 李成阳
- * 2018/1/7
- */
+
 @Service
 public class PictureService extends CurdService<CheckResult, CheckResultRepository>  {
 
