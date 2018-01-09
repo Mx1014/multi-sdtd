@@ -23,7 +23,6 @@ public class CheckDetailService extends CurdService<CheckDetail,CheckDetailRepos
 
 	@Transactional
 	public Long addCheckDetail(CheckDetail checkDetail){
-        System.out.println("---------------------"+checkDetail.getCheckUser());
         String checkUser = checkDetail.getCheckUser();
         ArrayList<Object> strings1 = new ArrayList<>();
         ArrayList<Object> strings2 = new ArrayList<>();
@@ -57,9 +56,9 @@ public class CheckDetailService extends CurdService<CheckDetail,CheckDetailRepos
                 checkDetail.setCheckUser(checkUser);
                 checkDetail.setCheckOrg((String) maps.get(0).get("DEPTID"));
         }
-        if(null != checkDetail.getQuestionTaskId() && checkDetail.getQuestionTaskId()>0){
+       /* if(null != checkDetail.getQuestionTaskId() && checkDetail.getQuestionTaskId()>0){
             xszctaskRepository.xsTaskUpdate(checkDetail.getQuestionTaskId());
-        }
+        }*/
 
 		checkDetailRepository.save(checkDetail);
 
