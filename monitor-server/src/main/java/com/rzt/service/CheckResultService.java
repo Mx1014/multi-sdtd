@@ -227,9 +227,9 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
 
 
                            checkResult.setPhotoIds(ids);
-                           checkResultRepository.updateByCheckId(id,checkResult.getQuestionType()+"",checkResult.getPhotoIds(),checkResult.getQuestionInfo());
+                           checkResultRepository.updateByCheckId(id,checkResult.getPhotoIds(),checkResult.getQuestionInfo());
                        }else{
-                           checkResultRepository.updateByCheckId(id,checkResult.getQuestionType()+"",checkResult.getPhotoIds(),checkResult.getQuestionInfo());
+                           checkResultRepository.updateByCheckId(id,checkResult.getPhotoIds(),checkResult.getQuestionInfo());
                        }
                        return WebApiResponse.success("添加完成");
                    }
@@ -249,7 +249,10 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
         List<Map<String, Object>> maps = this.execSql(sql, strings);
         if(null != strings  && strings.size()>0){
             if(null != maps.get(0) && !"".equals(maps.get(0))){
-                    return WebApiResponse.success(maps.get(0).get("QUESTION_INFO")!=null?maps.get(0).get("QUESTION_INFO"):"");
+                String question_info = (String) maps.get(0).get("QUESTION_INFO");
+                if(null != question_info && !"".equals(question_info)){
+                        return WebApiResponse.success(question_info);
+                }
             }
         }
         return WebApiResponse.success("");
