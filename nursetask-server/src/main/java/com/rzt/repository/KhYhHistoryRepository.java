@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 类名称：KHYHHISTORYRepository    
@@ -31,4 +32,8 @@ public interface KhYhHistoryRepository extends JpaRepository<KhYhHistory,String>
     @Query(value = "UPDATE PICTURE_YH SET YH_ID = ?2,YH_ORIGIN = 0 WHERE ID =?1",nativeQuery = true)
     void updatePicture(long id, Long yhId);
 
+    @Modifying
+    @Transactional
+    @Query(value = "update KH_YH_HISTORY SET JD=?3,WD=?2,RADIUS=?4 WHERE ID=?1",nativeQuery = true)
+    void updateYh(long yhId, String lat, String lon,String radius);
 }

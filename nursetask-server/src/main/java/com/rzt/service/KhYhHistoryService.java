@@ -92,4 +92,12 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         }
     }
 
+    public WebApiResponse saveCoordinate(String yhId, String lat, String lon,String radius) {
+        try {
+            this.reposiotry.updateYh(Long.parseLong(yhId),lat,lon,radius);
+            return WebApiResponse.success("保存成功");
+        }catch (Exception e){
+            return WebApiResponse.erro("保存失败"+e.getMessage());
+        }
+    }
 }
