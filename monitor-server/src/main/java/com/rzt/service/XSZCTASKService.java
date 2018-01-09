@@ -32,11 +32,12 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
 
     /**
      *
-     * @param taskType 任务类型  条件查询使用
-     * @param status  任务状态   条件查询使用
+     * @param page
+     * @param size
+     * @param taskType 任务类型  条件查询使用0
      * @return
      */
-    public WebApiResponse getXsTaskAll(Integer page,Integer size, String taskType,Integer status){
+    public WebApiResponse getXsTaskAll(Integer page,Integer size, String taskType ){
         List<Object> list = new ArrayList<>();
         Pageable pageable = new PageRequest(page, size, null);
         //sql 中 拉取数据为刷新时间至刷新时间前10分钟
@@ -49,16 +50,13 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                 "FROM TIMED_TASK   " +
                 "WHERE (CREATETIME BETWEEN (SELECT max(CREATETIME)   " +
                 "     FROM TIMED_TASK) - 600 / (1 * 24 * 60 * 60) AND (SELECT max(CREATETIME)   " +
-                "       FROM TIMED_TASK)) AND STATUS =  0";
-
+                "       FROM TIMED_TASK))   AND STATUS = 0";
+            //  0 代表当前任务列表为未检查
         if(taskType!=null && !"".equals(taskType.trim())){
             list.add(taskType);
             sql+= " AND TASKTYPE = ?"+list.size();
         }
-        if(status!=null){
-            list.add(status);
-            sql+="  AND STATUS = ?"+list.size();
-        }
+
         Page<Map<String, Object>> pageResult = null;
         try {
             pageResult = this.execSqlPage(pageable, sql, list.toArray());
@@ -79,7 +77,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                 }else if (tasktype!=null && tasktype.equals("2")){ //看护
                     String sqlll = "SELECT LINE_ID FROM KH_YH_HISTORY WHERE TASK_ID =?1";
                     List<Map<String, Object>> maps = execSql(sqlll, taskid);
-                    if(list.size()>0)
+                    if(maps.size()>0)
                         next.put("LINE_ID",maps.get(0).get("LINE_ID"));
                 }else if (tasktype!=null && tasktype.equals("3")){ //稽查
 
@@ -101,7 +99,6 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
             }
        }catch (Exception e){
             LOGGER.error("抽查任务查询失败"+e.getMessage());
-            LOGGER.error("抽查任务查询失败"+e.getStackTrace().toString());
             return WebApiResponse.erro("抽查任务查询失败"+e.getMessage());
         }
         return WebApiResponse.success(pageResult);
