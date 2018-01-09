@@ -103,6 +103,17 @@ public class CheckResultController extends CurdController<CheckResult,CheckResul
 		}
 	}
 
+    @GetMapping("/getQuestionInfo")
+    public WebApiResponse getQuestionInfo(String id){
+	        if(null != id && !"".equals(id)){
+	            return service.getQuestionInfo(id);
+
+            }
+	    return WebApiResponse.success("");
+
+    }
+
+
 
 
 
