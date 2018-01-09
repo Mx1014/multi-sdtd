@@ -50,9 +50,9 @@ public interface KhSiteRepository extends JpaRepository<KhSite, String> {
     void updateYH(Long id, Date date);
 
     @Modifying
-    @Query(value = "update check_live_task set status=2,update_time=?2 where task_id=?1", nativeQuery = true)
+    @Query(value = "update CHECK_LIVE_SITE set status=2,update_time=SYSDATE where task_id=?1", nativeQuery = true)
     @Transactional
-    void updateCheckTask(long id, Date date);
+    void updateCheckTask(long id);
 
     @Query(value = "select count(*) from kh_site where status = ?1 ", nativeQuery = true)
     int getCount(String status);
@@ -92,4 +92,6 @@ public interface KhSiteRepository extends JpaRepository<KhSite, String> {
     @Query(value = "select * from KH_SITE WHERE STATUS=1",nativeQuery = true)
     List<KhSite> findSites();
 
+    @Query(value = "insert into CHECK_LIVE_SITE (id,TASK_ID,TASK_TYPE,CREATE_TIME,TASK_NAME,STATUS,line_id,TDYW_ORGID,TDWX_ORGID,yh_id) select id,id as taskid,0,sysdate,TASK_NAME,0,LINE_ID,TDYW_ORGID,WX_ORGID,YH_ID from KH_CYCLE where ID=?1;",nativeQuery = true)
+    void addCheckSite(Long id);
 }

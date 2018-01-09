@@ -37,4 +37,11 @@ public class KhYhHistoryController extends
 	public WebApiResponse saveYh(KhYhHistory yh,String fxtime,String startTowerName,String endTowerName,String pictureId){
 		return this.service.saveYh(yh,fxtime,startTowerName,endTowerName,pictureId);
 	}
+
+	@ApiOperation(notes = "隐患台账保存坐标",value = "隐患台账保存坐标")
+	@PostMapping("/saveCoordinate")
+	@ResponseBody
+	public WebApiResponse saveCoordinate(String yhId,String lat,String lon,String radius){
+		return this.service.saveCoordinate(yhId,lat,lon,radius);
+	}
 }

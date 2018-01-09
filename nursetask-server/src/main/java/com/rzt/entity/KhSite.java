@@ -86,10 +86,10 @@ public class KhSite  implements Serializable{
 	private int capatain;
 	//字段描述: 计划开始时段
 	@Column(name = "PLAN_START_TIME")
-	private String planStartTime;
+	private Date planStartTime;
 	//字段描述: 计划结束时段
 	@Column(name = "PLAN_END_TIME")
-	private String planEndTime;
+	private Date planEndTime;
 	//字段描述: 计划开始时段
 	@Column(name = "WX_ORGID")
 	private String wxOrgId;
@@ -210,19 +210,19 @@ public class KhSite  implements Serializable{
 
 
 
-	public void setPlanStartTime(String planStartTime){
+	public void setPlanStartTime(Date planStartTime){
 		this.planStartTime = planStartTime;
 	}
-	public String getPlanStartTime(){
+	public Date getPlanStartTime(){
 		return this.planStartTime;
 	}
 
 
 
-	public void setPlanEndTime(String planEndTime){
+	public void setPlanEndTime(Date planEndTime){
 		this.planEndTime = planEndTime;
 	}
-	public String getPlanEndTime(){
+	public Date getPlanEndTime(){
 		return this.planEndTime;
 	}
 

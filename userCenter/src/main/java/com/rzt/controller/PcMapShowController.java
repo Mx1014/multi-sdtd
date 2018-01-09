@@ -57,11 +57,12 @@ public class PcMapShowController {
                 return hashOperations.get("menInMap",userId);
             }
             String deptId = "";
-            if(tdOrg != null) {
+            /*if(tdOrg != null) {
                 deptId = tdOrg;
             } else {
-                deptId = pcMapShowService.dataAccessByUserId(currentUserId);
-            }
+                deptId = pcMapShowService.dataAccessByUserId(currentUserId).toString();
+            }*/
+            deptId = pcMapShowService.dataAccessByUserId(currentUserId).toString();
             //1.初始数据权限
             if("err".equals(deptId)) {
 

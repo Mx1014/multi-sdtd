@@ -66,7 +66,24 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
             HashOperations hashOperations = redisTemplate.opsForHash();
 
             while (iterator.hasNext()){
+
                 Map<String, Object> next = iterator.next();
+                Object taskid = next.get("TASKID");
+                Object tasktype = next.get("TASKTYPE");
+                //巡视
+                if(tasktype!=null && tasktype.equals("1")){
+                    String sqll = "SELECT  c.LINE_ID FROM XS_ZC_TASK x LEFT JOIN XS_ZC_CYCLE c ON c.ID = x.XS_ZC_CYCLE_ID WHERE x.ID =?1";
+                    List<Map<String, Object>> maps = execSql(sqll,taskid);
+                    if(list.size()>0)
+                        next.put("LINE_ID",maps.get(0).get("LINE_ID"));
+                }else if (tasktype!=null && tasktype.equals("2")){ //看护
+                    String sqlll = "SELECT LINE_ID FROM KH_YH_HISTORY WHERE TASK_ID =?1";
+                    List<Map<String, Object>> maps = execSql(sqlll, taskid);
+                    if(list.size()>0)
+                        next.put("LINE_ID",maps.get(0).get("LINE_ID"));
+                }else if (tasktype!=null && tasktype.equals("3")){ //稽查
+
+                }
 
                 String userID =(String)next.get("USER_ID");
                 Object userInformation = hashOperations.get("UserInformation", userID);
@@ -83,7 +100,11 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                 }
             }
        }catch (Exception e){
+<<<<<<< HEAD
             LOGGER.error("抽查任务查询失败"+e.getMessage());
+=======
+            LOGGER.error("抽查任务查询失败"+e.getStackTrace().toString());
+>>>>>>> origin/master
             return WebApiResponse.erro("抽查任务查询失败"+e.getMessage());
         }
         return WebApiResponse.success(pageResult);

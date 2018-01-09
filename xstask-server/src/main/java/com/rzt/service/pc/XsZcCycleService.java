@@ -24,6 +24,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,6 +50,8 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
     private XsZcCycleLineTowerService xsZcCycleLineTowerService;
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
     /***
     * @Method
      * addCycle
@@ -64,12 +68,12 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
     @Modifying
     @Transactional
     public void addCycle(XsZcCycle xsZcCycle, String userId) throws Exception {
-//        Map<String,Object> userInfo = userInfoFromRedis(userId);
-//        String deptid = userInfo.get("DEPTID").toString();
+        Map<String,Object> userInfo = userInfoFromRedis(userId);
+        String deptid = userInfo.get("DEPTID").toString();
         //添加周期
         xsZcCycle.setId();
         xsZcCycle.setCreateTime(DateUtil.dateNow());
-//        xsZcCycle.setTdywOrg(deptid);
+        xsZcCycle.setTdywOrg(deptid);
         this.add(xsZcCycle);
         //添加周期表关联的线路杆塔
         Long xsZcCycleId = xsZcCycle.getId();
@@ -212,22 +216,22 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
             Map<String,Object> jsonObject = userInfoFromRedis(userId);
             try {
                 Integer roletype = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
-                String deptid = jsonObject.get("DEPTID").toString();
-                String classid = jsonObject.get("CLASSID").toString();
-                String companyid = jsonObject.get("COMPANYID").toString();
+                Object tdId = jsonObject.get("DEPTID");
+                Object classid = jsonObject.get("CLASSID");
+                Object companyid = jsonObject.get("COMPANYID");
                 switch (roletype) {
                     case 0:
                         break;
                     case 1:
                         break;
                     case 2:
-                        authoritySql = " and td_org = '" + deptid + "'";
+                        authoritySql = " and td_org = '" + tdId.toString() + "'";
                         break;
                     case 3:
-                        authoritySql = " and wx_org = '" + companyid + "'";
+                        authoritySql = " and wx_org = '" + companyid.toString() + "'";
                         break;
                     case 4:
-                        authoritySql = " and class_id = '" + classid + "'";
+                        authoritySql = " and class_id = '" + classid.toString() + "'";
                         break;
                     case 5:
                         authoritySql = " and cm_user_id = '" + userId + "'";
@@ -259,6 +263,14 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
         }
         return jsonObject;
     }
+
+    public Object judgeFromRedis() {
+        ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
+        Object judge = stringRedisTemplate.opsForValue().get("judge");
+        return judge;
+    }
+
+
 
     /**
     * @Method logicalDelete
@@ -347,7 +359,7 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
     }
 
     public Object listPictureById(Long taskId, Integer zj) {
-        String sql = "select PROCESS_NAME \"name\",FILE_SMALL_PATH \"smallFilePath\",FILE_PATH \"filePath\",CREATE_TIME \"createTime\" from PICTURE_TOUR WHERE TASK_ID = ? order by id";
+        String sql = "select PROCESS_NAME \"name\",FILE_SMALL_PATH \"smallFilePath\",FILE_PATH \"filePath\",CREATE_TIME \"createTime\",lon,lat from PICTURE_TOUR WHERE TASK_ID = ? order by id";
         if(zj == 1) {
             sql += " desc";
         }

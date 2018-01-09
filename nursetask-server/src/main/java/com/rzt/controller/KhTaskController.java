@@ -47,8 +47,9 @@ public class KhTaskController extends
 		try {
 			//分页参数 page size
 			HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
-			JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", task.getUserId()).toString());
-			Object o = this.service.listAllKhTask(task, status,pageable,Integer.valueOf(jsonObject.get("ROLETYPE").toString()));
+			//JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", task.getUserId()).toString());
+			//Object o = this.service.listAllKhTask(task, status,pageable,Integer.valueOf(jsonObject.get("ROLETYPE").toString()));
+			Object o = this.service.listAllKhTask(task, status,pageable,0);
 			return WebApiResponse.success(o);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -131,6 +132,13 @@ public class KhTaskController extends
 	@ResponseBody
 	public WebApiResponse appListPicture(long taskId,Integer zj){
 		return this.service.appListPicture(taskId,zj);
+	}
+
+	//地图展示某人的具体任务信息
+	@GetMapping("/createTask")
+	@ResponseBody
+	public void createTask(String taskId){
+		this.service.createTask();
 	}
 }
 

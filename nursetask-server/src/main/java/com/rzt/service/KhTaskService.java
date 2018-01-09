@@ -256,7 +256,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
                         }
                     }
                 }
-                if (task.get("CREATE_TIME") != null) {
+                        if (task.get("CREATE_TIME") != null) {
                     row.createCell(3).setCellValue(task.get("CREATE_TIME").toString().substring(0, task.get("CREATE_TIME").toString().length() - 2));//计划开始时间
                 }
                 if (task.get("PLAN_START_TIME") != null) {
@@ -317,7 +317,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
 
     public WebApiResponse appListPicture(long taskId, Integer zj) {
         try {
-            String sql = "select PROCESS_NAME \\\"name\\\",FILE_SMALL_PATH \\\"smallFilePath\\\",FILE_PATH \\\"filePath\\\",CREATE_TIME \\\"createTime\\\" from PICTURE_KH WHERE TASK_ID = ? and file_type=1 order by PROCESS_ID  ";
+            String sql = "select PROCESS_NAME \\\"name\\\",FILE_SMALL_PATH \\\"smallFilePath\\\",FILE_PATH \\\"filePath\\\",CREATE_TIME \\\"createTime\\\",LON,LAT from PICTURE_KH WHERE TASK_ID = ? and file_type=1 order by PROCESS_ID  ";
             return WebApiResponse.success(this.execSql(sql, taskId));
         } catch (Exception e) {
             e.printStackTrace();
@@ -325,30 +325,32 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         }
     }
 
+
+
+
     //生成任务的逻辑
     public void createTask() {
         List<KhSite> list = siteRepository.findSites();
         for (KhSite site : list) {
             double cycle = site.getCycle();  //一轮任务时长
-            Date startTime = DateUtil.parseDate(site.getPlanStartTime());
-            Date endTime = DateUtil.parseDate(site.getPlanEndTime());
-            if (cycle > 24) {
+            Date startTime = site.getPlanStartTime();
+            Date endTime = site.getPlanEndTime();
+            if (cycle > 0) {
                 //如果下次任务开始时间是今天  生成任务
-                if (DateUtil.addDate(startTime, cycle).getTime() < DateUtil.getBiggest()) {
-                    startTime = DateUtil.addDate(startTime, cycle);
-                    endTime = DateUtil.addDate(endTime, cycle);
-                    this.saveTask(site, startTime, endTime);
-                    //如果不是不生成
-                }
-                //如果周期小于24
-            } else if (cycle <= 24 && cycle > 0) {
                 while (DateUtil.addDate(startTime, cycle).getTime() < DateUtil.getBiggest()) {
                     startTime = DateUtil.addDate(startTime, cycle);
                     endTime = DateUtil.addDate(endTime, cycle);
-                    this.saveTask(site, startTime, endTime);
+                    saveTask(site, startTime, endTime);
                 }
-            }
+                //如果周期小于24
+            } /*else if (cycle <= 24 && cycle > 0) {
+                while (DateUtil.addDate(startTime, cycle).getTime() < DateUtil.getBiggest()) {
+                    startTime = DateUtil.addDate(startTime, cycle);
+                    endTime = DateUtil.addDate(endTime, cycle);
+                    saveTask(site, startTime, endTime);
+                }*/
         }
+
     }
 
 
@@ -367,10 +369,10 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         task.setCreateTime(DateUtil.dateNow());
         task.setYhId(site.getYhId());
         task.setStatus(0);
-        this.reposiotry.addTask(task.getId(),task.getSiteId(),task.getUserId(),task.getTaskName(),task.getYhId(),
-               task.getPlanStartTime(),task.getPlanEndTime(),task.getWxOrg(),task.getCount(),task.getTdywOrg());
+        this.reposiotry.addTask(task.getId(), task.getSiteId(), task.getUserId(), task.getTaskName(), task.getYhId(),
+                task.getPlanStartTime(), task.getPlanEndTime(), task.getWxOrg(), task.getCount(), task.getTdywOrg());
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        this.reposiotry.updateSite(formatter.format(startTime), formatter.format(endTime), site.getId());
+        this.reposiotry.updateSite(startTime, endTime, site.getId(),count);
     }
 
 }
