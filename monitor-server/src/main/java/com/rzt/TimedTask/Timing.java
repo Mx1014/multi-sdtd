@@ -1,7 +1,6 @@
 package com.rzt.TimedTask;
 
 import com.rzt.controller.CurdController;
-import com.rzt.controller.XSZCTASKController;
 import com.rzt.service.TimedService;
 import com.rzt.service.XSZCTASKService;
 import com.rzt.util.WebApiResponse;
@@ -13,11 +12,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
 
 /**
  * 李成阳
