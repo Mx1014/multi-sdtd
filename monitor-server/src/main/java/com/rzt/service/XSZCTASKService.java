@@ -38,8 +38,15 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
      * @return
      */
     public WebApiResponse getXsTaskAll(Integer page,Integer size, String taskType ,String userId){
-        //XS_TXBD_TASK_EXEC_DETAIL
+        /**
+         *   所有权限	    0
+             公司本部权限	1
+             属地单位权限	2
+             外协队伍权限	3
+             组织权限	    4
+             个人权限	    5
 
+         */
         List<Object> list = new ArrayList<>();
         Pageable pageable = new PageRequest(page, size, null);
         //sql 中 拉取数据为刷新时间至刷新时间前10分钟
