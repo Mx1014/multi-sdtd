@@ -13,6 +13,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
 import java.lang.reflect.Method;
@@ -49,6 +50,7 @@ public class RedisConfig {
 
     /**
      * 键的生成策略
+     *
      * @return
      */
     @Bean
@@ -89,6 +91,7 @@ public class RedisConfig {
 
     /**
      * 配置CacheManager 管理cache
+     *
      * @param redisTemplate
      * @return
      */
@@ -96,27 +99,27 @@ public class RedisConfig {
     public CacheManager cacheManager(RedisTemplate redisTemplate) {
         RedisCacheManager cacheManager = new RedisCacheManager(redisTemplate);
         // 设置key-value超时时间
-        cacheManager.setDefaultExpiration(60*60);
+        cacheManager.setDefaultExpiration(60 * 60);
         return cacheManager;
     }
 
 
-	@Bean
-	public RedisTemplate<String, Object> redisHashTemplate(RedisConnectionFactory connectionFactory){
-		FastJsonRedisSerializer fastJsonRedisSerializer = new FastJsonRedisSerializer(Object.class);
-		FastJsonConfig jsonConfig = new FastJsonConfig();
-		jsonConfig.setSerializerFeatures(SerializerFeature.WriteMapNullValue);
-		fastJsonRedisSerializer.setFastJsonConfig(jsonConfig);
-		RedisTemplate<String,Object> template = new RedisTemplate<>();
-		template.setConnectionFactory(connectionFactory);
-		template.setKeySerializer(new StringRedisSerializer());
-		template.setHashKeySerializer(new StringRedisSerializer());
-		template.setHashValueSerializer(fastJsonRedisSerializer);
-		template.setValueSerializer(fastJsonRedisSerializer);
-		return template;
-	}
+    @Bean
+    public RedisTemplate<String, Object> redisHashTemplate(RedisConnectionFactory connectionFactory) {
+        FastJsonRedisSerializer fastJsonRedisSerializer = new FastJsonRedisSerializer(Object.class);
+        FastJsonConfig jsonConfig = new FastJsonConfig();
+        jsonConfig.setSerializerFeatures(SerializerFeature.WriteMapNullValue);
+        fastJsonRedisSerializer.setFastJsonConfig(jsonConfig);
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setHashKeySerializer(new StringRedisSerializer());
+        template.setHashValueSerializer(fastJsonRedisSerializer);
+        template.setValueSerializer(fastJsonRedisSerializer);
+        return template;
+    }
 
-   /* @Bean
+    @Bean
     public JedisPool redisPoolFactory() {
 
         JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
@@ -125,6 +128,6 @@ public class RedisConfig {
 
         JedisPool jedisPool = new JedisPool(jedisPoolConfig, host, port, timeout);
         return jedisPool;
-    }*/
+    }
 
 }

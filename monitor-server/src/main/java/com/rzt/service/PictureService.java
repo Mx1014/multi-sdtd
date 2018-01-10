@@ -106,8 +106,6 @@ public class PictureService extends CurdService<CheckResult, CheckResultReposito
                          List<Map<String, Object>> maps2 = this.execSql(sql ,objects);
                          //所有的巡视图片组
                          group.add(maps2);
-
-
                      }
                  }
                  LOGGER.info("任务图片查询成功");
