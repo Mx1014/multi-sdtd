@@ -84,6 +84,7 @@ public class Timing  extends
 
 
     /**
+     * 一级单位数据抓取
      * 每三天刷新一次
      * 0点刷新
      */
@@ -91,5 +92,7 @@ public class Timing  extends
     private void threeDayScheduledTask(){
         xszctaskService.xsTaskAddAndFindThree();
     }
+
+
 
 }

@@ -226,9 +226,9 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
             }
 
         }catch (Exception e){
-            LOGGER.error("（二级单位，周期可变，小时为单位 ）定时任务添加失败"+e.getMessage());
+            LOGGER.error("（二级单位，周期可变，小时为单位 ）定时任务数据抽取失败"+e.getMessage());
         }
-        LOGGER.info("（二级单位，周期可变，小时为单位）定时任务添加成功");
+        LOGGER.info("（二级单位，周期可变，小时为单位）定时任务数据抽取成功");
 
 
 
@@ -282,9 +282,9 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
             }
 
         }catch (Exception e){
-            LOGGER.error("（一级单位，三天周期）定时任务添加失败"+e.getMessage());
+            LOGGER.error("（一级单位，三天周期）定时任务数据抽取失败"+e.getMessage());
         }
-        LOGGER.info("（一级单位，三天周期）定时任务添加成功");
+        LOGGER.info("（一级单位，三天周期）定时任务数据抽取成功");
 
 
 
