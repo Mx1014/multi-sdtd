@@ -101,7 +101,7 @@ public class KhSite  implements Serializable{
 	private double cycle;
 
 	public void setId(){
-		this.id = new SnowflakeIdWorker(0,0).nextId();
+		this.id = new SnowflakeIdWorker(1,1).nextId();
 	}
 	@ExcelResources(title="看护点id",order=1)
 	public Long getId(){

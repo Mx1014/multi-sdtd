@@ -8,14 +8,13 @@ package com.rzt.controller;
 
 import com.rzt.entity.KHYHHISTORY;
 import com.rzt.service.KHYHHISTORYService;
+import com.rzt.util.WebApiResponse;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 
@@ -40,6 +39,12 @@ public class KHYHHISTORYController extends
 		Pageable pageable = new PageRequest(page, size);
 		return service.getYHInfo( pageable,  tdOrg,  wxOrg,  kv,  lineId, yhjb,  startTime,  endTime);
 	}
-    
-	
+
+
+	@ApiOperation(value = "隐患导入接口",notes = "隐患导入接口")
+	@PostMapping("ImportYh")
+	public WebApiResponse ImportYh(){
+//		MultipartFile file
+		return service.ImportYh();
+	}
 }
