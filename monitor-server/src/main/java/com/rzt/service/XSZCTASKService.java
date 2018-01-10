@@ -294,17 +294,31 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
      * @param taskId
      * @return
      */
-    public WebApiResponse findExecDetallByTaskId(String taskId) {
+    public WebApiResponse findExecDetallByTaskId(String taskId,String taskType) {
         ArrayList<String> strings = new ArrayList<>();
-        String sql = "select xd.START_TIME,xd.END_TIME,xd.OPERATE_NAME,xd.ID from XS_ZC_TASK_EXEC_DETAIL xd where 1=1";
+        String sql = "";
         List<Map<String, Object>> maps = null;
 
         try {
             if(null != taskId && !"".equals(taskId)){
                 strings.add(taskId);
-                sql += "  and  xd.XS_ZC_TASK_EXEC_ID in (select xe.ID from XS_ZC_TASK_EXEC xe where xe.XS_ZC_TASK_ID in ?"+strings.size()+") ORDER BY xd.START_TIME";
+                if(null != taskType && !"".equals(taskType)){//判断当前任务类型
+                    switch (Integer.parseInt(taskType)){
+                        case 1 :{//巡视
+                             sql =  " select xd.START_TIME,xd.END_TIME,xd.OPERATE_NAME,xd.ID from XS_ZC_TASK_EXEC_DETAIL xd where   xd.XS_ZC_TASK_EXEC_ID in (select xe.ID from XS_ZC_TASK_EXEC xe where xe.XS_ZC_TASK_ID = ?"+strings.size()+") ORDER BY xd.START_TIME";
+                            break;
+                        }case 2 :{//看护
+                            sql = "SELECT PLAN_START_TIME as START_TIME,PLAN_END_TIME as END_TIME,TASK_NAME as OPERATE_NAME,ID" +
+                                    "   FROM KH_TASK WHERE ID = ?"+strings.size();
+                            break;
+                        }
+                    }
+                }
             }
-            maps = this.execSql(sql, strings.toArray());
+            if(null != sql && !"".equals(sql)){
+                maps = this.execSql(sql, strings.toArray());
+            }
+
         }catch (Exception e){
             LOGGER.error("任务进度查询失败"+e.getMessage());
             return WebApiResponse.erro("查询错误"+e.getMessage());
@@ -351,7 +365,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                             "                           WHERE xt.ID = ?"+strings.size()+")";
                     maps = this.execSql(sql, strings.toArray());
                     maps3 = this.execSql(sql3, strings.toArray());
-                    maps2 = (List<Map<String, Object>>) findExecDetallByTaskId(taskId).getData();
+                    maps2 = (List<Map<String, Object>>) findExecDetallByTaskId(taskId,TASKTYPE).getData();
                     LOGGER.info("巡视任务详情查询");
                 }
 
@@ -360,11 +374,11 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                        strings.add(taskId);
                        //取到当前隐患的详细信息
                        String sql = "SELECT yh.YHMS,li.LINE_NAME,li.SECTION" +
-                               "                                             from KH_YH_HISTORY yh" +
-                               "                                               LEFT JOIN" +
-                               "                                               CM_LINE li on li.ID = yh.LINE_ID" +
-                               "                                             WHERE yh.ID = (SELECT k.YH_ID FROM KH_SITE k LEFT JOIN KH_TASK kh ON kh.SITE_ID = k.ID" +
-                               "             WHERE kh.ID = ?"+strings.size()+")";
+                               "        from KH_YH_HISTORY yh" +
+                               "            LEFT JOIN" +
+                               "              CM_LINE li on li.ID = yh.LINE_ID" +
+                               "                 WHERE yh.ID = (SELECT k.YH_ID FROM KH_SITE k LEFT JOIN KH_TASK kh ON kh.SITE_ID = k.ID" +
+                               "                    WHERE kh.ID = ?"+strings.size()+")";
                        //取当前隐患的位置  去重
                        String sql3 = "SELECT distinct li.LINE_NAME,li.SECTION" +
                                "       from KH_YH_HISTORY yh" +
