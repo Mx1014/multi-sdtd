@@ -145,10 +145,17 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
             String sql = "select l.v_level as voltage,l.line_name as linename,s.section as section,s.tdyw_org as yworg,y.TDWX_ORG as wxorg,U.REALNAME as name,T.PLAN_START_TIME as starttime,T.PLAN_END_TIME as endtime \n" +
                     "from KH_SITE S,KH_YH_HISTORY y,KH_TASK T,RZTSYSUSER U,cm_line l \n" +
                     "where s.YH_ID = ? and l.id = y.line_id and t.PLAN_END_TIME>=sysdate and y.id = s.YH_ID AND S.ID = T.SITE_ID AND T.USER_ID = U.ID order by t.plan_start_time";
-            return WebApiResponse.success(this.execSql(sql, yhId));
+            List<Map<String, Object>> list = this.execSql(sql, yhId);
+            for (Map map : list) {
+                String kv = map.get("VOLTAGE").toString();
+                if (kv.contains("kV")) {
+                    map.put("VOLTAGE",kv.substring(0,kv.indexOf("k")));
+                }
+            }
+            return WebApiResponse.success(list);
         } catch (Exception e) {
             e.printStackTrace();
-            return WebApiResponse.erro("数据获取失败");
+            return WebApiResponse.erro("数据获取失败" + e.getMessage());
         }
     }
 
@@ -256,7 +263,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
                         }
                     }
                 }
-                        if (task.get("CREATE_TIME") != null) {
+                if (task.get("CREATE_TIME") != null) {
                     row.createCell(3).setCellValue(task.get("CREATE_TIME").toString().substring(0, task.get("CREATE_TIME").toString().length() - 2));//计划开始时间
                 }
                 if (task.get("PLAN_START_TIME") != null) {
@@ -317,15 +324,13 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
 
     public WebApiResponse appListPicture(long taskId, Integer zj) {
         try {
-            String sql = "select PROCESS_NAME \\\"name\\\",FILE_SMALL_PATH \\\"smallFilePath\\\",FILE_PATH \\\"filePath\\\",CREATE_TIME \\\"createTime\\\",LON,LAT from PICTURE_KH WHERE TASK_ID = ? and file_type=1 order by PROCESS_ID  ";
+            String sql = "select PROCESS_NAME \\\"name\\\",FILE_SMALL_PATH \\\"smallFilePath\\\",FILE_PATH \\\"filePath\\\",CREATE_TIME \\\"createTime\\\",LON,LAT from PICTURE_KH WHERE TASK_ID = ? and file_type=1 order by CREATE_TIME desc  ";
             return WebApiResponse.success(this.execSql(sql, taskId));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("数据获取失败");
         }
     }
-
-
 
 
     //生成任务的逻辑
@@ -372,7 +377,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         this.reposiotry.addTask(task.getId(), task.getSiteId(), task.getUserId(), task.getTaskName(), task.getYhId(),
                 task.getPlanStartTime(), task.getPlanEndTime(), task.getWxOrg(), task.getCount(), task.getTdywOrg());
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        this.reposiotry.updateSite(startTime, endTime, site.getId(),count);
+        this.reposiotry.updateSite(startTime, endTime, site.getId(), count);
     }
 
 }

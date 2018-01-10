@@ -199,8 +199,9 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             }
             KhCycle task = new KhCycle();
             task.setId();
+            String kv = yh.getVtype();
             if (yh.getVtype().contains("kV")) {
-                yh.setVtype(yh.getVtype().substring(0, yh.getVtype().indexOf("k")));
+                 kv = kv.substring(0, kv.indexOf("k"));
             }
             yh.setTaskId(task.getId());
             yh.setYhzt(0);//隐患未消除
@@ -208,7 +209,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             yh.setCreateTime(DateUtil.dateNow());
             yh.setSection(startTowerName + "-" + endTowerName);
             yhservice.add(yh);
-            String taskName = yh.getVtype() + yh.getLineName() +" "+ startTowerName + "-" + endTowerName + " 号杆塔看护任务";
+            String taskName = kv + "-" + yh.getLineName() +" "+ startTowerName + "-" + endTowerName + " 号杆塔看护任务";
             task.setVtype(yh.getVtype());
             task.setLineName(yh.getLineName());
             task.setTdywOrg(yh.getTdywOrg());
@@ -222,7 +223,8 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             task.setYhId(yh.getId());
             task.setCreateTime(DateUtil.dateNow());
             this.cycleService.add(task);
-            this.reposiotry.addCheckSite(task.getId());
+            long id = new SnowflakeIdWorker(2, 4).nextId();
+            this.reposiotry.addCheckSite(id,task.getId(),0,task.getTaskName(),0,task.getLineId(),task.getTdywOrgId(),task.getWxOrgId(),task.getYhId());
             if (null != pictureId && !pictureId.equals("")) {
                 String[] split = pictureId.split(",");
                 for (int i = 0; i < split.length; i++) {

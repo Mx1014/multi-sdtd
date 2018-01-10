@@ -87,7 +87,7 @@ public class KhTask implements Serializable{
 	@Column(name="ZXYS_NUM")
 	private int zxysNum;
 	public void setId(){
-		this.id =   Long.valueOf(new SnowflakeIdWorker(0,0).nextId());
+		this.id =   Long.valueOf(new SnowflakeIdWorker(1,2).nextId());
 	}
 	@ExcelResources(title="",order=1)
 	public Long getId(){
