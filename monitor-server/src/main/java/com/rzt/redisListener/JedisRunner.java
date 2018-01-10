@@ -20,12 +20,15 @@ public class JedisRunner implements CommandLineRunner {
     @Autowired
     RedisTemplate<String,String> redisTemplate;
 
+    @Autowired
+    private Subscriber subscriber;
+
     @Override
     public void run(String... strings) throws Exception {
         Jedis jedis= jedisPool.getResource();
         try {
             //监听所有reids通道中的过期事件
-            jedis.psubscribe(new Subscriber(), "__keyevent@1__:expired");
+            jedis.psubscribe(subscriber, "__keyevent@1__:expired");
         } catch (Exception e) {
             jedis.close();
             e.printStackTrace();

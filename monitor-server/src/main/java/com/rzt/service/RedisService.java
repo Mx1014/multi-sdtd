@@ -15,6 +15,7 @@ public class RedisService {
     protected static Logger LOGGER = LoggerFactory.getLogger(RedisService.class);
     private static int faixTime = 40;
 
+
     @Autowired
     JedisPool jedisPool;
 

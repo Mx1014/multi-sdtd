@@ -1,7 +1,6 @@
 package com.rzt.TimedTask;
 
 import com.rzt.controller.CurdController;
-import com.rzt.controller.XSZCTASKController;
 import com.rzt.service.TimedService;
 import com.rzt.service.XSZCTASKService;
 import com.rzt.util.WebApiResponse;
@@ -13,11 +12,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
 
 /**
  * 李成阳
@@ -33,6 +27,8 @@ public class Timing  extends
     private NightDynamicScheduledTask night;
     @Autowired
     private DayDynamicScheduledTask day;
+    @Autowired
+    private XSZCTASKService xszctaskService;
 
     /**
      * 动态修改定时器内变量
@@ -80,38 +76,23 @@ public class Timing  extends
     }
 
     @GetMapping("/getTimeConfig")
-    public WebApiResponse getTimeConfig(){
-        return service.getTimedConfig();
-    }
-
-    /**
-     * 获取当前定时器的刷新周期  小时为单位  当前权限为地市 总局查看时暂时固定为3天一次刷新
-     * @return
-     */
-    @GetMapping("/getScheduledTime")
-    public WebApiResponse getScheduledTime(){
-        WebApiResponse timedConfig = service.getTimedConfig();
-        List<Map<String, Object>> data = (List<Map<String, Object>>) timedConfig.getData();
-        Map<String, Object> map = data.get(0);
-        Date date = new Date();
-        SimpleDateFormat hh = new SimpleDateFormat("HH");
-        int i = Integer.parseInt(hh.format(date));
-        if(i>=Integer.parseInt((String) map.get("START_TIME")) && i<Integer.parseInt((String) map.get("END_TIME"))){
-            return WebApiResponse.success( map.get("DAY_ZQ"));
-        }else{
-            return WebApiResponse.success(map.get("NIGHT_ZQ"));
-        }
+    public WebApiResponse getTimeConfig(String userId){
+        return service.getTimedConfig(userId);
     }
 
 
+
+
     /**
+     * 一级单位数据抓取
      * 每三天刷新一次
      * 0点刷新
      */
     @Scheduled(cron="0 0 0 0/3 * ? ")
     private void threeDayScheduledTask(){
-        System.out.println("0点刷新");
-
+        xszctaskService.xsTaskAddAndFindThree();
     }
+
+
 
 }

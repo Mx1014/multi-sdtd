@@ -6,8 +6,6 @@
  */
 package com.rzt.entity;
 
-import com.rzt.utils.SnowflakeIdWorker;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -33,7 +31,7 @@ public class Monitorcheckyj implements Serializable{
      private Long id;        
     	//字段描述: 任务ID
    	 @Column(name = "TASK_ID")
-     private String taskId;
+     private Long taskId;
     	//字段描述: 处理中创建时间
    	 @Column(name = "CREATE_TIME_Z")
      private Date createTimeZ;
@@ -42,10 +40,10 @@ public class Monitorcheckyj implements Serializable{
      private Date createTimeC;
     	//字段描述: 任务类型  1 巡视  2 看护  3 稽查
    	 @Column(name = "TASK_TYPE")
-     private String taskType;
+     private Integer taskType;
     	//字段描述: 处理状态  0未处理  1处理中  2已处理
    	 @Column(name = "STATUS")
-     private String status;
+     private Integer status;
     	//字段描述: 处理中建议信息
    	 @Column(name = "CHECKZ_INFO")
      private String checkzInfo;
@@ -57,112 +55,141 @@ public class Monitorcheckyj implements Serializable{
      private String checkcInfo;
     	//字段描述: 是否可见 0可以查看  1不可查看
    	 @Column(name = "IS_VIEW")
-     private String isView;
+     private Integer isView;
     	//字段描述: 告警任务创建时间
    	 @Column(name = "CREATE_TIME")
      private Date createTime;
-    
-	public void setId(Long id){
-		if(id==null||id==0){
-			this.id = new SnowflakeIdWorker(0,0).nextId();
-		}else{
-			this.id = id;
-		}
-	}
-    public Long getId(){
-		return this.id;
-	}
-	
-	
 
-	public void setTaskId(String taskId){
+	@Column(name = "TASK_NAME")
+	private String taskName;
+
+	@Column(name = "USER_ID")
+	private String userId;
+
+	@Column(name = "DEPTID")
+	private String deptId;
+
+	//字段描述: 告警类型
+	@Column(name = "WARNING_TYPE")
+	private Integer warningType;
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public Long getTaskId() {
+		return taskId;
+	}
+
+	public void setTaskId(Long taskId) {
 		this.taskId = taskId;
 	}
-    public String getTaskId(){
-		return this.taskId;
-	}
-	
-	
 
-	public void setCreateTimeZ(Date createTimeZ){
+	public Date getCreateTimeZ() {
+		return createTimeZ;
+	}
+
+	public void setCreateTimeZ(Date createTimeZ) {
 		this.createTimeZ = createTimeZ;
 	}
-    public Date getCreateTimeZ(){
-		return this.createTimeZ;
-	}
-	
-	
 
-	public void setCreateTimeC(Date createTimeC){
+	public Date getCreateTimeC() {
+		return createTimeC;
+	}
+
+	public void setCreateTimeC(Date createTimeC) {
 		this.createTimeC = createTimeC;
 	}
-    public Date getCreateTimeC(){
-		return this.createTimeC;
-	}
-	
-	
 
-	public void setTaskType(String taskType){
+	public Integer getTaskType() {
+		return taskType;
+	}
+
+	public void setTaskType(Integer taskType) {
 		this.taskType = taskType;
 	}
-    public String getTaskType(){
-		return this.taskType;
-	}
-	
-	
 
-	public void setStatus(String status){
+	public Integer getStatus() {
+		return status;
+	}
+
+	public void setStatus(Integer status) {
 		this.status = status;
 	}
-    public String getStatus(){
-		return this.status;
-	}
-	
-	
 
-	public void setCheckzInfo(String checkzInfo){
+	public String getCheckzInfo() {
+		return checkzInfo;
+	}
+
+	public void setCheckzInfo(String checkzInfo) {
 		this.checkzInfo = checkzInfo;
 	}
-    public String getCheckzInfo(){
-		return this.checkzInfo;
-	}
-	
-	
 
-	public void setCheckzAppInfo(String checkzAppInfo){
+	public String getCheckzAppInfo() {
+		return checkzAppInfo;
+	}
+
+	public void setCheckzAppInfo(String checkzAppInfo) {
 		this.checkzAppInfo = checkzAppInfo;
 	}
-    public String getCheckzAppInfo(){
-		return this.checkzAppInfo;
-	}
-	
-	
 
-	public void setCheckcInfo(String checkcInfo){
+	public String getCheckcInfo() {
+		return checkcInfo;
+	}
+
+	public void setCheckcInfo(String checkcInfo) {
 		this.checkcInfo = checkcInfo;
 	}
-    public String getCheckcInfo(){
-		return this.checkcInfo;
-	}
-	
-	
 
-	public void setIsView(String isView){
+	public Integer getIsView() {
+		return isView;
+	}
+
+	public void setIsView(Integer isView) {
 		this.isView = isView;
 	}
-    public String getIsView(){
-		return this.isView;
-	}
-	
-	
 
-	public void setCreateTime(Date createTime){
+	public Date getCreateTime() {
+		return createTime;
+	}
+
+	public void setCreateTime(Date createTime) {
 		this.createTime = createTime;
 	}
-    public Date getCreateTime(){
-		return this.createTime;
-	}
-	
-	
 
+	public String getTaskName() {
+		return taskName;
+	}
+
+	public void setTaskName(String taskName) {
+		this.taskName = taskName;
+	}
+
+	public String getUserId() {
+		return userId;
+	}
+
+	public void setUserId(String userId) {
+		this.userId = userId;
+	}
+
+	public String getDeptId() {
+		return deptId;
+	}
+
+	public void setDeptId(String deptId) {
+		this.deptId = deptId;
+	}
+
+	public Integer getWarningType() {
+		return warningType;
+	}
+
+	public void setWarningType(Integer warningType) {
+		this.warningType = warningType;
+	}
 }

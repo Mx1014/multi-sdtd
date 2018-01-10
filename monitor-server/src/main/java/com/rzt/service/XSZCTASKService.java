@@ -15,6 +15,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -31,34 +32,105 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
     private RedisTemplate<String, Object> redisTemplate;
 
     /**
-     *
+     *查询所有为抽查任务列表
      * @param page
      * @param size
      * @param taskType 任务类型  条件查询使用0
      * @return
      */
-    public WebApiResponse getXsTaskAll(Integer page,Integer size, String taskType ){
+    public WebApiResponse getXsTaskAll(Integer page,Integer size, String taskType ,String userId){
+        /**
+         *   所有权限	    0
+             公司本部权限	1
+             属地单位权限	2
+             外协队伍权限	3
+             组织权限	    4
+             个人权限	    5
+
+         */
         List<Object> list = new ArrayList<>();
         Pageable pageable = new PageRequest(page, size, null);
         //sql 中 拉取数据为刷新时间至刷新时间前10分钟
-        String sql = " SELECT  ID, " +
-                "  TASKID,   " +
-                "  CREATETIME,   " +
-                "  USER_ID,   " +
-                "  TASKNAME,   " +
-                "  TASKTYPE,CHECKSTATUS ,TARGETSTATUS  " +
-                "FROM TIMED_TASK   " +
-                "WHERE (CREATETIME BETWEEN (SELECT max(CREATETIME)   " +
-                "     FROM TIMED_TASK) - 600 / (1 * 24 * 60 * 60) AND (SELECT max(CREATETIME)   " +
-                "       FROM TIMED_TASK))   AND STATUS = 0";
-            //  0 代表当前任务列表为未检查
-        if(taskType!=null && !"".equals(taskType.trim())){
+        String sql = "";
+        Page<Map<String, Object>> pageResult = null;
+        try {
+        if(null == userId || "".equals(userId)){
+            return WebApiResponse.success("");
+        }
+
+        Object userInformation1 = redisTemplate.opsForHash().get("UserInformation", userId);
+        if(null != userInformation1 && !"".equals(userInformation1)){
+            JSONObject jsonObject1 = JSONObject.parseObject(userInformation1.toString());
+            String roletype = (String) jsonObject1.get("ROLETYPE");//用户权限信息  0 为1级单位  1为二级单位 2为单位 只展示当前单位的任务
+            String deptid = (String) jsonObject1.get("DEPTID");//当角色权限为3时需要只显示本单位的任务信息
+            if(null != roletype && !"".equals(roletype)){//证明当前用户信息正常
+                int i = Integer.parseInt(roletype);
+                switch (i){
+                    case 0 :{//一级单位   显示三天周期抽查的任务
+                         sql = " SELECT  ID, " +
+                                "  TASKID,   " +
+                                "  CREATETIME,   " +
+                                "  USER_ID,   " +
+                                "  TASKNAME,   " +
+                                "  TASKTYPE,CHECKSTATUS ,TARGETSTATUS  " +
+                                "   FROM TIMED_TASK   " +
+                                "   WHERE (CREATETIME BETWEEN (select   sysdate MINUTE  from  dual  " +
+                                "     ) - (3 * 24 * 60 * 60 + 60 * 60) / (1 * 24 * 60 * 60) AND (select   sysdate MINUTE  from  dual   " +
+                                "       ))   AND STATUS = 0 AND THREEDAY = 1 ";
+                        break;
+                    }case 1 :{//二级单位   显示全部周期为两小时的任务
+                        if(null != deptid && !"".equals(deptid)){//当前用户单位信息获取成功，进入流程
+                            list.add(deptid);
+                            sql = " SELECT  t.ID," +
+                                    " t.TASKID," +
+                                    " t.CREATETIME," +
+                                    " t.USER_ID," +
+                                    " t.TASKNAME," +
+                                    " t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did" +
+                                    " FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
+                                    " LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID" +
+                                    " WHERE (t.CREATETIME BETWEEN (SELECT max(t.CREATETIME)" +
+                                    " FROM TIMED_TASK  WHERE THREEDAY = 0 ) - 600 / (1 * 24 * 60 * 60) AND (SELECT max(t.CREATETIME)" +
+                                    " FROM TIMED_TASK  WHERE THREEDAY = 0 ))   AND t.STATUS = 0 AND t.THREEDAY = 0  AND d.ID  = ?"+list.size();
+                        }else {
+                            LOGGER.error("获取当前用户单位信息失败");
+                            return WebApiResponse.erro("获取当前用户单位信息失败");
+                        }
+                        break;
+                    }case 2 :{//三级单位   只显示本单位的任务
+
+                        if(null != deptid && !"".equals(deptid)){//当前用户单位信息获取成功，进入流程
+                            list.add(deptid);
+                            sql = " SELECT  t.ID," +
+                                    "  t.TASKID," +
+                                    "  t.CREATETIME," +
+                                    "  t.USER_ID," +
+                                    "  t.TASKNAME," +
+                                    "  t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did" +
+                                    "  FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
+                                    "  LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID" +
+                                    "  WHERE (t.CREATETIME BETWEEN (SELECT max(t.CREATETIME)" +
+                                    "  FROM TIMED_TASK  WHERE THREEDAY = 0 ) - 600 / (1 * 24 * 60 * 60) AND (SELECT max(t.CREATETIME)" +
+                                    "  FROM TIMED_TASK  WHERE THREEDAY = 0 ))   AND t.STATUS = 0 AND t.THREEDAY = 0  AND d.ID  = ?"+list.size();
+                        }else {
+                            LOGGER.error("获取当前用户单位信息失败");
+                            return WebApiResponse.erro("获取当前用户单位信息失败");
+                        }
+                        break;
+                    }default:{
+                        LOGGER.error("获取登录人权限失败,当前权限未知");
+                        return WebApiResponse.erro("获取登录人权限失败,当前权限未知");
+                    }
+                }
+            }
+        }
+        if(taskType!=null && !"".equals(taskType.trim())){// 判断当前任务类型  巡视1   看护2  稽查3
             list.add(taskType);
             sql+= " AND TASKTYPE = ?"+list.size();
         }
 
-        Page<Map<String, Object>> pageResult = null;
-        try {
+
+
             pageResult = this.execSqlPage(pageable, sql, list.toArray());
             Iterator<Map<String, Object>> iterator = pageResult.iterator();
             HashOperations hashOperations = redisTemplate.opsForHash();
@@ -82,9 +154,12 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                 }else if (tasktype!=null && tasktype.equals("3")){ //稽查
 
                 }
+                Object userInformation = null;
+                        String userID =(String)next.get("USER_ID");
+                        if(null !=userID && !"".equals(userID)){
+                            userInformation = hashOperations.get("UserInformation", userID);
+                        }
 
-                String userID =(String)next.get("USER_ID");
-                Object userInformation = hashOperations.get("UserInformation", userID);
                 if(userInformation==null){
                     continue;
                 }
@@ -104,7 +179,8 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
         return WebApiResponse.success(pageResult);
     }
     /**
-     * 供定时器使用   先查询需要的数据 查询后将数据添加进定时任务表
+     * 二级单位使用   固定时间抽查任务 小时为单位
+     * 先查询需要的数据 查询后将数据添加进定时任务表
      */
    @Transactional
     public void xsTaskAddAndFind()  {
@@ -129,7 +205,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                         ,new SimpleDateFormat("YYYY-MM-dd HH:mm:ss").format(new Date()),
                         null!= a.get("ID")?a.get("ID").toString():"",UUID.randomUUID().toString(),
                         null!=a.get("CM_USER_ID")?a.get("CM_USER_ID").toString():"","1" ,
-                        null!=a.get("TASK_NAME")?a.get("TASK_NAME").toString():"",CheckStatus);
+                        null!=a.get("TASK_NAME")?a.get("TASK_NAME").toString():"",CheckStatus,"0");
 
 
 
@@ -146,35 +222,104 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                repository.xsTaskAdd(
                         null!=b.get("STATUS")?b.get("STATUS").toString():"4",
                         new SimpleDateFormat("YYYY-MM-dd HH:mm:ss").format(new Date()),null != b.get("ID")?b.get("ID").toString():"",UUID.randomUUID().toString(),
-                        null != b.get("USER_ID")? b.get("USER_ID").toString():"","2" ,null != b.get("TASK_NAME")?b.get("TASK_NAME").toString():"",CheckStatus);
+                        null != b.get("USER_ID")? b.get("USER_ID").toString():"","2" ,null != b.get("TASK_NAME")?b.get("TASK_NAME").toString():"",CheckStatus,"0");
 
             }
 
         }catch (Exception e){
-            LOGGER.error("定时任务查询添加失败"+e.getMessage());
+            LOGGER.error("（二级单位，周期可变，小时为单位 ）定时任务数据抽取失败"+e.getMessage());
         }
-        LOGGER.info("定时任务查询添加成功");
+        LOGGER.info("（二级单位，周期可变，小时为单位）定时任务数据抽取成功");
 
 
 
     }
+    /**
+     * 一级单位使用   固定时间抽查任务 三天为一个周期
+     * 先查询需要的数据 查询后将数据添加进定时任务表
+     */
+    @Transactional
+    public void xsTaskAddAndFindThree()  {
 
+        try {
+            //巡视sql
+            String findSql1 = "select x.TASK_NAME,x.STAUTS,x.ID,x.CM_USER_ID from XS_ZC_TASK x" +
+                    "  WHERE x.ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 1 ) AND  x.STAUTS != 0 ";
+            //看护sql
+            String findSql2 = "SELECT kht.TASK_NAME,kht.ID,kht.STATUS,USER_ID FROM KH_TASK kht WHERE kht.ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 2 )  AND kht.STATUS != 0 ";
+            List<Map<String, Object>> maps = this.execSql(findSql1, null);
+            List<Map<String, Object>> maps2 = this.execSql(findSql2, null);
+            Iterator<Map<String, Object>> iterator = maps.iterator();
+            while (iterator.hasNext()){
+                Map<String, Object> a = iterator.next();
+                Integer CheckStatus = 0;
+                //任务状态  0 未开始   1 进行中  2 已完成  3 未知或值为空
+                if("2".equals( a.get("STAUTS").toString())){
+                    CheckStatus = 1;
+                }
+                repository.xsTaskAdd(null!= a.get("STAUTS")?a.get("STAUTS").toString():"4"
+                        ,new SimpleDateFormat("YYYY-MM-dd HH:mm:ss").format(new Date()),
+                        null!= a.get("ID")?a.get("ID").toString():"",UUID.randomUUID().toString(),
+                        null!=a.get("CM_USER_ID")?a.get("CM_USER_ID").toString():"","1" ,
+                        null!=a.get("TASK_NAME")?a.get("TASK_NAME").toString():"",CheckStatus,"1");
+
+
+
+
+            }
+
+            Iterator<Map<String, Object>> iterator1 = maps2.iterator();
+            while (iterator1.hasNext()){
+                Map<String, Object> b = iterator1.next();
+                Integer CheckStatus = 0;
+                if("2".equals(b.get("STATUS").toString())){
+                    CheckStatus = 1;
+                }
+                repository.xsTaskAdd(
+                        null!=b.get("STATUS")?b.get("STATUS").toString():"4",
+                        new SimpleDateFormat("YYYY-MM-dd HH:mm:ss").format(new Date()),null != b.get("ID")?b.get("ID").toString():"",UUID.randomUUID().toString(),
+                        null != b.get("USER_ID")? b.get("USER_ID").toString():"","2" ,null != b.get("TASK_NAME")?b.get("TASK_NAME").toString():"",CheckStatus,"1");
+
+            }
+
+        }catch (Exception e){
+            LOGGER.error("（一级单位，三天周期）定时任务数据抽取失败"+e.getMessage());
+        }
+        LOGGER.info("（一级单位，三天周期）定时任务数据抽取成功");
+
+
+
+    }
     /**
      * 根据taskId 查询当前任务详情 包含每轮的巡视任务
      * @param taskId
      * @return
      */
-    public WebApiResponse findExecDetallByTaskId(String taskId) {
+    public WebApiResponse findExecDetallByTaskId(String taskId,String taskType) {
         ArrayList<String> strings = new ArrayList<>();
-        String sql = "select xd.START_TIME,xd.END_TIME,xd.OPERATE_NAME,xd.ID from XS_ZC_TASK_EXEC_DETAIL xd where 1=1";
+        String sql = "";
         List<Map<String, Object>> maps = null;
 
         try {
             if(null != taskId && !"".equals(taskId)){
                 strings.add(taskId);
-                sql += "  and  xd.XS_ZC_TASK_EXEC_ID in (select xe.ID from XS_ZC_TASK_EXEC xe where xe.XS_ZC_TASK_ID in ?"+strings.size()+") ORDER BY xd.START_TIME";
+                if(null != taskType && !"".equals(taskType)){//判断当前任务类型
+                    switch (Integer.parseInt(taskType)){
+                        case 1 :{//巡视
+                             sql =  " select xd.START_TIME,xd.END_TIME,xd.OPERATE_NAME,xd.ID from XS_ZC_TASK_EXEC_DETAIL xd where   xd.XS_ZC_TASK_EXEC_ID in (select xe.ID from XS_ZC_TASK_EXEC xe where xe.XS_ZC_TASK_ID = ?"+strings.size()+") ORDER BY xd.START_TIME";
+                            break;
+                        }case 2 :{//看护
+                            sql = "SELECT PLAN_START_TIME as START_TIME,PLAN_END_TIME as END_TIME,TASK_NAME as OPERATE_NAME,ID" +
+                                    "   FROM KH_TASK WHERE ID = ?"+strings.size();
+                            break;
+                        }
+                    }
+                }
             }
-            maps = this.execSql(sql, strings.toArray());
+            if(null != sql && !"".equals(sql)){
+                maps = this.execSql(sql, strings.toArray());
+            }
+
         }catch (Exception e){
             LOGGER.error("任务进度查询失败"+e.getMessage());
             return WebApiResponse.erro("查询错误"+e.getMessage());
@@ -221,7 +366,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                             "                           WHERE xt.ID = ?"+strings.size()+")";
                     maps = this.execSql(sql, strings.toArray());
                     maps3 = this.execSql(sql3, strings.toArray());
-                    maps2 = (List<Map<String, Object>>) findExecDetallByTaskId(taskId).getData();
+                    maps2 = (List<Map<String, Object>>) findExecDetallByTaskId(taskId,TASKTYPE).getData();
                     LOGGER.info("巡视任务详情查询");
                 }
 
@@ -230,11 +375,11 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                        strings.add(taskId);
                        //取到当前隐患的详细信息
                        String sql = "SELECT yh.YHMS,li.LINE_NAME,li.SECTION" +
-                               "                                             from KH_YH_HISTORY yh" +
-                               "                                               LEFT JOIN" +
-                               "                                               CM_LINE li on li.ID = yh.LINE_ID" +
-                               "                                             WHERE yh.ID = (SELECT k.YH_ID FROM KH_SITE k LEFT JOIN KH_TASK kh ON kh.SITE_ID = k.ID" +
-                               "             WHERE kh.ID = ?"+strings.size()+")";
+                               "        from KH_YH_HISTORY yh" +
+                               "            LEFT JOIN" +
+                               "              CM_LINE li on li.ID = yh.LINE_ID" +
+                               "                 WHERE yh.ID = (SELECT k.YH_ID FROM KH_SITE k LEFT JOIN KH_TASK kh ON kh.SITE_ID = k.ID" +
+                               "                    WHERE kh.ID = ?"+strings.size()+")";
                        //取当前隐患的位置  去重
                        String sql3 = "SELECT distinct li.LINE_NAME,li.SECTION" +
                                "       from KH_YH_HISTORY yh" +
@@ -260,10 +405,26 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
            return WebApiResponse.erro("查询任务隐患错误"+e.getMessage());
        }
         LOGGER.info("查询任务隐患信息");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
         Map<String, Object> stringMapHashMap = new HashMap<>();
-        stringMapHashMap.put("YH",maps);
-        stringMapHashMap.put("XQ",maps2);
-        stringMapHashMap.put("THWZ",maps3);
+        ArrayList<Object> strings1 = new ArrayList<>();
+        HashMap<String, Object> OPERATE_NAME = new HashMap<>();
+        OPERATE_NAME.put("OPERATE_NAME","暂无数据");
+        OPERATE_NAME.put("START_TIME",simpleDateFormat.format(new Date()));
+        OPERATE_NAME.put("END_TIME",simpleDateFormat.format(new Date()));
+            strings1.add(OPERATE_NAME);
+        ArrayList<Object> strings2 = new ArrayList<>();
+        HashMap<String, Object> LINE_NAME = new HashMap<>();
+        LINE_NAME.put("LINE_NAME","暂无数据");
+            strings2.add(LINE_NAME);
+        ArrayList<Object> strings3 = new ArrayList<>();
+        HashMap<String, Object> YHMS = new HashMap<>();
+        YHMS.put("YHMS","暂无数据");
+             strings3.add(YHMS);
+        // OPERATE_NAME  进度    LINE_NAME 位置   YHMS 隐患
+        stringMapHashMap.put("YH",maps.size()>0?maps:strings3);
+        stringMapHashMap.put("XQ",maps2.size()>0?maps2:strings1);
+        stringMapHashMap.put("THWZ",maps3.size()>0?maps3:strings2);
         return WebApiResponse.success(stringMapHashMap);
     }
 
