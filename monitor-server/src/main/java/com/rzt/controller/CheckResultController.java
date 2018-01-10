@@ -103,19 +103,26 @@ public class CheckResultController extends CurdController<CheckResult,CheckResul
 		}
 	}
 
-    @GetMapping("/getQuestionInfo")
-    public WebApiResponse getQuestionInfo(String id){
-	        if(null != id && !"".equals(id)){
-	            return service.getQuestionInfo(id);
+	/**
+	 * 检查记录
+	 */
+	@RequestMapping("/getCheckRecord")
+	public WebApiResponse getCheckRecord(String userId,Integer page, Integer size,String startDate,String endDate,Integer taskType,String vLevel,Integer lineId){
+		try {
+			return WebApiResponse.success(resultservice.getCheckRecord(userId,page,size,startDate,endDate,taskType,vLevel,lineId));
+		} catch (Exception e) {
+			return WebApiResponse.erro("查询失败！"+e.getMessage());
+		}
+	}
+	@GetMapping("/getQuestionInfo")
+	public WebApiResponse getQuestionInfo(String id){
+		if(null != id && !"".equals(id)){
+			return service.getQuestionInfo(id);
 
-            }
-	    return WebApiResponse.success("");
+		}
+		return WebApiResponse.success("");
 
-    }
-
-
-
-
+	}
 
 	
 }
