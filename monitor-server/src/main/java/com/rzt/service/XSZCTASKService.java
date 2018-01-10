@@ -15,6 +15,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -404,10 +405,26 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
            return WebApiResponse.erro("查询任务隐患错误"+e.getMessage());
        }
         LOGGER.info("查询任务隐患信息");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
         Map<String, Object> stringMapHashMap = new HashMap<>();
-        stringMapHashMap.put("YH",maps);
-        stringMapHashMap.put("XQ",maps2);
-        stringMapHashMap.put("THWZ",maps3);
+        ArrayList<Object> strings1 = new ArrayList<>();
+        HashMap<String, Object> OPERATE_NAME = new HashMap<>();
+        OPERATE_NAME.put("OPERATE_NAME","暂无数据");
+        OPERATE_NAME.put("START_TIME",simpleDateFormat.format(new Date()));
+        OPERATE_NAME.put("END_TIME",simpleDateFormat.format(new Date()));
+            strings1.add(OPERATE_NAME);
+        ArrayList<Object> strings2 = new ArrayList<>();
+        HashMap<String, Object> LINE_NAME = new HashMap<>();
+        LINE_NAME.put("LINE_NAME","暂无数据");
+            strings2.add(LINE_NAME);
+        ArrayList<Object> strings3 = new ArrayList<>();
+        HashMap<String, Object> YHMS = new HashMap<>();
+        YHMS.put("YHMS","暂无数据");
+             strings3.add(YHMS);
+        // OPERATE_NAME  进度    LINE_NAME 位置   YHMS 隐患
+        stringMapHashMap.put("YH",maps.size()>0?maps:strings3);
+        stringMapHashMap.put("XQ",maps2.size()>0?maps2:strings1);
+        stringMapHashMap.put("THWZ",maps3.size()>0?maps3:strings2);
         return WebApiResponse.success(stringMapHashMap);
     }
 
