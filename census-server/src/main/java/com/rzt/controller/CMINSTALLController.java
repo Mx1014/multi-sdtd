@@ -410,11 +410,11 @@ public class CMINSTALLController extends
                 list.get(i).put("GROUPNAME", groupname);
             } else {
                 list.get(i).put("LOGINSTATUS", "离线");
-                list.get(i).put("CLASSNAME", "此任务暂时没有人员");
-                list.get(i).put("REALNAME", "此任务暂时没有人员");
-                list.get(i).put("PHONE", "此任务暂时没有人员");
-                list.get(i).put("DEPT", "此任务暂时没有人员");
-                list.get(i).put("GROUPNAME", "此任务暂时没有人员");
+                list.get(i).put("CLASSNAME", "测试数据（暂不展示）");
+                list.get(i).put("REALNAME", "测试数据（暂不展示）");
+                list.get(i).put("PHONE", "测试数据（暂不展示）");
+                list.get(i).put("DEPT", "测试数据（暂不展示）");
+                list.get(i).put("GROUPNAME", "测试数据（暂不展示）");
             }
         }
         return WebApiResponse.success(list);
