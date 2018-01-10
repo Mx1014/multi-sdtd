@@ -72,38 +72,45 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                                 "  USER_ID,   " +
                                 "  TASKNAME,   " +
                                 "  TASKTYPE,CHECKSTATUS ,TARGETSTATUS  " +
-                                "FROM TIMED_TASK   " +
-                                "WHERE (CREATETIME BETWEEN (select   sysdate MINUTE  from  dual  " +
+                                "   FROM TIMED_TASK   " +
+                                "   WHERE (CREATETIME BETWEEN (select   sysdate MINUTE  from  dual  " +
                                 "     ) - (3 * 24 * 60 * 60 + 60 * 60) / (1 * 24 * 60 * 60) AND (select   sysdate MINUTE  from  dual   " +
                                 "       ))   AND STATUS = 0 AND THREEDAY = 1 ";
                         break;
                     }case 1 :{//二级单位   显示全部周期为两小时的任务
-                        sql = " SELECT  ID, " +
-                                "  TASKID,   " +
-                                "  CREATETIME,   " +
-                                "  USER_ID,   " +
-                                "  TASKNAME,   " +
-                                "  TASKTYPE,CHECKSTATUS ,TARGETSTATUS  " +
-                                "FROM TIMED_TASK   " +
-                                "WHERE (CREATETIME BETWEEN (SELECT max(CREATETIME)   " +
-                                "     FROM TIMED_TASK  WHERE THREEDAY = 0 ) - 600 / (1 * 24 * 60 * 60) AND (SELECT max(CREATETIME)   " +
-                                "       FROM TIMED_TASK  WHERE THREEDAY = 0 ))   AND STATUS = 0 AND THREEDAY = 0 ";
+                        if(null != deptid && !"".equals(deptid)){//当前用户单位信息获取成功，进入流程
+                            list.add(deptid);
+                            sql = " SELECT  t.ID," +
+                                    " t.TASKID," +
+                                    " t.CREATETIME," +
+                                    " t.USER_ID," +
+                                    " t.TASKNAME," +
+                                    " t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did" +
+                                    " FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
+                                    " LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID" +
+                                    " WHERE (t.CREATETIME BETWEEN (SELECT max(t.CREATETIME)" +
+                                    " FROM TIMED_TASK  WHERE THREEDAY = 0 ) - 600 / (1 * 24 * 60 * 60) AND (SELECT max(t.CREATETIME)" +
+                                    " FROM TIMED_TASK  WHERE THREEDAY = 0 ))   AND t.STATUS = 0 AND t.THREEDAY = 0  AND d.ID  = ?"+list.size();
+                        }else {
+                            LOGGER.error("获取当前用户单位信息失败");
+                            return WebApiResponse.erro("获取当前用户单位信息失败");
+                        }
                         break;
                     }case 2 :{//三级单位   只显示本单位的任务
 
                         if(null != deptid && !"".equals(deptid)){//当前用户单位信息获取成功，进入流程
                             list.add(deptid);
                             sql = " SELECT  t.ID," +
-                                    "t.TASKID," +
-                                    "t.CREATETIME," +
-                                    "t.USER_ID," +
-                                    "t.TASKNAME," +
-                                    "t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did" +
-                                    "FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
-                                    "LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID" +
-                                    "WHERE (t.CREATETIME BETWEEN (SELECT max(t.CREATETIME)" +
-                                    "FROM TIMED_TASK  WHERE THREEDAY = 0 ) - 600 / (1 * 24 * 60 * 60) AND (SELECT max(t.CREATETIME)" +
-                                    "FROM TIMED_TASK  WHERE THREEDAY = 0 ))   AND t.STATUS = 0 AND t.THREEDAY = 0  AND d.ID  = ?"+list.size();
+                                    "  t.TASKID," +
+                                    "  t.CREATETIME," +
+                                    "  t.USER_ID," +
+                                    "  t.TASKNAME," +
+                                    "  t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did" +
+                                    "  FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
+                                    "  LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID" +
+                                    "  WHERE (t.CREATETIME BETWEEN (SELECT max(t.CREATETIME)" +
+                                    "  FROM TIMED_TASK  WHERE THREEDAY = 0 ) - 600 / (1 * 24 * 60 * 60) AND (SELECT max(t.CREATETIME)" +
+                                    "  FROM TIMED_TASK  WHERE THREEDAY = 0 ))   AND t.STATUS = 0 AND t.THREEDAY = 0  AND d.ID  = ?"+list.size();
                         }else {
                             LOGGER.error("获取当前用户单位信息失败");
                             return WebApiResponse.erro("获取当前用户单位信息失败");
@@ -146,9 +153,12 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                 }else if (tasktype!=null && tasktype.equals("3")){ //稽查
 
                 }
+                Object userInformation = null;
+                        String userID =(String)next.get("USER_ID");
+                        if(null !=userID && !"".equals(userID)){
+                            userInformation = hashOperations.get("UserInformation", userID);
+                        }
 
-                String userID =(String)next.get("USER_ID");
-                Object userInformation = hashOperations.get("UserInformation", userID);
                 if(userInformation==null){
                     continue;
                 }
