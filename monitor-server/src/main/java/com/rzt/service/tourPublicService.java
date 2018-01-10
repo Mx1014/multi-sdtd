@@ -31,7 +31,7 @@ public class tourPublicService extends CurdService<CheckResult, CheckResultRepos
         try {
             String sql = "   SELECT TASK_NAME AS TASKNAME FROM XS_ZC_TASK WHERE ID=? ";
             Map<String, Object> map = this.execSqlSingleResult(sql, taskid);
-            this.reposiotry.xsTourScope(new SnowflakeIdWorker(10, 12).nextId(), taskid, warningtype, orgid, userid, map.get("TASKNAME"));
+            this.reposiotry.xsTourScope(new SnowflakeIdWorker(10, 12).nextId(), taskid, warningtype, orgid, userid, map.get("TASKNAME").toString());
 //            redisService.setex("ONE+" + taskid + "+2+" + warningtype + "+" + userid + "+" + orgid + "+" + map.get("TASKNAME"));
             String key = "ONE+" + taskid + "+2+" + warningtype + "+" + userid + "+" + orgid + "+" + map.get("TASKNAME");
             Jedis jedis = jedisPool.getResource();
