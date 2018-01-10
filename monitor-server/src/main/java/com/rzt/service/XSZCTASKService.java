@@ -39,10 +39,17 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
      */
     public WebApiResponse getXsTaskAll(Integer page,Integer size, String taskType ,String userId){
         //XS_TXBD_TASK_EXEC_DETAIL
+
         List<Object> list = new ArrayList<>();
         Pageable pageable = new PageRequest(page, size, null);
         //sql 中 拉取数据为刷新时间至刷新时间前10分钟
         String sql = "";
+        Page<Map<String, Object>> pageResult = null;
+        try {
+        if(null == userId || "".equals(userId)){
+            return WebApiResponse.success("");
+        }
+
         Object userInformation1 = redisTemplate.opsForHash().get("UserInformation", userId);
         if(null != userInformation1 && !"".equals(userInformation1)){
             JSONObject jsonObject1 = JSONObject.parseObject(userInformation1.toString());
@@ -107,8 +114,8 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
             sql+= " AND TASKTYPE = ?"+list.size();
         }
 
-        Page<Map<String, Object>> pageResult = null;
-        try {
+
+
             pageResult = this.execSqlPage(pageable, sql, list.toArray());
             Iterator<Map<String, Object>> iterator = pageResult.iterator();
             HashOperations hashOperations = redisTemplate.opsForHash();
