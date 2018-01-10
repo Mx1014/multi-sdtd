@@ -21,6 +21,7 @@ public class PictureService extends CurdService<CheckResult, CheckResultReposito
      * 获取详情中默认展示的4条照片
      * @param taskId
      * @param taskType
+     *           END_TOWER_ID  这个字段为0是代表当前为杆塔   不为0时代表是通道
      * @return
      */
     public WebApiResponse getPictureAndLine(String taskId, String taskType) {

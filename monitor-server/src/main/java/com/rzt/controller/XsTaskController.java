@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("XSZCTASKController")
-public class XSZCTASKController extends
-        CurdController<XSZCTASKController,XSZCTASKService>{
+public class XsTaskController extends
+        CurdController<XsTaskController,XSZCTASKService>{
     @Autowired
     private TimedService timedService;
     @Autowired
