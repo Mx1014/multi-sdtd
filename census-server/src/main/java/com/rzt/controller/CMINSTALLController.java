@@ -265,7 +265,7 @@ public class CMINSTALLController extends
                 "     ZC.TASK_NAME, " +
                 "     ZC.CM_USER_ID " +
                 "   FROM xs_zc_task ZC " +
-                "   WHERE trunc(ZC.plan_start_time) = trunc(sysdate) AND trunc(ZC.plan_start_time) < nvl(ZC.real_start_time, sysdate) " +
+                "   WHERE trunc(ZC.plan_start_time) = trunc(sysdate) AND ZC.plan_start_time < nvl(ZC.real_start_time, sysdate) " +
                 "   UNION ALL " +
                 "   SELECT " +
                 "     TX.ID, " +
