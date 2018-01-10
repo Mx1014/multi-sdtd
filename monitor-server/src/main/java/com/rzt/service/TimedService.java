@@ -57,7 +57,8 @@ public class TimedService  extends CurdService<TimedTask,XSZCTASKRepository>{
           LOGGER.info("定时器配置查询成功");
 
           if(null!= userId && !"".equals(userId)){
-              JSONObject jsonObject1 = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", userId).toString());
+              Object userInformation = redisTemplate.opsForHash().get("UserInformation", userId);
+              JSONObject jsonObject1 = JSONObject.parseObject(userInformation.toString());
               if(null != jsonObject1){
                   String roletype = (String) jsonObject1.get("ROLETYPE");
                   if(null != roletype && !"".equals(roletype)){
