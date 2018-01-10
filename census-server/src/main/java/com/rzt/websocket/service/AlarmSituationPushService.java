@@ -49,7 +49,7 @@ public class AlarmSituationPushService extends CurdService<websocket, websocketR
         /**
          * normalinspection 正常巡视当天未按时开始任务的
          */
-        String normalinspection = "select count(id) from xs_zc_task where trunc(plan_start_time) = trunc(sysdate) and trunc(plan_start_time) <nvl(real_start_time ,sysdate)";
+        String normalinspection = "select count(id) from xs_zc_task where trunc(plan_start_time) = trunc(sysdate) and plan_start_time <nvl(real_start_time ,sysdate)";
         /**
          * touroverdue 巡视超期
          */
