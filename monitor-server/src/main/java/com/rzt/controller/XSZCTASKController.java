@@ -11,27 +11,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * 李成阳
- * 2018/1/2
- */
+
 @RestController
 @RequestMapping("XSZCTASKController")
 public class XSZCTASKController extends
         CurdController<XSZCTASKController,XSZCTASKService>{
     @Autowired
     private TimedService timedService;
-
-
-    /**
-     * 按照taskId查询当前任务的详细信息
-     * @param taskId
-     * @return
-     */
-  /*  @GetMapping("/getTASkXQ")
-    public WebApiResponse getTASkXQ(String taskId){
-        return service.findByTaskId(taskId);
-    }*/
+    @Autowired
+    private CheckDetailService detailService;
 
     /**
      * 根据taskId获取当前任务的隐患信息
@@ -54,18 +42,26 @@ public class XSZCTASKController extends
      */
     @GetMapping("/getXsTaskAll")
     public WebApiResponse getXsTaskAll(Integer page,Integer size, String taskType,String userId){
-        /*service.xsTaskAddAndFind();
-        service.xsTaskAddAndFindThree();*/
-//        service.xsTaskAddAndFindThree();
         return service.getXsTaskAll(page,size,taskType,userId);
     }
+
+    /**
+     * 根据当前用户权限获取当前的刷新周期
+     * @param userId
+     * @return
+     */
     @GetMapping("/getTimeConfig")
     public WebApiResponse getTimeConfig(String userId){
         return timedService.getTimedConfig(userId);
     }
 
-    @Autowired
-    private CheckDetailService detailService;
+
+
+    /**
+     * 提交审核
+     * @param checkDetail
+     * @return
+     */
     @PostMapping("checkOff")
     public WebApiResponse checkOff(CheckDetail checkDetail){
         try {
