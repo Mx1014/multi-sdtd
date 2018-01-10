@@ -74,7 +74,7 @@ public class TimedService  extends CurdService<TimedTask,XSZCTASKRepository>{
                           }
                           default:{
                               LOGGER.error("获取权限信息失败");
-                              return WebApiResponse.erro("获取权限信息失败");
+                              return WebApiResponse.success("周期未知");
                           }
                       }
                   }
@@ -85,7 +85,7 @@ public class TimedService  extends CurdService<TimedTask,XSZCTASKRepository>{
 
       }catch (Exception e){
           LOGGER.error("获取权限信息失败"+e.getMessage());
-          return WebApiResponse.erro("获取权限信息失败"+e.getMessage());
+          return WebApiResponse.success("周期未知");
       }
 
         return WebApiResponse.success(time);
