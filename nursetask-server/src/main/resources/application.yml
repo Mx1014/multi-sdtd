@@ -43,10 +43,12 @@ spring:
 #      password: Rzt82890758-Rzt82890758
 #      timeout: 0
   redis:
-        database: 1
-        host: 168.130.1.31
-        port: 31662
-        password:
+        database: 0
+#        host: 168.130.1.31
+#        port: 31662
+        host: 39.106.206.129
+        port: 6379
+        password: Rzt82890758-Rzt82890758
         timeout: 0
         pool:
           max-active: 100

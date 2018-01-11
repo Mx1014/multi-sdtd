@@ -1,22 +1,34 @@
 package com.rzt.redisListener;
 
 import com.rzt.service.Monitorcheckejservice;
+import com.rzt.service.Monitorcheckyjservice;
+import com.rzt.service.RedisService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import redis.clients.jedis.JedisPool;
+import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import redis.clients.jedis.JedisPubSub;
 
 /**
  * Created by huyuening on 2018/1/5.
  */
+@Component
 public class Subscriber extends JedisPubSub {
     protected static Logger LOGGER = LoggerFactory.getLogger(Subscriber.class);
-    @Autowired
-    private Monitorcheckejservice monitorcheckej;
 
     @Autowired
-    JedisPool jedisPool;
+    private Monitorcheckejservice monitorcheckej;
+    @Autowired
+    private Monitorcheckyjservice monitorcheckyj;
+
+    @Autowired
+    private RedisService redisService;
+
+
+
+
 
     @Override
     // 初始化按表达式的方式订阅时候的处理
@@ -30,20 +42,32 @@ public class Subscriber extends JedisPubSub {
             System.out.println(pattern + "=" + channel + "=" + message);
             //以+号分隔
             String[] messages = message.split("\\+");
+            if(messages.length<7){
+                LOGGER.error("redis信息录入不全");
+                throw new RuntimeException("redis信息录入不全");
+            }
             if("TWO".equals(messages[0])){  //表示告警任务生成，插入到二级单位表中
                 try{
                     monitorcheckej.saveCheckEj(messages);
-
+                    //放进redis中默认等待40分钟
+                    String key = "ONE+"+messages[1]+"+"+messages[2]+"+"+messages[3]+"+"+messages[4]+"+"+messages[5]+"+"+messages[6];
+                    redisService.setex(key);
                 }catch (Exception e){
                     LOGGER.error("插入数据失败："+e.getMessage());
                     System.out.println("插入数据失败："+e.getMessage());
                 }
-            }else if("ONE".equals(messages[0])){  //表示告警任务过期 插入到一级单位表中，并更新二级状态
-
+            }else if("ONE".equals(messages[0])){  //表示告警任务过期 插入到一级单位表中
+                monitorcheckyj.saveCheckYj(messages);
             }
         }catch (Exception e){
             e.printStackTrace();
         }
+    }
+
+    @RequestMapping("/hello")
+    @ResponseBody
+    public String hello(){
+        return "success";
     }
 
 }

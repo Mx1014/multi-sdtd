@@ -8,6 +8,8 @@ package com.rzt.service;
 
 import com.rzt.entity.Monitorcheckyj;
 import com.rzt.repository.Monitorcheckyjrepository;
+import com.rzt.utils.SnowflakeIdWorker;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,8 +23,14 @@ import org.springframework.transaction.annotation.Transactional;
  * 修改备注：
  */
 @Service
-@Transactional
 public class Monitorcheckyjservice extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> {
 
+    @Autowired
+    private Monitorcheckyjrepository repo;
 
+    @Transactional
+    public void saveCheckYj(String[] messages) {
+        //保存到一级
+        repo.saveCheckYj(new SnowflakeIdWorker(0,0).nextId(),Long.valueOf(messages[1]),Integer.valueOf(messages[2]),Integer.valueOf(messages[3]),messages[4],messages[5],messages[6]);
+    }
 }

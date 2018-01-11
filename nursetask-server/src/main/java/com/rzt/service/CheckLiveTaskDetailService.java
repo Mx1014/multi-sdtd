@@ -6,7 +6,10 @@
  */
 package com.rzt.service;
 import com.rzt.entity.CheckLiveTaskDetail;
+import com.rzt.entity.CheckLiveTaskDetailXs;
 import com.rzt.repository.CheckLiveTaskDetailRepository;
+import com.rzt.repository.CheckLiveTaskDetailXsRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +30,8 @@ import java.util.List;
 @Service
 public class CheckLiveTaskDetailService extends CurdService<CheckLiveTaskDetail,CheckLiveTaskDetailRepository> {
 
+    @Autowired
+    private CheckLiveTaskDetailXsRepository checkLiveTaskDetailXsRepository;
 
     public List listCheckDoingById(String id) {
         String result = " c.task_name as taskName,u.user_name as userName,u.phone_num as phoneNum,c.check_type as checkType ";
@@ -61,5 +66,28 @@ public class CheckLiveTaskDetailService extends CurdService<CheckLiveTaskDetail,
         buffer.append(" where b.rn>? and b.rn <=?");
         String sql = "select * from (select a.*,rownum rn from (select "+result+" from check_live_task_detail c left join user u on c.user_id = u.id " + buffer.toString();
         return this.execSql(sql,params.toArray());
+    }
+
+    @Transactional
+    public Object checkQuestionUpdate(CheckLiveTaskDetail checkLiveTaskDetail, CheckLiveTaskDetailXs checkLiveTaskDetailXs, String taskType) {
+        Object obj = new Object();
+        //0看护 1巡视 0待稽查 1已稽查
+        if("0,0".equals(taskType)){
+            obj = reposiotry.save(checkLiveTaskDetail);
+        }else if ("1,0".equals(taskType)){
+            obj = checkLiveTaskDetailXsRepository.save(checkLiveTaskDetailXs);
+        }
+        return obj;
+    }
+
+    public Object checkQuestionInfo(String id, String taskType) {
+        Object obj = new Object();
+        //0看护 1巡视 0待稽查 1已稽查
+        if("0,0".equals(taskType)){
+            obj = reposiotry.findById(Long.valueOf(id));
+        }else if ("1,0".equals(taskType)){
+            obj = checkLiveTaskDetailXsRepository.findById(Long.valueOf(id));
+        }
+        return obj;
     }
 }

@@ -23,7 +23,6 @@ public class CheckDetailService extends CurdService<CheckDetail,CheckDetailRepos
 
 	@Transactional
 	public Long addCheckDetail(CheckDetail checkDetail){
-        System.out.println("---------------------"+checkDetail.getCheckUser());
         String checkUser = checkDetail.getCheckUser();
         ArrayList<Object> strings1 = new ArrayList<>();
         ArrayList<Object> strings2 = new ArrayList<>();
@@ -37,7 +36,10 @@ public class CheckDetailService extends CurdService<CheckDetail,CheckDetailRepos
                 sql = "SELECT c.TDYW_ORGID  FROM KH_TASK a LEFT JOIN KH_SITE  c ON a.SITE_ID = c.ID  WHERE a.ID = ?"+strings1.size();
             }
             List<Map<String, Object>> maps = this.execSql(sql, strings1.toArray());
-            checkDetail.setTdOrg(maps.get(0)==null?"": (String) maps.get(0).get("TDYW_ORGID"));
+            if(null != maps && maps.size()>0){
+                checkDetail.setTdOrg(maps.get(0)!=null? (String) maps.get(0).get("TDYW_ORGID") : "");
+            }
+
         }
 
 
@@ -57,9 +59,9 @@ public class CheckDetailService extends CurdService<CheckDetail,CheckDetailRepos
                 checkDetail.setCheckUser(checkUser);
                 checkDetail.setCheckOrg((String) maps.get(0).get("DEPTID"));
         }
-        if(null != checkDetail.getQuestionTaskId() && checkDetail.getQuestionTaskId()>0){
+       /* if(null != checkDetail.getQuestionTaskId() && checkDetail.getQuestionTaskId()>0){
             xszctaskRepository.xsTaskUpdate(checkDetail.getQuestionTaskId());
-        }
+        }*/
 
 		checkDetailRepository.save(checkDetail);
 

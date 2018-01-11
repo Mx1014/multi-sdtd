@@ -126,7 +126,7 @@ public class KhTaskController extends
 		return this.service.listTaskInfoById(taskId);
 	}
 
-
+	//地图展示任务图片
 	@ApiOperation(value = "获取任务图片", notes = "获取任务图片  ")
 	@GetMapping("/appListPicture")
 	@ResponseBody
@@ -134,7 +134,7 @@ public class KhTaskController extends
 		return this.service.appListPicture(taskId,zj);
 	}
 
-	//地图展示某人的具体任务信息
+	//定时任务
 	@GetMapping("/createTask")
 	@ResponseBody
 	public void createTask(String taskId){

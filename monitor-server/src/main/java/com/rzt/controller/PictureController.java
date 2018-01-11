@@ -46,8 +46,8 @@ public class PictureController extends
      * @return
      */
     @GetMapping("/getPhotos")
-    public WebApiResponse getPhotos(String ids,String taskType){
-        return service.getPhotos(ids,taskType);
+    public WebApiResponse getPhotos(String ids,String taskId,String taskType){
+        return service.getPhotos(taskId,ids,taskType);
     }
 
 

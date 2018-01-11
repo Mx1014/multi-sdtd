@@ -1,7 +1,6 @@
 package com.rzt.websocket.serverendpoint;
 
 import com.alibaba.fastjson.JSONObject;
-import org.springframework.web.bind.annotation.RestController;
 
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
@@ -12,16 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Created by sdtd2-task com.rzt.websocket
- * User: liuze
- * Date: 2017-11-29
- * Time: 15:11
- * 任务人员统计
- */
-@RestController
-@ServerEndpoint("/serverendpoint/PersonnelTasks/{username}")
-public class PersonnelTasksServerEndpoint {
+@ServerEndpoint("/serverendpoint/Map")
+public class MapServerEndpoint {
     /**
      * WebSocket服务器端通过一个线程安全的队列来保持所有客户端的Session
      */
@@ -35,12 +26,13 @@ public class PersonnelTasksServerEndpoint {
      * @param session
      */
     @OnOpen
-    public void openSession(@PathParam("username") String usernamee, Session session) {
+    public void openSession(@PathParam("username") String usernamee, @PathParam("orgid") String orgid, Session session) {
+
         HashMap h = new HashMap();
         String sessionId = session.getId();
         h.put("session", session);
         h.put("username", usernamee);
-//        h.put("orgid", orgid);
+        h.put("orgid", orgid);
         livingSessions.put(sessionId, h);
     }
 
@@ -85,5 +77,6 @@ public class PersonnelTasksServerEndpoint {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
     }
 }

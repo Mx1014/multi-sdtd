@@ -1,5 +1,5 @@
 /**    
- * 文件名：MONITORCHECKYJ           
+ * 文件名：MONITORCHECKEJ           
  * 版本信息：    
  * 日期：2018/01/08 11:06:23    
  * Copyright 融智通科技(北京)股份有限公司 版权所有    
@@ -14,30 +14,27 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * 类名称：MONITORCHECKYJ    
- * 类描述：${table.comment}    
- * 创建人：张虎成   
- * 创建时间：2018/01/08 11:06:23 
- * 修改人：张虎成    
- * 修改时间：2018/01/08 11:06:23    
- * 修改备注：    
- * @version        
+ * 类名称：MONITORCHECKEJ
+ * 类描述：${table.comment}
+ * 创建人：张虎成
+ * 创建时间：2018/01/08 11:06:23
+ * 修改人：张虎成
+ * 修改时间：2018/01/08 11:06:23
+ * 修改备注：
+ * @version
  */
 @Entity
-@Table(name="MONITOR_CHECK_YJ")
-public class Monitorcheckyj implements Serializable{
-	//字段描述: 任务id
+@Table(name="MONITOR_CHECK_EJ")
+public class Monitorcheckej implements Serializable{
+	//字段描述: 主键
    	 @Id
-     private Long id;        
-    	//字段描述: 任务ID
+     private Long id;
+    	//字段描述: 任务id
    	 @Column(name = "TASK_ID")
      private Long taskId;
     	//字段描述: 处理中创建时间
    	 @Column(name = "CREATE_TIME_Z")
      private Date createTimeZ;
-    	//字段描述: 已处理创建时间
-   	 @Column(name = "CREATE_TIME_C")
-     private Date createTimeC;
     	//字段描述: 任务类型  1 巡视  2 看护  3 稽查
    	 @Column(name = "TASK_TYPE")
      private Integer taskType;
@@ -47,7 +44,7 @@ public class Monitorcheckyj implements Serializable{
     	//字段描述: 处理中建议信息
    	 @Column(name = "CHECKZ_INFO")
      private String checkzInfo;
-    	//字段描述: 处理中建议信息
+    	//字段描述: 处理中 推送消息信息
    	 @Column(name = "CHECKZ_APP_INFO")
      private String checkzAppInfo;
     	//字段描述: 已处理建议
@@ -56,12 +53,12 @@ public class Monitorcheckyj implements Serializable{
     	//字段描述: 是否可见 0可以查看  1不可查看
    	 @Column(name = "IS_VIEW")
      private Integer isView;
+    	//字段描述: 已处理创建时间
+   	 @Column(name = "CREATE_TIME_C")
+     private Date createTimeC;
     	//字段描述: 告警任务创建时间
    	 @Column(name = "CREATE_TIME")
      private Date createTime;
-
-	@Column(name = "TASK_NAME")
-	private String taskName;
 
 	@Column(name = "USER_ID")
 	private String userId;
@@ -69,9 +66,37 @@ public class Monitorcheckyj implements Serializable{
 	@Column(name = "DEPTID")
 	private String deptId;
 
+	@Column(name = "TASK_NAME")
+	private String taskName;
 	//字段描述: 告警类型
 	@Column(name = "WARNING_TYPE")
 	private Integer warningType;
+
+	public String getTaskName() {
+		return taskName;
+	}
+
+	public void setTaskName(String taskName) {
+		this.taskName = taskName;
+	}
+
+	public String getUserId() {
+		return userId;
+	}
+
+	public void setUserId(String userId) {
+		this.userId = userId;
+	}
+
+	public String getDeptId() {
+		return deptId;
+	}
+
+	public void setDeptId(String deptId) {
+		this.deptId = deptId;
+	}
+
+
 
 	public Long getId() {
 		return id;
@@ -95,14 +120,6 @@ public class Monitorcheckyj implements Serializable{
 
 	public void setCreateTimeZ(Date createTimeZ) {
 		this.createTimeZ = createTimeZ;
-	}
-
-	public Date getCreateTimeC() {
-		return createTimeC;
-	}
-
-	public void setCreateTimeC(Date createTimeC) {
-		this.createTimeC = createTimeC;
 	}
 
 	public Integer getTaskType() {
@@ -153,36 +170,20 @@ public class Monitorcheckyj implements Serializable{
 		this.isView = isView;
 	}
 
+	public Date getCreateTimeC() {
+		return createTimeC;
+	}
+
+	public void setCreateTimeC(Date createTimeC) {
+		this.createTimeC = createTimeC;
+	}
+
 	public Date getCreateTime() {
 		return createTime;
 	}
 
 	public void setCreateTime(Date createTime) {
 		this.createTime = createTime;
-	}
-
-	public String getTaskName() {
-		return taskName;
-	}
-
-	public void setTaskName(String taskName) {
-		this.taskName = taskName;
-	}
-
-	public String getUserId() {
-		return userId;
-	}
-
-	public void setUserId(String userId) {
-		this.userId = userId;
-	}
-
-	public String getDeptId() {
-		return deptId;
-	}
-
-	public void setDeptId(String deptId) {
-		this.deptId = deptId;
 	}
 
 	public Integer getWarningType() {

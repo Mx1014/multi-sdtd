@@ -6,11 +6,15 @@
  */
 package com.rzt.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.CMINSTALL;
 import com.rzt.service.CMINSTALLService;
 import com.rzt.util.WebApiResponse;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,7 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -170,28 +174,75 @@ public class CMINSTALLController extends
     @GetMapping("offLineUser")
     public Object offLineUser() {
 
+//        String sql = "SELECT " +
+//                "  u.REALNAME, " +
+//                "  d.DEPTNAME, " +
+//                "  d2.DEPTNAME classname, " +
+//                "  u.PHONE, " +
+//                "  u.EMAIL, " +
+//                "CASE WORKTYPE " +
+//                "    WHEN 1 THEN '看护' " +
+//                "    WHEN 2 THEN '巡视' " +
+//                "    WHEN 3 THEN '现场稽查' " +
+//                "    WHEN 4 THEN '后台稽查' END  as WORKTYPE, " +
+//                "u.AGE " +
+//                "FROM RZTSYSUSER u LEFT JOIN RZTSYSDEPARTMENT d ON u.DEPTID = d.ID " +
+//                "  LEFT JOIN RZTSYSDEPARTMENT d2 ON u.CLASSNAME = d2.ID " +
+//                "WHERE LOGINSTATUS = 0 AND USERDELETE = 1  AND USERTYPE=0 ";
+//
+//        try {
+//            return WebApiResponse.success(this.service.execSql(sql));
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return WebApiResponse.erro("erro");
+//        }
         String sql = "SELECT " +
                 "  u.REALNAME, " +
                 "  d.DEPTNAME, " +
                 "  d2.DEPTNAME classname, " +
                 "  u.PHONE, " +
                 "  u.EMAIL, " +
-                "CASE WORKTYPE " +
-                "    WHEN 1 THEN '看护' " +
-                "    WHEN 2 THEN '巡视' " +
-                "    WHEN 3 THEN '现场稽查' " +
-                "    WHEN 4 THEN '后台稽查' END  as WORKTYPE, " +
-                "u.AGE " +
-                "FROM RZTSYSUSER u LEFT JOIN RZTSYSDEPARTMENT d ON u.DEPTID = d.ID " +
+                "  '巡视' AS     WORKTYPE, " +
+                "  u.AGE " +
+                "FROM (SELECT z.CM_USER_ID AS id " +
+                "      FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID " +
+                "      WHERE LOGINSTATUS = 0 AND USERDELETE = 1 AND trunc(z.PLAN_START_TIME) = trunc(sysdate) " +
+                "      GROUP BY z.CM_USER_ID) b LEFT JOIN RZTSYSUSER u ON b.id = u.ID " +
+                "  LEFT JOIN RZTSYSDEPARTMENT d ON u.DEPTID = d.ID " +
                 "  LEFT JOIN RZTSYSDEPARTMENT d2 ON u.CLASSNAME = d2.ID " +
                 "WHERE LOGINSTATUS = 0 AND USERDELETE = 1";
-
-        try {
-            return WebApiResponse.success(this.service.execSql(sql));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return WebApiResponse.erro("erro");
-        }
+        String sql1 = "SELECT " +
+                "  u.REALNAME, " +
+                "  d.DEPTNAME, " +
+                "  d2.DEPTNAME classname, " +
+                "  u.PHONE, " +
+                "  u.EMAIL, " +
+                "  '看护' AS     WORKTYPE, " +
+                "  u.AGE " +
+                "FROM (SELECT z.USER_ID AS id " +
+                "      FROM RZTSYSUSER r RIGHT JOIN KH_TASK z ON r.ID = z.USER_ID " +
+                "      WHERE LOGINSTATUS = 0 AND USERDELETE = 1 AND trunc(z.PLAN_START_TIME) = trunc(sysdate) " +
+                "      GROUP BY z.USER_ID) b LEFT JOIN RZTSYSUSER u ON b.id = u.ID " +
+                "  LEFT JOIN RZTSYSDEPARTMENT d ON u.DEPTID = d.ID " +
+                "  LEFT JOIN RZTSYSDEPARTMENT d2 ON u.CLASSNAME = d2.ID " +
+                "WHERE LOGINSTATUS = 0 AND USERDELETE = 1";
+        String sql2 = " SELECT " +
+                "  u.REALNAME, " +
+                "  d.DEPTNAME, " +
+                "  d2.DEPTNAME classname, " +
+                "  u.PHONE, " +
+                "  u.EMAIL, " +
+                "  '稽查' AS     WORKTYPE, " +
+                "  u.AGE " +
+                "FROM (SELECT z.USER_ID AS id " +
+                "      FROM RZTSYSUSER r RIGHT JOIN CHECK_LIVE_TASK z ON r.ID = z.USER_ID " +
+                "      WHERE LOGINSTATUS = 0 AND USERDELETE = 1 AND trunc(z.PLAN_START_TIME) = trunc(sysdate) " +
+                "      GROUP BY z.USER_ID) b LEFT JOIN RZTSYSUSER u ON b.id = u.ID " +
+                "  LEFT JOIN RZTSYSDEPARTMENT d ON u.DEPTID = d.ID " +
+                "  LEFT JOIN RZTSYSDEPARTMENT d2 ON u.CLASSNAME = d2.ID " +
+                "WHERE LOGINSTATUS = 0 AND USERDELETE = 1 ";
+        String sqlall = sql + "  union all " + sql1 + " union all " + sql2;
+        return WebApiResponse.success(this.service.execSql(sqlall));
     }
 
     /**
@@ -214,7 +265,7 @@ public class CMINSTALLController extends
                 "     ZC.TASK_NAME, " +
                 "     ZC.CM_USER_ID " +
                 "   FROM xs_zc_task ZC " +
-                "   WHERE trunc(ZC.plan_start_time) = trunc(sysdate) AND trunc(ZC.plan_start_time) < nvl(ZC.real_start_time, sysdate) " +
+                "   WHERE trunc(ZC.plan_start_time) = trunc(sysdate) AND ZC.plan_start_time < nvl(ZC.real_start_time, sysdate) " +
                 "   UNION ALL " +
                 "   SELECT " +
                 "     TX.ID, " +
@@ -269,4 +320,128 @@ public class CMINSTALLController extends
         }
     }
 
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+
+    @GetMapping("TaskStatusXq")
+    public WebApiResponse TaskStatusXq(Integer tasktype, Integer num) {
+        HashOperations hashOperations = redisTemplate.opsForHash();
+        /**
+         * 正常巡视未开始
+         */
+        String zcxsTask = " SELECT TASK_NAME as taskname,PLAN_START_TIME as plantime,CM_USER_ID  as userid FROM XS_ZC_TASK  WHERE STAUTS = ?1 AND trunc(PLAN_START_TIME) = trunc(sysdate) ";
+        /**
+         *保电巡视未开始
+         */
+        String bdxsTask = "SELECT   TASK_NAME as taskname,    PLAN_START_TIME as plantime,   CM_USER_ID as userid  FROM XS_TXBD_TASK  WHERE STAUTS = ?2 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+        String xstask = zcxsTask + " UNION  ALL " + bdxsTask;
+        /**
+         * 看护未开始
+         */
+        String khTask = " SELECT TASK_NAME as taskname,PLAN_START_TIME as plantime,USER_ID as userid FROM KH_TASK WHERE STATUS = ?1 AND trunc(PLAN_START_TIME) = trunc(sysdate) ";
+        /**
+         * 稽查未开始
+         */
+        String jcTask = " SELECT TASK_NAME as taskname,PLAN_START_TIME as plantime,USER_ID as userid  FROM CHECK_LIVE_TASK  WHERE STATUS = ?1 AND trunc(PLAN_START_TIME) = trunc(sysdate) ";
+
+        if (tasktype == 1) {
+            List<Map<String, Object>> list = this.service.execSql(khTask, num);
+            return taskname(hashOperations, list);
+        } else if (tasktype == 2) {
+            List<Map<String, Object>> list = this.service.execSql(xstask, num, num);
+            return taskname(hashOperations, list);
+        } else if (tasktype == 3) {
+            List<Map<String, Object>> list = this.service.execSql(jcTask, num);
+            return taskname(hashOperations, list);
+        }
+        return WebApiResponse.erro("erro");
+    }
+
+    @GetMapping("USERLOGINSTATUS")
+    public WebApiResponse USERLOGINSTATUS(Integer tasktype, Integer num) {
+        HashOperations hashOperations = redisTemplate.opsForHash();
+        String xsUser = " SELECT z.CM_USER_ID AS USERID " +
+                "      FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID " +
+                "      WHERE LOGINSTATUS = ?1 AND USERDELETE = 1 AND trunc(z.PLAN_START_TIME) = trunc(sysdate) " +
+                "      GROUP BY z.CM_USER_ID ";
+        String khUser = " SELECT z.USER_ID AS USERID " +
+                "FROM RZTSYSUSER r RIGHT JOIN KH_TASK z ON r.ID = z.USER_ID " +
+                "WHERE LOGINSTATUS = ?1 AND USERDELETE = 1 AND trunc(z.PLAN_START_TIME) = trunc(sysdate) " +
+                "GROUP BY z.USER_ID ";
+        String JCUSER = " SELECT z.USER_ID AS USERID " +
+                "      FROM RZTSYSUSER r RIGHT JOIN CHECK_LIVE_TASK z ON r.ID = z.USER_ID " +
+                "      WHERE LOGINSTATUS = ?1 AND USERDELETE = 1 AND trunc(z.PLAN_START_TIME) = trunc(sysdate) " +
+                "      GROUP BY z.USER_ID ";
+        if (tasktype == 2) {
+            List<Map<String, Object>> list = this.service.execSql(xsUser, num);
+            return taskname(hashOperations, list);
+        } else if (tasktype == 1) {
+            List<Map<String, Object>> list = this.service.execSql(khUser, num);
+            return taskname(hashOperations, list);
+        } else if (tasktype == 3) {
+            List<Map<String, Object>> list = this.service.execSql(JCUSER, num);
+            return taskname(hashOperations, list);
+        }
+        return WebApiResponse.erro("erro");
+    }
+
+    private WebApiResponse taskname(HashOperations hashOperations, List<Map<String, Object>> list) {
+        for (int i = 0; i < list.size(); i++) {
+            Object useid = list.get(i).get("USERID");
+            Set<String> keys = redisTemplate.keys("*");
+            Object information = hashOperations.get("UserInformation", useid);
+            if (!StringUtils.isEmpty(information)) {
+                JSONObject jsonObject = JSONObject.parseObject(information.toString());
+                Object dept = jsonObject.get("DEPT");
+                Object classname = jsonObject.get("CLASSNAME");
+                Object realname = jsonObject.get("REALNAME");
+                Object phone = jsonObject.get("PHONE");
+                Object groupname = jsonObject.get("GROUPNAME");
+                Object loginstatus = jsonObject.get("LOGINSTATUS");
+                if (Integer.valueOf(loginstatus.toString()) == 0) {
+                    list.get(i).put("LOGINSTATUS", "离线");
+                } else {
+                    list.get(i).put("LOGINSTATUS", "在线");
+                }
+                list.get(i).put("CLASSNAME", classname);
+                list.get(i).put("REALNAME", realname);
+                list.get(i).put("PHONE", phone);
+                list.get(i).put("DEPT", dept);
+                list.get(i).put("GROUPNAME", groupname);
+            } else {
+                list.get(i).put("LOGINSTATUS", "离线");
+                list.get(i).put("CLASSNAME", "测试数据（暂不展示）");
+                list.get(i).put("REALNAME", "测试数据（暂不展示）");
+                list.get(i).put("PHONE", "测试数据（暂不展示）");
+                list.get(i).put("DEPT", "测试数据（暂不展示）");
+                list.get(i).put("GROUPNAME", "测试数据（暂不展示）");
+            }
+        }
+        return WebApiResponse.success(list);
+    }
+
+
+    @GetMapping("tgry")
+    public WebApiResponse tgry() {
+        String sql = " SELECT wkh.CREATE_TIME as CREATETIME, " +
+                "  wkh.TASK_NAME,us.REALNAME,com.COMPANYNAME,us.PHONE,dept.DEPTNAME  FROM   " +
+                "  (SELECT wop.CREATE_TIME,kh.TASK_NAME,kh.USER_ID FROM WARNING_OFF_POST_USER wop   " +
+                "  LEFT JOIN KH_TASK kh ON wop.TASK_ID = kh.ID " +
+                " WHERE wop.STATUS = 1 AND trunc (kh.CREATE_TIME) = trunc(sysdate))wkh " +
+                " LEFT JOIN RZTSYSUSER us ON wkh.USER_ID = us.ID " + "LEFT JOIN RZTSYSCOMPANY com ON us.CLASSNAME = com.ID LEFT JOIN  RZTSYSDEPARTMENT dept ON dept.DEPTPID = us.DEPTID ";
+        try {
+            return WebApiResponse.success(this.service.execSql(sql));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("erro");
+        }
+    }
+
+    @GetMapping("touroverdue")
+    public WebApiResponse touroverdue() {
+        HashOperations hashOperations = redisTemplate.opsForHash();
+        String sql = " select TASK_NAME,CM_USER_ID as USERID,PLAN_END_TIME,PLAN_START_TIME as starttime from XS_ZC_TASK where  trunc(PLAN_END_TIME)=trunc(sysdate-1) AND REAL_END_TIME is NULL ";
+        List<Map<String, Object>> list = this.service.execSql(sql);
+        return taskname(hashOperations, list);
+    }
 }
