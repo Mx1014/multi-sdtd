@@ -32,17 +32,17 @@
 
     <!-- logback为java中的包 -->
     <!--logback.LogbackDemo：类的全路径 -->
-    <logger name="com.rzt" level="debug" additivity="false">
+    <logger name="com.rzt" level="error" additivity="false">
         <appender-ref ref="console"/>
         <!--<appender-ref ref="file" />-->
     </logger>
 
     <!-- show parameters for hibernate sql 专为 Hibernate 定制 -->
-    <logger name="org.hibernate.type.descriptor.sql.BasicBinder"  level="trace" />
+    <!--<logger name="org.hibernate.type.descriptor.sql.BasicBinder"  level="trace" />
     <logger name="org.hibernate.type.descriptor.sql.BasicExtractor"  level="DEBUG" />
     <logger name="org.hibernate.SQL" level="DEBUG" />
     <logger name="org.hibernate.engine.QueryParameters" level="DEBUG" />
-    <logger name="org.hibernate.engine.query.HQLQueryPlan" level="DEBUG" />
+    <logger name="org.hibernate.engine.query.HQLQueryPlan" level="DEBUG" />-->
 
 
 </configuration>

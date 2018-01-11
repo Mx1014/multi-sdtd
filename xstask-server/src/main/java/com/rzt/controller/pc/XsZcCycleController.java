@@ -54,10 +54,12 @@ public class XsZcCycleController extends
     */
     @ApiOperation(value = "周期维护 新增周期",notes = "pc端新增周期")
     @PostMapping("addCycle")
+//    public Object addCycle( XsZcCycle xsZcCycle,String currentUserId,@RequestParam(value = "ids[]") Long[] towerIds) {
     public Object addCycle( XsZcCycle xsZcCycle,String currentUserId) {
 		try {
 			xsZcCycle.setTotalTaskNum(0);
 			xsZcCycle.setCreateTime(DateUtil.dateNow());
+//			this.service.addCycle(xsZcCycle,currentUserId,towerIds);
 			this.service.addCycle(xsZcCycle,currentUserId);
 			return WebApiResponse.success("周期新增成功");
 		} catch (Exception var) {
@@ -234,6 +236,50 @@ public class XsZcCycleController extends
 		}
 	}
 
+
+	@GetMapping("importCycle")
+	public Object importCycle(String execlPath) {
+		try {
+			this.service.importCycle(execlPath);
+			return WebApiResponse.success("成功了...");
+		} catch (Exception var) {
+			return WebApiResponse.erro("图片查找失败" + var.getStackTrace());
+		}
+	}
+
+	@GetMapping("bornTask")
+	public Object bornTask() {
+		try {
+			this.service.bornTask();
+			return WebApiResponse.success("成功了...");
+		} catch (Exception var) {
+			return WebApiResponse.erro("图片查找失败" + var.getStackTrace());
+		}
+	}
+
+
+	@GetMapping("redisInfo")
+	public Object redisInfo() {
+		try {
+			this.service.zhengwanshuijiao();
+			return WebApiResponse.success("成功了...");
+		} catch (Exception var) {
+			return WebApiResponse.erro("图片查找失败" + var.getStackTrace());
+		}
+	}
+
+
+
+	@GetMapping("gaipinin")
+	public Object gaipinin() {
+		try {
+//			this.service.gaipinin();
+			this.service.gaipinin2();
+			return WebApiResponse.success("成功了...");
+		} catch (Exception var) {
+			return WebApiResponse.erro("图片查找失败" + var.getStackTrace());
+		}
+	}
 
 	@InitBinder
 	public void initBinder(ServletRequestDataBinder binder) {
