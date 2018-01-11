@@ -53,14 +53,14 @@ public class XsZcCycleController extends
     * @author nwz
     */
     @ApiOperation(value = "周期维护 新增周期",notes = "pc端新增周期")
-    @PostMapping("addCycle")
-//    public Object addCycle( XsZcCycle xsZcCycle,String currentUserId,@RequestParam(value = "ids[]") Long[] towerIds) {
-    public Object addCycle( XsZcCycle xsZcCycle,String currentUserId) {
+    @GetMapping("addCycle")
+    public Object addCycle( XsZcCycle xsZcCycle,String currentUserId,@RequestParam(value = "towerIds[]") Long[] towerIds) {
+//    public Object addCycle( XsZcCycle xsZcCycle,String currentUserId) {
 		try {
 			xsZcCycle.setTotalTaskNum(0);
 			xsZcCycle.setCreateTime(DateUtil.dateNow());
-//			this.service.addCycle(xsZcCycle,currentUserId,towerIds);
-			this.service.addCycle(xsZcCycle,currentUserId);
+			this.service.addCycle(xsZcCycle,currentUserId,towerIds);
+//			this.service.addCycle(xsZcCycle,currentUserId);
 			return WebApiResponse.success("周期新增成功");
 		} catch (Exception var) {
 			return WebApiResponse.erro("周期新增失败" + var.getStackTrace());
@@ -128,9 +128,9 @@ public class XsZcCycleController extends
 
     @ApiOperation(value = "周期更新",notes = "周期更新")
     @PatchMapping("updateCycle")
-		public Object updateCycle(Long id,Integer cycle,Integer inUse,Integer planXsNum,String planStartTime,String planEndTime) {
+		public Object updateCycle(Long id,Integer cycle,Integer inUse,Integer planXsNum,String planStartTime,String planEndTime,Integer isKt) {
         try {
-            this.service.updateCycle(id,cycle,inUse,planXsNum,planStartTime,planEndTime);
+            this.service.updateCycle(id,cycle,inUse,planXsNum,planStartTime,planEndTime,isKt);
             return WebApiResponse.success("数据保存成功");
         } catch (Exception var3) {
             return WebApiResponse.erro("数据保存失败" + var3.getStackTrace());

@@ -36,6 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.*;
 
 /**      
@@ -75,7 +76,7 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
 //
     @Modifying
     @Transactional
-    public void addCycle(XsZcCycle xsZcCycle, String userId) throws Exception {
+    public void addCycle(XsZcCycle xsZcCycle, String userId, Long[] towerIds) throws Exception {
         Map<String, Object> userInfo = userInfoFromRedis(userId);
         String deptid = userInfo.get("DEPTID").toString();
         //添加周期
@@ -88,10 +89,10 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
         Long lineId = xsZcCycle.getLineId();
         Integer xsStartSort = xsZcCycle.getXsStartSort();
         Integer xsEndSort = xsZcCycle.getXsEndSort();
-        String sql = "select * from cm_line_tower where line_id = ?1 and tower_id between ?2 and ?3";
-//        String sql = "select * from cm_line_tower where line_id = ?1 and tower_id in ?2";
-        List<Map<String, Object>> lineTowerList = this.execSql(sql, lineId, xsStartSort, xsEndSort);
-//        List<Map<String, Object>> lineTowerList = this.execSql(sql, lineId, towerIds);
+//        String sql = "select * from cm_line_tower where line_id = ?1 and tower_id between ?2 and ?3";
+        String sql = "select * from cm_line_tower where line_id = ?1 and tower_id in (?2)";
+        List<Long> ids = Arrays.asList(towerIds);
+        List<Map<String, Object>> lineTowerList = this.execSql(sql, lineId, ids);
         for (Map<String, Object> lineTower : lineTowerList) {
             long towerId = Long.parseLong(lineTower.get("TOWER_ID").toString());
             XsZcCycleLineTower xsZcCycleLineTower = new XsZcCycleLineTower();
@@ -163,7 +164,7 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
 
         StringBuffer sqlBuffer = new StringBuffer();
         ArrayList arrList = new ArrayList();
-        sqlBuffer.append("SELECT id,plan_xs_num xspl,plan_start_time,plan_end_time,v_level \"vLevel\",task_name \"taskName\",section,cycle,td_org \"tdywOrg\",in_use \"inUse\",total_task_num \"totalTaskNum\",create_time \"createTime\" FROM xs_zc_cycle where 1 = 1 and is_delete = 0");
+        sqlBuffer.append("SELECT id,is_kt,plan_xs_num xspl,plan_start_time,plan_end_time,v_level \"vLevel\",task_name \"taskName\",section,cycle,td_org \"tdywOrg\",in_use \"inUse\",total_task_num \"totalTaskNum\",create_time \"createTime\" FROM xs_zc_cycle where 1 = 1 and is_delete = 0");
         sqlBuffer.append(authoritySql);//我是权限
         //开始日期  结束日期
         Date startDate = xsTaskSch.getStartDate();
@@ -200,6 +201,13 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
         if (lineId != null) {
             sqlBuffer.append(" and line_id = ?");
             arrList.add(lineId);
+        }
+
+        //任务名
+        String taskName = xsTaskSch.getTaskName();
+        if (taskName != null) {
+            sqlBuffer.append(" and task_name like ?");
+            arrList.add("%" + taskName + "%");
         }
 
         //通道单位
@@ -305,8 +313,8 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
      * @date 2017/12/14 14:17
      * @author nwz
      */
-    public Object listPlan(Pageable pageable, XsTaskSCh xsTaskSch, String userId1) throws Exception {
-        String authoritySql = userAuthority(userId1);//把权限的sql给我
+    public Object listPlan(Pageable pageable, XsTaskSCh xsTaskSch, String currentUserId) throws Exception {
+        String authoritySql = userAuthority(currentUserId);//把权限的sql给我
 
         StringBuffer sqlBuffer = new StringBuffer();
         ArrayList arrList = new ArrayList();
@@ -343,7 +351,12 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
             arrList.add(userId);
         }
 
-        //通道单位
+        //任务名
+        String taskName = xsTaskSch.getTaskName();
+        if (taskName != null) {
+            sqlBuffer.append(" and task_name like ?");
+            arrList.add("%" + taskName + "%");
+        }
 
 
         Page<Map<String, Object>> maps = this.execSqlPage(pageable, sqlBuffer.toString(), arrList.toArray());
@@ -366,8 +379,8 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
     }
 
     //    @CacheEvict(value = "xsZcCycles" , key = "#id")
-    public void updateCycle(Long id, Integer cycle, Integer inUse, Integer planXsNum, String planStartTime, String planEndTime) {
-        this.reposiotry.updateCycle(id, cycle, inUse, planXsNum, planStartTime, planEndTime);
+    public void updateCycle(Long id, Integer cycle, Integer inUse, Integer planXsNum, String planStartTime, String planEndTime, Integer isKt) {
+        this.reposiotry.updateCycle(id, cycle, inUse, planXsNum, planStartTime, planEndTime,isKt);
     }
 
     public Object listPictureById(Long taskId, Integer zj) {
