@@ -44,4 +44,18 @@ public class KhYhHistoryController extends
 	public WebApiResponse saveCoordinate(String yhId,String lat,String lon,String radius){
 		return this.service.saveCoordinate(yhId,lat,lon,radius);
 	}
+
+	@ApiOperation(notes = "地图撒坐标点",value = "地图撒坐标点")
+	@GetMapping("/listCoordinate")
+	@ResponseBody
+	public WebApiResponse listCoordinate(String yhjb,String yhlb){
+		return this.service.listCoordinate(yhjb,yhlb);
+	}
+
+	@ApiOperation(notes = "地图撒坐标点",value = "地图撒坐标点")
+	@GetMapping("/listYhById")
+	@ResponseBody
+	public WebApiResponse listYhById(String yhId){
+		return this.service.listYhById(yhId);
+	}
 }

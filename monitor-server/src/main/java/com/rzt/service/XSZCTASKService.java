@@ -53,7 +53,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
         //sql 中 拉取数据为刷新时间至刷新时间前10分钟
         String sql = "";
         Page<Map<String, Object>> pageResult = null;
-        try {
+        //try {
         if(null == userId || "".equals(userId)){
             return WebApiResponse.success("");
         }
@@ -67,31 +67,28 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                 int i = Integer.parseInt(roletype);
                 switch (i){
                     case 0 :{//一级单位   显示三天周期抽查的任务
-                         sql = " SELECT  ID, " +
-                                "  TASKID,   " +
-                                "  CREATETIME,   " +
-                                "  USER_ID,   " +
-                                "  TASKNAME,   " +
-                                "  TASKTYPE,CHECKSTATUS ,TARGETSTATUS  " +
-                                "   FROM TIMED_TASK   " +
-                                "   WHERE (CREATETIME BETWEEN (select   sysdate MINUTE  from  dual  " +
-                                "     ) - (3 * 24 * 60 * 60 + 60 * 60) / (1 * 24 * 60 * 60) AND (select   sysdate MINUTE  from  dual   " +
-                                "       ))   AND STATUS = 0 AND THREEDAY = 1 ";
+                         sql = " SELECT  ID," +
+                                 "  TASKID," +
+                                 "  CREATETIME," +
+                                 "  USER_ID," +
+                                 "  TASKNAME," +
+                                 "  TASKTYPE,CHECKSTATUS ,TARGETSTATUS" +
+                                 "   FROM TIMED_TASK" +
+                                 "   WHERE CREATETIME > ( select   sysdate - (3 * 24 * 60 * 60 + 60 * 60) / (1 * 24 * 60 * 60)   from  dual)   AND STATUS = 0 AND THREEDAY = 1 ";
                         break;
                     }case 1 :{//二级单位   显示全部周期为两小时的任务
                         if(null != deptid && !"".equals(deptid)){//当前用户单位信息获取成功，进入流程
                             list.add(deptid);
                             sql = " SELECT  t.ID," +
-                                    " t.TASKID," +
-                                    " t.CREATETIME," +
-                                    " t.USER_ID," +
-                                    " t.TASKNAME," +
-                                    " t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did" +
-                                    " FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
-                                    " LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID" +
-                                    " WHERE (t.CREATETIME BETWEEN (SELECT max(t.CREATETIME)" +
-                                    " FROM TIMED_TASK  WHERE THREEDAY = 0 ) - 600 / (1 * 24 * 60 * 60) AND (SELECT max(t.CREATETIME)" +
-                                    " FROM TIMED_TASK  WHERE THREEDAY = 0 ))   AND t.STATUS = 0 AND t.THREEDAY = 0  AND d.ID  = ?"+list.size();
+                                    "    t.TASKID," +
+                                    "    t.CREATETIME," +
+                                    "    t.USER_ID," +
+                                    "    t.TASKNAME," +
+                                    "     t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did" +
+                                    "     FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
+                                    "    LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID" +
+                                    "     WHERE t.CREATETIME > ( SELECT max(CREATETIME) -  600   / (1 * 24 * 60 * 60)    " +
+                                    "    FROM TIMED_TASK  WHERE THREEDAY = 0 )     AND t.STATUS = 0 AND t.THREEDAY = 0  AND d.ID  = ?"+list.size();
                         }else {
                             LOGGER.error("获取当前用户单位信息失败");
                             return WebApiResponse.erro("获取当前用户单位信息失败");
@@ -102,16 +99,14 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                         if(null != deptid && !"".equals(deptid)){//当前用户单位信息获取成功，进入流程
                             list.add(deptid);
                             sql = " SELECT  t.ID," +
-                                    "  t.TASKID," +
-                                    "  t.CREATETIME," +
-                                    "  t.USER_ID," +
-                                    "  t.TASKNAME," +
-                                    "  t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did" +
-                                    "  FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
-                                    "  LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID" +
-                                    "  WHERE (t.CREATETIME BETWEEN (SELECT max(t.CREATETIME)" +
-                                    "  FROM TIMED_TASK  WHERE THREEDAY = 0 ) - 600 / (1 * 24 * 60 * 60) AND (SELECT max(t.CREATETIME)" +
-                                    "  FROM TIMED_TASK  WHERE THREEDAY = 0 ))   AND t.STATUS = 0 AND t.THREEDAY = 0  AND d.ID  = ?"+list.size();
+                                    "    t.TASKID," +
+                                    "    t.CREATETIME," +
+                                    "    t.USER_ID," +
+                                    "    t.TASKNAME," +
+                                    "     t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did" +
+                                    "     FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
+                                    "    LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID" +
+                                    "     WHERE t.CREATETIME > ( SELECT max(CREATETIME) -  600   / (1 * 24 * 60 * 60)        FROM TIMED_TASK  WHERE THREEDAY = 0 )     AND t.STATUS = 0 AND t.THREEDAY = 0  AND d.ID  = ?"+list.size();
                         }else {
                             LOGGER.error("获取当前用户单位信息失败");
                             return WebApiResponse.erro("获取当前用户单位信息失败");
@@ -172,10 +167,10 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                     next.put("CHTYPE"," "); // 抽查类型
                 }
             }
-       }catch (Exception e){
+       /*}catch (Exception e){
             LOGGER.error("抽查任务查询失败"+e.getMessage());
             return WebApiResponse.erro("抽查任务查询失败"+e.getMessage());
-        }
+        }*/
         return WebApiResponse.success(pageResult);
     }
     /**

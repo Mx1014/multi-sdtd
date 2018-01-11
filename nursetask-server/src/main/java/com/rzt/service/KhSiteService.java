@@ -67,7 +67,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
     private KhCycleRepository cycleRepository;
 
 
-    public Object listAllTaskNotDo(KhTaskModel task, Pageable pageable, String userName, String deptId, String roleType) {
+    public Object listAllTaskNotDo(KhTaskModel task, Pageable pageable, String userName,String roleType) {
         List params = new ArrayList<>();
         StringBuffer buffer = new StringBuffer();
         String result = " k.id as id,k.task_name as taskName,k.tdyw_org as yworg,y.yhms as ms,y.yhjb as jb,k.create_time as createTime,k.COUNT as COUNT,u.realname as username,k.jbd as jbd,k.plan_start_time as starttime,k.plan_end_time as endtime,u.id as userId";

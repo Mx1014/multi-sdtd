@@ -151,16 +151,30 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 	@ApiOperation(value = "稽查子任务列表",notes = "稽查子任务列表")
 	@GetMapping("/checkChildrenList")
 	public WebApiResponse checkChildrenList(@RequestParam(value = "page",defaultValue = "0") Integer page,
-											@RequestParam(value = "size",defaultValue = "15") Integer size,String taskId,String taskType){
+											@RequestParam(value = "size",defaultValue = "15") Integer size,String id,String taskId,String taskType){
 		try{
 			Pageable pageable = new PageRequest(page, size);
-			Page<Map<String,Object>> data = this.service.checkChildrenList(pageable,taskId,taskType);
+			Page<Map<String,Object>> data = this.service.checkChildrenList(pageable,id,taskId,taskType);
 			return WebApiResponse.success(data);
 		}catch (Exception e){
 			LOGGER.error("看护稽查子任务列表数据获取失败",e);
 			return WebApiResponse.erro("看护稽查子任务列表数据获取失败");
 		}
 	}
+
+	@ApiOperation(value = "稽查子任务详情",notes = "稽查子任务详情,即看护点隐患详情或巡视任务详情")
+	@GetMapping("/checkChildrenDetail")
+	public WebApiResponse checkChildrenDetail(String id,String taskType){
+		try{
+			Object obj = service.checkChildrenDetail(id,taskType);
+			return WebApiResponse.success(obj);
+		}catch (Exception e){
+			LOGGER.error("看护稽查子任务列表数据获取失败",e);
+			return WebApiResponse.erro("看护稽查子任务列表数据获取失败");
+		}
+
+	}
+
 
 
 

@@ -48,8 +48,8 @@ public class CMLINESECTIONController extends
 
 	@ApiOperation(value = "公共接口--线路下拉框",notes = "根据电压等级、通道单位id获取线路信息")
 	@GetMapping("getLineInfoCommOptions")
-	public WebApiResponse getLineInfoCommOptions(String tdOrg, String kv){
-		return service.getLineInfoCommOptions(tdOrg,kv);
+	public WebApiResponse getLineInfoCommOptions(String tdOrg, String kv,String currentUserId){
+		return service.getLineInfoCommOptions(tdOrg,kv,currentUserId);
 	}
 
 	@ApiOperation(value = "获取通道单位列表",notes = "获取各通道单位列表")
