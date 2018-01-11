@@ -87,8 +87,8 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                                     "     t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did" +
                                     "     FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
                                     "    LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID" +
-                                    "     WHERE t.CREATETIME > (SELECT max(CREATETIME) - (60*60 * 2 + 600)   / (1 * 24 * 60 * 60)        FROM TIMED_TASK  WHERE THREEDAY = 0 )   " +
-                                    "    AND t.STATUS = 0 AND t.THREEDAY = 0  AND d.ID  = ?"+list.size();
+                                    "     WHERE t.CREATETIME > ( SELECT max(CREATETIME) - (60*60 * 2 + 600)   / (1 * 24 * 60 * 60)     " +
+                                    "       FROM TIMED_TASK  WHERE THREEDAY = 0 )     AND t.STATUS = 0 AND t.THREEDAY = 0  AND d.ID  = ?"+list.size();
                         }else {
                             LOGGER.error("获取当前用户单位信息失败");
                             return WebApiResponse.erro("获取当前用户单位信息失败");
