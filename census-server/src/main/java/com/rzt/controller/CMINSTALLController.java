@@ -385,37 +385,21 @@ public class CMINSTALLController extends
         return WebApiResponse.erro("erro");
     }
 
-    private WebApiResponse taskname(HashOperations hashOperations, List<Map<String, Object>> list) {
-        for (int i = 0; i < list.size(); i++) {
-            Object useid = list.get(i).get("USERID");
-            Set<String> keys = redisTemplate.keys("*");
-            Object information = hashOperations.get("UserInformation", useid);
-            if (!StringUtils.isEmpty(information)) {
-                JSONObject jsonObject = JSONObject.parseObject(information.toString());
-                Object dept = jsonObject.get("DEPT");
-                Object classname = jsonObject.get("CLASSNAME");
-                Object realname = jsonObject.get("REALNAME");
-                Object phone = jsonObject.get("PHONE");
-                Object groupname = jsonObject.get("GROUPNAME");
-                Object loginstatus = jsonObject.get("LOGINSTATUS");
-                if (Integer.valueOf(loginstatus.toString()) == 0) {
-                    list.get(i).put("LOGINSTATUS", "离线");
-                } else {
-                    list.get(i).put("LOGINSTATUS", "在线");
-                }
-                list.get(i).put("CLASSNAME", classname);
-                list.get(i).put("REALNAME", realname);
-                list.get(i).put("PHONE", phone);
-                list.get(i).put("DEPT", dept);
-                list.get(i).put("GROUPNAME", groupname);
+    public WebApiResponse taskname(HashOperations hashOperations, List<Map<String, Object>> list) {
+        Map<String, Map> userInformation = hashOperations.entries("UserInformation");
+        for (Map<String, Object> task : list) {
+            String userid = task.get("USERID").toString();
+            Map user = userInformation.get(userid);
+            if (StringUtils.isEmpty(user)) {
+                task.put("CLASSNAME", "测试数据（暂不展示）");
+                task.put("REALNAME", "测试数据（暂不展示）");
+                task.put("PHONE", "测试数据（暂不展示）");
+                task.put("DEPT", "测试数据（暂不展示）");
+                task.put("GROUPNAME", "测试数据（暂不展示）");
             } else {
-                list.get(i).put("LOGINSTATUS", "离线");
-                list.get(i).put("CLASSNAME", "测试数据（暂不展示）");
-                list.get(i).put("REALNAME", "测试数据（暂不展示）");
-                list.get(i).put("PHONE", "测试数据（暂不展示）");
-                list.get(i).put("DEPT", "测试数据（暂不展示）");
-                list.get(i).put("GROUPNAME", "测试数据（暂不展示）");
+                task.putAll(user);
             }
+
         }
         return WebApiResponse.success(list);
     }
@@ -439,9 +423,60 @@ public class CMINSTALLController extends
 
     @GetMapping("touroverdue")
     public WebApiResponse touroverdue() {
-        HashOperations hashOperations = redisTemplate.opsForHash();
-        String sql = " select TASK_NAME,CM_USER_ID as USERID,PLAN_END_TIME,PLAN_START_TIME as starttime from XS_ZC_TASK where  trunc(PLAN_END_TIME)=trunc(sysdate-1) AND REAL_END_TIME is NULL ";
-        List<Map<String, Object>> list = this.service.execSql(sql);
-        return taskname(hashOperations, list);
+        try {
+            String sql = " SELECT " +
+                    "  k.TASK_NAME, " +
+                    "  u.REALNAME, " +
+                    "  u.DEPT, " +
+                    "  k.PLAN_START_TIME  as STARTTIME, " +
+                    "  u.PHONE, " +
+                    "  CASE u.LOGINSTATUS WHEN 1 THEN '在线' WHEN 0 THEN '离线' END as LOGINSTATUS " +
+                    "FROM XS_ZC_TASK k LEFT JOIN USERINFO u ON u.ID = k.CM_USER_ID " +
+                    "WHERE trunc(k.PLAN_END_TIME) = trunc(sysdate - 1) AND k.REAL_END_TIME IS NULL ";
+            List<Map<String, Object>> list = this.service.execSql(sql);
+            return WebApiResponse.success(list);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @GetMapping("hiddenDetails")
+    public WebApiResponse hiddenDetails(Integer type) {
+        String sql = " SELECT TDWX_ORG ,TDYW_ORG,YHJB,LINE_NAME,YHLB, SGQK " +
+                "FROM KH_YH_HISTORY h " +
+                "WHERE yhjb1 = '施工隐患' ";
+        String sql1 = " SELECT TDWX_ORG ,TDYW_ORG,YHJB,LINE_NAME,YHLB, SGQK " +
+                "FROM KH_YH_HISTORY h " +
+                "WHERE yhjb1 = '建筑隐患' ";
+        String sql2 = " SELECT TDWX_ORG ,TDYW_ORG,YHJB,LINE_NAME,YHLB, SGQK " +
+                "FROM KH_YH_HISTORY h " +
+                "WHERE yhjb1 = '异物隐患' ";
+        String sql3 = " SELECT TDWX_ORG ,TDYW_ORG,YHJB,LINE_NAME,YHLB, SGQK " +
+                "FROM KH_YH_HISTORY h " +
+                "WHERE yhjb1 = '树木隐患' ";
+        if (type == 0) {
+            return WebApiResponse.success(this.service.execSql(sql));
+        } else if (type == 1) {
+            return WebApiResponse.success(this.service.execSql(sql1));
+        } else if (type == 2) {
+            return WebApiResponse.success(this.service.execSql(sql2));
+        } else if (type == 3) {
+            return WebApiResponse.success(this.service.execSql(sql3));
+        }
+        return null;
+    }
+
+    @GetMapping("orgRanking")
+    public WebApiResponse orgRanking() {
+        try {
+            String sql = " SELECT deptname,(select count(id) from guzhang where td_org_id=d.id and extract(year from create_data)='2016') count2016, " +
+                    "(select count(id) from guzhang where td_org_id=d.id and extract(year from create_data)='2017') count2017 " +
+                    "FROM RZTSYSDEPARTMENT d WHERE d.DEPTPID='402881e6603a69b801603a6ab1d70000'  ORDER BY  d.DEPTSORT ";
+            return WebApiResponse.success(this.service.execSql(sql));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("erro");
+        }
     }
 }
