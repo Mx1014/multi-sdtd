@@ -36,4 +36,6 @@ public interface KhYhHistoryRepository extends JpaRepository<KhYhHistory,String>
     @Transactional
     @Query(value = "update KH_YH_HISTORY SET JD=?3,WD=?2,RADIUS=?4 WHERE ID=?1",nativeQuery = true)
     void updateYh(long yhId, String lat, String lon,String radius);
+
+    KhYhHistory findById(Long id);
 }

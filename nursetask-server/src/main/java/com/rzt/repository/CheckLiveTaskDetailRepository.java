@@ -14,4 +14,6 @@ public interface CheckLiveTaskDetailRepository extends JpaRepository<CheckLiveTa
     @Modifying
     @Query(value = "update check_live_taskxs set WPTS=?2 where id =?1",nativeQuery = true)
     void updateWptsById(Long id, String str);
+
+    CheckLiveTaskDetail findById(Long id);
 }
