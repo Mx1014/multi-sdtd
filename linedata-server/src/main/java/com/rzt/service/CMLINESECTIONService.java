@@ -6,6 +6,7 @@
  */
 package com.rzt.service;
 
+import com.alibaba.fastjson.JSON;
 import com.rzt.entity.CMLINESECTION;
 import com.rzt.repository.CMLINESECTIONRepository;
 import com.rzt.util.WebApiResponse;
@@ -18,8 +19,11 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -42,6 +46,9 @@ import java.util.Map;
 public class CMLINESECTIONService extends CurdService<CMLINESECTION,CMLINESECTIONRepository> {
 
     protected static Logger LOGGER = LoggerFactory.getLogger(CMLINESECTIONService.class);
+
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
     public WebApiResponse getLineInfoByOrg(Pageable pageable, String tdOrg, String kv, String lineId) {
         List<String> list = new ArrayList<>();
@@ -79,9 +86,33 @@ public class CMLINESECTIONService extends CurdService<CMLINESECTION,CMLINESECTIO
         return WebApiResponse.success(maps);
     }
 
-    public WebApiResponse getLineInfoCommOptions(String tdOrg, String kv) {
+    public WebApiResponse getLineInfoCommOptions(String tdOrg, String kv,String currentUserId) {
         List<String> list = new ArrayList<>();
         String sql = "select line_id,line_name,line_jb,SECTION from cm_line_section where is_del=0 ";
+        if(StringUtils.isNotEmpty(currentUserId)){
+            Map<String, Object> map = userInfoFromRedis(currentUserId);
+            Integer roletype = Integer.parseInt(map.get("ROLETYPE").toString());
+            String deptid  = map.get("DEPTID").toString();
+            switch (roletype) {
+                case 0:
+                    break;
+                case 1:
+                    break;
+                case 2:
+                    tdOrg = deptid;
+                    break;
+                case 3:
+                    //外协角色
+                    break;
+                case 4:
+                    //班组角色
+                    break;
+                case 5:
+                    //个人角色
+                    break;
+            }
+
+        }
         if(tdOrg!=null&&!"".equals(tdOrg.trim())){
             list.add(tdOrg);
             sql += " and td_org= ?" + list.size();
@@ -175,9 +206,28 @@ public class CMLINESECTIONService extends CurdService<CMLINESECTION,CMLINESECTIO
 
         }catch(Exception e){
             LOGGER.error("----------导入第"+(i-1)+"条故障数据(excel第"+(i+1)+"行)时出错------");
-            //throw e;
+            throw e;
         }
         System.out.println("导入成功！");
 
+    }
+
+    public Map<String, Object> userInfoFromRedis(String userId) {
+        HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
+
+        Map<String,Object> jsonObject = null;
+        Object userInformation = hashOperations.get("UserInformation", userId);
+        if(userInformation == null) {
+            String sql = "select * from userinfo where id = ?";
+            try {
+                jsonObject = this.execSqlSingleResult(sql, userId);
+            } catch (Exception e) {
+                LOGGER.error("currentUserId未获取到唯一数据!",e);
+            }
+            hashOperations.put("UserInformation",userId,jsonObject);
+        } else {
+            jsonObject = JSON.parseObject(userInformation.toString(),Map.class);
+        }
+        return jsonObject;
     }
 }
