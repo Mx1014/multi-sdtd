@@ -106,11 +106,11 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             StringBuffer buffer = new StringBuffer();
             List<Object> params = new ArrayList<>();
             buffer.append(" where 1=1 ");
-            if (yhjb != null && yhjb.equals("")) {
+            if (yhjb != null && !yhjb.equals("")) {
                 buffer.append(" and yhjb1 like");
                 params.add("%" + yhjb + "%");
             }
-            if (yhlb != null && yhlb.equals("")) {
+            if (yhlb != null && !yhlb.equals("")) {
                 buffer.append(" and yhlb like");
                 params.add("%" + yhlb + "%");
             }
@@ -119,7 +119,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             List<Object> list1 = new ArrayList<>();
             for (Map map : list) {
                 // System.out.println(map.get("JD").toString());
-                if (map != null && map.size() > 0 && !(map.get("JD").toString().equals("null"))) {
+                if (map != null && map.size() > 0 && map.get("JD") != null) {
                     list1.add(map);
                 }
             }
@@ -133,7 +133,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
     public WebApiResponse listYhById(String yhId) {
         try {
             String sql = "select * from kh_yh_history where id=?";
-            return WebApiResponse.success(this.execSql(sql,Long.parseLong(yhId)));
+            return WebApiResponse.success(this.execSql(sql, Long.parseLong(yhId)));
         } catch (Exception e) {
             return WebApiResponse.erro("保存失败" + e.getMessage());
         }
