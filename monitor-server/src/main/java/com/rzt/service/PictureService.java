@@ -33,11 +33,11 @@ public class PictureService extends CurdService<CheckResult, CheckResultReposito
         }
         if(null != taskType && !"".equals(taskType)){
             try {
-            if("1".equals(taskType)){//巡视
+            if("1".equals(taskType)){//巡视   AND END_TOWER_ID = 0
                 sql = "SELECT p.ID,FILE_PATH,p.CREATE_TIME,p.PROCESS_NAME,l.OPERATE_NAME,l.START_TOWER_ID" +
                         "   FROM xs_zc_task k LEFT JOIN XS_ZC_TASK_EXEC x ON k.ID = x.XS_ZC_TASK_ID" +
                         "    LEFT JOIN XS_ZC_TASK_EXEC_DETAIL l ON x.ID = l.XS_ZC_TASK_EXEC_ID RIGHT JOIN PICTURE_TOUR p ON l.ID = p.PROCESS_ID" ;
-                sql += "   WHERE p.TASK_ID = ?"+list.size()+"  AND P.FILE_TYPE = 1  AND END_TOWER_ID = 0 ORDER BY  p.CREATE_TIME DESC ";
+                sql += "   WHERE p.TASK_ID = ?"+list.size()+"  AND P.FILE_TYPE = 1   ORDER BY  p.CREATE_TIME DESC ";
                 return WebApiResponse.success(this.execSqlPage(new PageRequest(0, 4), sql, list.toArray()));
             }
             if("2".equals(taskType)){//看护
@@ -81,7 +81,7 @@ public class PictureService extends CurdService<CheckResult, CheckResultReposito
          }
 
          if(null != taskType && !"".equals(taskType)){
-             if("1".equals(taskType)){//巡视
+             if("1".equals(taskType)){//巡视   AND END_TOWER_ID = 0
                  list.add(taskId);
                  if(null != taskId && !"".equals(taskId)){
                      grouupList.add(taskId);
@@ -90,7 +90,7 @@ public class PictureService extends CurdService<CheckResult, CheckResultReposito
                  groupSql = "SELECT START_TOWER_ID" +
                          "   FROM xs_zc_task k LEFT JOIN XS_ZC_TASK_EXEC x ON k.ID = x.XS_ZC_TASK_ID" +
                          "    LEFT JOIN XS_ZC_TASK_EXEC_DETAIL l ON x.ID = l.XS_ZC_TASK_EXEC_ID RIGHT JOIN PICTURE_TOUR p ON l.ID = p.PROCESS_ID" +
-                         "   WHERE p.TASK_ID = ?"+grouupList.size()+" AND FILE_TYPE = 1 AND END_TOWER_ID = 0 GROUP BY START_TOWER_ID";
+                         "   WHERE p.TASK_ID = ?"+grouupList.size()+" AND FILE_TYPE = 1 AND START_TOWER_ID IS NOT NULL   GROUP BY START_TOWER_ID";
                  List<Map<String, Object>> maps1  = this.execSql(groupSql, grouupList.toArray());
 
 
@@ -103,9 +103,9 @@ public class PictureService extends CurdService<CheckResult, CheckResultReposito
                          String sql = "SELECT p.ID,FILE_PATH,p.CREATE_TIME,p.PROCESS_NAME,l.OPERATE_NAME,l.START_TOWER_ID" +
                                  "   FROM xs_zc_task k LEFT JOIN XS_ZC_TASK_EXEC x ON k.ID = x.XS_ZC_TASK_ID" +
                                  "    LEFT JOIN XS_ZC_TASK_EXEC_DETAIL l ON x.ID = l.XS_ZC_TASK_EXEC_ID RIGHT JOIN PICTURE_TOUR p ON l.ID = p.PROCESS_ID"
-                                 +   "   WHERE p.TASK_ID = ?1  AND P.FILE_TYPE = 1 AND END_TOWER_ID = 0  AND START_TOWER_ID = ?2 ORDER BY  p.CREATE_TIME DESC ";
+                                 +   "   WHERE p.TASK_ID = ?1  AND P.FILE_TYPE = 1 AND START_TOWER_ID = ?2 ORDER BY  p.CREATE_TIME DESC ";
                          List<Map<String, Object>> maps2 = this.execSql(sql ,objects);
-                         //所有的巡视图片组
+                         //所有的巡视图片组   AND END_TOWER_ID = 0
                          group.add(maps2);
                      }
                  }
@@ -162,7 +162,7 @@ public class PictureService extends CurdService<CheckResult, CheckResultReposito
 
                     if(null != ids && !"".equals(ids)){
 
-                        //分组
+                        //分组   AND END_TOWER_ID = 0
                         String[] split1 = ids.split(",");
                         for (String s : split1) {
                             ArrayList<String> group = new ArrayList<>();
@@ -174,7 +174,7 @@ public class PictureService extends CurdService<CheckResult, CheckResultReposito
                                 String groupSql  = "SELECT  START_TOWER_ID" +
                                         "  FROM xs_zc_task k LEFT JOIN XS_ZC_TASK_EXEC x ON k.ID = x.XS_ZC_TASK_ID" +
                                         "   LEFT JOIN XS_ZC_TASK_EXEC_DETAIL l ON x.ID = l.XS_ZC_TASK_EXEC_ID RIGHT JOIN PICTURE_TOUR p ON l.ID = p.PROCESS_ID" +
-                                        "    WHERE p.TASK_ID = ?1  AND p.ID = ?2 AND FILE_TYPE = 1 AND END_TOWER_ID = 0  " ;
+                                        "    WHERE p.TASK_ID = ?1  AND p.ID = ?2 AND FILE_TYPE = 1  " ;
                                 List<Map<String, Object>> maps1 = this.execSql(groupSql, group.toArray());
                                if(maps1.size()>0 && null != maps1.get(0)){
                                        groupId.add(maps1.get(0).get("START_TOWER_ID").toString());
