@@ -142,14 +142,16 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
     //电压等级  任务执行人 线路名称  杆塔号 开始时间  通道单位 外协单位  区段
     public WebApiResponse listTaskInfoByYhId(String yhId) {
         try {
-            String sql = "select l.v_level as voltage,l.line_name as linename,s.section as section,s.tdyw_org as yworg,y.TDWX_ORG as wxorg,U.REALNAME as name,T.PLAN_START_TIME as starttime,T.PLAN_END_TIME as endtime \n" +
-                    "from KH_SITE S,KH_YH_HISTORY y,KH_TASK T,RZTSYSUSER U,cm_line l \n" +
-                    "where s.YH_ID = ? and l.id = y.line_id and t.PLAN_END_TIME>=sysdate and y.id = s.YH_ID AND S.ID = T.SITE_ID AND T.USER_ID = U.ID order by t.plan_start_time";
-            List<Map<String, Object>> list = this.execSql(sql, yhId);
+            String sql = "SELECT  s.task_name taskname,l.v_level as voltage,l.line_name as linename,s.section as section,s.tdyw_org as yworg,\n" +
+                    "y.TDWX_ORG as wxorg,U.REALNAME as name,T.PLAN_START_TIME as starttime,T.PLAN_END_TIME as endtime\n" +
+                    "FROM KH_SITE S LEFT JOIN KH_YH_HISTORY y on s.yh_id = y.id LEFT JOIN KH_TASK T on t.SITE_ID=s.id\n" +
+                    "LEFT JOIN RZTSYSUSER U ON u.id=s.USER_ID LEFT JOIN cm_line l on l.id = s.LINE_ID\n" +
+                    "WHERE s.YH_ID = ? and t.PLAN_END_TIME>=sysdate  order by t.plan_start_time";
+            List<Map<String, Object>> list = this.execSql(sql, Long.parseLong(yhId));
             for (Map map : list) {
                 String kv = map.get("VOLTAGE").toString();
                 if (kv.contains("kV")) {
-                    map.put("VOLTAGE",kv.substring(0,kv.indexOf("k")));
+                    map.put("VOLTAGE", kv.substring(0, kv.indexOf("k")));
                 }
             }
             return WebApiResponse.success(list);
@@ -380,5 +382,14 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         this.reposiotry.updateSite(startTime, endTime, site.getId(), count);
     }
 
+    public WebApiResponse listPictureByYhId(String yhId) {
+        try {
+            String sql = "select file_path filepath from picture_yh where yh_id=?";
+            return WebApiResponse.success(this.execSql(sql, Long.parseLong(yhId)));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("数据获取失败");
+        }
+    }
 }
 

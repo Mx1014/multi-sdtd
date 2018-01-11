@@ -35,8 +35,8 @@ public interface XsZcCycleRepository extends JpaRepository<XsZcCycle,String> {
 
     @Modifying
     @Transactional
-    @Query(value = "update xs_zc_cycle set cycle = ?2, in_use = ?3,plan_xs_num = ?4,plan_start_time = ?5,plan_end_time = ?6 where id= ?1", nativeQuery = true)
-    void updateCycle(Long id, Integer cycle, Integer inUse, Integer planXsNum, String planStartTime, String planEndTime);
+    @Query(value = "update xs_zc_cycle set cycle = ?2, in_use = ?3,plan_xs_num = ?4,plan_start_time = ?5,plan_end_time = ?6,is_kt = ?7 where id= ?1", nativeQuery = true)
+    void updateCycle(Long id, Integer cycle, Integer inUse, Integer planXsNum, String planStartTime, String planEndTime, Integer isKt);
 
 
     @Modifying

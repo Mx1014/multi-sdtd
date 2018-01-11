@@ -77,12 +77,12 @@ public class KhSiteController extends
      */
     @GetMapping("/listAllTaskNotDo.do")
     @ResponseBody
-    public WebApiResponse listAllTaskNotDo(HttpServletResponse response, KhTaskModel task, Pageable pageable, String userName,String deptId) {
+    public WebApiResponse listAllTaskNotDo(HttpServletResponse response, KhTaskModel task, Pageable pageable, String userName) {
         try {
             HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
-            //JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", task.getUserId()).toString());
-           // return WebApiResponse.success(this.service.listAllTaskNotDo(task, pageable, userName,deptId,jsonObject.get("ROLETYPE").toString()));
-            return WebApiResponse.success(this.service.listAllTaskNotDo(task, pageable, userName,deptId,"0"));
+            JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", task.getUserId()).toString());
+            return WebApiResponse.success(this.service.listAllTaskNotDo(task, pageable, userName,jsonObject.get("ROLETYPE").toString()));
+            //return WebApiResponse.success(this.service.listAllTaskNotDo(task, pageable, userName,deptId,"0"));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("数据查询失败" + e.getMessage());
