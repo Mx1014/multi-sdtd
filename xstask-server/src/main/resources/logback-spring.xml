@@ -25,14 +25,14 @@
         </encoder>
     </appender>
 
-    <root level="error">
+    <root level="info">
         <appender-ref ref="console" />
         <!--<appender-ref ref="file" />-->
     </root>
 
     <!-- logback为java中的包 -->
     <!--logback.LogbackDemo：类的全路径 -->
-    <logger name="com.rzt" level="debug" additivity="false">
+    <logger name="com.rzt" level="error" additivity="false">
         <appender-ref ref="console"/>
         <!--<appender-ref ref="file" />-->
     </logger>
