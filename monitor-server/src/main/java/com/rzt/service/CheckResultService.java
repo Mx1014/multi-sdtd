@@ -114,6 +114,8 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
             s+="  AND CREATE_TIME BETWEEN to_date( ?" + list.size() + ",'yyyy-MM-dd hh24:mi:ss') ";
             list.add(endDate);
             s+="  AND to_date( ?" + list.size() + ",'yyyy-MM-dd hh24:mi:ss')  ";
+        }else{
+            s+="  AND  trunc(sysdate)=trunc(CREATE_TIME) ";
         }
 		if(vLevel!=null && !"".equals(vLevel)){
 			list.add(vLevel);
@@ -125,7 +127,7 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
 		}
 
         Page<Map<String, Object>> pageResult = null;
-        try {
+        //try {
             String sqll = "";
             //最高权限查询所有
             if("0".equals(deptID)){
@@ -133,6 +135,9 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
             }else{
                 sqll = " select * from ( "+sql+" ) where THREEDAY=0 and TD_ORG='"+deptID+"' OR TDYW_ORGID='"+deptID+"'"+s;
             }
+        System.out.println("------------------------------------------------------------------");
+        System.out.println(sqll);
+        System.out.println("------------------------------------------------------------------");
             pageResult = this.execSqlPage(pageable, sqll,list.toArray());
 			Iterator<Map<String, Object>> iterator = pageResult.iterator();
 			HashOperations hashOperations = redisTemplate.opsForHash();
@@ -153,9 +158,9 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
 					next.put("PHONE",jsonObject.get("PHONE"));
 				}
 			}
-        }catch (Exception e){
+    /*    }catch (Exception e){
             return WebApiResponse.erro("查询失败"+e.getMessage());
-        }
+        }*/
         return WebApiResponse.success(pageResult);
     }
 
@@ -255,12 +260,12 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
 	public String getDeptID(String userId){
 		HashOperations<String, Object, Object> hash = redisTemplate.opsForHash();
 		Object userInformation = hash.get("UserInformation", userId);
-		if(userInformation==null){
+		if(userInformation==null || "".equals(userInformation)){
 			return null;
 		}
 		JSONObject jsonObject = JSONObject.parseObject(userInformation.toString());
 		String roletype = (String) jsonObject.get("ROLETYPE");
-		if(roletype==null){
+		if(roletype==null  || "".equals(roletype) ){
 			return null;
 		}
 		if("0".equals(roletype)){
