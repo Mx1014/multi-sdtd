@@ -49,7 +49,7 @@ public class XSZCTASK implements Serializable {
     private Integer planXsNum;
     //字段描述: 本次巡视重复次数
     @Column(name = "REAL_XS_NUM")
-    private Integer realXsNum;
+    private Integer realXsNum = 0;
     //字段描述: 计划开始时间
     @Column(name = "PLAN_START_TIME")
     private Date planStartTime;
@@ -66,8 +66,8 @@ public class XSZCTASK implements Serializable {
     @Column(name = "DDXC_TIME")
     private Date ddxcTime;
     //字段描述: 巡视开始时间
-    @Column(name = "XSKS_TIME")
-    private Date xsksTime;
+//    @Column(name = "XSKS_TIME")
+//    private Date xsksTime;
     //字段描述: 实际结束时间
     @Column(name = "REAL_END_TIME")
     private Date realEndTime;
@@ -87,6 +87,17 @@ public class XSZCTASK implements Serializable {
     //字段描述: 任务执行人
     @Column(name = "CM_USER_ID")
     private String cmUserId;
+
+    @Column(name = "GROUP_ID")
+    private String groupId;
+
+    public String getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
+    }
 
     public void setTdOrg(String tdOrg) {
         this.tdOrg = tdOrg;
@@ -204,14 +215,14 @@ public class XSZCTASK implements Serializable {
         return this.ddxcTime;
     }
 
-    public void setXsksTime(Date xsksTime) {
+    /*public void setXsksTime(Date xsksTime) {
         this.xsksTime = xsksTime;
     }
 
     @ExcelResources(title = "巡视开始时间", order = 13)
     public Date getXsksTime() {
         return this.xsksTime;
-    }
+    }*/
 
     public void setRealEndTime(Date realEndTime) {
         this.realEndTime = realEndTime;

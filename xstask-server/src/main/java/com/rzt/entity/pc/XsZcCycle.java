@@ -66,6 +66,14 @@ public class XsZcCycle implements Serializable{
     	//字段描述: 通道运维单位
    	 @Column(name = "TD_ORG")
      private String tdywOrg;
+   	 @Column(name = "wx_org")
+     private String wxOrg;
+   	 @Column(name = "group_id")
+     private String groupId;
+   	 @Column(name = "class_id")
+     private String classId;
+   	 @Column(name = "cm_user_id")
+     private String cmUserId;
     	//字段描述: 是否停用 0 不停用 1 停用
    	 @Column(name = "IN_USE")
      private Integer inUse = 0;
@@ -78,7 +86,49 @@ public class XsZcCycle implements Serializable{
 	//字段描述
 	@Column(name = "is_delete")
 	private Integer isDelete = 0;
+	//字段描述 是否跨天 0 跨 1 不跨
+	@Column(name = "is_kt")
+	private Integer isKt = 0;
 
+	public String getCmUserId() {
+		return cmUserId;
+	}
+
+	public void setCmUserId(String cmUserId) {
+		this.cmUserId = cmUserId;
+	}
+
+	public String getWxOrg() {
+		return wxOrg;
+	}
+
+	public void setWxOrg(String wxOrg) {
+		this.wxOrg = wxOrg;
+	}
+
+	public String getGroupId() {
+		return groupId;
+	}
+
+	public void setGroupId(String groupId) {
+		this.groupId = groupId;
+	}
+
+	public String getClassId() {
+		return classId;
+	}
+
+	public void setClassId(String classId) {
+		this.classId = classId;
+	}
+
+	public Integer getIsKt() {
+		return isKt;
+	}
+
+	public void setIsKt(Integer isKt) {
+		this.isKt = isKt;
+	}
 
 	public void setId(){
 		this.id = Long.valueOf(new SnowflakeIdWorker(0,0).nextId());
