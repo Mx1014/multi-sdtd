@@ -8,7 +8,6 @@ package com.rzt.service.pc;
 
 import com.alibaba.fastjson.JSON;
 import com.rzt.entity.app.XSZCTASK;
-import com.rzt.entity.app.XsZcTaskwpqr;
 import com.rzt.entity.pc.XsZcCycle;
 import com.rzt.entity.pc.XsZcCycleLineTower;
 import com.rzt.entity.sch.XsTaskSCh;
@@ -36,7 +35,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.*;
 
 /**      
@@ -93,6 +91,19 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
         String sql = "select * from cm_line_tower where line_id = ?1 and tower_id in (?2)";
         List<Long> ids = Arrays.asList(towerIds);
         List<Map<String, Object>> lineTowerList = this.execSql(sql, lineId, ids);
+        insertCycleTowersMethod(lineTowerList,xsZcCycleId);
+    }
+
+
+    @Modifying
+    @Transactional
+    public void insertCycleTower(String sql,Long xsZcCycleId) {
+        List<Map<String, Object>> lineTowerList = this.execSql(sql);
+        insertCycleTowersMethod(lineTowerList,xsZcCycleId);
+    }
+
+    private void insertCycleTowersMethod(List<Map<String, Object>> lineTowerList, Long xsZcCycleId) {
+
         for (Map<String, Object> lineTower : lineTowerList) {
             long towerId = Long.parseLong(lineTower.get("TOWER_ID").toString());
             XsZcCycleLineTower xsZcCycleLineTower = new XsZcCycleLineTower();
@@ -917,6 +928,55 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
         }
     }
 
+
+
+    public Object listPlanForMap(XsTaskSCh xsTaskSch, String currentUserId) {
+
+        StringBuffer sqlBuffer = new StringBuffer();
+        ArrayList arrList = new ArrayList();
+        sqlBuffer.append("SELECT * FROM xs_zc_task where ((PLAN_END_TIME BETWEEN trunc(sysdate) and trunc(sysdate + 1)) or ((PLAN_START_TIME BETWEEN trunc(sysdate) and trunc(sysdate + 1)))) and is_delete = 0");
+        //开始日期 结束日期
+       /* Date startDate = xsTaskSch.getStartDate();
+        Date endDate = xsTaskSch.getEndDate();
+        if (startDate != null && endDate != null) {
+            sqlBuffer.append("and plan_start_time between ? and ? ");
+            arrList.add(startDate);
+            arrList.add(endDate);
+        }
+
+        //状态 0 未开始 1 巡视中 2 已完成
+        Integer status = xsTaskSch.getStatus();
+        if (status != null) {
+            sqlBuffer.append("and stauts = ? ");
+            arrList.add(status);
+
+        }*/
+
+        //人员id
+        String userId = xsTaskSch.getUserId();
+        if (userId != null) {
+            sqlBuffer.append("and cm_user_id = ? ");
+            arrList.add(userId);
+        }
+
+        /*//线路id
+        Long lineId = xsTaskSch.getLineId();
+        if (lineId != null) {
+            sqlBuffer.append("and line_id = ? ");
+            arrList.add(userId);
+        }
+
+        //任务名
+        String taskName = xsTaskSch.getTaskName();
+        if (taskName != null) {
+            sqlBuffer.append(" and task_name like ?");
+            arrList.add("%" + taskName + "%");
+        }*/
+
+
+        List<Map<String, Object>> mapList = this.execSql(sqlBuffer.toString(), arrList.toArray());
+        return mapList;
+    }
 
 
 }

@@ -166,7 +166,26 @@ public class XsZcCycleController extends
 		try {
 			return this.service.listPlan(pageable,xsTaskSch,currentUserId);
 		} catch (Exception var7) {
-			return WebApiResponse.erro("数据查询失败" + var7.getStackTrace());
+			return WebApiResponse.erro("数据查询失败" + var7.getMessage());
+		}
+
+	}
+
+	/**
+	 * @Method listPlanForMap
+	 * @Description  任务派发 生成任务和人员信息
+	 * @param
+	 * @return java.lang.Object
+	 * @date 2017/12/7 17:57
+	 * @author nwz
+	 */
+	@ApiOperation(value = "pc端人员位置展示的巡视任务列表接口",notes = "pc端人员位置展示的巡视任务列表接口")
+	@GetMapping("listPlanForMap")
+	public Object listPlanForMap( XsTaskSCh xsTaskSch,String currentUserId) {
+		try {
+			return this.service.listPlanForMap(xsTaskSch,currentUserId);
+		} catch (Exception var7) {
+			return WebApiResponse.erro("数据查询失败" + var7.getMessage());
 		}
 
 	}
@@ -281,6 +300,18 @@ public class XsZcCycleController extends
 		}
 	}
 
+	@GetMapping("insertCycleTower")
+	public Object insertCycleTower(String sql,Long xsZcCycleId) {
+		try {
+			this.service.insertCycleTower(sql,xsZcCycleId);
+			return WebApiResponse.success("成功了...");
+		} catch (Exception var) {
+			return WebApiResponse.erro("图片查找失败" + var.getStackTrace());
+		}
+	}
+
+
+
 	@InitBinder
 	public void initBinder(ServletRequestDataBinder binder) {
 		 /*** 自动转换日期类型的字段格式
@@ -289,6 +320,7 @@ public class XsZcCycleController extends
 		 binder.registerCustomEditor(Date.class, new CustomDateEditor(sdf, true));
 
    }
+
 
 
 
