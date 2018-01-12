@@ -74,7 +74,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                                  "  TASKNAME," +
                                  "  TASKTYPE,CHECKSTATUS ,TARGETSTATUS" +
                                  "   FROM TIMED_TASK" +
-                                 "   WHERE CREATETIME > ( select   sysdate - (3 * 24 * 60 * 60 + 60 * 60) / (1 * 24 * 60 * 60)   from  dual)   AND STATUS = 0 AND THREEDAY = 1 ";
+                                 "   WHERE CREATETIME > ( select   sysdate - (3 * 24 * 60 * 60 + 60 * 60) / (1 * 24 * 60 * 60)   from  dual)   AND STATUS = 0 AND THREEDAY = 1  ORDER BY CREATETIME DESC  ";
                         break;
                     }case 1 :{//二级单位   显示全部周期为两小时的任务
                         if(null != deptid && !"".equals(deptid)){//当前用户单位信息获取成功，进入流程
