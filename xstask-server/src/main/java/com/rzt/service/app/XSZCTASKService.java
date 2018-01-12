@@ -110,6 +110,7 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
         } else {
             String cycleSql = "SELECT\n" +
                     "  tt.LINE_NAME LINENAME,\n" +
+                    "  t.LINE_ID LINE_ID,\n" +
                     "  t.section,\n" +
                     "  t.V_LEVEL\n" +
                     "FROM (SELECT *\n" +
@@ -128,6 +129,7 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
         task.put("LINENAME",cycle.get("LINENAME"));
         task.put("SECTION",cycle.get("SECTION"));
         task.put("VLEVEL",cycle.get("V_LEVEL"));
+        task.put("LINE_ID",cycle.get("LINE_ID"));
 
         return task;
     }

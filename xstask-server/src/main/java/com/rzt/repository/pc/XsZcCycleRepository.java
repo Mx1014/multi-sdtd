@@ -35,8 +35,8 @@ public interface XsZcCycleRepository extends JpaRepository<XsZcCycle,String> {
 
     @Modifying
     @Transactional
-    @Query(value = "update xs_zc_cycle set cycle = ?2, in_use = ?3,plan_xs_num = ?4,plan_start_time = ?5,plan_end_time = ?6 where id= ?1", nativeQuery = true)
-    void updateCycle(Long id, Integer cycle, Integer inUse, Integer planXsNum, String planStartTime, String planEndTime);
+    @Query(value = "update xs_zc_cycle set cycle = ?2, in_use = ?3,plan_xs_num = ?4,plan_start_time = ?5,plan_end_time = ?6,is_kt = ?7 where id= ?1", nativeQuery = true)
+    void updateCycle(Long id, Integer cycle, Integer inUse, Integer planXsNum, String planStartTime, String planEndTime, Integer isKt);
 
 
     @Modifying
@@ -49,4 +49,19 @@ public interface XsZcCycleRepository extends JpaRepository<XsZcCycle,String> {
     @Transactional
     @Query(value = "update xs_zc_task set is_delete = 1 where id in (?1)", nativeQuery = true)
     void logicalDeletePlan(Long[] ids);
+
+    @Modifying
+    @Transactional
+    @Query(value = "update xs_zc_cycle set TOTAL_TASK_NUM = 1 where id in (?1)", nativeQuery = true)
+    void updateCycleTotalBornNum(long id);
+
+    @Modifying
+    @Transactional
+    @Query(value = "update xs_zc_cycle set task_name = ?2 where id = ?1", nativeQuery = true)
+    void updatetaskname(long id, String taskName);
+
+    @Modifying
+    @Transactional
+    @Query(value = "update xs_zc_task set task_name = ?2 where id = ?1", nativeQuery = true)
+    void updatetaskname2(long id, String taskName);
 }

@@ -11,10 +11,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.websocket.Session;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -43,45 +40,64 @@ public class PersonnelTasksPushService extends CurdService<websocket, websocketR
         /**
          * zxUser 在线人员
          */
-        String zxUser = "SELECT count(id)  FROM RZTSYSUSER WHERE LOGINSTATUS = 1 AND USERDELETE = 1";
+//        String zxUser = "SELECT count(id)  FROM RZTSYSUSER WHERE LOGINSTATUS = 1 AND USERDELETE = 1  AND USERTYPE=0 ";
         /**
          * lxUser 离线人员
          */
-        String lxUser = "SELECT count(id)  FROM RZTSYSUSER WHERE LOGINSTATUS = 0 AND USERDELETE = 1";
+//        String lxUser = "SELECT count(id)  FROM RZTSYSUSER WHERE LOGINSTATUS = 0 AND USERDELETE = 1  AND USERTYPE=0 ";
         /**
          * 巡视在线人员
          */
-        String xsZxUser = " SELECT count(id)  FROM RZTSYSUSER WHERE LOGINSTATUS = 1 AND WORKTYPE = 2 AND USERDELETE = 1 ";
+        String xsZxUser = " SELECT count(1) " +
+                "FROM (SELECT z.CM_USER_ID " +
+                "      FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID " +
+                "      WHERE LOGINSTATUS = 1 AND USERDELETE = 1 AND trunc(z.PLAN_START_TIME) = trunc(sysdate) " +
+                "      GROUP BY z.CM_USER_ID) ";
         /**
          * 巡视离线人员
          */
-        String xsLxUser = " SELECT count(id)  FROM RZTSYSUSER WHERE LOGINSTATUS = 0 AND WORKTYPE = 2 AND USERDELETE = 1 ";
+        String xsLxUser = " SELECT count(1) FROM (SELECT z.CM_USER_ID " +
+                "  FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID " +
+                "  WHERE LOGINSTATUS = 0 AND USERDELETE = 1 AND trunc(z.PLAN_START_TIME) = trunc(sysdate) " +
+                "  GROUP BY z.CM_USER_ID) ";
         /**
          * 看护在线人员
          */
-        String khZxUser = " SELECT count(id)  FROM RZTSYSUSER WHERE LOGINSTATUS = 1 AND WORKTYPE = 1 AND USERDELETE = 1 ";
+        String khZxUser = " SELECT count(1)FROM (SELECT count(u.ID) " +
+                "FROM RZTSYSUSER u LEFT JOIN KH_TASK k ON u.ID = k.USER_ID " +
+                "WHERE LOGINSTATUS = 1 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND trunc(PLAN_START_TIME)=trunc(sysdate) " +
+                "GROUP BY k.USER_ID) ";
         /**
          * 看护离线人员
          */
-        String khLxUser = " SELECT count(id)  FROM RZTSYSUSER WHERE LOGINSTATUS = 0 AND WORKTYPE = 1 AND USERDELETE = 1 ";
+        String khLxUser = " SELECT count(1)FROM (SELECT count(u.ID) " +
+                "FROM RZTSYSUSER u LEFT JOIN KH_TASK k ON u.ID = k.USER_ID " +
+                "WHERE LOGINSTATUS = 0 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND trunc(PLAN_START_TIME)=trunc(sysdate) " +
+                "GROUP BY k.USER_ID) ";
 
         /**
          * 前台稽查在线人员
          */
-        String qjcZxUser = " SELECT count(id)  FROM RZTSYSUSER WHERE LOGINSTATUS = 1 AND WORKTYPE = 3 AND USERDELETE = 1 ";
+        String qjcZxUser = " SELECT count(1) FROM (SELECT " +
+                "    count(1) " +
+                "  FROM CHECK_LIVE_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID " +
+                "  WHERE u.LOGINSTATUS = 1 AND u.USERDELETE = 1 AND sysdate BETWEEN PLAN_START_TIME AND PLAN_END_TIME GROUP BY k.USER_ID) ";
         /**
          * 前台稽查离线人员
          */
-        String qjcLxUser = " SELECT count(id)  FROM RZTSYSUSER WHERE LOGINSTATUS = 0 AND WORKTYPE = 3 AND USERDELETE = 1 ";
+        String qjcLxUser = " SELECT count(1) FROM (SELECT " +
+                "    count(1) " +
+                "  FROM CHECK_LIVE_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID " +
+                "  WHERE u.LOGINSTATUS = 0 AND u.USERDELETE = 1 AND sysdate BETWEEN PLAN_START_TIME AND PLAN_END_TIME GROUP BY k.USER_ID) ";
 
         /**
          * 后台稽查在线人员
          */
-        String hjcZxUser = " SELECT count(id)  FROM RZTSYSUSER WHERE LOGINSTATUS = 1 AND WORKTYPE = 4 AND USERDELETE = 1 ";
+//        String hjcZxUser = " SELECT count(id)  FROM RZTSYSUSER WHERE LOGINSTATUS = 1 AND WORKTYPE = 4 AND USERDELETE = 1  AND USERTYPE=0 ";
         /**
          * 后台稽查离线人员
          */
-        String hjcLxUser = " SELECT count(id)  FROM RZTSYSUSER WHERE LOGINSTATUS = 0 AND WORKTYPE = 4 AND USERDELETE = 1 ";
+//        String hjcLxUser = " SELECT count(id)  FROM RZTSYSUSER WHERE LOGINSTATUS = 0 AND WORKTYPE = 4 AND USERDELETE = 1  AND USERTYPE=0 ";
 
 
         /**
@@ -101,12 +117,12 @@ public class PersonnelTasksPushService extends CurdService<websocket, websocketR
          */
         String khWks = "SELECT count(1)  " +
                 "FROM KH_TASK " +
-                "WHERE STATUS = '未开始' AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+                "WHERE STATUS = 0 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
         /**
          * 现场稽查未开始
          */
         String xcJcWks = "SELECT count(1)  " +
-                "FROM CHECK_LIVE_TASK_DETAIL " +
+                "FROM CHECK_LIVE_TASK " +
                 "WHERE STATUS = 0 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
         /**
          * 正常巡视进行中
@@ -125,12 +141,12 @@ public class PersonnelTasksPushService extends CurdService<websocket, websocketR
          */
         String khJxz = "SELECT count(1)  " +
                 "FROM KH_TASK " +
-                "WHERE STATUS = '进行中' AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+                "WHERE STATUS = 1 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
         /**
          * 现场稽查进行中
          */
         String xcJcJxz = "SELECT count(1)  " +
-                "FROM CHECK_LIVE_TASK_DETAIL " +
+                "FROM CHECK_LIVE_TASK " +
                 "WHERE STATUS = 1 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
         /**
          * 正常巡视已完成
@@ -149,12 +165,12 @@ public class PersonnelTasksPushService extends CurdService<websocket, websocketR
          */
         String khYwc = "SELECT count(1)  " +
                 "FROM KH_TASK " +
-                "WHERE STATUS = '已完成' AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+                "WHERE STATUS = 2 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
         /**
          *现场稽查已完成
          */
         String xcJcYwc = "SELECT count(1)  " +
-                "FROM CHECK_LIVE_TASK_DETAIL " +
+                "FROM CHECK_LIVE_TASK " +
                 "WHERE STATUS = 2 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
         /**
          * 今日治理隐患
@@ -175,8 +191,8 @@ public class PersonnelTasksPushService extends CurdService<websocket, websocketR
         //遍历Map取出通道单位id用于数据库查询权限
         sendMsg.forEach((sessionId, session) -> {
             String sql = "SELECT " +
-                    "(" + zxUser + ") as zxUser," +
-                    "(" + lxUser + ") as lxUser," +
+//                    "(" + zxUser + ") as zxUser," +
+//                    "(" + lxUser + ") as lxUser," +
                     "(" + xsZxUser + ") as xsZxUser," +
                     "(" + xsLxUser + ") as xsLxUser," +
                     "(" + khZxUser + ") as khZxUser," +
@@ -192,8 +208,8 @@ public class PersonnelTasksPushService extends CurdService<websocket, websocketR
                     "(" + xcJcYwc + ") as xcJcYwc," +
                     "(" + qjcZxUser + ") as qjcZxUser," +
                     "(" + qjcLxUser + ") as qjcLxUser," +
-                    "(" + hjcZxUser + ") as hjcZxUser," +
-                    "(" + hjcLxUser + ") as hjcLxUser, " +
+//                    "(" + hjcZxUser + ") as hjcZxUser," +
+//                    "(" + hjcLxUser + ") as hjcLxUser, " +
                     "(" + handlesql + ") as handlesql," +
                     "(" + addedsql + ") as addedsql," +
                     "(" + updateSql + ") as updateSql," +

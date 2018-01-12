@@ -32,7 +32,7 @@
 
 	<build>
 		<!-- 为jar包取名 -->
-		<finalName>sdtd-start</finalName>
+		<finalName>file-server</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>

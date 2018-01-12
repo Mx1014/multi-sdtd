@@ -19,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -49,6 +50,7 @@ public class KhTaskController extends
 			HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
 			JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", task.getUserId()).toString());
 			Object o = this.service.listAllKhTask(task, status,pageable,Integer.valueOf(jsonObject.get("ROLETYPE").toString()));
+			//Object o = this.service.listAllKhTask(	task, status,pageable,0);
 			return WebApiResponse.success(o);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -117,6 +119,13 @@ public class KhTaskController extends
 	public WebApiResponse listTaskInfoByYhId(String yhId){
 		return this.service.listTaskInfoByYhId(yhId);
 	}
+	//隐患台账展示隐患图片
+	@GetMapping("/listPictureByYhId")
+	@ResponseBody
+	public WebApiResponse listPictureByYhId(String yhId){
+		return this.service.listPictureByYhId(yhId);
+	}
+
 
 	//地图展示某人的具体任务信息
 	@GetMapping("/listTaskInfoById")
@@ -125,7 +134,7 @@ public class KhTaskController extends
 		return this.service.listTaskInfoById(taskId);
 	}
 
-
+	//地图展示任务图片
 	@ApiOperation(value = "获取任务图片", notes = "获取任务图片  ")
 	@GetMapping("/appListPicture")
 	@ResponseBody
@@ -133,12 +142,13 @@ public class KhTaskController extends
 		return this.service.appListPicture(taskId,zj);
 	}
 
-	//地图展示某人的具体任务信息
+	//定时任务
 	@GetMapping("/createTask")
 	@ResponseBody
 	public void createTask(String taskId){
 		this.service.createTask();
 	}
+
 }
 
 

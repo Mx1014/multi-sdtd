@@ -4,11 +4,10 @@ import com.rzt.entity.TimedConfig;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
-/**
- * 李成阳
- * 2018/1/4
- */
+
+@Repository
 public interface TimedConfigRepository  extends JpaRepository<TimedConfig, String> {
 
     @Modifying

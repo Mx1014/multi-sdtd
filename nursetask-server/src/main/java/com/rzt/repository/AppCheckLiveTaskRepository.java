@@ -19,10 +19,6 @@ public interface AppCheckLiveTaskRepository extends JpaRepository<CheckLiveTaskD
     @Query(value = "UPDATE CHECK_LIVE_TASK_DETAIL SET SFZG = ?1,RYYZ = ?2 WHERE id = ?3", nativeQuery = true)
     void updateDgdwCheck(Integer sfzg, Integer ryyz, Long execId);
 
-    @Modifying
-    @Query(value = "UPDATE CHECK_LIVE_TASK SET DZWL = ?2 WHERE id = ?1", nativeQuery = true)
-    void updateDzwl(Long taskId, Integer dydj);
-
     /*@Query(value = "", nativeQuery = true)
     void updateDdxcTSSime(String userId, Long taskId, Date date, Long detailId);*/
 

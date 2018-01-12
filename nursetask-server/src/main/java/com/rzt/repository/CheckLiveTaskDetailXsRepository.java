@@ -20,4 +20,5 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface CheckLiveTaskDetailXsRepository extends JpaRepository<CheckLiveTaskDetailXs,String> {
+    CheckLiveTaskDetailXs findById(Long id);
 }

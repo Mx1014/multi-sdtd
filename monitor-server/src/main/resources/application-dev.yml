@@ -1,6 +1,6 @@
 server:
     port: 7898
-    context-path: /monitorServer
+    context-path: /monitorServer/
 token:
   expiretime: 300000000
 spring:

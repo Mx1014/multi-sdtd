@@ -18,6 +18,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -45,9 +46,10 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
         try {
             String result = "K.TASK_NAME AS TASKNAME,H.YHMS AS MS,H.YHJB AS JB,K.PLAN_START_TIME AS STARTTIME,K.PLAN_END_TIME AS ENDTIME,K.STATUS AS STATUS ";
             String sql = "SELECT " + result + " FROM KH_TASK k LEFT JOIN KH_YH_HISTORY H on k.yh_id = h.id WHERE K.ID=?";
-            return WebApiResponse.success(this.execSql(sql, Long.parseLong(taskId)));
+            List<Map<String, Object>> list = this.execSql(sql, Long.parseLong(taskId));
+            return WebApiResponse.success(list);
         } catch (Exception e) {
-            return WebApiResponse.erro("数据获取失败");
+            return WebApiResponse.erro("数据获取失败"+e.getMessage());
         }
     }
 

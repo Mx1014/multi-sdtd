@@ -62,9 +62,9 @@ public class CheckLiveTask  implements Serializable{
 	@Column(name = "CHECK_CYCLE")
 	private Integer checkCycle;
 
-	//字段描述: 是否设置了电子围栏（0是 1否）
-	@Column(name = "DZWL")
-	private Integer dzwl;
+	//字段描述: 物品提示
+	@Column(name = "WPTS")
+	private String wpts;
 	//字段描述: 计划开始时间
 	@Column(name = "PLAN_START_TIME")
 	@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -73,6 +73,14 @@ public class CheckLiveTask  implements Serializable{
 	@Column(name = "PLAN_END_TIME")
 	@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
 	private Date planEndTime;
+
+	public String getWpts() {
+		return wpts;
+	}
+
+	public void setWpts(String wpts) {
+		this.wpts = wpts;
+	}
 
 	public Date getPlanStartTime() {
 		return planStartTime;
@@ -178,13 +186,6 @@ public class CheckLiveTask  implements Serializable{
 		return this.checkCycle;
 	}
 
-	public void setDzwl(Integer dzwl){
-		this.dzwl = dzwl;
-	}
-	@ExcelResources(title="是否设置了电子围栏（0是 1否）",order=15)
-	public Integer getDzwl(){
-		return this.dzwl;
-	}
 
 
 

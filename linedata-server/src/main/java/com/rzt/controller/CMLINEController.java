@@ -52,10 +52,10 @@ public class CMLINEController extends
 	@GetMapping("test")
 	public void test(){
 
-		List<Map<String, Object>> list = service.execSql("select id,line_name from cm_line");
+		List<Map<String, Object>> list = service.execSql("select id,line_name1 from cm_line_section");
 		for (Map map:list) {
 			Long id = Long.valueOf(map.get("ID").toString());
-			String linename = HanyuPinyinHelper.getPinyinString(String.valueOf(map.get("LINE_NAME")));
+			String linename = HanyuPinyinHelper.getPinyinString(String.valueOf(map.get("LINE_NAME1")));
 			service.reposiotry.updateLineName(id,linename);
 		}
 	}

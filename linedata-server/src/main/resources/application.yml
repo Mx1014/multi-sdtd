@@ -5,7 +5,7 @@ server:
   port: 9090
   context-path: /linedata/
 #expireTime: 30000000
-#log
+#
 #logging:
 #  config: classpath:logback.xml
 
@@ -20,11 +20,9 @@ spring:
 #      driverClassName: com.mysql.jdbc.Driver
 #      type: com.alibaba.druid.pool.DruidDataSource
       #oracle数据库配置
-#      driverClassName: oracle.jdbc.driver.OracleDriver
-#      url: jdbc:oracle:thin:@localhost:1521/orcl
-#      username: sdtd
-#      password: sdtd
+      driverClassName: oracle.jdbc.driver.OracleDriver
       url: jdbc:oracle:thin:@47.94.131.120:1521/orcl
+#      url: jdbc:oracle:thin:@168.130.1.32:1521:orcl
       username: sdtd27
       password: sdtd27
 # 下面为连接池的补充设置，应用到上面所有数据源中
@@ -74,3 +72,4 @@ eureka:
   client:
     serviceUrl:
       defaultZone: http://localhost:7002/eureka/
+#      defaultZone: http://dubby:dubby@192.168.22.56:7002/eureka/

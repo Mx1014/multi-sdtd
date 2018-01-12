@@ -7,17 +7,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-/**
- * 李成阳
- * 2018/1/7
- */
+
 @Service
 public class PictureService extends CurdService<CheckResult, CheckResultRepository>  {
 
@@ -27,6 +21,7 @@ public class PictureService extends CurdService<CheckResult, CheckResultReposito
      * 获取详情中默认展示的4条照片
      * @param taskId
      * @param taskType
+     *           END_TOWER_ID  这个字段为0是代表当前为杆塔   不为0时代表是通道
      * @return
      */
     public WebApiResponse getPictureAndLine(String taskId, String taskType) {
@@ -37,28 +32,34 @@ public class PictureService extends CurdService<CheckResult, CheckResultReposito
             list.add(taskId);
         }
         if(null != taskType && !"".equals(taskType)){
-            if("1".equals(taskType)){//巡视
+            try {
+            if("1".equals(taskType)){//巡视   AND END_TOWER_ID = 0
                 sql = "SELECT p.ID,FILE_PATH,p.CREATE_TIME,p.PROCESS_NAME,l.OPERATE_NAME,l.START_TOWER_ID" +
                         "   FROM xs_zc_task k LEFT JOIN XS_ZC_TASK_EXEC x ON k.ID = x.XS_ZC_TASK_ID" +
                         "    LEFT JOIN XS_ZC_TASK_EXEC_DETAIL l ON x.ID = l.XS_ZC_TASK_EXEC_ID RIGHT JOIN PICTURE_TOUR p ON l.ID = p.PROCESS_ID" ;
-                sql += "   WHERE p.TASK_ID = ?"+list.size()+"  AND P.FILE_TYPE = 1  AND END_TOWER_ID = 0 ORDER BY  p.CREATE_TIME DESC ";
+                sql += "   WHERE p.TASK_ID = ?"+list.size()+"  AND P.FILE_TYPE = 1   ORDER BY  p.CREATE_TIME DESC ";
+                return WebApiResponse.success(this.execSqlPage(new PageRequest(0, 4), sql, list.toArray()));
             }
             if("2".equals(taskType)){//看护
                 sql = "SELECT p.ID,FILE_PATH,p.CREATE_TIME,p.PROCESS_NAME,y.LINE_NAME as OPERATE_NAME" +
-                        " FROM KH_TASK k LEFT JOIN PICTURE_KH p ON k.ID = p.TASK_ID LEFT JOIN  KH_YH_HISTORY y ON k.YH_ID = y.ID";
+                        " FROM KH_TASK k LEFT JOIN PICTURE_KH p ON k.ID = p.TASK_ID LEFT JOIN  KH_YH_HISTORY y ON  k.ID = y.TASK_ID";
                 sql += "    WHERE k.ID =  ?"+list.size()+" AND FILE_TYPE = 1 ORDER BY p.CREATE_TIME DESC";
+                ArrayList<Object> objects = new ArrayList<>();
+                Page<Map<String, Object>> maps1 = this.execSqlPage(new PageRequest(0, 4), sql, list.toArray());
+
+                return WebApiResponse.success(maps1);
+
             }
 
-            try {
-                maps  = this.execSqlPage(new PageRequest(0, 4), sql, list.toArray());
 
-            }catch (Exception e){
+
+           }catch (Exception e){
                 LOGGER.error("查询杆塔图片失败"+e.getMessage());
                 return WebApiResponse.erro("查询杆塔图片失败"+e.getMessage());
             }
 
         }
-        return WebApiResponse.success(maps);
+        return WebApiResponse.erro("参数错误");
     }
 
     /**
@@ -80,7 +81,7 @@ public class PictureService extends CurdService<CheckResult, CheckResultReposito
          }
 
          if(null != taskType && !"".equals(taskType)){
-             if("1".equals(taskType)){//巡视
+             if("1".equals(taskType)){//巡视   AND END_TOWER_ID = 0
                  list.add(taskId);
                  if(null != taskId && !"".equals(taskId)){
                      grouupList.add(taskId);
@@ -89,44 +90,40 @@ public class PictureService extends CurdService<CheckResult, CheckResultReposito
                  groupSql = "SELECT START_TOWER_ID" +
                          "   FROM xs_zc_task k LEFT JOIN XS_ZC_TASK_EXEC x ON k.ID = x.XS_ZC_TASK_ID" +
                          "    LEFT JOIN XS_ZC_TASK_EXEC_DETAIL l ON x.ID = l.XS_ZC_TASK_EXEC_ID RIGHT JOIN PICTURE_TOUR p ON l.ID = p.PROCESS_ID" +
-                         "   WHERE p.TASK_ID = ?"+grouupList.size()+" AND FILE_TYPE = 1 AND END_TOWER_ID = 0 GROUP BY START_TOWER_ID";
+                         "   WHERE p.TASK_ID = ?"+grouupList.size()+" AND FILE_TYPE = 1 AND START_TOWER_ID IS NOT NULL   GROUP BY START_TOWER_ID";
                  List<Map<String, Object>> maps1  = this.execSql(groupSql, grouupList.toArray());
 
 
                  for (Map<String, Object> stringObjectMap : maps1) {
                      Object start_tower_id = stringObjectMap.get("START_TOWER_ID");
-                     System.out.println("start_tower_id"+start_tower_id);
                      if(null != start_tower_id){
                          ArrayList<String> strings = new ArrayList<>();
                          Object[] objects = list.toArray();
                          objects[1] = start_tower_id.toString();
-                         System.out.println(list.size());
-                         System.out.println(objects);
                          String sql = "SELECT p.ID,FILE_PATH,p.CREATE_TIME,p.PROCESS_NAME,l.OPERATE_NAME,l.START_TOWER_ID" +
                                  "   FROM xs_zc_task k LEFT JOIN XS_ZC_TASK_EXEC x ON k.ID = x.XS_ZC_TASK_ID" +
                                  "    LEFT JOIN XS_ZC_TASK_EXEC_DETAIL l ON x.ID = l.XS_ZC_TASK_EXEC_ID RIGHT JOIN PICTURE_TOUR p ON l.ID = p.PROCESS_ID"
-                                 +   "   WHERE p.TASK_ID = ?1  AND P.FILE_TYPE = 1 AND END_TOWER_ID = 0  AND START_TOWER_ID = ?2 ORDER BY  p.CREATE_TIME DESC ";
-                         System.out.println(sql);
+                                 +   "   WHERE p.TASK_ID = ?1  AND P.FILE_TYPE = 1 AND START_TOWER_ID = ?2 ORDER BY  p.CREATE_TIME DESC ";
                          List<Map<String, Object>> maps2 = this.execSql(sql ,objects);
-                         System.out.println(maps2);
-                         //所有的巡视图片组
+                         //所有的巡视图片组   AND END_TOWER_ID = 0
                          group.add(maps2);
-
-
                      }
                  }
                  LOGGER.info("任务图片查询成功");
                  return  WebApiResponse.success(group);
-
              }
              if("2".equals(taskType)){//看护
 
-                 String sql = "SELECT p.ID,FILE_PATH,p.CREATE_TIME,p.PROCESS_NAME,y.LINE_NAME as OPERATE_NAME,k.TASK_NAME" +
-                         "FROM KH_TASK k LEFT JOIN PICTURE_KH p ON k.ID = p.TASK_ID LEFT JOIN  KH_YH_HISTORY y ON k.YH_ID = y.ID" +
-                         " WHERE k.ID = ?"+list.size()+" AND FILE_TYPE = 1" +
-                         " ORDER BY p.CREATE_TIME DESC;";
+                 String sql = "SELECT p.ID,FILE_PATH,p.CREATE_TIME,p.PROCESS_NAME,y.LINE_NAME as OPERATE_NAME,k.TASK_NAME " +
+                         " FROM KH_TASK k LEFT JOIN PICTURE_KH p ON k.ID = p.TASK_ID LEFT JOIN  KH_YH_HISTORY y ON  k.ID = y.TASK_ID" +
+                         "  WHERE k.ID = ?"+list.size()+" AND FILE_TYPE = 1" +
+                         "   ORDER BY p.CREATE_TIME DESC";
+
+                 List<Map<String, Object>> maps1 = this.execSql(sql, list.toArray());
+                 ArrayList<Object> objects = new ArrayList<>();
+                 objects.add(maps1);
                  LOGGER.info("任务图片查询成功");
-                 return WebApiResponse.success(this.execSql(sql, list.toArray()));
+                 return WebApiResponse.success(objects);
 
              }
 
@@ -144,40 +141,126 @@ public class PictureService extends CurdService<CheckResult, CheckResultReposito
      * @param taskType
      * @return
      */
-    public WebApiResponse getPhotos(String ids,String taskType) {
+    public WebApiResponse getPhotos(String taskId,String ids,String taskType) {
+        if((null == taskType || "".equals(taskType)) ||  (null == taskId || "".equals(taskId)) || (null == ids || "".equals(ids))){
+            return WebApiResponse.erro("参数错误");
+        }
+
+
+
         String[] split = null;
         ArrayList<Object> list = new ArrayList<>();
-        try {
-            if(null != taskType && !"".equals(taskType)){
-                if(null != ids && !"".equals(ids)){
-                    split = ids.split(",");
 
-                }
+        HashSet<String> groupId = new HashSet<>();//存储分组开始杆塔id
+         try {
+
+
+            if(null != taskType && !"".equals(taskType)){
+
+
                 if("1".equals(taskType)){//巡视
-                    for (String s : split) {
-                        if(null!=s && !"".equals(split)){
-                            ArrayList<String> strings = new ArrayList<>();
-                            strings.add(s);
-                            String sql = "SELECT * FROM PICTURE_TOUR WHERE ID = ?"+strings.size();
-                            List<Map<String, Object>> maps = this.execSql(sql, strings);
-                            list.add(maps);
+
+                    if(null != ids && !"".equals(ids)){
+
+                        //分组   AND END_TOWER_ID = 0
+                        String[] split1 = ids.split(",");
+                        for (String s : split1) {
+                            ArrayList<String> group = new ArrayList<>();
+                            if(null!= taskId && !"".equals(taskId)){
+                                group.add(taskId);
+                            }
+                            group.add(s);
+                            if(null != s && !"".equals(s)){
+                                String groupSql  = "SELECT  START_TOWER_ID" +
+                                        "  FROM xs_zc_task k LEFT JOIN XS_ZC_TASK_EXEC x ON k.ID = x.XS_ZC_TASK_ID" +
+                                        "   LEFT JOIN XS_ZC_TASK_EXEC_DETAIL l ON x.ID = l.XS_ZC_TASK_EXEC_ID RIGHT JOIN PICTURE_TOUR p ON l.ID = p.PROCESS_ID" +
+                                        "    WHERE p.TASK_ID = ?1  AND p.ID = ?2 AND FILE_TYPE = 1  " ;
+                                List<Map<String, Object>> maps1 = this.execSql(groupSql, group.toArray());
+                               if(maps1.size()>0 && null != maps1.get(0)){
+                                       groupId.add(maps1.get(0).get("START_TOWER_ID").toString());
+
+                               }
+                            }
+
                         }
+
+                    if(!groupId.isEmpty()){
+
+                        ArrayList<String> strings = new ArrayList<>(groupId);
+                        String[] split2 = ids.split(",");
+                        for (String string : strings) {
+                            ArrayList<Object> objects = new ArrayList<>();
+                            for (String s : split2) {
+
+
+                               if(null != taskId && !"".equals(taskId)){
+                                   ArrayList<String> strings1 = new ArrayList<>();
+                                   strings1.add(taskId);
+                                   strings1.add(string);
+                                   strings1.add(s);
+
+                                   String sql = "SELECT p.ID,FILE_PATH,FILE_SMALL_PATH,k.TASK_NAME,p.CREATE_TIME,l.REASON,cy.LINE_ID,line.LINE_NAME as PROCESS_NAME,line.SECTION,l.OPERATE_NAME  " +
+                                           "  FROM xs_zc_task k LEFT JOIN XS_ZC_TASK_EXEC x ON k.ID = x.XS_ZC_TASK_ID" +
+                                           "    LEFT JOIN XS_ZC_TASK_EXEC_DETAIL l ON x.ID = l.XS_ZC_TASK_EXEC_ID RIGHT JOIN PICTURE_TOUR p ON l.ID = p.PROCESS_ID" +
+                                           "      LEFT JOIN XS_ZC_CYCLE cy on cy.ID = k.XS_ZC_CYCLE_ID LEFT JOIN CM_LINE line ON line.ID = cy.LINE_ID" +
+                                           "        WHERE p.TASK_ID = ?1   AND START_TOWER_ID = ?2  AND p.ID = ?3  AND P.FILE_TYPE = 1 ORDER BY  p.CREATE_TIME DESC ";
+                                   List<Map<String, Object>> maps = this.execSql(sql,strings1.toArray());
+                                   if(null != maps && maps.size()>0){
+                                       objects.add(maps.get(0));
+                                   }
+
+                               }
+                           }
+                           if(null !=objects && objects.size()>0){
+                               list.add(objects);
+                           }
+
+                        }
+                    }
                     }
                 }
                 if("2".equals(taskType)){//看护
-                    for (String s : split) {
+                    ArrayList<String> taskArr = new ArrayList<>();
+                    ArrayList<Object> task = new ArrayList<>();
+                     split = ids.split(",");
+                    if(null != taskId && !"".equals(taskId)){
+                        taskArr.add(taskId);
+
+
+                            ArrayList<Object> objects = new ArrayList<>();
+                            for (String s : split) {
+
                         if(null!=s && !"".equals(split)){
                             ArrayList<String> strings = new ArrayList<>();
+                            strings.add(taskId);
                             strings.add(s);
-                            String sql = "SELECT * FROM PICTURE_KH WHERE ID = ?"+strings.size();
-                            List<Map<String, Object>> maps = this.execSql(sql, strings);
-                            list.add(maps);
+                            String sql = "SELECT p.ID,FILE_PATH,p.CREATE_TIME,y.LINE_NAME as PROCESS_NAME,k.TASK_NAME as OPERATE_NAME,k.TASK_NAME,y.LINE_ID " +
+                                    "   FROM KH_TASK k LEFT JOIN PICTURE_KH p ON k.ID = p.TASK_ID LEFT JOIN  KH_YH_HISTORY y ON k.ID = y.TASK_ID" +
+                                    "   WHERE k.ID = ?1 AND FILE_TYPE = 1  AND p.ID = ?2 " +
+                                    "   ORDER BY p.CREATE_TIME DESC ";
+                            List<Map<String, Object>> maps1 = this.execSql(sql, strings.toArray());
+                            if(null != maps1 && maps1.size()>0){
+                                objects.add(maps1.get(0));
+                            }
+
                         }
+                    if(null!= objects && objects.size()>0){
+                        list.add(objects);
                     }
+
+                        }
+                        if(null !=list && list.size()>0){
+                            task.add(list.get(0));
+                        }
+
+                    return WebApiResponse.success(task);
                 }
 
+
+                }
             }
-        }catch (Exception e){
+
+       }catch (Exception e){
             LOGGER.error("获取问题照片失败"+e.getMessage());
             return WebApiResponse.erro("获取问题照片失败"+e.getMessage());
         }

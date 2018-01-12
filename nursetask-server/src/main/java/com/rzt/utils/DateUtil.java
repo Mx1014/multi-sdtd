@@ -55,7 +55,6 @@ public class DateUtil {
         try {
             return formatter.parse(dateTime);
         } catch (ParseException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         return new Date();

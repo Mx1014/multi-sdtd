@@ -45,7 +45,7 @@ public class WarningOneKey implements Serializable {
 
     public void setId() {
         if (id == null || id == 0) {
-            this.id = new SnowflakeIdWorker(0, 0).nextId();
+            this.id = new SnowflakeIdWorker(1, 5).nextId();
         } else {
             this.id = id;
         }

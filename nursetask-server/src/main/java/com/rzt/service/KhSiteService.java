@@ -67,7 +67,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
     private KhCycleRepository cycleRepository;
 
 
-    public Object listAllTaskNotDo(KhTaskModel task, Pageable pageable, String userName, String deptId, String roleType) {
+    public Object listAllTaskNotDo(KhTaskModel task, Pageable pageable, String userName,String roleType) {
         List params = new ArrayList<>();
         StringBuffer buffer = new StringBuffer();
         String result = " k.id as id,k.task_name as taskName,k.tdyw_org as yworg,y.yhms as ms,y.yhjb as jb,k.create_time as createTime,k.COUNT as COUNT,u.realname as username,k.jbd as jbd,k.plan_start_time as starttime,k.plan_end_time as endtime,u.id as userId";
@@ -100,7 +100,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             }
             params.add(task.getUserId());
 
-        //部门权限
+            //部门权限
         } else if (roleType.equals("3")) {
             if (task.getStatus().equals("1")) {
                 sql = "select " + result + " from kh_site k ,kh_yh_history y,rztsysuser u,RZTSYSCOMPANY d  " + buffer.toString() + " and  k.yh_id = y.id and u.id = k.user_id and d.id = u.COMPANYID and u.COMPANYID = (select COMPANYID FROM RZTSYSUSER where id =?) ";
@@ -109,7 +109,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             }
             params.add(task.getUserId());
 
-        //组织权限
+            //组织权限
         } else if (roleType.equals("4")) {
             if (task.getStatus().equals("1")) {
                 sql = "select " + result + " from kh_site k ,kh_yh_history y,rztsysuser u,RZTSYSDEPARTMENT d  " + buffer.toString() + " and  k.yh_id = y.id and u.id = k.user_id and d.id = u.classname and u.classname = (select classname FROM RZTSYSUSER where id =?) ";
@@ -119,7 +119,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             }
             params.add(task.getUserId());
 
-         //个人权限
+            //个人权限
         } else if (roleType.equals("5")) {
             if (task.getStatus().equals("1")) {
                 sql = "select " + result + " from kh_site k ,kh_yh_history y,rztsysuser u  " + buffer.toString() + " and k.yh_id = y.id and u.id = k.user_id and k.user_id = ?";
@@ -129,7 +129,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             }
             params.add(task.getUserId());
 
-        //所有权限
+            //所有权限
         } else {
             if (task.getStatus().equals("1")) {
                 sql = "select " + result + " from kh_site k ,kh_yh_history y,rztsysuser u " + buffer.toString() + " and k.yh_id = y.id and u.id = k.user_id";
@@ -162,6 +162,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
     public void xiaoQueCycle(long id) {
         KhCycle site = this.cycleRepository.findCycle(id);
         this.reposiotry.updateYH(site.getYhId(), DateUtil.dateNow());
+        //  this.reposiotry.updateCheckTask(id);
         this.reposiotry.updateKhCycle(id);
     }
 
@@ -179,7 +180,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
     }
 
     @Transactional
-    public WebApiResponse saveYh(KhYhHistory yh, String fxtime, String startTowerName, String endTowerName,String pictureId) {
+    public WebApiResponse saveYh(KhYhHistory yh, String fxtime, String startTowerName, String endTowerName, String pictureId) {
         try {
             yh.setYhfxsj(DateUtil.parseDate(fxtime));
             yh.setSfdj(0);
@@ -198,8 +199,9 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             }
             KhCycle task = new KhCycle();
             task.setId();
-            if (yh.getVtype().contains("kV")){
-                yh.setVtype(yh.getVtype().substring(0,yh.getVtype().indexOf("k")));
+            String kv = yh.getVtype();
+            if (yh.getVtype().contains("kV")) {
+                 kv = kv.substring(0, kv.indexOf("k"));
             }
             yh.setTaskId(task.getId());
             yh.setYhzt(0);//隐患未消除
@@ -207,7 +209,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             yh.setCreateTime(DateUtil.dateNow());
             yh.setSection(startTowerName + "-" + endTowerName);
             yhservice.add(yh);
-            String taskName = yh.getVtype() + yh.getLineName() + startTowerName + "-" + endTowerName + " 号杆塔看护任务";
+            String taskName = kv + "-" + yh.getLineName() +" "+ startTowerName + "-" + endTowerName + " 号杆塔看护任务";
             task.setVtype(yh.getVtype());
             task.setLineName(yh.getLineName());
             task.setTdywOrg(yh.getTdywOrg());
@@ -221,10 +223,12 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             task.setYhId(yh.getId());
             task.setCreateTime(DateUtil.dateNow());
             this.cycleService.add(task);
-            if (null!=pictureId && !pictureId.equals("")){
+            long id = new SnowflakeIdWorker(2, 4).nextId();
+            this.reposiotry.addCheckSite(id,task.getId(),0,task.getTaskName(),0,task.getLineId(),task.getTdywOrgId(),task.getWxOrgId(),task.getYhId());
+            if (null != pictureId && !pictureId.equals("")) {
                 String[] split = pictureId.split(",");
-                for (int i = 0;i<split.length;i++){
-                    yhRepository.updatePicture(Long.parseLong(split[i]),yh.getId());
+                for (int i = 0; i < split.length; i++) {
+                    yhRepository.updatePicture(Long.parseLong(split[i]), yh.getId());
                     //审批完成后   为图片添加taskId
                 }
             }
@@ -256,12 +260,12 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
         try {
             List<Map<Object, String>> list = (List<Map<Object, String>>) JSONObject.parse(tasks);
             KhCycle cycle = this.cycleRepository.findCycle(Long.parseLong(id));
-            String groupFlag = new SnowflakeIdWorker(0,0).nextId() + "";
-            Date time1=DateUtil.parseDate(list.get(0).get("planStartTime").toString());
-            Date time2=DateUtil.parseDate(list.get(list.size()-1).get("planEndTime").toString());
-            double cycle1 = DateUtil.getDatePoor(time2,time1);
-            DecimalFormat df = new DecimalFormat( "0.00");
-            cycle1=Double.parseDouble(df.format(cycle1));
+            String groupFlag = new SnowflakeIdWorker(0, 0).nextId() + "";
+            Date time1 = DateUtil.parseDate(list.get(0).get("planStartTime").toString());
+            Date time2 = DateUtil.parseDate(list.get(list.size() - 1).get("planEndTime").toString());
+            double cycle1 = DateUtil.getDatePoor(time2, time1);
+            DecimalFormat df = new DecimalFormat("0.00");
+            cycle1 = Double.parseDouble(df.format(cycle1));
 //            int cycle1 =List.get(0).get("planStartTime").toString();
             for (Map map : list) {
                 KhTask task = new KhTask();

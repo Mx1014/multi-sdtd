@@ -26,7 +26,7 @@ public class KhTaskWpqr implements Serializable {
     }
 
     public void setId() {
-        this.id = Long.valueOf(new SnowflakeIdWorker(0,0).nextId());;
+        this.id = Long.valueOf(new SnowflakeIdWorker(1,3).nextId());;
     }
 
     public long getTaskId() {

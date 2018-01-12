@@ -53,12 +53,14 @@ public class XsZcCycleController extends
     * @author nwz
     */
     @ApiOperation(value = "周期维护 新增周期",notes = "pc端新增周期")
-    @PostMapping("addCycle")
-    public Object addCycle( XsZcCycle xsZcCycle,String userId) {
+    @GetMapping("addCycle")
+    public Object addCycle( XsZcCycle xsZcCycle,String currentUserId,@RequestParam(value = "towerIds[]") Long[] towerIds) {
+//    public Object addCycle( XsZcCycle xsZcCycle,String currentUserId) {
 		try {
 			xsZcCycle.setTotalTaskNum(0);
 			xsZcCycle.setCreateTime(DateUtil.dateNow());
-			this.service.addCycle(xsZcCycle,userId);
+			this.service.addCycle(xsZcCycle,currentUserId,towerIds);
+//			this.service.addCycle(xsZcCycle,currentUserId);
 			return WebApiResponse.success("周期新增成功");
 		} catch (Exception var) {
 			return WebApiResponse.erro("周期新增失败" + var.getStackTrace());
@@ -126,9 +128,9 @@ public class XsZcCycleController extends
 
     @ApiOperation(value = "周期更新",notes = "周期更新")
     @PatchMapping("updateCycle")
-		public Object updateCycle(Long id,Integer cycle,Integer inUse,Integer planXsNum,String planStartTime,String planEndTime) {
+		public Object updateCycle(Long id,Integer cycle,Integer inUse,Integer planXsNum,String planStartTime,String planEndTime,Integer isKt) {
         try {
-            this.service.updateCycle(id,cycle,inUse,planXsNum,planStartTime,planEndTime);
+            this.service.updateCycle(id,cycle,inUse,planXsNum,planStartTime,planEndTime,isKt);
             return WebApiResponse.success("数据保存成功");
         } catch (Exception var3) {
             return WebApiResponse.erro("数据保存失败" + var3.getStackTrace());
@@ -164,7 +166,26 @@ public class XsZcCycleController extends
 		try {
 			return this.service.listPlan(pageable,xsTaskSch,currentUserId);
 		} catch (Exception var7) {
-			return WebApiResponse.erro("数据查询失败" + var7.getStackTrace());
+			return WebApiResponse.erro("数据查询失败" + var7.getMessage());
+		}
+
+	}
+
+	/**
+	 * @Method listPlanForMap
+	 * @Description  任务派发 生成任务和人员信息
+	 * @param
+	 * @return java.lang.Object
+	 * @date 2017/12/7 17:57
+	 * @author nwz
+	 */
+	@ApiOperation(value = "pc端人员位置展示的巡视任务列表接口",notes = "pc端人员位置展示的巡视任务列表接口")
+	@GetMapping("listPlanForMap")
+	public Object listPlanForMap( Pageable pageable,XsTaskSCh xsTaskSch,String currentUserId) {
+		try {
+			return this.service.listPlanForMap(pageable,xsTaskSch,currentUserId);
+		} catch (Exception var7) {
+			return WebApiResponse.erro("数据查询失败" + var7.getMessage());
 		}
 
 	}
@@ -235,6 +256,62 @@ public class XsZcCycleController extends
 	}
 
 
+	@GetMapping("importCycle")
+	public Object importCycle(String execlPath) {
+		try {
+			this.service.importCycle(execlPath);
+			return WebApiResponse.success("成功了...");
+		} catch (Exception var) {
+			return WebApiResponse.erro("图片查找失败" + var.getStackTrace());
+		}
+	}
+
+	@GetMapping("bornTask")
+	public Object bornTask() {
+		try {
+			this.service.bornTask();
+			return WebApiResponse.success("成功了...");
+		} catch (Exception var) {
+			return WebApiResponse.erro("图片查找失败" + var.getStackTrace());
+		}
+	}
+
+
+	@GetMapping("redisInfo")
+	public Object redisInfo() {
+		try {
+			this.service.zhengwanshuijiao();
+			return WebApiResponse.success("成功了...");
+		} catch (Exception var) {
+			return WebApiResponse.erro("图片查找失败" + var.getStackTrace());
+		}
+	}
+
+
+
+	@GetMapping("gaipinin")
+	public Object gaipinin() {
+		try {
+//			this.service.gaipinin();
+			this.service.gaipinin2();
+			return WebApiResponse.success("成功了...");
+		} catch (Exception var) {
+			return WebApiResponse.erro("图片查找失败" + var.getStackTrace());
+		}
+	}
+
+	@GetMapping("insertCycleTower")
+	public Object insertCycleTower(String sql,Long xsZcCycleId) {
+		try {
+			this.service.insertCycleTower(sql,xsZcCycleId);
+			return WebApiResponse.success("成功了...");
+		} catch (Exception var) {
+			return WebApiResponse.erro("图片查找失败" + var.getStackTrace());
+		}
+	}
+
+
+
 	@InitBinder
 	public void initBinder(ServletRequestDataBinder binder) {
 		 /*** 自动转换日期类型的字段格式
@@ -243,6 +320,7 @@ public class XsZcCycleController extends
 		 binder.registerCustomEditor(Date.class, new CustomDateEditor(sdf, true));
 
    }
+
 
 
 
