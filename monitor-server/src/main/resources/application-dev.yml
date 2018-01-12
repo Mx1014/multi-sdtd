@@ -6,7 +6,7 @@ token:
 spring:
     datasource:
       type: com.alibaba.druid.pool.DruidDataSource
-      url: jdbc:oracle:thin:@168.130.1.32:1521:ORCL
+      url: jdbc:oracle:thin:@47.94.131.120:1521:orcl
 #      url: jdbc:oracle:thin:@168.130.1.32:1521:LIUZE
       username: sdtd27
       password: sdtd27
@@ -33,12 +33,12 @@ spring:
       name: monitorServer
     redis:
         database: 0
-        host: 168.130.1.31
-        port: 31662
+        host: 39.106.206.129
+        port: 6379
 #        host: localhost
 #        port: 65535
 #        password: 123456
-        password:
+        password: Rzt82890758-Rzt82890758
         pool:
           max-active: 8
           max-wait: -1
@@ -50,8 +50,10 @@ eureka:
     prefer-ip-address: true
   client:
         service-url:
-          defaultZone: http://168.130.1.31:31814/eureka/
-
+          defaultZone: http://39.106.206.129:7002/eureka/
+          #防止心跳启动报错
+#        register-with-eureka: false
+#        fetch-registry: false
 
 logging:
   config: classpath:logback-spring.xml
