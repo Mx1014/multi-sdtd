@@ -105,7 +105,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         try {
             StringBuffer buffer = new StringBuffer();
             List<Object> params = new ArrayList<>();
-            buffer.append(" where 1=1 ");
+            buffer.append(" where trunc(create_time)=trunc(sysdate) ");
             if (yhjb != null && !yhjb.equals("")) {
                 buffer.append(" and yhjb1 like");
                 params.add("%" + yhjb + "%");
@@ -114,7 +114,8 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 buffer.append(" and yhlb like");
                 params.add("%" + yhlb + "%");
             }
-            String sql = "select jd,wd from kh_yh_history " + buffer.toString();
+            buffer.append(" and yhzt = 0 ");
+            String sql = "select * from kh_yh_history " + buffer.toString();
             List<Map<String, Object>> list = this.execSql(sql, params.toArray());
             List<Object> list1 = new ArrayList<>();
             for (Map map : list) {
