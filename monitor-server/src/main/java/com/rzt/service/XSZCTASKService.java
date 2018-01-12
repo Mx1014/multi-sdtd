@@ -67,8 +67,8 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                 int i = Integer.parseInt(roletype);
                 switch (i){
                     case 0 :{//一级单位   显示三天周期抽查的任务
-                         sql = " SELECT  ID," +
-                                 "  TASKID," +
+                         sql = " SELECT   DISTINCT TASKID," +
+                                 "  ID," +
                                  "  CREATETIME," +
                                  "  USER_ID," +
                                  "  TASKNAME," +
