@@ -930,7 +930,7 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
 
 
 
-    public Object listPlanForMap(XsTaskSCh xsTaskSch, String currentUserId) {
+    public Object listPlanForMap(Pageable pageable,XsTaskSCh xsTaskSch, String currentUserId) {
 
         StringBuffer sqlBuffer = new StringBuffer();
         ArrayList arrList = new ArrayList();
@@ -974,8 +974,8 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
         }*/
 
 
-        List<Map<String, Object>> mapList = this.execSql(sqlBuffer.toString(), arrList.toArray());
-        return mapList;
+        Page<Map<String, Object>> maps = this.execSqlPage(pageable, sqlBuffer.toString(), arrList.toArray());
+        return maps;
     }
 
 
