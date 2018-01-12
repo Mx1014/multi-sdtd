@@ -181,9 +181,9 @@ public class XsZcCycleController extends
 	 */
 	@ApiOperation(value = "pc端人员位置展示的巡视任务列表接口",notes = "pc端人员位置展示的巡视任务列表接口")
 	@GetMapping("listPlanForMap")
-	public Object listPlanForMap( XsTaskSCh xsTaskSch,String currentUserId) {
+	public Object listPlanForMap( Pageable pageable,XsTaskSCh xsTaskSch,String currentUserId) {
 		try {
-			return this.service.listPlanForMap(xsTaskSch,currentUserId);
+			return this.service.listPlanForMap(pageable,xsTaskSch,currentUserId);
 		} catch (Exception var7) {
 			return WebApiResponse.erro("数据查询失败" + var7.getMessage());
 		}
