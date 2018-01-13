@@ -28,4 +28,5 @@ public interface CMLINERepository extends JpaRepository<CMLINE,String> {
     @Modifying
     @Transactional
     void updateLineName(Long id, String linename);
+
 }

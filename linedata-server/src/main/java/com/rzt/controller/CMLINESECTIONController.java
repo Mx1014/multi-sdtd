@@ -71,5 +71,12 @@ public class CMLINESECTIONController extends
 		}
 		return result;
 	}
+
+	@ApiOperation(value = "线路区段新增",notes = "线路区段新增")
+	@PostMapping("addLineSection")
+	public Map<String,Object> addLineSection(CMLINESECTION cmlinesection){
+		return service.addLineSection(cmlinesection);
+	}
+
 	
 }
