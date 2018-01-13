@@ -29,4 +29,7 @@ public interface CMLINERepository extends JpaRepository<CMLINE,String> {
     @Transactional
     void updateLineName(Long id, String linename);
 
+    @Modifying
+    @Query(value = "update cm_line set SECTION=?2 where id=?1 ",nativeQuery = true)
+    void updateLineSection(Long lineId, String section);
 }
