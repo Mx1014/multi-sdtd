@@ -7,8 +7,12 @@
 package com.rzt.service;
 
 import com.alibaba.fastjson.JSON;
+import com.rzt.entity.CMLINE;
 import com.rzt.entity.CMLINESECTION;
+import com.rzt.entity.CMTOWER;
+import com.rzt.repository.CMLINERepository;
 import com.rzt.repository.CMLINESECTIONRepository;
+import com.rzt.repository.CMTOWERRepository;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.ExcelUtil;
 import com.rzt.utils.HanyuPinyinHelper;
@@ -25,10 +29,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -46,6 +53,10 @@ import java.util.Map;
 public class CMLINESECTIONService extends CurdService<CMLINESECTION,CMLINESECTIONRepository> {
 
     protected static Logger LOGGER = LoggerFactory.getLogger(CMLINESECTIONService.class);
+    @Autowired
+    private CMLINERepository cmlineRepository;
+    @Autowired
+    private CMTOWERRepository cmtowerRepository;
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
@@ -229,5 +240,97 @@ public class CMLINESECTIONService extends CurdService<CMLINESECTION,CMLINESECTIO
             jsonObject = JSON.parseObject(userInformation.toString(),Map.class);
         }
         return jsonObject;
+    }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public Map<String,Object> addLineSection(CMLINESECTION cmlinesection) {
+        Map<String, Object> map = new HashMap<>();
+
+        try {
+            Integer startSort = cmlinesection.getStartSort();
+            Integer endSort = cmlinesection.getEndSort();
+            cmlinesection.setSection(startSort+"--"+endSort);
+            List<Map<String, Object>> list = execSql("select * from cm_line where line_name = ?1 and v_level = ?2 ", cmlinesection.getLineName(), cmlinesection.getVLevel());
+            if(list.size()==0){
+                CMLINE cmline = new CMLINE();
+                cmline.setId(null);
+                cmline.setLineName(cmlinesection.getLineName());
+                cmline.setVLevel(cmlinesection.getVLevel());
+                cmline.setSection(cmlinesection.getSection());
+                cmline.setIsDel(0);
+                CMLINE save = cmlineRepository.save(cmline);
+                cmlinesection.setLineId(save.getId());
+
+            }else if(list.size()==1){
+                cmlinesection.setLineId(Long.valueOf(list.get(0).get("ID").toString()));
+                cmlineRepository.updateLineSection(cmlinesection.getLineId(),startSort+"--"+endSort);
+            }else{
+                LOGGER.error("此线路信息重复!"+cmlinesection.getVLevel()+cmlinesection.getLineName());
+
+                throw new Exception("此线路信息重复!");
+            }
+
+            cmlinesection.setId(null);
+            reposiotry.save(cmlinesection);
+            if(list.size()==0){
+                for (int i = startSort; i <= endSort; i++) {
+                    CMTOWER cmtower = new CMTOWER();
+                    cmtower.setId(null);
+                    cmtower.setLineId(String.valueOf(cmlinesection.getLineId()));
+                    cmtower.setName(String.valueOf(i));
+                    cmtowerRepository.save(cmtower);
+                }
+            }else if(list.size()==1){
+                String section = String.valueOf(list.get(0).get("SECTION"));
+                String[] split = section.split("--");
+                Integer a = Integer.valueOf(split[0]);
+                Integer b = Integer.valueOf(split[1]);
+                if(startSort<a&&endSort<a || startSort>b&&endSort>b){
+                    for (int i = startSort; i <= endSort; i++) {
+                        CMTOWER cmtower = new CMTOWER();
+                        cmtower.setId(null);
+                        cmtower.setLineId(String.valueOf(cmlinesection.getLineId()));
+                        cmtower.setName(String.valueOf(i));
+                        cmtowerRepository.save(cmtower);
+                    }
+                }else {
+                    if(startSort<a&&endSort>=a){
+                        for (int i = startSort; i < a; i++) {
+                            CMTOWER cmtower = new CMTOWER();
+                            cmtower.setId(null);
+                            cmtower.setLineId(String.valueOf(cmlinesection.getLineId()));
+                            cmtower.setName(String.valueOf(i));
+                            cmtowerRepository.save(cmtower);
+                        }
+                    }
+                    if(startSort<=b&&endSort>b){
+                        for (int i = b+1; i <= endSort; i++) {
+                            CMTOWER cmtower = new CMTOWER();
+                            cmtower.setId(null);
+                            cmtower.setLineId(String.valueOf(cmlinesection.getLineId()));
+                            cmtower.setName(String.valueOf(i));
+                            cmtowerRepository.save(cmtower);
+                        }
+                    }
+                }
+
+
+            }
+
+            reposiotry.deleteCmLineTower(cmlinesection.getLineId());
+
+            //reposiotry.addCmLineTower(cmlinesection.getLineId());
+            map.put("success",true);
+            map.put("lineId",cmlinesection.getLineId());
+        }catch (Exception e){
+            map.put("success",false);
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+        }
+        return map;
+    }
+
+    @Transactional
+    public void addCmLineTower(String lineId) {
+        reposiotry.addCmLineTower(Long.valueOf(lineId));
     }
 }

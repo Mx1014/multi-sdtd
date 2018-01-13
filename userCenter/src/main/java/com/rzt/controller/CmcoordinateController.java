@@ -58,7 +58,7 @@ public class CmcoordinateController extends
             cmcoordinate.setLongitude(myCoordinate.getLongitude());
             cmcoordinate.setLatitude(myCoordinate.getLatitude());
             cmcoordinate.setOnLine(myCoordinate.getLOGINSTATUS());
-            cmcoordinate.setUserName(myCoordinate.getUSERNAME());
+            cmcoordinate.setUserName(myCoordinate.getREALNAME());
 
             //2.添加用户坐标到redis geo,用于范围查询，和最新位置查询。
             Point point = new Point(cmcoordinate.getLongitude(), cmcoordinate.getLatitude());

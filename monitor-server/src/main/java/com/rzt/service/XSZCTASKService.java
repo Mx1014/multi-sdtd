@@ -53,7 +53,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
         //sql 中 拉取数据为刷新时间至刷新时间前10分钟
         String sql = "";
         Page<Map<String, Object>> pageResult = null;
-        //try {
+        try {
         if(null == userId || "".equals(userId)){
             return WebApiResponse.success("");
         }
@@ -67,8 +67,8 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                 int i = Integer.parseInt(roletype);
                 switch (i){
                     case 0 :{//一级单位   显示三天周期抽查的任务
-                         sql = " SELECT  ID," +
-                                 "  TASKID," +
+                         sql = " SELECT   DISTINCT TASKID," +
+                                 "  ID," +
                                  "  CREATETIME," +
                                  "  USER_ID," +
                                  "  TASKNAME," +
@@ -121,10 +121,12 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
         }
         if(taskType!=null && !"".equals(taskType.trim())){// 判断当前任务类型  巡视1   看护2  稽查3
             list.add(taskType);
-            sql+= " AND TASKTYPE = ?"+list.size();
+            sql+= "  AND TASKTYPE =?"+list.size();
         }
 
-
+        if(null != sql && !"".equals(sql)){
+            sql +="   ORDER BY CREATETIME DESC     ";
+        }
 
             pageResult = this.execSqlPage(pageable, sql, list.toArray());
             Iterator<Map<String, Object>> iterator = pageResult.iterator();
@@ -167,10 +169,10 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                     next.put("CHTYPE"," "); // 抽查类型
                 }
             }
-       /*}catch (Exception e){
+       }catch (Exception e){
             LOGGER.error("抽查任务查询失败"+e.getMessage());
             return WebApiResponse.erro("抽查任务查询失败"+e.getMessage());
-        }*/
+        }
         return WebApiResponse.success(pageResult);
     }
     /**

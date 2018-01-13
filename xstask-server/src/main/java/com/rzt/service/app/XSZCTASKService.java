@@ -25,7 +25,7 @@ import java.util.Map;
  * 类名称：XSZCTASKService
  * 类描述：${table.comment}
  * 创建人：张虎成
- * 创建时间：2017/12/05 10:02:41
+ * 创建时间：2017/ 12 /05 10:02:41
  * 修改人：张虎成
  * 修改时间：2017/12/05 10:02:41
  * 修改备注：
@@ -55,7 +55,7 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
             /**
              * 正常巡视代办
              */
-            String sqlZcdb = "SELECT id,plan_start_time AS planstarttime,plan_end_time   AS planendtime,task_name AS taskname,2 AS xslxnum,STAUTS STATUS,ZXYS_NUM AS zxys,XSCS_NUM AS XSCS,plan_xs_num,xs_zc_cycle_id cycleid FROM xs_zc_task WHERE (stauts = 0 OR stauts = 1) AND plan_start_time >= trunc(sysdate) AND cm_user_id = ?2  ";
+            String sqlZcdb = "SELECT id,plan_start_time AS planstarttime,plan_end_time   AS planendtime,task_name AS taskname,2 AS xslxnum,STAUTS STATUS,ZXYS_NUM AS zxys,XSCS_NUM AS XSCS,plan_xs_num,xs_zc_cycle_id cycleid FROM xs_zc_task WHERE is_delete = 0 and (stauts = 0 OR stauts = 1) AND plan_start_time >= trunc(sysdate) AND cm_user_id = ?2  ";
             String sql = "" + sqlBddb + " UNION ALL " + sqlZcdb + "";
             return this.execSqlPage(pageable, sql, userid, userid);
         } else {
@@ -63,10 +63,10 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
              * 保电已办
              */
             String sqlBdyb = "select id,plan_start_time as planstarttime ,plan_end_time as planendtime,task_name as taskname,XSLX AS xslxnum,STAUTS status from xs_txbd_task where cm_user_id = ?1 and (stauts = 2)";
-            /**
+            /**z
              * 正常已办
              */
-            String sqlZcyb = "  select id,plan_start_time as planstarttime ,plan_end_time as planendtime,task_name as taskname,2 AS xslxnum,STAUTS status  from xs_zc_task where  cm_user_id =?2 and (stauts=2 )";
+            String sqlZcyb = "  select id,plan_start_time as planstarttime ,plan_end_time as planendtime,task_name as taskname,2 AS xslxnum,STAUTS status  from xs_zc_task where is_delete = 0 and cm_user_id =?2 and (stauts=2 )";
             String sql = "" + sqlBdyb + " UNION ALL " + sqlZcyb + "";
             return this.execSqlPage(pageable, sql, userid, userid);
         }

@@ -638,7 +638,7 @@ public class KhYhHistory implements Serializable {
         return this.yhjb;
     }
 
-    public void setTdywOrg(String tdywOrg) {
+    public void setTdywOrg (String tdywOrg) {
         this.tdywOrg = tdywOrg;
     }
 
@@ -656,7 +656,7 @@ public class KhYhHistory implements Serializable {
         return this.tdwxOrg;
     }
 
-    public void setId(Long id) {
+    public void setId(Long id)  {
         if (id == null || id == 0) {
             this.id = new SnowflakeIdWorker(1, 4).nextId();
         } else {

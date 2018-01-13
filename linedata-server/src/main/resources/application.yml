@@ -21,8 +21,8 @@ spring:
 #      type: com.alibaba.druid.pool.DruidDataSource
       #oracle数据库配置
       driverClassName: oracle.jdbc.driver.OracleDriver
-      url: jdbc:oracle:thin:@47.94.131.120:1521/orcl
-#      url: jdbc:oracle:thin:@168.130.1.32:1521:orcl
+#      url: jdbc:oracle:thin:@47.94.131.120:1521/orcl
+      url: jdbc:oracle:thin:@168.130.1.32:1521:orcl
       username: sdtd27
       password: sdtd27
 # 下面为连接池的补充设置，应用到上面所有数据源中
@@ -49,17 +49,19 @@ spring:
     hibernate:
       ddl-auto: none
     show: true
-#  redis:
-#      database: 11
-#      host: 168.130.1.31
-#      port: 30094
-#      password:
-#      timeout: 0
-#      pool:
-#        max-active: 100
-#        max-idle: 8
-#        min-idle: 0
-#        max-wait: -1
+  redis:
+        database: 0
+#        host: 168.130.1.31
+#        port: 31662
+        host: 39.106.206.129
+        port: 6379
+        password: Rzt82890758-Rzt82890758
+        timeout: 0
+        pool:
+          max-active: 100
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1
   #文件上传
   http:
     encoding:

@@ -62,7 +62,7 @@ public class XsTaskController extends
      * @param checkDetail
      * @return
      */
-    @PostMapping("checkOff")
+    @GetMapping("checkOff")
     public WebApiResponse checkOff(CheckDetail checkDetail){
         try {
             //根据审核人id和问题任务id查询该条审核记录是否存在

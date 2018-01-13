@@ -7,6 +7,7 @@
 package com.rzt.controller;
 import com.rzt.entity.KhTask;
 import com.rzt.entity.KhYhHistory;
+import com.rzt.entity.XsSbYh;
 import com.rzt.service.KhYhHistoryService;
 import com.rzt.util.WebApiResponse;
 import io.swagger.annotations.ApiOperation;
@@ -34,7 +35,7 @@ public class KhYhHistoryController extends
 	@ApiOperation(notes = "施工情况",value = "施工情况")
 	@PostMapping("/saveYh")
 	@ResponseBody
-	public WebApiResponse saveYh(KhYhHistory yh,String fxtime,String startTowerName,String endTowerName,String pictureId){
+	public WebApiResponse saveYh(XsSbYh yh, String fxtime, String startTowerName, String endTowerName, String pictureId){
 		return this.service.saveYh(yh,fxtime,startTowerName,endTowerName,pictureId);
 	}
 
@@ -57,5 +58,12 @@ public class KhYhHistoryController extends
 	@ResponseBody
 	public WebApiResponse listYhById(String yhId){
 		return this.service.listYhById(yhId);
+	}
+
+	@ApiOperation(value = "隐患导入接口",notes = "隐患导入接口")
+	@PostMapping("ImportYh")
+	public WebApiResponse ImportYh(){
+/* MultipartFile file */
+		return service.ImportYh();
 	}
 }

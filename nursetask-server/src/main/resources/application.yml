@@ -2,13 +2,11 @@ server:
   port: 7011
   context-path: /nurseTask/
 #log
-logging:
-  config: classpath:logback.xml
 spring:
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
-    url: jdbc:oracle:thin:@168.130.1.32:1521:orcl
-   # url: jdbc:oracle:thin:@47.94.131.120:1521:orcl
+#    url: jdbc:oracle:thin:@168.130.1.32:1521:orcl
+    url: jdbc:oracle:thin:@47.94.131.120:1521:orcl
    # url: jdbc:mysql://168.130.1.31:30624/sdtd27?useUnicode=true&characterEncoding=utf8
     #username: sdtd
     #password: sdtd
@@ -30,18 +28,12 @@ spring:
     filters: stat,log4j
     connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
   jpa:
-     show-sql: true
+#     show-sql: true
      database: ORACLE
  #    hibernate:
   #     ddl-aut
   application:
     name: nurseTask
-#  redis:
-#      database: 0
-#      host: 39.106.206.129
-#      port: 6379
-#      password: Rzt82890758-Rzt82890758
-#      timeout: 0
   redis:
         database: 0
 #        host: 168.130.1.31
