@@ -53,7 +53,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
         //sql 中 拉取数据为刷新时间至刷新时间前10分钟
         String sql = "";
         Page<Map<String, Object>> pageResult = null;
-        //try {
+        try {
         if(null == userId || "".equals(userId)){
             return WebApiResponse.success("");
         }
@@ -169,10 +169,10 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                     next.put("CHTYPE"," "); // 抽查类型
                 }
             }
-     /*  }catch (Exception e){
+       }catch (Exception e){
             LOGGER.error("抽查任务查询失败"+e.getMessage());
             return WebApiResponse.erro("抽查任务查询失败"+e.getMessage());
-        }*/
+        }
         return WebApiResponse.success(pageResult);
     }
     /**
