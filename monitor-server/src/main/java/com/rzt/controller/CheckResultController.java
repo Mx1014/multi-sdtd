@@ -17,7 +17,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/checkResult")
-public class CheckResultController extends CurdController<CheckResult,CheckResultService> {
+public class    CheckResultController extends CurdController<CheckResult,CheckResultService> {
 	
 	@Autowired
 	private CheckResultService resultservice;
