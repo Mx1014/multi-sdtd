@@ -18,6 +18,7 @@ import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DateUtil;
 import org.apache.poi.hssf.usermodel.HSSFDataFormatter;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.util.StringUtil;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -32,6 +33,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -175,21 +177,24 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
 
         StringBuffer sqlBuffer = new StringBuffer();
         ArrayList arrList = new ArrayList();
-        sqlBuffer.append("SELECT id,is_kt,plan_xs_num xspl,plan_start_time,plan_end_time,v_level \"vLevel\",task_name \"taskName\",section,cycle,td_org \"tdywOrg\",in_use \"inUse\",total_task_num \"totalTaskNum\",create_time \"createTime\" FROM xs_zc_cycle where 1 = 1 and is_delete = 0");
+        sqlBuffer.append("SELECT id,is_kt,cm_user_id,plan_xs_num xspl,plan_start_time,plan_end_time,v_level \"vLevel\",task_name \"taskName\",section,cycle,td_org \"tdywOrg\",in_use \"inUse\",total_task_num \"totalTaskNum\",create_time \"createTime\" FROM xs_zc_cycle where 1 = 1 and is_delete = 0");
         sqlBuffer.append(authoritySql);//我是权限
         //开始日期  结束日期
         Date startDate = xsTaskSch.getStartDate();
         Date endDate = xsTaskSch.getEndDate();
         if (startDate != null && endDate != null) {
-            sqlBuffer.append(" and create_time between ? and ?");
+            int i = arrList.size() + 1;
+            sqlBuffer.append(" and create_time between ?" + i+
+                    " and ?"+ (i+1));
             arrList.add(startDate);
             arrList.add(endDate);
         }
 
         //0 在用 1 停用
         Integer status = xsTaskSch.getStatus();
-        if (status != null) {
-            sqlBuffer.append(" and in_use = ?");
+        if (!StringUtils.isEmpty(status )) {
+            int i = arrList.size() + 1;
+            sqlBuffer.append(" and in_use = ?" + i);
             arrList.add(status);
 
         }
@@ -202,32 +207,57 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
 
         //电压等级
         Integer v_type = xsTaskSch.getV_type();
-        if (v_type != null) {
-            sqlBuffer.append(" and V_LEVEL = ?");
+        if (!StringUtils.isEmpty(v_type )) {
+            int i = arrList.size() + 1;
+            sqlBuffer.append(" and V_LEVEL = ?" + i);
             arrList.add(v_type);
         }
 
         //线路id
         Long lineId = xsTaskSch.getLineId();
-        if (lineId != null) {
-            sqlBuffer.append(" and line_id = ?");
+        if (!StringUtils.isEmpty(lineId)) {
+            int i = arrList.size() + 1;
+            sqlBuffer.append(" and line_id = ?" + i);
             arrList.add(lineId);
         }
 
         //任务名
         String taskName = xsTaskSch.getTaskName();
-        if (taskName != null) {
-            sqlBuffer.append(" and task_name like ?");
+        if (!StringUtils.isEmpty(taskName)) {
+            int i = arrList.size() + 1;
+            sqlBuffer.append(" and task_name like ?" + i +
+                    "");
             arrList.add("%" + taskName + "%");
         }
 
         //通道单位
-        xsTaskSch.getTdOrg();
+        String tdOrg = xsTaskSch.getTdOrg();
+        if (!StringUtils.isEmpty(tdOrg)) {
+            int i = arrList.size() + 1;
+            sqlBuffer.append(" and (td_org = ?" + i +
+                    " or wx_org = ?" + i +
+                    " or group_id = ?" + i +
+                    " or class_id = ?" + i +
+                    " )");
+            arrList.add(tdOrg);
+        }
+
 
         sqlBuffer.append(" order by id desc");
 
 
         Page<Map<String, Object>> maps = this.execSqlPage(pageable, sqlBuffer.toString(), arrList.toArray());
+        List<Map<String, Object>> content = maps.getContent();
+        for(Map<String,Object> con:content) {
+            Object cm_user_id = con.get("CM_USER_ID");
+            if(cm_user_id != null) {
+                Map<String, Object> map = userInfoFromRedis(cm_user_id.toString());
+                Object realname = map.get("REALNAME");
+                con.put("realName",realname);
+            } else {
+                con.put("realName",null);
+            }
+        }
         return maps;
     }
 
@@ -342,7 +372,7 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
 
         //状态 0 未开始 1 巡视中 2 已完成
         Integer status = xsTaskSch.getStatus();
-        if (status != null) {
+        if (!StringUtils.isEmpty(status )) {
             sqlBuffer.append("and stauts = ? ");
             arrList.add(status);
 
@@ -350,27 +380,47 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
 
         //人员id
         String userId = xsTaskSch.getUserId();
-        if (userId != null) {
+        if (!StringUtils.isEmpty(userId )) {
             sqlBuffer.append("and cm_user_id = ? ");
             arrList.add(userId);
         }
 
         //线路id
         Long lineId = xsTaskSch.getLineId();
-        if (lineId != null) {
+        if (!StringUtils.isEmpty(lineId )) {
             sqlBuffer.append("and line_id = ? ");
             arrList.add(userId);
         }
 
         //任务名
         String taskName = xsTaskSch.getTaskName();
-        if (taskName != null) {
+        if (!StringUtils.isEmpty(taskName)) {
             sqlBuffer.append(" and task_name like ?");
             arrList.add("%" + taskName + "%");
         }
 
+        //通道单位
+        String tdOrg = xsTaskSch.getTdOrg();
+        if (!StringUtils.isEmpty(tdOrg)) {
+            sqlBuffer.append(" and (td_org = ? or wx_org = ? or group_id = ? or class_id = ? )");
+            arrList.add(tdOrg);
+            arrList.add(tdOrg);
+            arrList.add(tdOrg);
+            arrList.add(tdOrg);
+        }
 
         Page<Map<String, Object>> maps = this.execSqlPage(pageable, sqlBuffer.toString(), arrList.toArray());
+        List<Map<String, Object>> content = maps.getContent();
+        for(Map<String,Object> con:content) {
+            Object cm_user_id = con.get("CM_USER_ID");
+            if(cm_user_id != null) {
+                Map<String, Object> map = userInfoFromRedis(cm_user_id.toString());
+                Object realname = map.get("REALNAME");
+                con.put("realName",realname);
+            } else {
+                con.put("realName",null);
+            }
+        }
         return maps;
     }
 
@@ -386,12 +436,14 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
     public Object getCycle(Long id) throws Exception {
         String sql = "select * from xs_zc_cycle where id = ?";
         Map<String, Object> cycle = this.execSqlSingleResult(sql, id);
-        return cycle;
+        Map<String, Object> map = userInfoFromRedis(cycle.get("CM_USER_ID").toString());
+        map.putAll(cycle);
+        return map;
     }
 
     //    @CacheEvict(value = "xsZcCycles" , key = "#id")
     public void updateCycle(Long id, Integer cycle, Integer inUse, Integer planXsNum, String planStartTime, String planEndTime, Integer isKt) {
-        this.reposiotry.updateCycle(id, cycle, inUse, planXsNum, planStartTime, planEndTime,isKt);
+        this.reposiotry.updateCycle(id, cycle, inUse, planXsNum,                                                                                                              planStartTime, planEndTime,isKt);
     }
 
     public Object listPictureById(Long taskId, Integer zj) {
@@ -930,7 +982,7 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
 
 
 
-    public Object listPlanForMap(XsTaskSCh xsTaskSch, String currentUserId) {
+    public Object listPlanForMap(Pageable pageable,XsTaskSCh xsTaskSch, String currentUserId) {
 
         StringBuffer sqlBuffer = new StringBuffer();
         ArrayList arrList = new ArrayList();
@@ -974,8 +1026,8 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
         }*/
 
 
-        List<Map<String, Object>> mapList = this.execSql(sqlBuffer.toString(), arrList.toArray());
-        return mapList;
+        Page<Map<String, Object>> maps = this.execSqlPage(pageable, sqlBuffer.toString(), arrList.toArray());
+        return maps;
     }
 
 
