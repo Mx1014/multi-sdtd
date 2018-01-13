@@ -77,7 +77,7 @@ public class CommonService extends CurdService<RztSysUser, RztSysUserRepository>
             Integer roletype = Integer.valueOf(jsonObject.get("ROLETYPE").toString());
             if (roletype == 1 || roletype == 2) {
                 list.add(String.valueOf(jsonObject.get("DEPTID")));
-                list.add(" AND DEPTID =?" + list.size());
+                s += (" AND DEPTID =?" + list.size());
             }
         }
         if (!StringUtils.isEmpty(classId)) {

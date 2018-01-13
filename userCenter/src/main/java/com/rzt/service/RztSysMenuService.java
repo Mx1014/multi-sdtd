@@ -333,7 +333,8 @@ public class RztSysMenuService extends CurdService<RztSysMenu, RztSysMenuReposit
     public WebApiResponse insertApp(String menuid, String roleid) {
         if (!StringUtils.isEmpty(menuid) && !StringUtils.isEmpty(roleid)) {
             String sql = "SELECT count(*) AS ID FROM RZTMENUPRIVILEGE WHERE MENUID = ?1 AND ROLEID = ?2";
-            if (this.execSql(sql, menuid, roleid).size() == 1) {
+            List<Map<String, Object>> list = this.execSql(sql, menuid, roleid);
+            if (Integer.valueOf(list.get(0).get("ID").toString()) == 0) {
                 try {
                     this.reposiotry.insertApp(menuid, roleid);
                     return WebApiResponse.success("添加成功");
