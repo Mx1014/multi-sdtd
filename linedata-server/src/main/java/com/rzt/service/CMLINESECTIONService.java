@@ -263,6 +263,7 @@ public class CMLINESECTIONService extends CurdService<CMLINESECTION,CMLINESECTIO
 
             }else if(list.size()==1){
                 cmlinesection.setLineId(Long.valueOf(list.get(0).get("ID").toString()));
+                cmlineRepository.updateLineSection(cmlinesection.getLineId(),startSort+"--"+endSort);
             }else{
                 LOGGER.error("此线路信息重复!"+cmlinesection.getVLevel()+cmlinesection.getLineName());
 
