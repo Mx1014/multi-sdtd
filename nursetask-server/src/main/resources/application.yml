@@ -36,12 +36,6 @@ spring:
   #     ddl-aut
   application:
     name: nurseTask
-#  redis:
-#      database: 0
-#      host: 39.106.206.129
-#      port: 6379
-#      password: Rzt82890758-Rzt82890758
-#      timeout: 0
   redis:
         database: 0
 #        host: 168.130.1.31
