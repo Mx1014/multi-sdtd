@@ -77,6 +77,10 @@ public class CMLINESECTIONController extends
 	public Map<String,Object> addLineSection(CMLINESECTION cmlinesection){
 		return service.addLineSection(cmlinesection);
 	}
-
+	@ApiOperation(value = "线路区段新增后,添加中间表数据",notes = "线路区段新增后,添加中间表数据")
+	@PostMapping("addCmLineTower")
+	public void addCmLineTower(String lineId){
+		service.addCmLineTower(lineId);
+	}
 	
 }

@@ -242,7 +242,7 @@ public class CMLINESECTIONService extends CurdService<CMLINESECTION,CMLINESECTIO
         return jsonObject;
     }
 
-    @Transactional(isolation = Isolation.READ_UNCOMMITTED)
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public Map<String,Object> addLineSection(CMLINESECTION cmlinesection) {
         Map<String, Object> map = new HashMap<>();
 
@@ -318,12 +318,17 @@ public class CMLINESECTIONService extends CurdService<CMLINESECTION,CMLINESECTIO
 
             reposiotry.deleteCmLineTower(cmlinesection.getLineId());
 
-            reposiotry.addCmLineTower(cmlinesection.getLineId());
+            //reposiotry.addCmLineTower(cmlinesection.getLineId());
             map.put("success",true);
+            map.put("lineId",cmlinesection.getLineId());
         }catch (Exception e){
             map.put("success",false);
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
         }
         return map;
+    }
+
+    public void addCmLineTower(String lineId) {
+        reposiotry.addCmLineTower(Long.valueOf(lineId));
     }
 }
