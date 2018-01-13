@@ -328,6 +328,7 @@ public class CMLINESECTIONService extends CurdService<CMLINESECTION,CMLINESECTIO
         return map;
     }
 
+    @Transactional
     public void addCmLineTower(String lineId) {
         reposiotry.addCmLineTower(Long.valueOf(lineId));
     }
