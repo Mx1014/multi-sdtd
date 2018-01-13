@@ -30,4 +30,8 @@ public interface CMLINESECTIONRepository extends JpaRepository<CMLINESECTION,Str
     @Modifying
     @Query(value = "insert into cm_line_tower (id,line_id,tower_id,tower_name,line_name,sort) select seq.nextval,a.* from (select l.id lid,t.id tid,t.name,l.line_name,t.id from cm_tower t,cm_line l where l.id=?1 and l.id=t.line_id order by t.id) a",nativeQuery = true)
     void addCmLineTower(Long lineId);
+
+    @Modifying
+    @Query(value = "update CM_line_TOWER set sort=to_number(regexp_substr(TOWER_NAME,'[0-9]*[0-9]',1)) where LINE_ID= ?1",nativeQuery = true)
+    void updateTowerSort(Long lineId);
 }
