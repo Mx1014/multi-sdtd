@@ -79,8 +79,9 @@ public class CMLINESECTIONController extends
 	}
 	@ApiOperation(value = "线路区段新增后,添加中间表数据",notes = "线路区段新增后,添加中间表数据")
 	@PostMapping("addCmLineTower")
-	public void addCmLineTower(String lineId){
+	public WebApiResponse addCmLineTower(String lineId){
 		service.addCmLineTower(lineId);
+		return WebApiResponse.success("线路添加成功");
 	}
 	
 }
