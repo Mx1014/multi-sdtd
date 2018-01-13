@@ -34,9 +34,9 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
         String result = " k.id as taskId,k.plan_start_time as startTime,k.task_name as taskName,k.status as status,u.realname as name,k.zxys_num as num";
         StringBuffer buffer = new StringBuffer();
         if (dbyb == 1) {
-            buffer.append("where (status = 0 or status = 1)  and user_id = ? order by k.plan_start_time");
+            buffer.append("where (status = 0 or status = 1)  and user_id = ? and (k.plan_start_time >= trunc(sysdate) or  k.plan_end_time >= trunc(sysdate)) order by k.plan_start_time");
         } else if (dbyb == 2) {
-            buffer.append(" where (status = 2 or status = 3)  and user_id = ? order by k.real_end_time desc");
+            buffer.append(" where (status = 2 or status = 3)  and user_id = ? and trunc(k.plan_end_time)=trunc(sysdate) order by k.real_end_time");
         }
         String sql = "select " + result + " from kh_task k left join rztsysuser u on u.id = k.user_id " + buffer.toString();
         return this.execSqlPage(pageable, sql, userId);
@@ -131,7 +131,7 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
 
     public WebApiResponse getDbCount(String userId) {
         try {
-            String sql = "select a.count as db,b.count as yb from (select count(*) as count from KH_TASK WHERE (STATUS = 0 OR  status = 1) AND USER_ID = ? ) a , (select count(*) as count from KH_TASK WHERE (STATUS =2 or status=3) AND USER_ID=?) b";
+            String sql = "select a.count as db,b.count as yb from (select count(*) as count from KH_TASK WHERE (STATUS = 0 OR  status = 1) AND (plan_start_time >= trunc(sysdate) or  plan_end_time >= trunc(sysdate)) AND USER_ID = ? ) a , (select count(*) as count from KH_TASK WHERE (STATUS =2 or status=3) and trunc(plan_end_time)=trunc(sysdate) AND USER_ID=?) b";
             List<Map<String, Object>> list = this.execSql(sql, userId, userId);
             //保存现场照片    this.reposiotry.getdbCount(userId)
             return WebApiResponse.success(list);
