@@ -57,7 +57,14 @@ public class CheckDetailService extends CurdService<CheckDetail,CheckDetailRepos
                 String sql = "SELECT DEPTID from RZTSYSUSER WHERE ID = ?"+strings.size();
                 List<Map<String, Object>> maps = this.execSql(sql, strings.toArray());
                 checkDetail.setCheckUser(checkUser);
-                checkDetail.setCheckOrg((String) maps.get(0).get("DEPTID"));
+
+                    if(null != maps && maps.size()>0){
+                        Object deptid = maps.get(0).get("DEPTID");
+                        if(null != deptid){
+                            checkDetail.setCheckOrg(deptid.toString());
+                                }
+                    }
+
         }
        /* if(null != checkDetail.getQuestionTaskId() && checkDetail.getQuestionTaskId()>0){
             xszctaskRepository.xsTaskUpdate(checkDetail.getQuestionTaskId());

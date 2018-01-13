@@ -17,19 +17,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Map;
+import java.util.*;
 
 /**
- * 类名称：KHYHHISTORYService    
+ * 类名称：KHYHHISTORYService
  * 类描述：${table.comment}
- * 创建人：张虎成   
- * 创建时间：2017/11/30 18:31:34 
- * 修改人：张虎成    
- * 修改时间：2017/11/30 18:31:34    
- * 修改备注：    
- * @version
+ * 创建人：张虎成
+ * 创建时间：2017/11/30 18:31:34
+ * 修改人：张虎成
+ * 修改时间：2017/11/30 18:31:34
+ * 修改备注：
  */
 @Service
 public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepository> {
@@ -45,7 +42,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
     }
 
     @Transactional
-    public WebApiResponse saveYh(KhYhHistory yh,String fxtime,String startTowerName,String endTowerName,String pictureId) {
+    public WebApiResponse saveYh(KhYhHistory yh, String fxtime, String startTowerName, String endTowerName, String pictureId) {
         try {
             yh.setYhfxsj(DateUtil.dateNow());
             //yh.setYhfxsj(DateUtil.parseDate(fxtime));
@@ -63,13 +60,13 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 yh.setJd(map.get("LONGITUDE").toString());
                 yh.setWd(map.get("LATITUDE").toString());
             }
-            if (yh.getVtype().equals("0")){
+            if (yh.getVtype().equals("0")) {
                 yh.setVtype("35");
-            }else if (yh.getVtype().equals("1")){
+            } else if (yh.getVtype().equals("1")) {
                 yh.setVtype("110");
-            }else if (yh.getVtype().equals("2")){
+            } else if (yh.getVtype().equals("2")) {
                 yh.setVtype("220");
-            }else if (yh.getVtype().equals("3")){
+            } else if (yh.getVtype().equals("3")) {
                 yh.setVtype("550");
             }
             yh.setYhjb("一般");
@@ -78,27 +75,68 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             yh.setYhzt(0);//隐患未消除
             yh.setCreateTime(DateUtil.dateNow());
             yh.setSection(startTowerName + "-" + endTowerName);
-            if (null != pictureId && ! pictureId.equals("")){
+            if (null != pictureId && !pictureId.equals("")) {
                 String[] split = pictureId.split(",");
-                for (int i =0; i < split.length;i++){
-                    this.reposiotry.updateYhPicture(Long.parseLong(split[i]),yh.getId(),yh.getXstaskId());
+                for (int i = 0; i < split.length; i++) {
+                    this.reposiotry.updateYhPicture(Long.parseLong(split[i]), yh.getId(), yh.getXstaskId());
                 }
             }
             this.add(yh);
             return WebApiResponse.success("数据保存成功");
         } catch (Exception e) {
             e.printStackTrace();
-            return WebApiResponse.erro("数据保存失败"+e.getMessage());
+            return WebApiResponse.erro("数据保存失败" + e.getMessage());
         }
     }
 
-    public WebApiResponse saveCoordinate(String yhId, String lat, String lon,String radius) {
+    public WebApiResponse saveCoordinate(String yhId, String lat, String lon, String radius) {
         try {
-            radius = radius+".0";
-            this.reposiotry.updateYh(Long.parseLong(yhId),lat,lon,radius);
+            if (!radius.contains(".0")) {
+                radius = radius + ".0";
+            }
+            this.reposiotry.updateYh(Long.parseLong(yhId), lat, lon, radius);
             return WebApiResponse.success("保存成功");
-        }catch (Exception e){
-            return WebApiResponse.erro("保存失败"+e.getMessage());
+        } catch (Exception e) {
+            return WebApiResponse.erro("保存失败" + e.getMessage());
+        }
+    }
+
+    public WebApiResponse listCoordinate(String yhjb, String yhlb) {
+        try {
+            StringBuffer buffer = new StringBuffer();
+            List<Object> params = new ArrayList<>();
+            buffer.append(" where trunc(create_time)=trunc(sysdate) ");
+            if (yhjb != null && !yhjb.equals("")) {
+                buffer.append(" and yhjb1 like");
+                params.add("%" + yhjb + "%");
+            }
+            if (yhlb != null && !yhlb.equals("")) {
+                buffer.append(" and yhlb like");
+                params.add("%" + yhlb + "%");
+            }
+            buffer.append(" and yhzt = 0 ");
+            String sql = "select * from kh_yh_history " + buffer.toString();
+            List<Map<String, Object>> list = this.execSql(sql, params.toArray());
+            List<Object> list1 = new ArrayList<>();
+            for (Map map : list) {
+                // System.out.println(map.get("JD").toString());
+                if (map != null && map.size() > 0 && map.get("JD") != null) {
+                    list1.add(map);
+                }
+            }
+            return WebApiResponse.success(list1);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("获取失败" + e.getMessage());
+        }
+    }
+
+    public WebApiResponse listYhById(String yhId) {
+        try {
+            String sql = "select * from kh_yh_history where id=?";
+            return WebApiResponse.success(this.execSql(sql, Long.parseLong(yhId)));
+        } catch (Exception e) {
+            return WebApiResponse.erro("保存失败" + e.getMessage());
         }
     }
 }

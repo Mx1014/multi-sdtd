@@ -17,6 +17,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service
@@ -110,6 +111,7 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
             s+=" AND TASKTYPE =?"+list.size();
         }
         if (startDate!=null && !"".equals(startDate) && endDate!=null && !"".equals(endDate)){
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
             list.add(startDate);
             s+="  AND CREATE_TIME BETWEEN to_date( ?" + list.size() + ",'yyyy-MM-dd hh24:mi:ss') ";
             list.add(endDate);

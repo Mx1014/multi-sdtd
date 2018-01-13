@@ -105,10 +105,10 @@ public class PcMapShowService {
         Object userInformation = hashOperations.get("menInDept", deptId);
         if(userInformation == null) {
             if(deptId.equals("all")) {
-                String userListSql = "select id,worktype from RZTSYSUSER where USERDELETE = 0";
+                String userListSql = "select id,worktype from RZTSYSUSER where USERDELETE = 1";
                 userList = cmcoordinateService.execSql(userListSql);
             } else {
-                String userListSql = "select id,worktype from RZTSYSUSER where USERDELETE = 0 and (DEPTID = ?1 or COMPANYID = ?1 or GROUPID = ?1 or CLASSNAME = ?1 ) ";
+                String userListSql = "select id,worktype from RZTSYSUSER where USERDELETE = 1 and (DEPTID = ?1 or COMPANYID = ?1 or GROUPID = ?1 or CLASSNAME = ?1 ) ";
                 userList = cmcoordinateService.execSql(userListSql, deptId);
             }
             hashOperations.put("menInDept",deptId,userList);

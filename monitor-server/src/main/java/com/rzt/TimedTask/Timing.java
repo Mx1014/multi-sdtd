@@ -85,10 +85,10 @@ public class Timing  extends
 
     /**
      * 一级单位数据抓取
-     * 每三天刷新一次
-     * 0点刷新
+     * 每1天刷新一次
+     * 3点刷新
      */
-    @Scheduled(cron="0 0 0 0/3 * ? ")
+    @Scheduled(cron="0 0 0 0/1 * ? ")
     private void threeDayScheduledTask(){
         xszctaskService.xsTaskAddAndFindThree();
     }
