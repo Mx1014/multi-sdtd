@@ -8,7 +8,7 @@ package com.rzt.controller;
 
 import com.rzt.entity.RztSysUser;
 import com.rzt.entity.RztSysUserauth;
-import com.rzt.eureka.Cmuserfile;
+//import com.rzt.eureka.Cmuserfile;
 import com.rzt.security.JwtHelper;
 import com.rzt.security.TokenProp;
 import com.rzt.service.RztMenuPrivilegeService;
@@ -43,8 +43,8 @@ import java.util.Map;
 @RequestMapping("RztSysUser")
 public class RztSysUserController extends
         CurdController<RztSysUser, RztSysUserService> {
-    @Autowired
-    private Cmuserfile cmuserfile;
+//    @Autowired
+//    private Cmuserfile cmuserfile;
     @Autowired
     private RztSysUserauthService userauthService;
     @Autowired
