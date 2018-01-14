@@ -100,7 +100,7 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
                         resp.saveCheckEj(new SnowflakeIdWorker(0,0).nextId(),Long.valueOf(map.get("ID").toString()),1,2,map.get("CM_USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString());
                     }
                     redisService.setex(key);
-                }else if(currentDate<startDate){
+                }else if(new Date().getTime()<startDate){
                     String key = "";
                     if (taskType==2){
                         key = "TWO+"+map.get("ID")+"+2+8+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
@@ -148,6 +148,7 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
                 Long endDate = plan_end_time.getTime();
                 Long currentDate = new Date().getTime();
                 if(currentDate<endDate){
+                    //主要是删除定时拉取数据，存放在redis中的key
                     String key = "";
                     if(taskType==2){
                         key = "TWO+"+map.get("ID")+"+2+8+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
