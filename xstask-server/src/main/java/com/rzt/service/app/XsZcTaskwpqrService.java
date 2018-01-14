@@ -72,7 +72,7 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
                     "      WHERE ((PLAN_START_TIME BETWEEN trunc(sysdate) AND trunc(sysdate + 1))) and CM_USER_ID = ?1\n" +
                     "    ) t group by t.CM_USER_ID";
             try {
-                Map<String, Object> map = this.execSqlSingleResult(sql);
+                Map<String, Object> map = this.execSqlSingleResult(sql,userId);
                 Object status = map.get("STATUS");
                 xsMenAll.put(userId,status);
                 valueOperations.set("xsMenAll",xsMenAll);
