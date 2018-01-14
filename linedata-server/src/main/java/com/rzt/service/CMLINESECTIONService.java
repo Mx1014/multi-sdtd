@@ -271,6 +271,7 @@ public class CMLINESECTIONService extends CurdService<CMLINESECTION,CMLINESECTIO
             }
 
             cmlinesection.setId(null);
+            cmlinesection.setIsDel(0);
             reposiotry.save(cmlinesection);
             if(list.size()==0){
                 for (int i = startSort; i <= endSort; i++) {
