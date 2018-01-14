@@ -285,14 +285,14 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
         }
         resultMap.put("towerList",xsTowers);
         resultMap.put("execs",execs);
-        queryYinhuan(execDetails);
+        queryYinhuan(execDetails,taskId);
         resultMap.put("execDetails",execDetails);
         //判断标准
         resultMap.put("judge",xsZcCycleService.judgeFromRedis());
         return resultMap;
     }
 
-    private void queryYinhuan(List<Map<String, Object>> execDetails) {
+    private void queryYinhuan(List<Map<String, Object>> execDetails, Long taskId) {
         String sql = "";
         String[] meiyou = new String[0];
         for (Map<String,Object> execDetail:execDetails) {
@@ -303,8 +303,8 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
                 sql = "select t.yhms,t.yhzt,t.id,tt.CREATE_TIME from\n" +
                         "(SELECT yhms,yhzt,ID\n" +
                         "FROM KH_YH_HISTORY t\n" +
-                        "WHERE START_TOWER <= ? AND END_TOWER >= ?) t left join XS_ZC_TASK_LSYH tt on tt.EXEC_DETAIL_ID = ?and tt.YH_ID = t.id";
-                List<Map<String, Object>> maps = this.execSql(sql, execDetail.get("START_TOWER_ID").toString(), end_tower_id,Long.parseLong(execDetail.get("ID").toString()));
+                        "WHERE START_TOWER <= ? AND END_TOWER >= ? and xstask_id != ? and sdgs != 2) t left join XS_ZC_TASK_LSYH tt on tt.EXEC_DETAIL_ID = ?and tt.YH_ID = t.id";
+                List<Map<String, Object>> maps = this.execSql(sql, execDetail.get("START_TOWER_ID").toString(), end_tower_id,Long.parseLong(execDetail.get("ID").toString()),taskId);
                 execDetail.put("yh",maps);
             }
         }
@@ -315,11 +315,12 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
     * @Method historyXsTowerList
     * @Description 历史巡视情况展示
     * @param [xslx, execId]
-    * @return java.lang.Object
+    * @param id
+     * @return java.lang.Object
     * @date 2017/12/19 16:25
     * @author nwz
     */
-    public Object historyXsTowerList(Integer xslx, Long execId) {
+    public Object historyXsTowerList(Integer xslx,  Long execId,Long taskId) {
         Map<String,Object> map = null;
         List<Map<String, Object>> execDetails = null;
         Map<String,Object> resultMap = new HashMap<String,Object>();
@@ -331,7 +332,7 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
             String execDetailId = "select t.*,ttt.LONGITUDE,ttt.LATITUDE from (select * from XS_ZC_TASK_EXEC_DETAIL where XS_ZC_TASK_EXEC_ID = ?) t join  CM_TOWER ttt on t.START_TOWER_ID = ttt.id order by t.id";
             execDetails = this.execSql(execDetailId, execId);
         }
-        queryYinhuan(execDetails);
+        queryYinhuan(execDetails, taskId);
         resultMap.put("execDetails",execDetails);
         //判断标准
         resultMap.put("judge",xsZcCycleService.judgeFromRedis());

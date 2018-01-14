@@ -59,7 +59,8 @@
                         </manifest>
                     </archive>
                     <excludes>
-                        <exclude>*.properties</exclude>
+                        <exclude>*.yml</exclude>
+                        <exclude>*.xml</exclude>
                     </excludes>
                 </configuration>
             </plugin>
@@ -84,13 +85,13 @@
         </plugins>
     </build>
 
-    <!--<build>-->
-        <!--<plugins>-->
-            <!--<plugin>-->
-                <!--<groupId>org.springframework.boot</groupId>-->
-                <!--<artifactId>spring-boot-maven-plugin</artifactId>-->
-            <!--</plugin>-->
-        <!--</plugins>-->
-    <!--</build>-->
+   <!-- <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>-->
 
 </project>

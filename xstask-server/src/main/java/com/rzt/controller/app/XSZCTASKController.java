@@ -165,9 +165,9 @@ public class XSZCTASKController extends
     @GetMapping("historyXsTowerList")
     @ApiOperation(value = "巡视页面", notes = "xslx 0 特殊 1 保电 2 正常")
 //    @DataEncode(includes = {"ID","TOWER_NAME"})
-    public WebApiResponse historyXsTowerList(Integer xslx, Long execId) {
+    public WebApiResponse historyXsTowerList(Integer xslx, Long execId,Long taskId) {
         try {
-            return WebApiResponse.success(this.service.historyXsTowerList(xslx, execId));
+            return WebApiResponse.success(this.service.historyXsTowerList(xslx, execId,taskId));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("数据库请求失败" + e.getMessage());
