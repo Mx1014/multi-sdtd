@@ -19,16 +19,16 @@ import java.util.UUID;
 /**
  * 类名称：KhYhHistory
  * 类描述：${table.comment}
- * 创建人：张虎成   
- * 创建时间：2017/11/30 18:31:34 
- * 修改人：张虎成    
- * 修改时间：2017/11/30 18:31:34    
- * 修改备注：    
+ * 创建人：张虎成
+ * 创建时间：2017/11/30 18:31:34
+ * 修改人：张虎成
+ * 修改时间：2017/11/30 18:31:34
+ * 修改备注：
  * @version
  */
 @Entity
-@Table(name = "KH_YH_HISTORY")
-public class KhYhHistory implements Serializable {
+@Table(name = "XS_SB_YH")
+public class XsSbYh implements Serializable {
     //字段描述: 输电平台id
     @Id
     private Long id;
@@ -105,7 +105,7 @@ public class KhYhHistory implements Serializable {
     //字段描述: 管控措施
     @Column(name = "GKCS")
     private String gkcs;
-        //字段描述: 维护单位（通道单位）
+    //字段描述: 维护单位（通道单位）
     @Column(name = "TDYW_ORG")
     private String tdywOrg;
     //字段描述: 通道外协单位

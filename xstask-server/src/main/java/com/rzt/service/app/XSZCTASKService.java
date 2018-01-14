@@ -51,11 +51,11 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
             /**
              * 保电代办
              */
-            String sqlBddb = "SELECT id,plan_start_time AS planstarttime,plan_end_time   AS planendtime,task_name AS taskname,XSLX AS xslxnum,STAUTS STATUS,ZXYS_NUM AS zxys,XSCS_NUM AS XSCS,plan_xs_num,xs_txbd_cycle_id cycleid FROM xs_txbd_task WHERE (stauts = 0 OR stauts = 1) AND plan_start_time >= trunc(sysdate) and cm_user_id = ?1 ";
+            String sqlBddb = "SELECT id,plan_start_time AS planstarttime,plan_end_time   AS planendtime,task_name AS taskname,XSLX AS xslxnum,STAUTS STATUS,ZXYS_NUM AS zxys,XSCS_NUM AS XSCS,plan_xs_num,xs_txbd_cycle_id cycleid FROM xs_txbd_task WHERE plan_start_time >= trunc(sysdate) and cm_user_id = ?1 and (stauts != 2)";
             /**
              * 正常巡视代办
              */
-            String sqlZcdb = "SELECT id,plan_start_time AS planstarttime,plan_end_time   AS planendtime,task_name AS taskname,2 AS xslxnum,STAUTS STATUS,ZXYS_NUM AS zxys,XSCS_NUM AS XSCS,plan_xs_num,xs_zc_cycle_id cycleid FROM xs_zc_task WHERE is_delete = 0 and (stauts = 0 OR stauts = 1) AND plan_start_time >= trunc(sysdate) AND cm_user_id = ?2  ";
+            String sqlZcdb = "SELECT id,plan_start_time AS planstarttime,plan_end_time   AS planendtime,task_name AS taskname,2 AS xslxnum,STAUTS STATUS,ZXYS_NUM AS zxys,XSCS_NUM AS XSCS,plan_xs_num,xs_zc_cycle_id cycleid FROM xs_zc_task WHERE plan_start_time >= trunc(sysdate) AND cm_user_id = ?2 and is_delete = 0 and (stauts != 2)";
             String sql = "" + sqlBddb + " UNION ALL " + sqlZcdb + "";
             return this.execSqlPage(pageable, sql, userid, userid);
         } else {
@@ -84,7 +84,7 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
      */
     public Object tourMissionDetails(Integer xslx, Long id) throws Exception{
         String bdtxSql = "SELECT ID,td_org,real_start_time,real_end_time,stauts status,task_name  AS taskname,plan_start_time AS starttime,cm_user_id AS userid,PD_TIME AS pdtime,plan_xs_num AS plannum,xs_txbd_cycle_id cycleid FROM xs_txbd_task WHERE id = ?1";
-        String zcxsSql = "SELECT ID,td_org,real_start_time,real_end_time,stauts status,task_name AS taskname, plan_start_time AS starttime,  cm_user_id AS userid,  PD_TIME AS pdtime,plan_xs_num AS plannum,xs_zc_cycle_id cycleid FROM xs_zc_task   WHERE id = ?1";
+        String zcxsSql = "SELECT ID,td_org,real_start_time,SFQR_TIME,WPTX_TIME,DDXC_TIME,real_end_time,stauts status,task_name AS taskname, plan_start_time AS starttime,plan_end_time, cm_user_id AS userid,  PD_TIME AS pdtime,plan_xs_num AS plannum,xs_zc_cycle_id cycleid FROM xs_zc_task   WHERE id = ?1";
         Map<String, Object> task = null;
         if (xslx == 0 || xslx == 1) {
             task = this.execSqlSingleResult(bdtxSql, id);
@@ -125,7 +125,10 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
         task.put("CLASSNAME",user.get("CLASSNAME"));
         task.put("WXNAME",user.get("COMPANYNAME"));
         task.put("TDNAME",user.get("DEPT"));
+        task.put("GROUPNAME",user.get("GROUPNAME"));
+        task.put("PHONE",user.get("PHONE"));
 
+        //以后改成从缓存拿
         task.put("LINENAME",cycle.get("LINENAME"));
         task.put("SECTION",cycle.get("SECTION"));
         task.put("VLEVEL",cycle.get("V_LEVEL"));
@@ -238,18 +241,18 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
             /**
              * 正常巡视代办
              */
-            String sqlZcdb = "SELECT count(1)  FROM xs_zc_task WHERE (stauts = 0 OR stauts = 1) AND plan_start_time >= trunc(sysdate) AND cm_user_id = ?2  ";
+            String sqlZcdb = "SELECT count(1)  FROM xs_zc_task WHERE plan_start_time >= trunc(sysdate) AND cm_user_id = ?2 and is_delete = 0 and (stauts = 0 OR stauts = 1)";
             String sql = "select (" + sqlBddb + ") + (" + sqlZcdb + ") as count from dual";
             return this.execSql(sql, userid, userid);
         } else {
             /**
              * 保电已办
              */
-            String sqlBdyb = "select count(1) from xs_txbd_task where cm_user_id = ?1 and (stauts = 2)";
+            String sqlBdyb = "select count(1) from xs_txbd_task where cm_user_id = ?1 and (stauts = 2) and is_delete = 0";
             /**
              * 正常已办
              */
-            String sqlZcyb = "  select count(1) from xs_zc_task where  cm_user_id =?2 and (stauts = 2 )";
+            String sqlZcyb = "  select count(1) from xs_zc_task where  cm_user_id =?2 and (stauts = 2 ) and is_delete = 0";
             String sql = "select (" + sqlBdyb + ") + (" + sqlZcyb + ") as count from dual";
             return this.execSql( sql, userid, userid);
         }
@@ -285,14 +288,14 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
         }
         resultMap.put("towerList",xsTowers);
         resultMap.put("execs",execs);
-        queryYinhuan(execDetails);
+        queryYinhuan(execDetails,taskId);
         resultMap.put("execDetails",execDetails);
         //判断标准
         resultMap.put("judge",xsZcCycleService.judgeFromRedis());
         return resultMap;
     }
 
-    private void queryYinhuan(List<Map<String, Object>> execDetails) {
+    private void queryYinhuan(List<Map<String, Object>> execDetails, Long taskId) {
         String sql = "";
         String[] meiyou = new String[0];
         for (Map<String,Object> execDetail:execDetails) {
@@ -303,8 +306,8 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
                 sql = "select t.yhms,t.yhzt,t.id,tt.CREATE_TIME from\n" +
                         "(SELECT yhms,yhzt,ID\n" +
                         "FROM KH_YH_HISTORY t\n" +
-                        "WHERE START_TOWER <= ? AND END_TOWER >= ?) t left join XS_ZC_TASK_LSYH tt on tt.EXEC_DETAIL_ID = ?and tt.YH_ID = t.id";
-                List<Map<String, Object>> maps = this.execSql(sql, execDetail.get("START_TOWER_ID").toString(), end_tower_id,Long.parseLong(execDetail.get("ID").toString()));
+                        "WHERE START_TOWER <= ? AND END_TOWER >= ? and xstask_id != ? and sdgs != 2) t left join XS_ZC_TASK_LSYH tt on tt.EXEC_DETAIL_ID = ?and tt.YH_ID = t.id";
+                List<Map<String, Object>> maps = this.execSql(sql, execDetail.get("START_TOWER_ID").toString(), end_tower_id,Long.parseLong(execDetail.get("ID").toString()),taskId);
                 execDetail.put("yh",maps);
             }
         }
@@ -315,11 +318,12 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
     * @Method historyXsTowerList
     * @Description 历史巡视情况展示
     * @param [xslx, execId]
-    * @return java.lang.Object
+    * @param id
+     * @return java.lang.Object
     * @date 2017/12/19 16:25
     * @author nwz
     */
-    public Object historyXsTowerList(Integer xslx, Long execId) {
+    public Object historyXsTowerList(Integer xslx,  Long execId,Long taskId) {
         Map<String,Object> map = null;
         List<Map<String, Object>> execDetails = null;
         Map<String,Object> resultMap = new HashMap<String,Object>();
@@ -331,7 +335,7 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
             String execDetailId = "select t.*,ttt.LONGITUDE,ttt.LATITUDE from (select * from XS_ZC_TASK_EXEC_DETAIL where XS_ZC_TASK_EXEC_ID = ?) t join  CM_TOWER ttt on t.START_TOWER_ID = ttt.id order by t.id";
             execDetails = this.execSql(execDetailId, execId);
         }
-        queryYinhuan(execDetails);
+        queryYinhuan(execDetails, taskId);
         resultMap.put("execDetails",execDetails);
         //判断标准
         resultMap.put("judge",xsZcCycleService.judgeFromRedis());

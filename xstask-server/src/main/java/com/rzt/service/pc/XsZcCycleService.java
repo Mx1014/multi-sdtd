@@ -87,8 +87,8 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
         //添加周期表关联的线路杆塔
         Long xsZcCycleId = xsZcCycle.getId();
         Long lineId = xsZcCycle.getLineId();
-        Integer xsStartSort = xsZcCycle.getXsStartSort();
-        Integer xsEndSort = xsZcCycle.getXsEndSort();
+        Long xsStartSort = xsZcCycle.getXsStartSort();
+        Long xsEndSort = xsZcCycle.getXsEndSort();
 //        String sql = "select * from cm_line_tower where line_id = ?1 and tower_id between ?2 and ?3";
         String sql = "select * from cm_line_tower where line_id = ?1 and tower_id in (?2)";
         List<Long> ids = Arrays.asList(towerIds);
@@ -284,6 +284,7 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
                     case 0:
                         break;
                     case 1:
+                        authoritySql = " and td_org = '" + tdId.toString() + "'";
                         break;
                     case 2:
                         authoritySql = " and td_org = '" + tdId.toString() + "'";
@@ -436,9 +437,13 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
     public Object getCycle(Long id) throws Exception {
         String sql = "select * from xs_zc_cycle where id = ?";
         Map<String, Object> cycle = this.execSqlSingleResult(sql, id);
-        Map<String, Object> map = userInfoFromRedis(cycle.get("CM_USER_ID").toString());
-        map.putAll(cycle);
-        return map;
+        Object cm_user_id = cycle.get("CM_USER_ID");
+        if(!StringUtils.isEmpty(cm_user_id)) {
+            Map<String, Object> map = userInfoFromRedis(cm_user_id.toString());
+            map.putAll(cycle);
+            return map;
+        }
+        return cycle;
     }
 
     //    @CacheEvict(value = "xsZcCycles" , key = "#id")
@@ -573,13 +578,13 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
                                 hashOperations.put("failTwice" + execlPath, i + "", "首杆没有");
                                 continue;
                             }
-                            Integer start = Integer.parseInt(tower_id1.toString());
+                            Long start = Long.parseLong(tower_id1.toString());
                             Object tower_id2 = map2.get("TOWER_ID");
                             if (tower_id2 == null) {
                                 hashOperations.put("failTwice" + execlPath, i + "", "末杆没有");
                                 continue;
                             }
-                            Integer end = Integer.parseInt(tower_id2.toString());
+                            Long end = Long.parseLong(tower_id2.toString());
                             xsZcCycle.setXsStartSort(start);
                             xsZcCycle.setXsEndSort(end);
                         } catch (Exception e) {
@@ -752,13 +757,13 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
                                 hashOperations.put("failTwice" + execlPath, i + "", "首杆没有");
                                 continue;
                             }
-                            Integer start = Integer.parseInt(tower_id1.toString());
+                            Long start = Long.parseLong(tower_id1.toString());
                             Object tower_id2 = map2.get("TOWER_ID");
                             if (tower_id2 == null) {
                                 hashOperations.put("failTwice" + execlPath, i + "", "末杆没有");
                                 continue;
                             }
-                            Integer end = Integer.parseInt(tower_id2.toString());
+                            Long end = Long.parseLong(tower_id2.toString());
                             xsZcCycle.setXsStartSort(start);
                             xsZcCycle.setXsEndSort(end);
                         } catch (Exception e) {

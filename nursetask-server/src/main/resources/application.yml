@@ -7,7 +7,7 @@ logging:
 spring:
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
-    url: jdbc:oracle:thin:@168.130.1.32:1521:orcl
+    url: jdbc:oracle:thin:@47.94.131.120:1521:orcl
    # url: jdbc:oracle:thin:@47.94.131.120:1521:orcl
    # url: jdbc:mysql://168.130.1.31:30624/sdtd27?useUnicode=true&characterEncoding=utf8
     #username: sdtd
@@ -36,12 +36,6 @@ spring:
   #     ddl-aut
   application:
     name: nurseTask
-#  redis:
-#      database: 0
-#      host: 39.106.206.129
-#      port: 6379
-#      password: Rzt82890758-Rzt82890758
-#      timeout: 0
   redis:
         database: 0
 #        host: 168.130.1.31
@@ -61,7 +55,7 @@ eureka:
 #       defaultZone: http://168.130.1.31:7003/eureka/
     #  defaultZone: http://168.130.1.31:7003/eureka/
     #  defaultZone: http://192.168.22.65:7002/eureka/
-      defaultZone: http://localhost:7002/eureka/
+      defaultZone: http://39.106.206.129:7002/eureka/
 
 #spring:
 #  profiles:

@@ -4,9 +4,9 @@ server:
 spring:
     datasource:
       type: com.alibaba.druid.pool.DruidDataSource
-      url: jdbc:oracle:thin:@168.130.1.32:1521:orcl
-      username: sdtd27
-      password: sdtd27
+      url: jdbc:oracle:thin:@168.130.1.30:1521:rztDemo
+      username: sdt
+      password: sdt
       driver-class-name: oracle.jdbc.driver.OracleDriver
       minIdle: 10
       maxActive: 200
@@ -34,7 +34,7 @@ eureka:
     prefer-ip-address: true
   client:
         service-url:
-          defaultZone: http://localhost:7002/eureka/
+          defaultZone: http://eureka1-eureka:7002/eureka/
   
 logging:
   config: classpath:logback.xml

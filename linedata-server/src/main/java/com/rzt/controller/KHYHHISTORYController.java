@@ -14,7 +14,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 
@@ -35,9 +34,9 @@ public class KHYHHISTORYController extends
 
 	@ApiOperation(value = "隐患查询接口",notes="分页查询")
 	@GetMapping("getYHInfo")
-	public Page<Map<String, Object>> getYHInfo(@RequestParam(value = "page",defaultValue = "0") Integer page, @RequestParam(value = "size",defaultValue = "15") Integer size, String tdOrg, String wxOrg, String kv, String lineId, String yhjb, String startTime, String endTime){
+	public Page<Map<String, Object>> getYHInfo(@RequestParam(value = "page",defaultValue = "0") Integer page, @RequestParam(value = "size",defaultValue = "15") Integer size, String tdOrg, String wxOrg, String kv, String lineId, String yhjb, String startTime, String endTime,String currentUserId){
 		Pageable pageable = new PageRequest(page, size);
-		return service.getYHInfo( pageable,  tdOrg,  wxOrg,  kv,  lineId, yhjb,  startTime,  endTime);
+		return service.getYHInfo( pageable,  tdOrg,  wxOrg,  kv,  lineId, yhjb,  startTime,  endTime,currentUserId);
 	}
 
 

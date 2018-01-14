@@ -42,11 +42,11 @@ public class CMLINETOWERService extends CurdService<CMLINETOWER,CMLINETOWERRepos
         }
         if(kv!=null&&!"".equals(kv.trim())){
             list.add(kv);
-            sql += " and v_level= ?" + list.size();
+            sql += " and l.v_level= ?" + list.size();
         }
         if(lineId!=null&&!"".equals(lineId.trim())){
             list.add(lineId);
-            sql += " and line_id= ?" + list.size();
+            sql += " and l.id = ?" + list.size();
         }
         sql += " order by lt.sort";
         Page<Map<String, Object>> maps = execSqlPage(pageable, sql,list.toArray());

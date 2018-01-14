@@ -71,5 +71,22 @@ public class CMLINESECTIONController extends
 		}
 		return result;
 	}
-	
+
+	@ApiOperation(value = "线路区段新增",notes = "线路区段新增")
+	@PostMapping("addLineSection")
+	public Map<String,Object> addLineSection(CMLINESECTION cmlinesection){
+		return service.addLineSection(cmlinesection);
+	}
+	@ApiOperation(value = "线路区段新增后,添加中间表数据",notes = "线路区段新增后,添加中间表数据")
+	@PostMapping("addCmLineTower")
+	public WebApiResponse addCmLineTower(String lineId){
+		service.addCmLineTower(lineId);
+		return WebApiResponse.success("线路添加成功");
+	}
+	@ApiOperation(value = "删除线路区段",notes = "线路区段新增后,添加中间表数据")
+	@GetMapping("delCmLineSection")
+	public WebApiResponse delCmLineSection(String id){
+		service.delCmLineSection(id);
+		return WebApiResponse.success("线路删除成功");
+	}
 }

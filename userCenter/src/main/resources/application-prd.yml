@@ -42,9 +42,9 @@ spring:
           max-idle: 8
           min-idle: 0
           max-wait: -1
-#eureka:
-#  client:
-#    service-url:
-#      defaultZone: http://39.106.206.129:7002/eureka/
+eureka:
+  client:
+    service-url:
+      defaultZone: http://39.106.206.129:7002/eureka/
 logging:
   config: classpath:logback-spring.xml
