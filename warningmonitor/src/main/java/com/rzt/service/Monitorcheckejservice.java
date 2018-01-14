@@ -231,12 +231,12 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej,Monitorche
 
         Page<Map<String, Object>> pageResult = null;
         if("0".equals(deptId)){
-            String sql = "SELECT CREATE_TIME,TASK_NAME, TASK_ID,TASK_TYPE,USER_ID,DEPTID,WARNING_TYPE FROM MONITOR_CHECK_YJ where STATUS=2 and trunc(CREATE_TIME) = trunc(sysdate) and TASK_TYPE="+type;
+            String sql = "SELECT CREATE_TIME,TASK_NAME, TASK_ID,TASK_TYPE,USER_ID,DEPTID,WARNING_TYPE,CHECK_USER_ID,CHECK_DEPTID,CREATE_TIME_C FROM MONITOR_CHECK_YJ where STATUS=2 and trunc(CREATE_TIME) = trunc(sysdate) and TASK_TYPE="+type;
             //查询所有
             String sql1 = "SELECT * FROM ( " +sql+" ) where 1=1 "+s;
             pageResult = execSqlPage(pageable, sql1,list.toArray());
         }else{
-            String sql = "SELECT CREATE_TIME,TASK_NAME, TASK_ID,TASK_TYPE,USER_ID,DEPTID,WARNING_TYPE FROM MONITOR_CHECK_EJ where STATUS=2 and trunc(CREATE_TIME) = trunc(sysdate) and TASK_TYPE="+type;
+            String sql = "SELECT CREATE_TIME,TASK_NAME, TASK_ID,TASK_TYPE,USER_ID,DEPTID,WARNING_TYPE,CHECK_USER_ID,CHECK_DEPTID,CREATE_TIME_C FROM MONITOR_CHECK_EJ where STATUS=2 and trunc(CREATE_TIME) = trunc(sysdate) and TASK_TYPE="+type;
             //查询该deptId下的
             list.add(deptId);
             s+=" AND DEPTID = ?" + list.size();
@@ -250,25 +250,45 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej,Monitorche
 
             //获取到表中每个任务对应的人员的信息
             String userID =(String)next.get("USER_ID");
+            String checkUserId = (String) next.get("CHECK_USER_ID");
             HashOperations<String, Object, Object> hash = redisTemplate.opsForHash();
             Object userInformation = hash.get("UserInformation", userID);
+            Object checkUserInfo = hash.get("UserInformation", checkUserId);
             if(userInformation==null){
                 //System.out.println(userInformation);
                 continue;
             }
 
             JSONObject jsonObject = JSONObject.parseObject(userInformation.toString());
+            JSONObject checkJson = JSONObject.parseObject(checkUserInfo.toString());
             if(jsonObject!=null){
                 next.put("DEPT",jsonObject.get("DEPT"));
                 next.put("COMPANYNAME",jsonObject.get("COMPANYNAME"));
                 next.put("REALNAME",jsonObject.get("REALNAME"));
                 next.put("PHONE",jsonObject.get("PHONE"));
+                next.put("CHECKUSER",checkJson.get("REALNAME"));
+                next.put("CHECKDEPT",checkJson.get("DEPT"));
             }
         }
 
         return pageResult;
     }
 
+    //获得当前登录用户的deptId
+    public String getCurentDeptId(String userId){
+        HashOperations<String, Object, Object> hash = redisTemplate.opsForHash();
+        Object userInformation = hash.get("UserInformation", userId);
+        if(userInformation==null){
+            return null;
+        }
+        JSONObject jsonObject = JSONObject.parseObject(userInformation.toString());
+        String roletype = (String) jsonObject.get("ROLETYPE");
+        if(roletype==null){
+            return null;
+        }
+        return (String) jsonObject.get("DEPTID");
+
+    }
     //未处理到处理中处理
     @Transactional
     public WebApiResponse GJCL(String userId, Long taskId, Integer taskType, Integer warningType, String checkInfo, String checkAppInfo) {
@@ -296,12 +316,13 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej,Monitorche
         if(deptId==null){
             return WebApiResponse.erro( "该用户状态为null");
         }
+        //String curentDeptId = getCurentDeptId(userId);
         //0表示是一级单位
         try {
             if ("0".equals(deptId)){
-                return WebApiResponse.success(resp.updateYJC(taskId,taskType,warningType,checkInfo));
+                return WebApiResponse.success(resp.updateYJC(taskId,taskType,warningType,checkInfo,userId));
             }else{
-                return WebApiResponse.success(resp.updateEJC(taskId,taskType,warningType,checkInfo));
+                return WebApiResponse.success(resp.updateEJC(taskId,taskType,warningType,checkInfo,userId));
             }
         }catch (Exception e){
             return WebApiResponse.erro("添加失败"+e.getMessage());

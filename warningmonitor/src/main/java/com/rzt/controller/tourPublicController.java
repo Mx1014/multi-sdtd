@@ -17,6 +17,7 @@ public class tourPublicController extends CurdController<Monitorcheckej, tourPub
     }
 
     //巡视未按标准速率拍照
+    @RequestMapping("takePhoto")
     public void takePhoto(Long taskid, String orgid, String userid){
         try {
             service.takePhoto(taskid,orgid,userid);
