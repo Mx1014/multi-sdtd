@@ -271,6 +271,7 @@ public class CMLINESECTIONService extends CurdService<CMLINESECTION,CMLINESECTIO
             }
 
             cmlinesection.setId(null);
+            cmlinesection.setIsDel(0);
             reposiotry.save(cmlinesection);
             if(list.size()==0){
                 for (int i = startSort; i <= endSort; i++) {
@@ -333,5 +334,10 @@ public class CMLINESECTIONService extends CurdService<CMLINESECTION,CMLINESECTIO
     public void addCmLineTower(String lineId) {
         reposiotry.addCmLineTower(Long.valueOf(lineId));
         reposiotry.updateTowerSort(Long.valueOf(lineId));
+    }
+
+    @Transactional
+    public void delCmLineSection(String id) {
+        reposiotry.deleteById(Long.valueOf(id));
     }
 }
