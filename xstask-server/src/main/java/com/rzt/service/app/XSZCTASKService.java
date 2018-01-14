@@ -51,7 +51,7 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
             /**
              * 保电代办
              */
-            String sqlBddb = "SELECT id,plan_start_time AS planstarttime,plan_end_time   AS planendtime,task_name AS taskname,XSLX AS xslxnum,STAUTS STATUS,ZXYS_NUM AS zxys,XSCS_NUM AS XSCS,plan_xs_num,xs_txbd_cycle_id cycleid FROM xs_txbd_task WHERE plan_start_time >= trunc(sysdate) and cm_user_id = ?1 and (stauts = != 2)";
+            String sqlBddb = "SELECT id,plan_start_time AS planstarttime,plan_end_time   AS planendtime,task_name AS taskname,XSLX AS xslxnum,STAUTS STATUS,ZXYS_NUM AS zxys,XSCS_NUM AS XSCS,plan_xs_num,xs_txbd_cycle_id cycleid FROM xs_txbd_task WHERE plan_start_time >= trunc(sysdate) and cm_user_id = ?1 and (stauts != 2)";
             /**
              * 正常巡视代办
              */
