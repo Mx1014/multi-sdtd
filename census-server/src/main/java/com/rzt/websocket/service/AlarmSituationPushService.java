@@ -58,11 +58,11 @@ public class AlarmSituationPushService extends CurdService<websocket, websocketR
          * 巡视不合格
          */
 //        String xsbhg = "SELECT count(1) as xsbhg FROM XS_ZC_TASK_EXEC_DETAIL WHERE is_dw = 1";
-//        String yhtg = " SELECT count(1) AS sum FROM WARNING_OFF_POST_USER WHERE STATUS=1 AND trunc(CREATE_TIME) = trunc(sysdate) ";
+        String yhtg = " SELECT count(1) AS sum FROM WARNING_OFF_POST_USER WHERE STATUS=1 AND trunc(CREATE_TIME) = trunc(sysdate) ";
         String xsbhg = " SELECT count(1) FROM XS_ZC_EXCEPTION WHERE trunc(CREATE_TIME) = trunc(sysdate) ";
         //遍历Map取出通道单位id用于数据库查询权限
         sendMsg.forEach((sessionId, session) -> {
-            String sql = "SELECT ((" + notstarttime + ")+(" + normalinspection + ")) as notstarttime,(" + touroverdue + ") as touroverdue,(" + xsbhg + ") as xsbhg  FROM DUAL";
+            String sql = "SELECT ((" + notstarttime + ")+(" + normalinspection + ")) as notstarttime,(" + touroverdue + ") as touroverdue,(" + xsbhg + ") as xsbhg,("+yhtg+") as yhtg  FROM DUAL";
             List<Map<String, Object>> execSql = this.execSql(sql);
             try {
                 alarmSituationServerEndpoint.sendText((Session) session.get("session"), execSql);
