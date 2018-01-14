@@ -8,16 +8,11 @@ package com.rzt.service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.RztSysUser;
+import com.rzt.eureka.StaffLine;
 import com.rzt.repository.RztSysUserRepository;
-import com.rzt.repository.RztSysUserauthRepository;
 import com.rzt.security.JwtHelper;
 import com.rzt.security.TokenProp;
 import com.rzt.util.WebApiResponse;
-import com.rzt.utils.DateUtil;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.xssf.usermodel.XSSFRow;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -32,7 +27,6 @@ import org.springframework.util.StringUtils;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
-import java.io.FileInputStream;
 import java.util.*;
 
 /**
@@ -54,6 +48,8 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
     private TokenProp tokenProp;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    StaffLine staffLine;
 
     public Page<RztSysUser> findByName(String name, Pageable pageable) {
         if (StringUtils.isEmpty(name))
@@ -299,7 +295,7 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
      * @param request
      * @return
      */
-    public WebApiResponse userLogin(String password, String account, String loginType, HttpServletRequest request) {
+    public WebApiResponse userLogin(String password, String account, String loginType) {
         String auth = "SELECT USERID FROM RZTSYSUSERAUTH WHERE IDENTITYTYPE = ?1 AND PASSWORD =?2 and USERDELETE=1 ";
         String user = "SELECT * FROM RZTSYSUSER  WHERE id=?1 AND USERDELETE = 1 AND USERTYPE = ?2 ";
         String userAccout = "SELECT * FROM USERINFO where id=?1";
@@ -309,9 +305,17 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
             if (!StringUtils.isEmpty(stringObjectMap.get("USERID"))) {
                 List<Map<String, Object>> userid = this.execSql(user, String.valueOf(stringObjectMap.get("USERID")), loginType);
                 if (userid.size() == 1) {
+                    HashOperations hashOperations = redisTemplate.opsForHash();
+                    Object roleid1 = userid.get(0).get("ROLEID");
+                    Object rztsysdata = hashOperations.get("RZTSYSDATA", roleid1);
+                    if (StringUtils.isEmpty(rztsysdata)) {
+                        String sql = " SELECT * FROM  RZTSYSDATA WHERE ROLEID = ?1 ";
+                        Map<String, Object> map2 = this.execSqlSingleResult(sql, roleid1);
+                        hashOperations.put("RZTSYSDATA", roleid1, map2);
+                    }
                     this.reposiotry.updateUserLOGINSTATUS(String.valueOf(stringObjectMap.get("USERID")));
                     Map userid1 = this.execSqlSingleResult(userAccout, String.valueOf(stringObjectMap.get("USERID")));
-                    HashOperations hashOperations = redisTemplate.opsForHash();
+
                     hashOperations.put("UserInformation", stringObjectMap.get("USERID"), userid1);
                     Object roleid = userid1.get("ROLEID");
                     if (!StringUtils.isEmpty(roleid)) {
@@ -323,7 +327,10 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
                             tokenProp.getExpireTime()).getAccess_token();
                     hashOperations.put("USERTOKEN", "USER:" + userid1.get("ID") + "," + userid1.get("REALNAME"), access_token);
                     userid1.put("TOKEN", access_token);
-                    request.getSession().setAttribute("user", userid1);
+//                    try {
+//                        staffLine.KHSX(String.valueOf(userid.get(0).get("ID")), Integer.valueOf(userid.get(0).get("WORKTYPE").toString()));
+//                    } catch (NumberFormatException e) {
+//                    }
                     return WebApiResponse.success(userid1);
                 }
             }
@@ -334,15 +341,18 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
     }
 
     @Transactional
-    public WebApiResponse userQuit(String id, HttpServletRequest request) {
-        String userAccout = "SELECT * FROM USERINFO where id=?1";
+    public WebApiResponse userQuit(String id) {
+        String userAccout = "SELECT * FROM RZTSYSUSER where id=?1";
         try {
             this.reposiotry.quitUserLOGINSTATUS(id);
-            request.getSession().removeAttribute("user");
             Map<String, Object> stringObjectMap = this.execSqlSingleResult(userAccout, id);
             HashOperations hashOperations = redisTemplate.opsForHash();
             hashOperations.put("UserInformation", id, stringObjectMap);
             hashOperations.delete("USERTOKEN", "USER:" + stringObjectMap.get("ID") + "," + stringObjectMap.get("REALNAME"));
+//            try {
+//                staffLine.KHXX(String.valueOf(stringObjectMap.get("ID")), Integer.valueOf(stringObjectMap.get("WORKTYPE").toString()));
+//            } catch (NumberFormatException e) {
+//            }
             return WebApiResponse.success("");
         } catch (Exception e) {
             e.printStackTrace();

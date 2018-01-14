@@ -7,11 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import redis.clients.jedis.JedisPubSub;
-
-import java.util.Date;
 
 /**
  * Created by huyuening on 2018/1/5.
@@ -37,12 +33,12 @@ public class Subscriber extends JedisPubSub {
     // 取得按表达式的方式订阅的消息后的处理
     public void onPMessage(String pattern, String channel, String message) {
         try {
-            System.out.println(pattern + "========================" + channel + "=" + message);
+            //System.out.println(pattern + "========================" + channel + "=" + message);
             //以+号分隔
             String[] messages = message.split("\\+");
             if(messages.length<7){
                 LOGGER.error("redis信息录入不全");
-                throw new RuntimeException("redis信息录入不全");
+               // throw new RuntimeException("redis信息录入不全");
             }
             if("TWO".equals(messages[0])){  //表示告警任务生成，插入到二级单位表中
                 try{
@@ -57,29 +53,24 @@ public class Subscriber extends JedisPubSub {
                     }
                 }catch (Exception e){
                     LOGGER.error("插入数据失败："+e.getMessage());
-                    System.out.println("插入数据失败："+e.getMessage());
+                   // System.out.println("插入数据失败："+e.getMessage());
                 }
             }else if("ONE".equals(messages[0])){  //表示告警任务过期 插入到一级单位表中
-                if("8".equals(messages[3])||"2".equals(messages[3])){
+                /*if("8".equals(messages[3])||"2".equals(messages[3])){
                     //获取到结束时间，将redis中的值设置为结束时间值
                     if(new Date().getTime()<Long.valueOf(messages[8])){
                         return;
                     }
                     String key = "ONE+"+messages[1]+"+"+messages[2]+"+"+messages[3]+"+"+messages[4]+"+"+messages[5]+"+"+messages[6]+"+"+messages[7];
                     redisService.psetex(key,Long.valueOf(messages[8])-new Date().getTime());
-                }
+                }*/
 
                 monitorcheckyj.saveCheckYj(messages);
             }
         }catch (Exception e){
-            System.out.println(e.getMessage());
+            //System.out.println(e.getMessage());
         }
     }
 
-    @RequestMapping("/hello")
-    @ResponseBody
-    public String hello(){
-        return "success";
-    }
 
 }

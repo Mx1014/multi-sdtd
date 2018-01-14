@@ -72,6 +72,27 @@ public class Monitorcheckej implements Serializable{
 	@Column(name = "WARNING_TYPE")
 	private Integer warningType;
 
+	@Column(name = "CHECK_USER_ID")
+	private String checkUserId;
+	@Column(name = "CHECK_DEPTID")
+	private String checkDeptId;
+
+	public String getCheckUserId() {
+		return checkUserId;
+	}
+
+	public void setCheckUserId(String checkUserId) {
+		this.checkUserId = checkUserId;
+	}
+
+	public String getCheckDeptId() {
+		return checkDeptId;
+	}
+
+	public void setCheckDeptId(String checkDeptId) {
+		this.checkDeptId = checkDeptId;
+	}
+
 	public String getTaskName() {
 		return taskName;
 	}

@@ -16,22 +16,23 @@ public class GJTask {
 
 
     //定时拉数据  1
-    @Scheduled(cron = "0/15 * * * * ?")
+    @Scheduled(cron = "0 30 0 * * ? ")
     public void gjTask(){
         khgj.inspectionMissionOverdue();// 巡视超期任务
         khgj.XSWJRW();
+        khgj.XSWSX();
         //alarm.notReceivingATaskAtASpecifiedTime();//巡视未按规定时间接任务
     }
 
 
-   // @Scheduled(cron = "0/10 * * * * ?")
+    //@Scheduled(cron = "0/60 * * * * ?")
     public void gjTask2(){
         khgj.XSWSX();   //巡视未上线 给定时拉取数据用
         System.out.println("++XSWSX+++++++++++++++++++++++++++++++++++++++++++++++");
     }
 
     //1
-    //@Scheduled(cron = "0/30 * * * * ?")
+   // @Scheduled(cron = "0/30 * * * * ?")
     public void gjTask3(){
         khgj.XSWJRW();  //巡视未按规定时间接任务 定时拉去数据用
         System.out.println("++XSWJRW+++++++++++++++++++++++++++++++++++++++++++++++");
@@ -42,7 +43,7 @@ public class GJTask {
         khgj.KHWSX();   //看护未上线  给定时拉取数据用
         System.out.println("++KHWSX+++++++++++++++++++++++++++++++++++++++++++++++");
     }
-    //@Scheduled(cron = "0/30 * * * * ?")
+    //@Scheduled(cron = "0/15 * * * * ?")
     public void gjTask5(){
         khgj.KHWKH();   //看护人员未按规定时间看护任务 定时拉取数据用
         System.out.println("++KHWKH+++++++++++++++++++++++++++++++++++++++++++++++");

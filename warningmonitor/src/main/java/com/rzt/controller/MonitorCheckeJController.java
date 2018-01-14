@@ -92,17 +92,18 @@ public class MonitorCheckeJController extends
 		}
 	}
 
-	/**
-	 *@Author hyn
-	 *@Method GJCL
-	 *@Params [userId, 判断一级二级
-	 * taskId, taskType, warningType,  任务id，任务类型，告警类型
-	 * checkInfo, checkAppInfo] 处理信息 推送App消息
-	 *@Date 2018/1/10 14:36
+	/**未处理到处理中处理
+	 * @param userId 当前登录用户存到数据库中，在检查完成展示
+	 * @param taskId 任务id
+	 * @param type  必传  任务类型 巡视、看护
+	 * @param warningType
+	 * @param checkInfo
+	 * @param checkAppInfo
+	 * @return
 	 */
 	@PostMapping("GJCL")
-	public WebApiResponse GJCL(String userId,Long taskId,Integer taskType,Integer warningType,String checkInfo,String checkAppInfo){
-		return ejService.GJCL(userId,taskId,taskType,warningType,checkInfo,checkAppInfo);
+	public WebApiResponse GJCL(String userId,Long taskId,Integer type,Integer warningType,String checkInfo,String checkAppInfo){
+		return ejService.GJCL(userId,taskId,type,warningType,checkInfo,checkAppInfo);
 	}
 
 	@PostMapping("GJCLC")
