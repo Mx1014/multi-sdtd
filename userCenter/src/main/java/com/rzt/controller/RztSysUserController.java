@@ -327,20 +327,19 @@ public class RztSysUserController extends
      */
     @PostMapping("userLogin")
     @ApiOperation(value = "人员登陆", notes = "人员登陆")
-    public WebApiResponse userLogin(String password, String account, String loginType, HttpServletRequest request) {
-        return this.service.userLogin(password, account, loginType, request);
+    public WebApiResponse userLogin(String password, String account, String loginType) {
+        return this.service.userLogin(password, account, loginType);
     }
 
     /**
      * 退出
      *
      * @param id
-     * @param request
      * @return
      */
     @ApiOperation(value = "人员退出", notes = "人员退出")
     @PostMapping("userQuit")
-    public WebApiResponse userQuit(String id, HttpServletRequest request) {
-        return this.service.userQuit(id, request);
+    public WebApiResponse userQuit(String id) {
+        return this.service.userQuit(id);
     }
 }
