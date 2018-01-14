@@ -22,7 +22,7 @@ spring:
       driverClassName: oracle.jdbc.driver.OracleDriver
 #      url: jdbc:mysql://168.130.1.31:30624/sdtd27?useUnicode=true&characterEncoding=utf8
 #      url: jdbc:oracle:thin:@47.92.67.90:1521/orcl
-      url: jdbc:oracle:thin:@168.130.1.32:1521/orcl
+      url: jdbc:oracle:thin:@47.94.131.120:1521/orcl
       username: sdtd27
       password: sdtd27
 # 下面为连接池的补充设置，应用到上面所有数据源中
@@ -64,11 +64,11 @@ spring:
 my-defined:
    mapProps:
    #docker
-    file-dir: /usr/share/nginx/html/
-    pic-dir: /usr/share/nginx/html/
+#    file-dir: /usr/share/nginx/html/
+#    pic-dir: /usr/share/nginx/html/
 #ali
-#    file-dir: /usr/local/nginx-fileserver/html/
-#    pic-dir: /usr/local/nginx-fileserver/html/
+    file-dir: /usr/local/nginx-fileserver/html/
+    pic-dir: /usr/local/nginx-fileserver/html/
 #    file-dir: F:/testFile/
 #    pic-dir: F:/testFile/
     thum-height: 50
@@ -77,7 +77,7 @@ my-defined:
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://localhost:7002/eureka/
+      defaultZone: http://39.106.206.129:7002/eureka/
   instance:
     prefer-ip-address: true
     # ${server.port}为该服务的端口号
