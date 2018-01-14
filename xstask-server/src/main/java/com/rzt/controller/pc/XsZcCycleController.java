@@ -164,6 +164,7 @@ public class XsZcCycleController extends
 	@GetMapping("listPlan")
 	public Object listPlan(Pageable pageable, XsTaskSCh xsTaskSch,String currentUserId) {
 		try {
+			Thread.sleep(200000);
 			return this.service.listPlan(pageable,xsTaskSch,currentUserId);
 		} catch (Exception var7) {
 			return WebApiResponse.erro("数据查询失败" + var7.getMessage());

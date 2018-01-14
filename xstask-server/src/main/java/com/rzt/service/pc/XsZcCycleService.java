@@ -284,6 +284,7 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
                     case 0:
                         break;
                     case 1:
+                        authoritySql = " and td_org = '" + tdId.toString() + "'";
                         break;
                     case 2:
                         authoritySql = " and td_org = '" + tdId.toString() + "'";
@@ -436,9 +437,13 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
     public Object getCycle(Long id) throws Exception {
         String sql = "select * from xs_zc_cycle where id = ?";
         Map<String, Object> cycle = this.execSqlSingleResult(sql, id);
-        Map<String, Object> map = userInfoFromRedis(cycle.get("CM_USER_ID").toString());
-        map.putAll(cycle);
-        return map;
+        Object cm_user_id = cycle.get("CM_USER_ID");
+        if(!StringUtils.isEmpty(cm_user_id)) {
+            Map<String, Object> map = userInfoFromRedis(cm_user_id.toString());
+            map.putAll(cycle);
+            return map;
+        }
+        return cycle;
     }
 
     //    @CacheEvict(value = "xsZcCycles" , key = "#id")

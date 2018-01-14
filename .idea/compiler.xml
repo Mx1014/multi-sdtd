@@ -18,6 +18,7 @@
         <module name="nursetask-server" />
         <module name="userCenter" />
         <module name="warning" />
+        <module name="xstask-server" />
         <module name="zull" />
       </profile>
     </annotationProcessing>

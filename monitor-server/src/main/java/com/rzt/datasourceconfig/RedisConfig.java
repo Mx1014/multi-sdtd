@@ -119,15 +119,6 @@ public class RedisConfig {
         return template;
     }
 
-    @Bean
-    public JedisPool redisPoolFactory() {
 
-        JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
-        jedisPoolConfig.setMaxIdle(maxIdle);
-        jedisPoolConfig.setMaxWaitMillis(maxWait);
-
-        JedisPool jedisPool = new JedisPool(jedisPoolConfig, host, port, timeout);
-        return jedisPool;
-    }
 
 }
