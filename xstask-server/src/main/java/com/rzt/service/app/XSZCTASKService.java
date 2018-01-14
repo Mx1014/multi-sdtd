@@ -51,11 +51,11 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
             /**
              * 保电代办
              */
-            String sqlBddb = "SELECT id,plan_start_time AS planstarttime,plan_end_time   AS planendtime,task_name AS taskname,XSLX AS xslxnum,STAUTS STATUS,ZXYS_NUM AS zxys,XSCS_NUM AS XSCS,plan_xs_num,xs_txbd_cycle_id cycleid FROM xs_txbd_task WHERE (stauts = 0 OR stauts = 1) AND plan_start_time >= trunc(sysdate) and cm_user_id = ?1 ";
+            String sqlBddb = "SELECT id,plan_start_time AS planstarttime,plan_end_time   AS planendtime,task_name AS taskname,XSLX AS xslxnum,STAUTS STATUS,ZXYS_NUM AS zxys,XSCS_NUM AS XSCS,plan_xs_num,xs_txbd_cycle_id cycleid FROM xs_txbd_task WHERE plan_start_time >= trunc(sysdate) and cm_user_id = ?1 and (stauts = != 2)";
             /**
              * 正常巡视代办
              */
-            String sqlZcdb = "SELECT id,plan_start_time AS planstarttime,plan_end_time   AS planendtime,task_name AS taskname,2 AS xslxnum,STAUTS STATUS,ZXYS_NUM AS zxys,XSCS_NUM AS XSCS,plan_xs_num,xs_zc_cycle_id cycleid FROM xs_zc_task WHERE is_delete = 0 and (stauts = 0 OR stauts = 1) AND plan_start_time >= trunc(sysdate) AND cm_user_id = ?2  ";
+            String sqlZcdb = "SELECT id,plan_start_time AS planstarttime,plan_end_time   AS planendtime,task_name AS taskname,2 AS xslxnum,STAUTS STATUS,ZXYS_NUM AS zxys,XSCS_NUM AS XSCS,plan_xs_num,xs_zc_cycle_id cycleid FROM xs_zc_task WHERE plan_start_time >= trunc(sysdate) AND cm_user_id = ?2 and is_delete = 0 and (stauts != 2)";
             String sql = "" + sqlBddb + " UNION ALL " + sqlZcdb + "";
             return this.execSqlPage(pageable, sql, userid, userid);
         } else {
@@ -84,7 +84,7 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
      */
     public Object tourMissionDetails(Integer xslx, Long id) throws Exception{
         String bdtxSql = "SELECT ID,td_org,real_start_time,real_end_time,stauts status,task_name  AS taskname,plan_start_time AS starttime,cm_user_id AS userid,PD_TIME AS pdtime,plan_xs_num AS plannum,xs_txbd_cycle_id cycleid FROM xs_txbd_task WHERE id = ?1";
-        String zcxsSql = "SELECT ID,td_org,real_start_time,real_end_time,stauts status,task_name AS taskname, plan_start_time AS starttime,  cm_user_id AS userid,  PD_TIME AS pdtime,plan_xs_num AS plannum,xs_zc_cycle_id cycleid FROM xs_zc_task   WHERE id = ?1";
+        String zcxsSql = "SELECT ID,td_org,real_start_time,SFQR_TIME,WPTX_TIME,DDXC_TIME,real_end_time,stauts status,task_name AS taskname, plan_start_time AS starttime,plan_end_time, cm_user_id AS userid,  PD_TIME AS pdtime,plan_xs_num AS plannum,xs_zc_cycle_id cycleid FROM xs_zc_task   WHERE id = ?1";
         Map<String, Object> task = null;
         if (xslx == 0 || xslx == 1) {
             task = this.execSqlSingleResult(bdtxSql, id);
@@ -125,7 +125,10 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
         task.put("CLASSNAME",user.get("CLASSNAME"));
         task.put("WXNAME",user.get("COMPANYNAME"));
         task.put("TDNAME",user.get("DEPT"));
+        task.put("GROUPNAME",user.get("GROUPNAME"));
+        task.put("PHONE",user.get("PHONE"));
 
+        //以后改成从缓存拿
         task.put("LINENAME",cycle.get("LINENAME"));
         task.put("SECTION",cycle.get("SECTION"));
         task.put("VLEVEL",cycle.get("V_LEVEL"));
@@ -238,18 +241,18 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
             /**
              * 正常巡视代办
              */
-            String sqlZcdb = "SELECT count(1)  FROM xs_zc_task WHERE (stauts = 0 OR stauts = 1) AND plan_start_time >= trunc(sysdate) AND cm_user_id = ?2  ";
+            String sqlZcdb = "SELECT count(1)  FROM xs_zc_task WHERE plan_start_time >= trunc(sysdate) AND cm_user_id = ?2 and is_delete = 0 and (stauts = 0 OR stauts = 1)";
             String sql = "select (" + sqlBddb + ") + (" + sqlZcdb + ") as count from dual";
             return this.execSql(sql, userid, userid);
         } else {
             /**
              * 保电已办
              */
-            String sqlBdyb = "select count(1) from xs_txbd_task where cm_user_id = ?1 and (stauts = 2)";
+            String sqlBdyb = "select count(1) from xs_txbd_task where cm_user_id = ?1 and (stauts = 2) and is_delete = 0";
             /**
              * 正常已办
              */
-            String sqlZcyb = "  select count(1) from xs_zc_task where  cm_user_id =?2 and (stauts = 2 )";
+            String sqlZcyb = "  select count(1) from xs_zc_task where  cm_user_id =?2 and (stauts = 2 ) and is_delete = 0";
             String sql = "select (" + sqlBdyb + ") + (" + sqlZcyb + ") as count from dual";
             return this.execSql( sql, userid, userid);
         }

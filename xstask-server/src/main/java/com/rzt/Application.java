@@ -12,7 +12,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableEurekaClient
 @EnableFeignClients
 @EnableScheduling
-//@EnableZuulProxy//跟进该注解可以看到该注解整合了@EnableCircuitBreaker、@EnableDiscoveryClient，是个组合注解，目的是简化配置。
 /**
 * @Class XstaskServerApplication
 * @Description 巡视任务微服务
