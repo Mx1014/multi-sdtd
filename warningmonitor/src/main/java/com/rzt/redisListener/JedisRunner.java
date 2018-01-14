@@ -28,6 +28,7 @@ public class JedisRunner implements ApplicationListener<ContextRefreshedEvent>/*
     public void onApplicationEvent(ContextRefreshedEvent event) {
         //监听所有reids通道中的过期事件
         //subscribe();
+        System.out.println("------------------");
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
