@@ -278,12 +278,12 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                     e.printStackTrace();
                 }
                 String cellValue = ExcelUtil.getCellValue(row.getCell(9));
-                if (ExcelUtil.getCellValue(row.getCell(9)).equals("施工隐患")){
+                //if (ExcelUtil.getCellValue(row.getCell(9)).equals("施工隐患")){
                     KhCycle cycle = new KhCycle();
                     cycle.setId();
                     yh.setTaskId(cycle.getId());
                     addKhCycle(yh,cycle);
-                }
+                //}
                 this.add(yh);
                 row = sheet.getRow(++i);
                 /*
@@ -308,24 +308,12 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             if (lineName.contains("二")) {
                 lineName = lineName.replace("二", "2");
             }
-            if (lineName.contains("三")) {
-                lineName = lineName.replace("三", "3");
-            }
-            if (lineName.contains("四")) {
-                lineName = lineName.replace("四", "4");
-            }
             linename1 = helper.toHanyuPinyin(lineName);//changqing1
             if (linename1.contains("1")) {
                 linename1 = linename1.replace("1", "一");
             }
             if (linename1.contains("2")) {
                 linename1 = linename1.replace("2", "二");
-            }
-            if (linename1.contains("3")) {
-                linename1 = linename1.replace("3", "三");
-            }
-            if (linename1.contains("4")) {
-                linename1 = linename1.replace("4", "四");
             }
         }
         if (linename1.contains("dou")) {

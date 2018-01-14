@@ -114,8 +114,14 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
     }
 
 
-    public void updateTaskById(String startTime, String endTime, String userId, String id) {
-        this.reposiotry.updateSiteById(userId, id, startTime, endTime);
+    public void updateTaskById(String userId, String id) {
+        try {
+            String sql = "select c.id as id,c.companyname as name from rztsyscompany c left join rztsysuser u on u.companyid = c.id where u.id=?";
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        this.reposiotry.updateSiteById(userId, id);
     }
 
 
