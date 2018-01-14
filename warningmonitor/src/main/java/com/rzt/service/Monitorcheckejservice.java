@@ -51,7 +51,7 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej,Monitorche
 
     public void saveCheckEj(String[] messages) {
 
-        resp.saveCheckEj(new SnowflakeIdWorker(0,0).nextId(),Long.valueOf(messages[1]),Integer.valueOf(messages[2]),Integer.valueOf(messages[3]),messages[4],messages[5],messages[5]);
+        resp.saveCheckEj(new SnowflakeIdWorker(0,0).nextId(),Long.valueOf(messages[1]),Integer.valueOf(messages[2]),Integer.valueOf(messages[3]),messages[4],messages[5],messages[6]);
     }
 
     //判断权限，获取当前登录用户的deptId，如果是全部查询则返回0
@@ -125,7 +125,7 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej,Monitorche
             HashOperations<String, Object, Object> hash = redisTemplate.opsForHash();
             Object userInformation = hash.get("UserInformation", userID);
             if(userInformation==null){
-                System.out.println(userInformation);
+                //System.out.println(userInformation);
                 continue;
             }
             JSONObject jsonObject = JSONObject.parseObject(userInformation.toString());
@@ -188,7 +188,7 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej,Monitorche
             HashOperations<String, Object, Object> hash = redisTemplate.opsForHash();
             Object userInformation = hash.get("UserInformation", userID);
             if(userInformation==null){
-                System.out.println(userInformation);
+               // System.out.println(userInformation);
                 continue;
             }
 
@@ -253,7 +253,7 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej,Monitorche
             HashOperations<String, Object, Object> hash = redisTemplate.opsForHash();
             Object userInformation = hash.get("UserInformation", userID);
             if(userInformation==null){
-                System.out.println(userInformation);
+                //System.out.println(userInformation);
                 continue;
             }
 
@@ -269,12 +269,14 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej,Monitorche
         return pageResult;
     }
 
+    //未处理到处理中处理
     @Transactional
     public WebApiResponse GJCL(String userId, Long taskId, Integer taskType, Integer warningType, String checkInfo, String checkAppInfo) {
         String deptId = getDeptID(userId);
         if(deptId==null){
             return WebApiResponse.erro( "该用户状态为null");
         }
+        this.delRedisKey(taskId,taskType,warningType);
         //0表示是一级单位
         try {
             if ("0".equals(deptId)){
@@ -287,6 +289,7 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej,Monitorche
         }
     }
 
+    //处理中到已处理处理
     @Transactional
     public WebApiResponse GJCLC(String userId, Long taskId, Integer taskType, Integer warningType, String checkInfo) {
         String deptId = getDeptID(userId);
@@ -329,6 +332,21 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej,Monitorche
             }
         } catch (Exception e) {
             e.getMessage();
+        }
+    }
+
+    //未处理的告警任务处理后删除往一级单位推的键
+    public void delRedisKey(Long taskId, Integer taskType, Integer warningType){
+        String sql = "";
+        if(taskType==1){ //巡视任务
+            sql = "SELECT CM_USER_ID AS USER_ID,TD_ORG AS DEPTID,TASK_NAME FROM XS_ZC_TASK WHERE ID=?1";
+        }else if(taskType==2){//看护任务
+            sql="SELECT USER_ID,TDYW_ORG AS DEPTID,TASK_NAME FROM KH_TASK WHERE ID=?1";
+        }
+        List<Map<String, Object>> maps = execSql(sql, taskId);
+        for(Map<String, Object> map:maps){
+            String key = "ONE+"+taskId+"+"+taskType+"+"+warningType+"+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
+            redisService.delKey(key);
         }
     }
 }

@@ -45,7 +45,6 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
     }
 
     //看护未上线  给定时拉取数据用
-   // @Scheduled
     public void KHWSX(){
         String sql = " SELECT kh.ID,kh.TDYW_ORG,kh.PLAN_START_TIME,kh.TASK_NAME,kh.USER_ID FROM  KH_TASK kh  " +
                 "WHERE trunc(kh.PLAN_START_TIME) = trunc(sysdate) ";
@@ -67,21 +66,18 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
         }
     }
     //巡视未上线 给定时拉取数据用
-   // @Scheduled(cron = "0/10 * * * * ? ")
     public void XSWSX(){
         String sql="SELECT ID,PLAN_START_TIME,TASK_NAME,CM_USER_ID,PLAN_END_TIME,TD_ORG FROM XS_ZC_TASK " +
                 "WHERE  trunc(PLAN_START_TIME) = trunc(sysdate)  ";
         List<Map<String, Object>> maps = execSql(sql);
         maps.forEach(map ->{
             Jedis jedis = jedisPool.getResource();
-            String key = "TWO+"+map.get("ID")+"+1+2+"+map.get("CM_USER_ID")+"+"+map.get("TD_ORG")+"+"+map.get("TASK_NAME")+"+"+map.get("PLAN_END_TIME");
+            //"TWO+"+map.get("ID")+"+2+8+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME")
+            String key = "TWO+"+map.get("ID")+"+1+2+"+map.get("CM_USER_ID")+"+"+map.get("TD_ORG")+"+"+map.get("TASK_NAME");
             jedis.select(1);
             Date plan_start_time = (Date) map.get("PLAN_START_TIME");
             try {
                 Long time = plan_start_time.getTime() - new Date().getTime();
-                /*if(time>600000L){
-                    time = time-600000L;
-                }*/
                 jedis.psetex(key,time,"巡视未上线");
             } catch (Exception e) {
                 System.out.println(e.getMessage());
@@ -93,7 +89,6 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
     }
 
     //看护人员未按规定时间看护任务 定时拉取数据用
-    // @Scheduled
     public void KHWKH() {
         String sql = "SELECT kh.ID,kh.TDYW_ORG,kh.PLAN_START_TIME, kh.TASK_NAME,kh.USER_ID FROM  KH_TASK kh  " +
                 "WHERE trunc(kh.PLAN_START_TIME) = trunc(sysdate)";
@@ -117,7 +112,7 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
 
     //巡视未按规定时间接任务 定时拉去数据用
     public void XSWJRW(){
-        String sql = "SELECT ID,TD_ORG,PLAN_START_TIME,CM_USER_ID,TASK_NAME FROM XS_ZC_TASK WHERE trunc(REAL_START_TIME)=trunc(sysdate) ";
+        String sql = "SELECT ID,TD_ORG,PLAN_START_TIME,CM_USER_ID,TASK_NAME FROM XS_ZC_TASK WHERE trunc(PLAN_START_TIME)=trunc(sysdate) ";
         List<Map<String, Object>> maps = execSql(sql);
         for (Map<String, Object> map : maps) {
             Jedis jedis = jedisPool.getResource();
@@ -126,6 +121,9 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
             Date plan_start_time = (Date) map.get("PLAN_START_TIME");
             try {
                 Long time = plan_start_time.getTime() - new Date().getTime();
+                if(time<0){
+                    continue;
+                }
                 jedis.psetex(key, time, "巡视未按规定时间接任务");
             } catch (Exception e) {
                 System.out.println(e.getMessage());

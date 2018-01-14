@@ -13,7 +13,7 @@ import redis.clients.jedis.JedisPool;
 @Service
 public class RedisService {
     protected static Logger LOGGER = LoggerFactory.getLogger(RedisService.class);
-    private static int faixTime = 5;
+    private static int faixTime = 60;
 
 
     @Autowired
@@ -24,10 +24,10 @@ public class RedisService {
         jedis.select(1);
         try {
             jedis.setex(key, faixTime, " ");
-            System.out.println("---setex-------------------------------------------"+key+faixTime);
+            //System.out.println("---setex-------------------------------------------"+key+faixTime);
         } catch (Exception e) {
             LOGGER.error("redis定时失败："+e.getMessage());
-            System.out.println("redis定时失败："+e.getMessage());
+           // System.out.println("redis定时失败："+e.getMessage());
         }finally {
             jedis.close();
         }
@@ -38,10 +38,22 @@ public class RedisService {
         jedis.select(1);
         try {
             jedis.psetex(key, time, " ");
-            System.out.println("--psetex--------------------------------------------"+key+faixTime);
+           // System.out.println("--psetex--------------------------------------------"+key+faixTime);
         } catch (Exception e) {
             LOGGER.error("redis定时失败："+e.getMessage());
-            System.out.println("redis定时失败："+e.getMessage());
+           // System.out.println("redis定时失败："+e.getMessage());
+        }finally {
+            jedis.close();
+        }
+    }
+
+    public void delKey(String key){
+        Jedis jedis = jedisPool.getResource();
+        jedis.select(1);
+        try {
+           jedis.del(key);
+        } catch (Exception e) {
+            LOGGER.error("redis删除键值失败："+e.getMessage());
         }finally {
             jedis.close();
         }

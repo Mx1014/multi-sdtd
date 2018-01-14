@@ -30,7 +30,6 @@ public class JedisRunner implements CommandLineRunner {
             //监听所有reids通道中的过期事件
             jedis.psubscribe(subscriber, "__keyevent@1__:expired");
         } catch (Exception e) {
-            jedis.close();
             e.printStackTrace();
         }finally {
             jedis.close();
