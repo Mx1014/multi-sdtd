@@ -79,8 +79,8 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                     }case 1 :{//二级单位   显示全部周期为两小时的任务
                         if(null != deptid && !"".equals(deptid)){//当前用户单位信息获取成功，进入流程
                             list.add(deptid);
-                            sql = " SELECT  t.ID," +
-                                    "    t.TASKID," +
+                            sql = " SELECT  DISTINCT t.TASKID," +
+                                    "    t.ID," +
                                     "    t.CREATETIME," +
                                     "    t.USER_ID," +
                                     "    t.TASKNAME," +
@@ -98,8 +98,8 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
 
                         if(null != deptid && !"".equals(deptid)){//当前用户单位信息获取成功，进入流程
                             list.add(deptid);
-                            sql = " SELECT  t.ID," +
-                                    "    t.TASKID," +
+                            sql = " SELECT DISTINCT t.TASKID," +
+                                    "    t.ID," +
                                     "    t.CREATETIME," +
                                     "    t.USER_ID," +
                                     "    t.TASKNAME," +
