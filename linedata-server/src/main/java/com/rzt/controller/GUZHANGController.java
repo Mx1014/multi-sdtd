@@ -17,6 +17,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Map;
+
 /**
  * 类名称：GUZHANGController
  * 类描述：    
@@ -45,8 +47,8 @@ public class GUZHANGController extends
 
 	@ApiOperation(value = "台账故障导入接口",notes = "搜索、分页获取台账故障信息")
 	@PostMapping("ImportGuZhang")
-	public WebApiResponse ImportGuZhang(MultipartFile file){
-    		return service.importGuZhang(file);
+	public Map<String,Object> ImportGuZhang(MultipartFile file, String flag){
+		return service.importGuZhang(file,flag);
 	}
 
 	

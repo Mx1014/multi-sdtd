@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import redis.clients.jedis.JedisPubSub;
 
+import java.util.Date;
+
 /**
  * Created by huyuening on 2018/1/5.
  */
@@ -26,10 +28,6 @@ public class Subscriber extends JedisPubSub {
     @Autowired
     private RedisService redisService;
 
-
-
-
-
     @Override
     // 初始化按表达式的方式订阅时候的处理
     public void onPSubscribe(String pattern, int subscribedChannels) {
@@ -39,7 +37,7 @@ public class Subscriber extends JedisPubSub {
     // 取得按表达式的方式订阅的消息后的处理
     public void onPMessage(String pattern, String channel, String message) {
         try {
-            System.out.println(pattern + "=" + channel + "=" + message);
+            System.out.println(pattern + "========================" + channel + "=" + message);
             //以+号分隔
             String[] messages = message.split("\\+");
             if(messages.length<7){
@@ -48,19 +46,33 @@ public class Subscriber extends JedisPubSub {
             }
             if("TWO".equals(messages[0])){  //表示告警任务生成，插入到二级单位表中
                 try{
-                    monitorcheckej.saveCheckEj(messages);
-                    //放进redis中默认等待40分钟
-                    String key = "ONE+"+messages[1]+"+"+messages[2]+"+"+messages[3]+"+"+messages[4]+"+"+messages[5]+"+"+messages[6];
-                    redisService.setex(key);
+
+                    //未按时接任务,要先判断该任务有没有按规定时间开始，所以单独判断
+                    if("4".equals(messages[3])||"10".equals(messages[3])){ //未按时接任务
+                        monitorcheckej.addXSWAS(messages);
+                    }else{
+                        monitorcheckej.saveCheckEj(messages);
+                        String key = "ONE+"+messages[1]+"+"+messages[2]+"+"+messages[3]+"+"+messages[4]+"+"+messages[5]+"+"+messages[6];
+                        redisService.setex(key);
+                    }
                 }catch (Exception e){
                     LOGGER.error("插入数据失败："+e.getMessage());
                     System.out.println("插入数据失败："+e.getMessage());
                 }
             }else if("ONE".equals(messages[0])){  //表示告警任务过期 插入到一级单位表中
+                if("8".equals(messages[3])||"2".equals(messages[3])){
+                    //获取到结束时间，将redis中的值设置为结束时间值
+                    if(new Date().getTime()<Long.valueOf(messages[8])){
+                        return;
+                    }
+                    String key = "ONE+"+messages[1]+"+"+messages[2]+"+"+messages[3]+"+"+messages[4]+"+"+messages[5]+"+"+messages[6]+"+"+messages[7];
+                    redisService.psetex(key,Long.valueOf(messages[8])-new Date().getTime());
+                }
+
                 monitorcheckyj.saveCheckYj(messages);
             }
         }catch (Exception e){
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
     }
 

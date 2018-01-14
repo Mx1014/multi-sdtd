@@ -5,6 +5,7 @@
  * Copyright 融智通科技(北京)股份有限公司 版权所有    
  */
 package com.rzt.service;
+
 import com.rzt.entity.GUZHANG;
 import com.rzt.repository.GUZHANGRepository;
 import com.rzt.util.WebApiResponse;
@@ -19,12 +20,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**      
  * 类名称：GUZHANGService    
@@ -68,7 +68,10 @@ public class GUZHANGService extends CurdService<GUZHANG,GUZHANGRepository> {
         return WebApiResponse.success(maps);
     }
 
-    public WebApiResponse importGuZhang(MultipartFile file) {
+    @Transactional
+    public Map<String, Object> importGuZhang(MultipartFile file,String flag) {
+        ArrayList<String> errlist = new ArrayList<>();
+        Map<String, Object> map = new HashMap<>();
         int i = 1;
         try{
             //读取excel文档
@@ -83,7 +86,6 @@ public class GUZHANGService extends CurdService<GUZHANG,GUZHANGRepository> {
                 if(cell==null||"".equals(ExcelUtil.getCellValue(cell))){
                     break;
                 }
-                System.out.println(i);
                 guzhang.setId(null);
                 String month = ExcelUtil.getCellValue(row.getCell(1));
                 guzhang.setMonth(month);
@@ -94,13 +96,21 @@ public class GUZHANGService extends CurdService<GUZHANG,GUZHANGRepository> {
                 guzhang.setCreateTime(DateUtil.format(date,"yyyy-MM-dd")+" "+creteTime);
                 String kv = ExcelUtil.getCellValue(row.getCell(4));
                 guzhang.setVLevel(kv+"kV");
-                String lineName = ExcelUtil.getCellValue(row.getCell(5));
+                String lineName = ExcelUtil.getCellValue(row.getCell(5)).replace("线","");
                 guzhang.setLineName(lineName);
                 try{
-                    Map<String, Object> result = execSqlSingleResult("select id from cm_line where line_name like ?1", "%" + lineName + "%");
+                    Map<String, Object> result = execSqlSingleResult("select min(line_id) id from cm_line_section where line_name1 = ?1",  lineName );
                     guzhang.setLineId(Long.valueOf(String.valueOf(result.get("ID"))));
                 }catch (Exception e){
-                    LOGGER.error("线路匹配失败！",e);
+                    errlist.add("excel第"+i+"行数据,线路匹配失败！--->"+kv+"kV"+lineName);
+                    if("1".equals(flag)){//忽略此条信息
+                        row = sheet.getRow(++i);
+                        continue;
+                    }else{
+                        LOGGER.error("excel第"+i+"行数据,线路匹配失败！--->"+lineName,e);
+                        throw e;
+                    }
+
                 }
 
                 String sbOrg = ExcelUtil.getCellValue(row.getCell(6));
@@ -109,10 +119,19 @@ public class GUZHANGService extends CurdService<GUZHANG,GUZHANGRepository> {
                 guzhang.setTdOrg(tdOrg);
 
                 try{
-                    Map<String, Object> maps = execSqlSingleResult("select id from rztsysdepartment where deptpid=(select id from rztsysdepartment where deptname='通道运维单位')  and deptname like ?1", tdOrg.substring(0, 2));
+                    Map<String, Object> maps = execSqlSingleResult("select id from rztsysdepartment where deptpid=(select id from rztsysdepartment where deptname='通道运维单位')  and deptname like ?1", "%"+tdOrg.substring(0, 2)+"%");
                     guzhang.setTdOrgId(String.valueOf(maps.get("ID")));
+                    System.out.println(String.valueOf(maps.get("ID")));
                 }catch (Exception e){
-                    LOGGER.error("通道单位匹配失败！",e);
+                    errlist.add("excel第"+i+"行数据,通道单位匹配失败！--->"+tdOrg);
+                    if("1".equals(flag)){//忽略此条信息
+                        row = sheet.getRow(++i);
+                        continue;
+                    }else{
+                        LOGGER.error("第"+i+"行数据,通道单位匹配失败！--->"+tdOrg,e);
+                        throw e;
+                    }
+
                 }
 
                 String gzReason = ExcelUtil.getCellValue(row.getCell(8));
@@ -161,11 +180,18 @@ public class GUZHANGService extends CurdService<GUZHANG,GUZHANGRepository> {
                 row = sheet.getRow(++i);
             }
 
+            map.put("success",true);
+            map.put("msg",errlist.size()==0?"故障数据全部导入完成!":"故障数据部分未导入!其余已导入!");
+            map.put("errlist",errlist);
         }catch(Exception e){
             LOGGER.error("----------导入第"+i+"条故障数据时出错------",e);
+            map.put("success",false);
+            map.put("msg","----------导入excel第"+i+"行故障数据时出错,请检查该行的数据------");
+            map.put("errlist",errlist);
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
         }
-        LOGGER.info("故障导入成功！");
+        LOGGER.info("故障导入完成！");
+        return map;
 
-        return WebApiResponse.success(null);
     }
 }

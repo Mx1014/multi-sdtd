@@ -44,7 +44,7 @@ public class CMLINE implements Serializable{
      private String section;
     	//字段描述: 是否删除0未删除 1已删除
    	 @Column(name = "IS_DEL")
-     private String isDel;
+     private Integer isDel;
     
 	public void setId(Long id){
 		if(id==null||id==0){
@@ -95,10 +95,10 @@ public class CMLINE implements Serializable{
 	
 	
 
-	public void setIsDel(String isDel){
+	public void setIsDel(Integer isDel){
 		this.isDel = isDel;
 	}
-    public String getIsDel(){
+    public Integer getIsDel(){
 		return this.isDel;
 	}
 	

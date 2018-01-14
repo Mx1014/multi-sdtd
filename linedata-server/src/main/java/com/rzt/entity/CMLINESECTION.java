@@ -32,7 +32,7 @@ public class CMLINESECTION implements Serializable{
     	//字段描述: 线路名称拼音
    	 @Column(name = "LINE_NAME")
      private String lineName;
-	//字段描述: 线路名称汉子
+	//字段描述: 线路名称汉字
 	@Column(name = "LINE_NAME1")
 	private String lineName1;
     	//字段描述: 线路id

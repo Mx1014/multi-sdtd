@@ -6,27 +6,28 @@
  */
 package com.rzt.service;
 
+import com.alibaba.fastjson.JSON;
 import com.rzt.entity.KHYHHISTORY;
 import com.rzt.repository.KHYHHISTORYRepository;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DateUtil;
 import com.rzt.utils.ExcelUtil;
 import com.rzt.utils.HanyuPinyinHelper;
-import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Date;
@@ -43,13 +44,39 @@ import java.util.Map;
  * 修改备注：
  */
 @Service
-@Transactional
 public class KHYHHISTORYService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository> {
 
+    protected static Logger LOGGER = LoggerFactory.getLogger(KHYHHISTORYService.class);
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
-    public Page<Map<String, Object>> getYHInfo(Pageable pageable, String tdOrg, String wxOrg, String kv, String lineId, String yhjb, String startTime, String endTime) {
+    public Page<Map<String, Object>> getYHInfo(Pageable pageable, String tdOrg, String wxOrg, String kv, String lineId, String yhjb, String startTime, String endTime,String currentUserId) {
         List<Object> list = new ArrayList<>();
         String sql = "select * from KH_YH_HISTORY WHERE 1=1 ";
+        if(StringUtils.isNotEmpty(currentUserId)){
+            Map<String, Object> map = userInfoFromRedis(currentUserId);
+            Integer roletype = Integer.parseInt(map.get("ROLETYPE").toString());
+            String deptid  = map.get("DEPTID").toString();
+            switch (roletype) {
+                case 0:
+                    break;
+                case 1:
+                    break;
+                case 2:
+                    tdOrg = deptid;
+                    break;
+                case 3:
+                    //外协角色
+                    break;
+                case 4:
+                    //班组角色
+                    break;
+                case 5:
+                    //个人角色
+                    break;
+            }
+
+        }
         if (tdOrg != null && !"".equals(tdOrg.trim())) {
             list.add(tdOrg);
             sql += " and yworg_id= ?" + list.size();
@@ -166,5 +193,25 @@ public class KHYHHISTORYService extends CurdService<KHYHHISTORY, KHYHHISTORYRepo
         } catch (Exception e) {
             return WebApiResponse.erro("导入失败" + e.getMessage());
         }
+    }
+
+
+    public Map<String, Object> userInfoFromRedis(String userId) {
+        HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
+
+        Map<String,Object> jsonObject = null;
+        Object userInformation = hashOperations.get("UserInformation", userId);
+        if(userInformation == null) {
+            String sql = "select * from userinfo where id = ?";
+            try {
+                jsonObject = this.execSqlSingleResult(sql, userId);
+            } catch (Exception e) {
+                LOGGER.error("currentUserId未获取到唯一数据!",e);
+            }
+            hashOperations.put("UserInformation",userId,jsonObject);
+        } else {
+            jsonObject = JSON.parseObject(userInformation.toString(),Map.class);
+        }
+        return jsonObject;
     }
 }

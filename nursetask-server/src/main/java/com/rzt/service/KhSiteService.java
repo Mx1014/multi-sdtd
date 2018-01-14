@@ -275,6 +275,14 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                 String startTime = map.get("planStartTime").toString();
                 String endTime = map.get("planEndTime").toString();
                 site.setId();
+                try {
+                    String sql = "select c.COMPANYNAME name,c.id id FROM RZTSYSCOMPANY C LEFT JOIN RZTSYSUSER U ON U.CLASSNAME = C.ID AND U.ID=?";
+                    Map<String, Object> map1 = this.execSqlSingleResult(sql, userId);
+                    site.setWxOrgId(map1.get("ID").toString());
+                    site.setWxOrg(map1.get("NAME").toString());
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
                 site.setVtype(cycle.getVtype());
                 site.setLineName(cycle.getLineName());
                 site.setCycle(cycle1);
@@ -288,12 +296,10 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                 site.setTdywOrg(cycle.getTdywOrg());
                 site.setYhId(cycle.getYhId());
                 site.setCount(1);
-                site.setWxOrg(cycle.getWxOrg());
                 site.setCreateTime(DateUtil.dateNow());
                 site.setJbd(map.get("jbd").toString());
                 site.setGroupFlag(groupFlag + capatain);
                 site.setTdywOrgId(cycle.getTdywOrgId());
-                site.setWxOrgId(cycle.getWxOrgId());
                 if (capatain.endsWith("1")) {
                     site.setCapatain(1);
                 } else {
@@ -305,7 +311,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                 task.setPlanEndTime(DateUtil.getPlanStartTime(endTime));
                 task.setUserId(userId);
                 task.setCount(count);
-                task.setWxOrg(cycle.getWxOrg());
+                task.setWxOrg(site.getWxOrg());
                 task.setTdywOrg(cycle.getTdywOrg());
                 task.setCreateTime(new Date());
                 task.setStatus(0);
