@@ -38,14 +38,14 @@ public class PictureService extends CurdService<CheckResult, CheckResultReposito
                         "   FROM xs_zc_task k LEFT JOIN XS_ZC_TASK_EXEC x ON k.ID = x.XS_ZC_TASK_ID" +
                         "    LEFT JOIN XS_ZC_TASK_EXEC_DETAIL l ON x.ID = l.XS_ZC_TASK_EXEC_ID RIGHT JOIN PICTURE_TOUR p ON l.ID = p.PROCESS_ID" ;
                 sql += "   WHERE p.TASK_ID = ?"+list.size()+"  AND P.FILE_TYPE = 1   ORDER BY  p.CREATE_TIME DESC ";
-                return WebApiResponse.success(this.execSqlPage(new PageRequest(0, 4), sql, list.toArray()));
+                return WebApiResponse.success(this.execSqlPage(new PageRequest(0, 3), sql, list.toArray()));
             }
             if("2".equals(taskType)){//看护
                 sql = "SELECT p.ID,FILE_PATH,p.CREATE_TIME,p.PROCESS_NAME,y.LINE_NAME as OPERATE_NAME" +
                         " FROM KH_TASK k LEFT JOIN PICTURE_KH p ON k.ID = p.TASK_ID LEFT JOIN  KH_YH_HISTORY y ON  k.ID = y.TASK_ID";
                 sql += "    WHERE k.ID =  ?"+list.size()+" AND FILE_TYPE = 1 ORDER BY p.CREATE_TIME DESC";
                 ArrayList<Object> objects = new ArrayList<>();
-                Page<Map<String, Object>> maps1 = this.execSqlPage(new PageRequest(0, 4), sql, list.toArray());
+                Page<Map<String, Object>> maps1 = this.execSqlPage(new PageRequest(0, 3), sql, list.toArray());
 
                 return WebApiResponse.success(maps1);
 
@@ -100,6 +100,7 @@ public class PictureService extends CurdService<CheckResult, CheckResultReposito
                          ArrayList<String> strings = new ArrayList<>();
                          Object[] objects = list.toArray();
                          objects[1] = start_tower_id.toString();
+                         //  当有垃圾数据时  可能不显示杆塔信息  因为任务连接不上每轮任务详情     任务只有主任务 没有每一轮的任务
                          String sql = "SELECT p.ID,FILE_PATH,p.CREATE_TIME,p.PROCESS_NAME,l.OPERATE_NAME,l.START_TOWER_ID" +
                                  "   FROM xs_zc_task k LEFT JOIN XS_ZC_TASK_EXEC x ON k.ID = x.XS_ZC_TASK_ID" +
                                  "    LEFT JOIN XS_ZC_TASK_EXEC_DETAIL l ON x.ID = l.XS_ZC_TASK_EXEC_ID RIGHT JOIN PICTURE_TOUR p ON l.ID = p.PROCESS_ID"
@@ -266,5 +267,50 @@ public class PictureService extends CurdService<CheckResult, CheckResultReposito
         }
 
         return WebApiResponse.success(list);
+    }
+
+    /**
+     * 根据任务id 和图片id 查询当前问题
+     * @param taskId  任务id
+     * @param pId  图片id
+     * @return
+     */
+    public WebApiResponse findProByTaskId(String taskId, String pId) {
+
+      try {
+          if((null != taskId && !"".equals(taskId)) && (null != pId && !"".equals(pId))){
+              ArrayList<String> strings = new ArrayList<>();
+              ArrayList<Object> pros = new ArrayList<>();
+
+              strings.add(taskId);
+              String sql = "SELECT r.QUESTION_INFO,r.QUESTION_TYPE,r.PHOTO_IDS" +
+                      "           FROM CHECK_RESULT r LEFT JOIN CHECK_DETAIL d ON r.CHECK_DETAIL_ID = d.ID" +
+                      "                WHERE d.QUESTION_TASK_ID = ?"+strings.size();
+              List<Map<String, Object>> maps = this.execSql(sql, strings);
+              for (Map<String, Object> map : maps) {
+                  String info = map.get("QUESTION_INFO")==null?"":map.get("QUESTION_INFO").toString();
+                  String type = map.get("QUESTION_TYPE")==null?"":map.get("QUESTION_TYPE").toString();
+                  String ids =  map.get("PHOTO_IDS")==null?"":map.get("PHOTO_IDS").toString();
+                  if(null != ids && !"".equals(ids)){
+                      String[] split = ids.split(",");
+                      for (String s : split) {
+                          if(null != s && !"".equals(s)){
+                              if(pId.equals(s)){
+                                  HashMap<String, String> pro = new HashMap<>();
+                                  pro.put("info",info);
+                                  pro.put("type",type);
+                                  pros.add(pro);
+                              }
+                          }
+                      }
+                  }
+              }
+            return WebApiResponse.success(pros);
+          }
+      }catch (Exception e){
+          LOGGER.error("问题查询失败"+e.getMessage());
+          return WebApiResponse.erro("问题查询失败"+e.getMessage());
+      }
+        return WebApiResponse.success("");
     }
 }

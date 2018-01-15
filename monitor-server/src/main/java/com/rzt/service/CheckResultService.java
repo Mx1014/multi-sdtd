@@ -93,16 +93,16 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
         }
         Pageable pageable = new PageRequest(page,size);
 
-        String sql = "SELECT tas.*,xs.TD_ORG,khh.TDYW_ORGID FROM   " +
-                "  (SELECT tcr.*,cm.V_LEVEL FROM   " +
-                "    (SELECT DISTINCT tc.TASKID,tc.TASKNAME,tc.CHECK_USER,tc.CREATE_TIME,tc.ID,tc.TASKTYPE,tc.THREEDAY,cr.LINE_ID FROM   " +
-                "      (SELECT          t.TASKID,          t.TASKNAME,          c.CHECK_USER,          c.CREATE_TIME,          c.ID,          t.TASKTYPE,   " +
-                "         t.THREEDAY   " +
-                "          FROM TIMED_TASK t        RIGHT JOIN CHECK_DETAIL c ON t.TASKID = c.QUESTION_TASK_ID        WHERE t.STATUS = 1) tc   " +
-                "      LEFT JOIN CHECK_RESULT cr ON tc.ID = cr.CHECK_DETAIL_ID) tcr   " +
-                "    LEFT JOIN CM_LINE cm ON tcr.LINE_ID = cm.ID) tas    LEFT JOIN XS_ZC_TASK xs ON tas.TASKID = xs.ID   " +
-                "    LEFT JOIN ( SELECT kh.ID,si.TDYW_ORGID FROM KH_TASK kh JOIN KH_SITE si ON kh.SITE_ID = si.ID ) khh   " +
-                "      ON khh.ID = tas.TASKID";
+        String sql = "select * from ( SELECT tas.*,xs.TD_ORG,khh.TDYW_ORGID FROM" +
+                "  (SELECT tcr.*,cm.V_LEVEL FROM" +
+                "    (SELECT DISTINCT tc.TASKID,tc.TASKNAME,tc.CHECK_USER,tc.CREATE_TIME,tc.ID,tc.TASKTYPE,tc.THREEDAY,cr.LINE_ID FROM" +
+                "      (SELECT          t.TASKID,          t.TASKNAME,          c.CHECK_USER,          c.CREATE_TIME,          c.ID,          t.TASKTYPE,            t.THREEDAY" +
+                "       FROM TIMED_TASK t        RIGHT JOIN CHECK_DETAIL c ON t.TASKID = c.QUESTION_TASK_ID" +
+                "       WHERE t.STATUS = 1) tc         LEFT JOIN CHECK_RESULT cr ON tc.ID = cr.CHECK_DETAIL_ID) tcr" +
+                "    LEFT JOIN CM_LINE cm ON tcr.LINE_ID = cm.ID) tas" +
+                "  LEFT JOIN XS_ZC_TASK xs ON tas.TASKID = xs.ID" +
+                "    LEFT JOIN ( SELECT kh.ID,si.TDYW_ORGID FROM KH_TASK kh JOIN KH_SITE si ON kh.SITE_ID = si.ID ) khh" +
+                "      ON khh.ID = tas.TASKID )";
 
         List<Object> list = new ArrayList<>();
         String s = "";
@@ -116,9 +116,9 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
             s+="  AND CREATE_TIME BETWEEN to_date( ?" + list.size() + ",'yyyy-MM-dd hh24:mi:ss') ";
             list.add(endDate);
             s+="  AND to_date( ?" + list.size() + ",'yyyy-MM-dd hh24:mi:ss')  ";
-        }else{
+        }/*else{
             s+="  AND  trunc(sysdate)=trunc(CREATE_TIME) ";
-        }
+        }*/
 		if(vLevel!=null && !"".equals(vLevel)){
 			list.add(vLevel);
 			s+=" AND V_LEVEL = ?"+list.size();
@@ -129,17 +129,14 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
 		}
 
         Page<Map<String, Object>> pageResult = null;
-        //try {
+        try {
             String sqll = "";
             //最高权限查询所有
             if("0".equals(deptID)){
-                sqll = " select * from ( "+sql+" ) where THREEDAY=1 "+s;
+                sqll = " select * from ( "+sql+"   where THREEDAY=0 "+" ) "+s;
             }else{
-                sqll = " select * from ( "+sql+" ) where THREEDAY=0 and TD_ORG='"+deptID+"' OR TDYW_ORGID='"+deptID+"'"+s;
+                sqll = " select * from ( "+sql+"   where THREEDAY=1 "+" )  TD_ORG='"+deptID+"' OR TDYW_ORGID='"+deptID+"'"+s;
             }
-        System.out.println("------------------------------------------------------------------");
-        System.out.println(sqll);
-        System.out.println("------------------------------------------------------------------");
             pageResult = this.execSqlPage(pageable, sqll,list.toArray());
 			Iterator<Map<String, Object>> iterator = pageResult.iterator();
 			HashOperations hashOperations = redisTemplate.opsForHash();
@@ -160,9 +157,9 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
 					next.put("PHONE",jsonObject.get("PHONE"));
 				}
 			}
-    /*    }catch (Exception e){
+        }catch (Exception e){
             return WebApiResponse.erro("查询失败"+e.getMessage());
-        }*/
+        }
         return WebApiResponse.success(pageResult);
     }
 
