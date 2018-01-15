@@ -278,7 +278,6 @@ public class PcMapShowController {
             List<Map<String, Object>> maps = cmcoordinateService.execSql(sql);
             for (Map<String,Object> map: maps) {
                 String id = map.get("ID").toString();
-                map.put("ROLETYPE",0);
                 hashOperations.put("UserInformation",id,map);
             }
             return WebApiResponse.success("成功了");
