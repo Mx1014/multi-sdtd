@@ -348,4 +348,22 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             e.printStackTrace();
         }
     }
+
+    public WebApiResponse xiugai() {
+        try {
+            String sql = "select ID,line_id LINEID,starttower startid from kh_yh_history";
+            List<Map<String, Object>> list = this.execSql(sql);
+            for (Map map:list){
+                String sql1 = "select longitude lon,latitude lat from cm_tower where id=? and line-id=?";
+                List<Map<String, Object>> list1 = this.execSql(sql1, Long.parseLong(map.get("STARTID").toString()), Long.parseLong(map.get("LINEID").toString()));
+                if (list1.get(0).get("LINEID")!="0"){
+                    this.reposiotry.xiugai(Long.parseLong(map.get("ID").toString()),list.get(0).get("LON").toString(),list.get(0).get("LAT").toString());
+                }
+            }
+            return WebApiResponse.success("success");
+        } catch (Exception e) {
+            e.printStackTrace();
+          return WebApiResponse.erro("ss"+e.getMessage());
+        }
+    }
 }
