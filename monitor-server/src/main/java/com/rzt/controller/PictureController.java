@@ -50,6 +50,15 @@ public class PictureController extends
         return service.getPhotos(taskId,ids,taskType);
     }
 
-
+    /**
+     * 根据任务id 和图片id 查询当前问题
+     * @param taskId  任务id
+     * @param pId  图片id
+     * @return
+     */
+    @GetMapping("/findProByTaskId")
+    public WebApiResponse findProByTaskId(String taskId,String pId){
+        return service.findProByTaskId(taskId,pId);
+    }
 
 }
