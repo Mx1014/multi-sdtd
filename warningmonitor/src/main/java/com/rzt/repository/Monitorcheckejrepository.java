@@ -53,7 +53,7 @@ public interface Monitorcheckejrepository extends JpaRepository<Monitorcheckej,S
 
  @Transactional
  @Modifying
- @Query(value = "UPDATE MONITOR_CHECK_YJ SET CREATE_TIME_C = sysdate,CHECKC_INFO=?4,STATUS=2,CHECK_USER_ID=?5" +
+ @Query(value = "UPDATE MONITOR_CHECK_EJ SET CREATE_TIME_C = sysdate,CHECKC_INFO=?4,STATUS=2,CHECK_USER_ID=?5" +
          "  WHERE TASK_ID=?1 AND TASK_TYPE=?2 AND WARNING_TYPE=?3",nativeQuery = true)
  int updateEJC(Long taskId, Integer taskType, Integer warningType, String checkInfo,String userId);
 }

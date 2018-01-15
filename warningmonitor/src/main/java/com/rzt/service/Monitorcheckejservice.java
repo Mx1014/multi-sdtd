@@ -291,18 +291,18 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej,Monitorche
     }
     //未处理到处理中处理
     @Transactional
-    public WebApiResponse GJCL(String userId, Long taskId, Integer taskType, Integer warningType, String checkInfo, String checkAppInfo) {
+    public WebApiResponse GJCL(String userId, Long taskId, Integer type, Integer warningType, String checkInfo, String checkAppInfo) {
         String deptId = getDeptID(userId);
         if(deptId==null){
             return WebApiResponse.erro( "该用户状态为null");
         }
-        this.delRedisKey(taskId,taskType,warningType);
+        this.delRedisKey(taskId,type,warningType);
         //0表示是一级单位
         try {
             if ("0".equals(deptId)){
-                return WebApiResponse.success(resp.updateYJ(taskId,taskType,warningType,checkInfo,checkAppInfo));
+                return WebApiResponse.success(resp.updateYJ(taskId,type,warningType,checkInfo,checkAppInfo));
             }else{
-                return WebApiResponse.success(resp.updateEJ(taskId,taskType,warningType,checkInfo,checkAppInfo));
+                return WebApiResponse.success(resp.updateEJ(taskId,type,warningType,checkInfo,checkAppInfo));
             }
         }catch (Exception e){
             return WebApiResponse.erro("添加失败"+e.getMessage());
@@ -311,7 +311,7 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej,Monitorche
 
     //处理中到已处理处理
     @Transactional
-    public WebApiResponse GJCLC(String userId, Long taskId, Integer taskType, Integer warningType, String checkInfo) {
+    public WebApiResponse GJCLC(String userId, Long taskId, Integer type, Integer warningType, String checkInfo) {
         String deptId = getDeptID(userId);
         if(deptId==null){
             return WebApiResponse.erro( "该用户状态为null");
@@ -320,9 +320,9 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej,Monitorche
         //0表示是一级单位
         try {
             if ("0".equals(deptId)){
-                return WebApiResponse.success(resp.updateYJC(taskId,taskType,warningType,checkInfo,userId));
+                return WebApiResponse.success(resp.updateYJC(taskId,type,warningType,checkInfo,userId));
             }else{
-                return WebApiResponse.success(resp.updateEJC(taskId,taskType,warningType,checkInfo,userId));
+                return WebApiResponse.success(resp.updateEJC(taskId,type,warningType,checkInfo,userId));
             }
         }catch (Exception e){
             return WebApiResponse.erro("添加失败"+e.getMessage());

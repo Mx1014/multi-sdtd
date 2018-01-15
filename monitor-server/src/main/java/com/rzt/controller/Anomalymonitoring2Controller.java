@@ -41,6 +41,7 @@ public class Anomalymonitoring2Controller extends
 	 *@Params [type, page, size]
 	 *@Date 2018/1/1 11:09
 	 */
+
 	@GetMapping("XSGJ")
     public Object XSGJ(String userId, Integer page, Integer size, String date, String orgid, String type){
 		try {
