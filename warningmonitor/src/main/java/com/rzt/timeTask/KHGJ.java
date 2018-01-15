@@ -58,8 +58,8 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
                 Long time = plan_start_time.getTime() - new Date().getTime();
                 jedis.psetex(key,time,"看护未上线");
             } catch (Exception e) {
-                System.out.println(e.getMessage());
-                throw new RuntimeException(e.getMessage()+"看护未上线");
+                //System.out.println(e.getMessage());
+                //throw new RuntimeException(e.getMessage()+"看护未上线");
             }finally {
                 jedis.close();
             }
@@ -80,8 +80,8 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
                 Long time = plan_start_time.getTime() - new Date().getTime();
                 jedis.psetex(key,time,"巡视未上线");
             } catch (Exception e) {
-                System.out.println(e.getMessage());
-                throw new RuntimeException(e.getMessage()+"巡视未上线");
+                //System.out.println(e.getMessage());
+                //throw new RuntimeException(e.getMessage()+"巡视未上线");
             }finally {
                 jedis.close();
             }
@@ -102,8 +102,8 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
                 Long time = plan_start_time.getTime() - new Date().getTime();
                 jedis.psetex(key, time, "看护人员未按规定时间看护任务");
             } catch (Exception e) {
-                System.out.println(e.getMessage());
-                throw new RuntimeException(e.getMessage()+"看护人员未按规定时间接任务");
+                //System.out.println(e.getMessage());
+                //throw new RuntimeException(e.getMessage()+"看护人员未按规定时间接任务");
             }finally {
                 jedis.close();
             }
@@ -124,10 +124,11 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
                 if(time<0){
                     continue;
                 }
+                //System.out.println(map.get("TASK_NAME")+"==================================");
                 jedis.psetex(key, time, "巡视未按规定时间接任务");
             } catch (Exception e) {
-                System.out.println(e.getMessage());
-                throw new RuntimeException(e.getMessage()+"巡视人员未按规定时间接任务");
+                //System.out.println(e.getMessage());
+                //throw new RuntimeException(e.getMessage()+"巡视人员未按规定时间接任务");
             }finally {
                 jedis.close();
             }

@@ -96,7 +96,7 @@ public class MonitorCheckeJController extends
 	 * @param userId 当前登录用户存到数据库中，在检查完成展示
 	 * @param taskId 任务id
 	 * @param type  必传  任务类型 巡视、看护
-	 * @param warningType
+	 * @param warningType 必传
 	 * @param checkInfo
 	 * @param checkAppInfo
 	 * @return
@@ -107,8 +107,8 @@ public class MonitorCheckeJController extends
 	}
 
 	@PostMapping("GJCLC")
-	public WebApiResponse GJCLC(String userId,Long taskId,Integer taskType,Integer warningType,String checkInfo){
-		return ejService.GJCLC(userId,taskId,taskType,warningType,checkInfo);
+	public WebApiResponse GJCLC(String userId,Long taskId,Integer type,Integer warningType,String checkInfo){
+		return ejService.GJCLC(userId,taskId,type,warningType,checkInfo);
 	}
 
 }

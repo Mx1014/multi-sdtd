@@ -6,6 +6,7 @@
  */
 package com.rzt.service;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.netflix.discovery.converters.Auto;
 import com.rzt.entity.*;
@@ -167,8 +168,22 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
     }
 
     //导出返回List<Map>
-    public List<Map<String, Object>> findAlls() {
-        String sql = "select * from kh_site";
+    public List<Map<String, Object>> findAlls(Object josn, String userId) {
+        Map jsonObject = JSON.parseObject(josn.toString(), Map.class);
+        Integer roleType = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
+        Object tdId = jsonObject.get("DEPTID");
+        Object classid = jsonObject.get("CLASSID");
+        Object companyid = jsonObject.get("COMPANYID");
+        String sql = "select s.* from kh_site s ";
+        if (roleType == 1 || roleType == 2) {
+            sql += " where s.tdyw_orgId = '" + tdId.toString() + "'";
+        } else if (roleType == 3) {
+            sql += " where s.wx_orgId= '" + companyid.toString() + "'";
+        } else if (roleType == 4) {
+            sql += ",rztsysuser u where u.id= s.user_id and u.classname = (select classname FROM RZTSYSUSER where id ='" + userId + "')";
+        } else if (roleType == 5) {
+            sql += " where s.user_id= '" + userId + "'";
+        }
         List<Map<String, Object>> maps = this.execSql(sql);
         return maps;
     }
@@ -356,9 +371,9 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
         }
     }
 
-    public void exportNursePlan(HttpServletRequest request, HttpServletResponse response) {
+    public void exportNursePlan(HttpServletRequest request, HttpServletResponse response, Object json, String userId) {
         try {
-            List<Map<String, Object>> taskList = this.findAlls();
+            List<Map<String, Object>> taskList = this.findAlls(json, userId);
             //this.service.exportExcel(response);
             //String ecxcelModelPath = rootpath + "excelModels"+File.separator+"看护任务导出表.xlsx";
             //InputStream in = new FileInputStream(ecxcelModelPath);
