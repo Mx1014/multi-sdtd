@@ -51,6 +51,8 @@ public class PcMapShowController {
     @GetMapping("menInMap")
     public Object menInMap(String tdOrg,Integer workType,String userId,Date startDate,String currentUserId/*,@RequestParam(value = "userIds[]") String[] userIds*/) {
         try {
+            Date date = new Date();
+            long timeSecond = date.getTime();
             //准备要返回的list
             List<Map> menInMap = new ArrayList<>();
             HashOperations<String, String, Map> hashOperations = redisTemplate.opsForHash();
@@ -58,31 +60,31 @@ public class PcMapShowController {
             //0 根据人查 有人就直接结束
             if(userId != null) {
                 menInMap.add(hashOperations.get("menInMap",userId));
-                return WebApiResponse.success(menInMap);
-            }
-            String deptId = "";
-            if(!StringUtils.isEmpty(tdOrg)) {
-                deptId = tdOrg;
             } else {
-                deptId = pcMapShowService.dataAccessByUserId(currentUserId).toString();
-            }
-            //1.初始数据权限
-            if("err".equals(deptId)) {
-
-            } else if("all".equals(deptId)) {
-                menInMap = hashOperations.values("menInMap");
-            } else {
-                //1.1 根据部门筛选
-                List<Map<String, Object>> userList = pcMapShowService.deptMenFromRedis(deptId);
-                Set<String> keys = new HashSet();
-                //单位 外协 组织 班组 都走这里
-                for (Map<String,Object> user: userList) {
-                    String id = user.get("ID").toString();
-                    keys.add(id);
+                String deptId = "";
+                if(!StringUtils.isEmpty(tdOrg)) {
+                    deptId = tdOrg;
+                } else {
+                    deptId = pcMapShowService.dataAccessByUserId(currentUserId).toString();
                 }
-                menInMap = hashOperations.multiGet("menInMap",keys);
-                //-->去除list中为null的元素
-                menInMap.removeAll(Collections.singleton(null));
+                //1.初始数据权限
+                if("err".equals(deptId)) {
+
+                } else if("all".equals(deptId)) {
+                    menInMap = hashOperations.values("menInMap");
+                } else {
+                    //1.1 根据部门筛选
+                    List<Map<String, Object>> userList = pcMapShowService.deptMenFromRedis(deptId);
+                    Set<String> keys = new HashSet();
+                    //单位 外协 组织 班组 都走这里
+                    for (Map<String,Object> user: userList) {
+                        String id = user.get("ID").toString();
+                        keys.add(id);
+                    }
+                    menInMap = hashOperations.multiGet("menInMap",keys);
+                    //-->去除list中为null的元素
+                    menInMap.removeAll(Collections.singleton(null));
+                }
             }
             //2.根据工作类型来分
             JSONObject allMen = new JSONObject();
@@ -91,8 +93,8 @@ public class PcMapShowController {
                 allMen.putAll(xsMenAll);
             }
             if(workType == null || workType == 2)  {
-                /*JSONObject khMenAll = JSONObject.parseObject(valueOperations.get("khMenAll").toString());
-                allMen.putAll(khMenAll);*/
+                JSONObject khMenAll = JSONObject.parseObject(valueOperations.get("khMenAll").toString());
+                allMen.putAll(khMenAll);
             }
             if(workType == null || workType == 3)  {
 
@@ -101,6 +103,17 @@ public class PcMapShowController {
             while(iterator.hasNext()){
                 Map men = iterator.next();
                 String userid = men.get("userid").toString();
+
+                Long createtime = Long.parseLong(men.get("createtime").toString());
+
+                if(timeSecond - createtime > 600000) {
+                    //大于十分钟 离线
+                    men.put("loginStatus",0);
+                } else {
+                    //小于十分钟 在线
+                    men.put("loginStatus",1);
+                }
+
                 if(!allMen.containsKey(userid)) {
                     //注意这个地方
                     iterator.remove();
@@ -108,10 +121,7 @@ public class PcMapShowController {
                     men.put("statuts",allMen.get(userid));
                 }
             }
-            /*for (Object men:menInMap) {
-                JSONObject menMap = JSONObject.parseObject(men.toString());
-                String userid = menMap.get("userid").toString();
-            }*/
+
 
             return WebApiResponse.success(menInMap);
         } catch (Exception e) {
@@ -323,23 +333,11 @@ public class PcMapShowController {
      * @date 2017/12/25 13:59
      * @author nwz
      */
-    @GetMapping("menCurrentDay")
-    public Object menCurrentDay() {
+    @GetMapping("menCurrentDayxs")
+    public Object menCurrentDayxs() {
         try {
             ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
-            String sql = "select t.CM_USER_ID,min(STAUTS) status from (\n" +
-                    "SELECT\n" +
-                    "  cm_user_id,\n" +
-                    "  stauts\n" +
-                    "FROM XS_ZC_TASK\n" +
-                    "WHERE (PLAN_END_TIME BETWEEN trunc(sysdate) AND trunc(sysdate + 1))\n" +
-                    "UNION\n" +
-                    "SELECT\n" +
-                    "        cm_user_id,\n" +
-                    "        STAUTS\n" +
-                    "      FROM XS_ZC_TASK\n" +
-                    "      WHERE ((PLAN_START_TIME BETWEEN trunc(sysdate) AND trunc(sysdate + 1)))\n" +
-                    "    ) t group by t.CM_USER_ID";
+            String sql = "SELECT cm_user_id,min(stauts) status from XS_ZC_TASK where PLAN_END_TIME >= trunc(sysdate) and  PLAN_START_TIME <= (sysdate+1) group by CM_USER_ID";
             List<Map<String, Object>> userList = cmcoordinateService.execSql(sql);
             Map<String,Object> map = new HashMap<String, Object>();
             for (Map<String,Object> user: userList) {
@@ -347,6 +345,33 @@ public class PcMapShowController {
                 map.put(id,user.get("STATUS"));
             }
             valueOperations.set("xsMenAll",map);
+            return WebApiResponse.success("成功了");
+        } catch (Exception e) {
+            return WebApiResponse.erro("数据查询失败" + e.getMessage());
+        }
+    }
+
+
+    /***
+     * @Method menCurrentDay
+     * @Description 刷新flushMenInDept缓存
+     *
+     * @return java.lang.Object
+     * @date 2017/12/25 13:59
+     * @author nwz
+     */
+    @GetMapping("menCurrentDayKh")
+    public Object menCurrentDayKh() {
+        try {
+            ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
+            String sql = "SELECT USER_ID,min(status) status from KH_TASK where PLAN_END_TIME >= trunc(sysdate) and  PLAN_START_TIME <= (sysdate+1) group by USER_ID";
+            List<Map<String, Object>> userList = cmcoordinateService.execSql(sql);
+            Map<String,Object> map = new HashMap<String, Object>();
+            for (Map<String,Object> user: userList) {
+                String id = user.get("USER_ID").toString();
+                map.put(id,user.get("STATUS"));
+            }
+            valueOperations.set("khMenAll",map);
             return WebApiResponse.success("成功了");
         } catch (Exception e) {
             return WebApiResponse.erro("数据查询失败" + e.getMessage());
