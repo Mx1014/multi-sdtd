@@ -80,7 +80,8 @@ public class KhSiteController extends
     public WebApiResponse listAllTaskNotDo(HttpServletResponse response, KhTaskModel task, Pageable pageable, String userName) {
         try {
             HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
-            JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", task.getUserId()).toString());
+            Object userInformation = hashOperations.get("UserInformation", task.getUserId());
+            JSONObject jsonObject = JSONObject.parseObject(userInformation.toString());
             String roleType = jsonObject.get("ROLETYPE").toString();
             return WebApiResponse.success(this.service.listAllTaskNotDo(task, pageable, userName, roleType));
             //return WebApiResponse.success(this.service.listAllTaskNotDo(task, pageable, userName,deptId,"0"));
@@ -181,8 +182,12 @@ public class KhSiteController extends
      * @param response
      */
     @GetMapping("/exportNursePlan.do")
-    public void exportNursePlan(HttpServletRequest request, HttpServletResponse response) {
-        this.service.exportNursePlan(request, response);
+    public void exportNursePlan(HttpServletRequest request, HttpServletResponse response,String userId) {
+        HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
+        JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", userId).toString());
+
+       // Object jsonObject = new Object();
+        this.service.exportNursePlan(request, response,jsonObject,userId);
     }
 
 	 /* */
@@ -190,7 +195,7 @@ public class KhSiteController extends
     /**
      * 审批隐患后
      *
-     * @param id
+     * @param
      * @return
      *//*
     @GetMapping("/shenpiYh")

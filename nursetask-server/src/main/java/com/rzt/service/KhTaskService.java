@@ -6,6 +6,8 @@
  */
 package com.rzt.service;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.KhSite;
 import com.rzt.entity.model.KhTaskModel;
 import com.rzt.repository.KhSiteRepository;
@@ -168,10 +170,25 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
     }
 
 
-    public List<Map<String, Object>> findAlls() {
-        String sql = "select * from kh_task order by create_time desc";
-        List<Map<String, Object>> list = this.execSql(sql);
-        return list;
+    public List<Map<String, Object>> findAlls(JSONObject josn, String userId) {
+        Map jsonObject = JSON.parseObject(josn.toString(), Map.class);
+        Integer roleType = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
+        Object tdId = jsonObject.get("DEPTID");
+        Object classid = jsonObject.get("CLASSID");
+        Object companyid = jsonObject.get("COMPANYID");
+        String sql = "select t.* from kh_task t ";
+        if (roleType == 1 || roleType == 2) {
+            sql += " left join kh_site s on s.id = t.site_id where s.tdyw_orgId = '" + tdId.toString() + "'";
+        } else if (roleType == 3) {
+            sql += " left join kh_site s on s.id = t.site_id where s.wx_orgId= '" + companyid.toString() + "'";
+        } else if (roleType == 4) {
+            sql += ",rztsysuser u where u.id= t.user_id and u.classname = '" + classid.toString() + "'";//(select classname FROM RZTSYSUSER where id ='" + userId + "')";
+        } else if (roleType == 5) {
+            sql += " where t.user_id= '" + userId + "'";
+        }
+        sql += " order by t.create_time desc";
+        List<Map<String, Object>> maps = this.execSql(sql);
+        return maps;
     }
 
     //导出文件
@@ -195,7 +212,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
             sheet.setColumnWidth((short) 10, (short) 6000);
             sheet.setColumnWidth((short) 11, (short) 6000);
             sheet.setColumnWidth((short) 12, (short) 6000);
-            sheet.setColumnWidth((short) 13, (short) 6000);
+            sheet.setColumnWidth((short) 13, (short) 9000);
             XSSFCellStyle cellstyle = wb.createCellStyle();// 设置表头样式
             cellstyle.setAlignment(XSSFCellStyle.ALIGN_CENTER);// 设置居中
 
@@ -259,17 +276,22 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
                     row.createCell(0).setCellValue(task.get("TASK_NAME").toString());//任务名称
                 }
                 if (task.get("USER_ID") != null) {
-                    String sql = "select u.realname REALNAME,d.deptname DEPTNAME from rztsysuser u left join rztsysdepartment d on d.id = u.classname where u.id=?";
-                    List<Map<String, Object>> list = this.execSql(sql, task.get("USER_ID").toString());
-                    if (!list.isEmpty()) {
-                        row.createCell(1).setCellValue(list.get(0).get("REALNAME").toString());//通道单位
-                        try {
-                            String deptname = list.get(0).get("DEPTNAME").toString();
-                            row.createCell(2).setCellValue(list.get(0).get("DEPTNAME").toString());
-                        } catch (Exception e) {
-                            row.createCell(2).setCellValue("");
+                    try {
+                        String sql = "select u.realname REALNAME,d.deptname DEPTNAME from rztsysuser u left join rztsysdepartment d on d.id = u.classname where u.id=?";
+                        List<Map<String, Object>> list = this.execSql(sql, task.get("USER_ID").toString());
+                        if (!list.isEmpty()) {
+                            row.createCell(1).setCellValue(list.get(0).get("REALNAME").toString());//通道单位
+                            try {
+                                String deptname = list.get(0).get("DEPTNAME").toString();
+                                row.createCell(2).setCellValue(list.get(0).get("DEPTNAME").toString());
+                            } catch (Exception e) {
+                                row.createCell(2).setCellValue("");
+                            }
                         }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
+
                 }
                 if (task.get("CREATE_TIME") != null) {
                     row.createCell(3).setCellValue(task.get("CREATE_TIME").toString().substring(0, task.get("CREATE_TIME").toString().length() - 2));//计划开始时间
@@ -294,10 +316,10 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
                     row.createCell(10).setCellValue(task.get("SFQR_TIME").toString().substring(0, task.get("SFQR_TIME").toString().length() - 2));
                 }
                 if (task.get("WPQR_TIME") != null) {
-                    row.createCell(11).setCellValue(task.get("WPQR_TIME").toString().substring(0, task.get("DDXC_TIME").toString().length() - 2));
+                    row.createCell(11).setCellValue(task.get("WPQR_TIME").toString().substring(0, task.get("WPQR_TIME").toString().length() - 2));
                 }
                 if (task.get("DDXC_TIME") != null) {
-                    row.createCell(12).setCellValue(task.get("DDXC_TIME").toString().substring(0, task.get("WPQR_TIME").toString().length() - 2));
+                    row.createCell(12).setCellValue(task.get("DDXC_TIME").toString().substring(0, task.get("DDXC_TIME").toString().length() - 2));
                 }
                 if (task.get("REAL_END_TIME") != null) {
                     row.createCell(13).setCellValue(task.get("REAL_END_TIME").toString().substring(0, task.get("REAL_END_TIME").toString().length() - 2));

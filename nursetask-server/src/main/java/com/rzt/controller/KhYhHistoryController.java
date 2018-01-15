@@ -66,4 +66,10 @@ public class KhYhHistoryController extends
 /* MultipartFile file */
 		return service.ImportYh();
 	}
+
+	@GetMapping("xiugai")
+    public WebApiResponse xiugai(){
+	    return this.service.xiugai();
+
+    }
 }
