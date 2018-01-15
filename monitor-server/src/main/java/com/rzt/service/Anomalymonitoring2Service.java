@@ -173,7 +173,7 @@ public class Anomalymonitoring2Service extends CurdService<Anomalymonitoring, An
             list.add( date );
             s += " AND  PLAN_START_TIME <= to_date( ?" + list.size() + ",'yyyy-MM-dd hh24:mi:ss')  ";
         } else {
-            s += " AND trunc(plan_end_time)=trunc(sysdate-1) ";
+            s += " AND trunc(PLAN_END_TIME)=trunc(sysdate) ";
         }
         if (!StringUtils.isEmpty(orgid)) {
             list.add(orgid);
@@ -187,15 +187,15 @@ public class Anomalymonitoring2Service extends CurdService<Anomalymonitoring, An
         //二级保电任务超期警告
         String sql1 = " select cc.*,d.DEPTNAME from ( SELECT xxx.*,c.COMPANYNAME " +
                 "FROM(SELECT xx.*,us.REALNAME, us.PHONE,us.COMPANYID,us.DEPTID  " +
-                "   FROM(SELECT x.TASK_NAME,x.PLAN_START_TIME,'1' AS xs_warning_type,a.TWOCHECK_STATUS,x.CM_USER_ID,x.ID " +
+                "   FROM(SELECT x.TASK_NAME,x.plan_end_time,'1' AS xs_warning_type,a.TWOCHECK_STATUS,x.CM_USER_ID,x.ID " +
                 "      FROM xs_txbd_task x LEFT JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID " +
-                "      WHERE (stauts = 0 OR stauts = 1) AND trunc(plan_end_time) = trunc(sysdate-1) " +
+                "      WHERE (stauts = 0 OR stauts = 1) AND trunc(plan_end_time) < trunc(sysdate) " +
                 "       and (ceil((sysdate - PLAN_START_TIME) * 24 * 60) < 40 or a.ONECHECK_STATUS = 0)) xx " +
                 "     JOIN RZTSYSUSER us ON xx.cm_user_id = us.id) xxx " +
                 "  JOIN RZTSYSCOMPANY c ON c.ID = xxx.COMPANYID ) cc JOIN RZTSYSDEPARTMENT d on d.ID = cc.DEPTID";
         //二级正常巡视任务超期警告
         String sql2 = "select cc.*,d.DEPTNAME from ( SELECT xxx.*,c.COMPANYNAME FROM(SELECT xx.*,us.REALNAME, us.PHONE,us.COMPANYID,us.DEPTID  " +
-                "   FROM(SELECT x.TASK_NAME,x.PLAN_START_TIME,'1' AS xs_warning_type,a.TWOCHECK_STATUS,x.CM_USER_ID,x.ID " +
+                "   FROM(SELECT x.TASK_NAME,x.x.plan_end_time,'1' AS xs_warning_type,a.TWOCHECK_STATUS,x.CM_USER_ID,x.ID " +
                 "      FROM xs_zc_task x  LEFT JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID " +
                 "      WHERE (stauts = 0 OR stauts = 1) AND trunc(plan_end_time) = trunc(sysdate-1) " +
                 "       and (ceil((sysdate - PLAN_START_TIME) * 24 * 60) < 40 or a.ONECHECK_STATUS = 0)) xx " +
@@ -264,7 +264,7 @@ public class Anomalymonitoring2Service extends CurdService<Anomalymonitoring, An
                 "FROM(SELECT xx.*,us.REALNAME, us.PHONE,us.COMPANYID,us.DEPTID  " +
                 "   FROM(SELECT x.TASK_NAME,x.PLAN_START_TIME,'1' AS xs_warning_type,a.ONECHECK_STATUS,x.CM_USER_ID,x.ID " +
                 "      FROM xs_txbd_task x LEFT JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID " +
-                "      WHERE (stauts = 0 OR stauts = 1) AND trunc(plan_end_time) = trunc(sysdate-1) " +
+                "      WHERE (stauts = 0 OR stauts = 1) AND trunc(plan_end_time) < trunc(sysdate) " +
                 "       and (ceil((sysdate - PLAN_START_TIME) * 24 * 60) > 40 and a.ONECHECK_STATUS is null)) xx " +
                 "     JOIN RZTSYSUSER us ON xx.cm_user_id = us.id) xxx " +
                 "  JOIN RZTSYSCOMPANY c ON c.ID = xxx.COMPANYID ) cc JOIN RZTSYSDEPARTMENT d on d.ID = cc.DEPTID";
@@ -272,7 +272,7 @@ public class Anomalymonitoring2Service extends CurdService<Anomalymonitoring, An
         String sql12 = "select cc.*,d.DEPTNAME from ( SELECT xxx.*,c.COMPANYNAME FROM(SELECT xx.*,us.REALNAME, us.PHONE,us.COMPANYID,us.DEPTID  " +
                 "   FROM(SELECT x.TASK_NAME,x.PLAN_START_TIME,'1' AS xs_warning_type,a.ONECHECK_STATUS,x.CM_USER_ID,x.ID " +
                 "      FROM xs_zc_task x  LEFT JOIN ANOMALY_MONITORING a ON a.TASKID = x.ID " +
-                "      WHERE (stauts = 0 OR stauts = 1) AND trunc(plan_end_time) = trunc(sysdate-1) " +
+                "      WHERE (stauts = 0 OR stauts = 1) AND trunc(plan_end_time) < trunc(sysdate) " +
                 "       and (ceil((sysdate - PLAN_START_TIME) * 24 * 60) > 40 and a.ONECHECK_STATUS is null)) xx " +
                 "     JOIN RZTSYSUSER us ON xx.cm_user_id = us.id) xxx " +
                 "  JOIN RZTSYSCOMPANY c ON c.ID = xxx.COMPANYID ) cc JOIN RZTSYSDEPARTMENT d on d.ID = cc.DEPTID";
