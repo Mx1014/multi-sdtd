@@ -34,4 +34,14 @@ public interface XSZCTASKRepository extends JpaRepository<XSZCTASK, String> {
     @Transactional
     @Query(value = "update xs_zc_task set reborn = 1 where id = ?1", nativeQuery = true)
     void updateTaskReborn(Long taskid);
+
+    @Modifying
+    @Transactional
+    @Query(value = "update xs_zc_cycle set td_org = ?2,wx_org = ?3,group_id = ?4,class_id = ?5 where id = ?1", nativeQuery = true)
+    void updateCycle(Object id, Object deptid, Object companyid, Object groupid, Object classname);
+
+    @Modifying
+    @Transactional
+    @Query(value = "update xs_zc_task set td_org = ?2,wx_org = ?3,group_id = ?4,class_id = ?5 where id = ?1", nativeQuery = true)
+    void updateTask(Object id, Object deptid, Object companyid, Object groupid, Object classname);
 }

@@ -6,6 +6,7 @@
  */
 package com.rzt.controller;
 
+import com.alibaba.druid.sql.visitor.functions.If;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.CheckLiveTask;
@@ -41,24 +42,23 @@ import java.util.Map;
 
 /**
  * 类名称：KhCycleController
- * 类描述：    
- * 创建人：张虎成   
- * 创建时间：2017/11/28 14:43:44 
- * 修改人：张虎成    
- * 修改时间：2017/11/28 14:43:44    
- * 修改备注：    
- * @version
+ * 类描述：
+ * 创建人：张虎成
+ * 创建时间：2017/11/28 14:43:44
+ * 修改人：张虎成
+ * 修改时间：2017/11/28 14:43:44
+ * 修改备注：
  */
 @RestController
-    @RequestMapping("KhSite")
+@RequestMapping("KhSite")
 public class KhSiteController extends
         CurdController<KhSite, KhSiteService> {
-   /* @Autowired
-    private KhYhHistoryService yhservice;
-    @Autowired
-    private KhTaskService taskService;
-    @Autowired
-    private CheckLiveTaskService checkService;*/
+    /* @Autowired
+     private KhYhHistoryService yhservice;
+     @Autowired
+     private KhTaskService taskService;
+     @Autowired
+     private CheckLiveTaskService checkService;*/
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
@@ -66,8 +66,8 @@ public class KhSiteController extends
     //  数据没有设置完成  稽查任务实体类有部分修改
     @PostMapping("/saveYh.do")
     @ResponseBody
-    public WebApiResponse saveYh(KhYhHistory yh, String fxtime,String startTowerName,String endTowerName,String pictureId) {
-        return this.service.saveYh(yh, fxtime,startTowerName,endTowerName,pictureId);
+    public WebApiResponse saveYh(KhYhHistory yh, String fxtime, String startTowerName, String endTowerName, String pictureId) {
+        return this.service.saveYh(yh, fxtime, startTowerName, endTowerName, pictureId);
     }
 
 
@@ -81,7 +81,8 @@ public class KhSiteController extends
         try {
             HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
             JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", task.getUserId()).toString());
-            return WebApiResponse.success(this.service.listAllTaskNotDo(task, pageable, userName,jsonObject.get("ROLETYPE").toString()));
+            String roleType = jsonObject.get("ROLETYPE").toString();
+            return WebApiResponse.success(this.service.listAllTaskNotDo(task, pageable, userName, roleType));
             //return WebApiResponse.success(this.service.listAllTaskNotDo(task, pageable, userName,deptId,"0"));
         } catch (Exception e) {
             e.printStackTrace();
@@ -132,7 +133,7 @@ public class KhSiteController extends
      */
     @GetMapping("/listKhtaskById.do")
     @ResponseBody
-    public WebApiResponse listKhtaskById(HttpServletResponse response,String id) {
+    public WebApiResponse listKhtaskById(HttpServletResponse response, String id) {
         try {
             List list = this.service.listKhtaskById(Long.parseLong(id));
             return WebApiResponse.success(list);
@@ -157,8 +158,9 @@ public class KhSiteController extends
     @ResponseBody
     @Transactional
     public WebApiResponse paifaTask(String id, String tasks, KhTaskModel model) {
-        return this.service.paifaTask(id,tasks,model);
+        return this.service.paifaTask(id, tasks, model);
     }
+
     //  PC查看任务详情
     @PostMapping("/listJpgById.do")
     @ResponseBody
@@ -168,22 +170,26 @@ public class KhSiteController extends
 
     @GetMapping("/listOverdueKh.do")
     @ResponseBody
-    public WebApiResponse listOverdueKh(){
+    public WebApiResponse listOverdueKh() {
         return this.service.listOverdueKh();
     }
 
     /**
      * 导出文件的接口
+     *
      * @param request
      * @param response
      */
     @GetMapping("/exportNursePlan.do")
     public void exportNursePlan(HttpServletRequest request, HttpServletResponse response) {
-        this.service.exportNursePlan(request,response);
+        this.service.exportNursePlan(request, response);
     }
 
-	 /* *//**
+	 /* */
+
+    /**
      * 审批隐患后
+     *
      * @param id
      * @return
      *//*
@@ -216,4 +222,20 @@ public class KhSiteController extends
             return WebApiResponse.erro("数据查询失败" + e.getMessage());
         }
     }*/
+    @GetMapping("/qwer")
+    public WebApiResponse qwer() {
+        try {
+            String sql = "select id,user_id as userId,yh_id yhid,wx_org as wx,wx_orgid as wxid from kh_site";
+            List<Map<String, Object>> list = this.service.execSql(sql);
+            for (Map map : list) {
+                if(map.get("WX") != null) {
+                    this.service.updateSite(map.get("YHID").toString(), map.get("WX").toString(), map.get("WXID").toString());
+                }
+            }
+            return WebApiResponse.success("成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("失败");
+        }
+    }
 }

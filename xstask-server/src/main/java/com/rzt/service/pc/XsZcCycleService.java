@@ -141,7 +141,7 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
                 xszctask.setId();
                 xszctask.setTaskName(taskName);
                 xszctask.setPlanXsNum(planXsNum);
-                xszctask.setTaskNumInCycle(0);
+                xszctask.setTaskNumInCycle(1);
                 xszctask.setRealXsNum(0);
                 xszctask.setTaskNumInCycle(0);
                 xszctask.setStauts(0);

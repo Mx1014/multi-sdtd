@@ -62,11 +62,11 @@ public class KhTaskController extends
 	 */
 	@GetMapping("/updateTaskById.do")
 	@ResponseBody
-	public WebApiResponse updateTaskById(String startTime,String endTime,String userId,String id){
+	public WebApiResponse updateTaskById(String userId,String id){
 	// 提交申请给 管理员  如何提交待定  还是说没有修改功能
 		try {
 			//分页参数 page size
- 				this.service.updateTaskById(startTime,endTime,userId,id);
+ 				this.service.updateTaskById(userId,id);
 			return WebApiResponse.success("修改成功");
 		} catch (Exception e) {
 			e.printStackTrace();
