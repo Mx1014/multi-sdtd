@@ -81,7 +81,7 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
                 jedis.psetex(key,time,"巡视未上线");
             } catch (Exception e) {
                 System.out.println(e.getMessage());
-                throw new RuntimeException(e.getMessage()+"巡视未上线");
+                //throw new RuntimeException(e.getMessage()+"巡视未上线");
             }finally {
                 jedis.close();
             }
@@ -124,6 +124,7 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
                 if(time<0){
                     continue;
                 }
+                System.out.println(map.get("TASK_NAME")+"==================================");
                 jedis.psetex(key, time, "巡视未按规定时间接任务");
             } catch (Exception e) {
                 System.out.println(e.getMessage());

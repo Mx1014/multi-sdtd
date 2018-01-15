@@ -16,7 +16,8 @@ public class GJTask {
 
 
     //定时拉数据  1
-    @Scheduled(cron = "0 30 0 * * ? ")
+    //@Scheduled(cron = "0 30 0 * * ? ")
+    @Scheduled(cron = "0 0/2 * * * ?  ")
     public void gjTask(){
         khgj.inspectionMissionOverdue();// 巡视超期任务
         khgj.XSWJRW();

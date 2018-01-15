@@ -26,6 +26,7 @@ public class tourPublicController extends CurdController<Monitorcheckej, tourPub
         }
     }
 
+
     //巡视下线
     @RequestMapping("KHXX")
     public WebApiResponse KHXX(String userId,Integer taskType){

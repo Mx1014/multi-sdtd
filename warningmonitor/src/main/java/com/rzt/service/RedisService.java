@@ -13,7 +13,7 @@ import redis.clients.jedis.JedisPool;
 @Service
 public class RedisService {
     protected static Logger LOGGER = LoggerFactory.getLogger(RedisService.class);
-    private static int faixTime = 60;
+    private static int faixTime = 20;
 
 
     @Autowired

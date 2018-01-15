@@ -35,6 +35,12 @@ public class Subscriber extends JedisPubSub {
         try {
             //System.out.println(pattern + "========================" + channel + "=" + message);
             //以+号分隔
+            /*new Thread(new Runnable() {
+                @Override
+                public void run() {
+
+                }
+            }).start();*/
             String[] messages = message.split("\\+");
             if(messages.length<7){
                 LOGGER.error("redis信息录入不全");
@@ -44,13 +50,13 @@ public class Subscriber extends JedisPubSub {
                 try{
 
                     //未按时接任务,要先判断该任务有没有按规定时间开始，所以单独判断
-                    if("4".equals(messages[3])||"10".equals(messages[3])){ //未按时接任务
+                   /* if("4".equals(messages[3])||"10".equals(messages[3])){ //未按时接任务
                         monitorcheckej.addXSWAS(messages);
-                    }else{
-                        monitorcheckej.saveCheckEj(messages);
-                        String key = "ONE+"+messages[1]+"+"+messages[2]+"+"+messages[3]+"+"+messages[4]+"+"+messages[5]+"+"+messages[6];
-                        redisService.setex(key);
-                    }
+                    }else{*/
+                     monitorcheckej.saveCheckEj(messages);
+                     String key = "ONE+"+messages[1]+"+"+messages[2]+"+"+messages[3]+"+"+messages[4]+"+"+messages[5]+"+"+messages[6];
+                     redisService.setex(key);
+                    //}
                 }catch (Exception e){
                     LOGGER.error("插入数据失败："+e.getMessage());
                    // System.out.println("插入数据失败："+e.getMessage());
