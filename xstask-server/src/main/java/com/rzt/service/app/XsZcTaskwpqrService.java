@@ -1,10 +1,14 @@
 package com.rzt.service.app;
 
+import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.app.XsZcTaskwpqr;
 import com.rzt.repository.app.XsZcTaskwpqrRepository;
 import com.rzt.service.CurdService;
 import com.rzt.utils.SnowflakeIdWorker;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +25,9 @@ import java.util.Map;
 @Service
 public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrRepository> {
 
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+
     /***
      * @Method updateJdTime
      * @Description
@@ -29,7 +36,8 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
      * @date 2017/12/17 15:18
      * @author nwz
      */
-    public void updateJdTime(Long id, Integer xslx) {
+    @Transactional
+    public void updateJdTime(Long id, Integer xslx,String userId) {
         if (xslx == 0 || xslx == 1) {
             this.reposiotry.bdtxJiedan(id);//更新接单时间
             this.reposiotry.bdtxUpdateTaskStatus(id);//更新任务状态
@@ -38,6 +46,40 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
             this.reposiotry.zcXsJiedan(id);//更新接单时间
             this.reposiotry.zcXsUpdateTaskStatus(id);//更新任务状态
             this.reposiotry.updateXszcTaskZxys(1,id);//更新执行页数
+            //更新redis中的人员 任务的状态
+            updateXsMenInfoInRedis(userId);
+        }
+    }
+
+    private void updateXsMenInfoInRedis(String userId) {
+        ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
+        Object xsMenAllString = valueOperations.get("xsMenAll");
+        if (xsMenAllString == null) {
+            return;
+        } else {
+            JSONObject xsMenAll = JSONObject.parseObject(xsMenAllString.toString());
+            String sql = "select t.CM_USER_ID,min(STAUTS) status from (\n" +
+                    "SELECT\n" +
+                    "  cm_user_id,\n" +
+                    "  stauts\n" +
+                    "FROM XS_ZC_TASK\n" +
+                    "WHERE (PLAN_END_TIME BETWEEN trunc(sysdate) AND trunc(sysdate + 1)) and CM_USER_ID = ?1\n" +
+                    "UNION\n" +
+                    "SELECT\n" +
+                    "        cm_user_id,\n" +
+                    "        STAUTS\n" +
+                    "      FROM XS_ZC_TASK\n" +
+                    "      WHERE ((PLAN_START_TIME BETWEEN trunc(sysdate) AND trunc(sysdate + 1))) and CM_USER_ID = ?1\n" +
+                    "    ) t group by t.CM_USER_ID";
+            try {
+                Map<String, Object> map = this.execSqlSingleResult(sql,userId);
+                Object status = map.get("STATUS");
+                xsMenAll.put(userId,status);
+                valueOperations.set("xsMenAll",xsMenAll);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return;
+            }
         }
     }
 
@@ -288,11 +330,13 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
     * @date 2017/12/19 15:03
     * @author nwz
     */
-    public void updateTaskStatus(Integer xslx,Long id) {
+    @Transactional
+    public void updateTaskStatus(Integer xslx,Long id,String userId) {
         if(xslx == 0 || xslx == 1) {
             this.reposiotry.updateTxbdTaskToOff(id);
         } else {
             this.reposiotry.updateZcxsTaskToOff(id);
+            updateXsMenInfoInRedis(userId);
         }
 
 

@@ -34,9 +34,9 @@ public class XsZcTaskwpqrController extends CurdController<XsZcTaskwpqr, XsZcTas
      */
     @ApiOperation(value = "接单修改时间", notes = "接单修改时间")
     @PatchMapping("updateJdTime")
-    public Object updateJdTime(Integer xslx, Long id) {
+    public Object updateJdTime(Integer xslx, Long id,String userId) {
         try {
-            this.service.updateJdTime(id, xslx);
+            this.service.updateJdTime(id, xslx,userId);
             return WebApiResponse.success("数据保存成功!");
         } catch (Exception var3) {
             return WebApiResponse.erro("数据保存失败" + var3.getMessage());
@@ -198,9 +198,9 @@ public class XsZcTaskwpqrController extends CurdController<XsZcTaskwpqr, XsZcTas
      */
     @ApiOperation(value = "更新任务状态", notes = "更新任务状态 ")
     @PatchMapping("finishTask")
-    public Object updateTaskStatus(Integer xslx,Long id) {
+    public Object updateTaskStatus(Integer xslx,Long id,String userId) {
         try {
-            this.service.updateTaskStatus(xslx,id);
+            this.service.updateTaskStatus(xslx,id,userId);
             return WebApiResponse.success("数据更新成功");
         } catch (Exception var3) {
             return WebApiResponse.erro("数据更新失败" + var3.getMessage());

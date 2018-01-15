@@ -34,4 +34,6 @@ public interface CMLINESECTIONRepository extends JpaRepository<CMLINESECTION,Str
     @Modifying
     @Query(value = "update CM_line_TOWER set sort=to_number(regexp_substr(TOWER_NAME,'[0-9]*[0-9]',1)) where LINE_ID= ?1",nativeQuery = true)
     void updateTowerSort(Long lineId);
+
+    void deleteById(Long id);
 }

@@ -306,7 +306,7 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
                 sql = "select t.yhms,t.yhzt,t.id,tt.CREATE_TIME from\n" +
                         "(SELECT yhms,yhzt,ID\n" +
                         "FROM KH_YH_HISTORY t\n" +
-                        "WHERE START_TOWER <= ? AND END_TOWER >= ? and xstask_id != ? and sdgs != 2) t left join XS_ZC_TASK_LSYH tt on tt.EXEC_DETAIL_ID = ?and tt.YH_ID = t.id";
+                        "WHERE START_TOWER = ? AND END_TOWER = ? and xstask_id != ? and sdgs != 2) t left join XS_ZC_TASK_LSYH tt on tt.task_id = ? and tt.YH_ID = t.id";
                 List<Map<String, Object>> maps = this.execSql(sql, execDetail.get("START_TOWER_ID").toString(), end_tower_id,Long.parseLong(execDetail.get("ID").toString()),taskId);
                 execDetail.put("yh",maps);
             }
@@ -430,4 +430,5 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
         Map<String, Object> map = this.execSqlSingleResult(sql, execDetailId);
         return map;
     }
+
 }

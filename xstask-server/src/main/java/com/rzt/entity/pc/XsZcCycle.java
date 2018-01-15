@@ -47,10 +47,10 @@ public class XsZcCycle implements Serializable{
      private String section;
     	//字段描述: 巡视起始杆序号
    	 @Column(name = "XS_START_SORT")
-     private Integer xsStartSort;
+     private Long xsStartSort;
     	//字段描述: 巡视终止杆序号
    	 @Column(name = "XS_END_SORT")
-     private Integer xsEndSort;
+     private Long xsEndSort;
     	//字段描述: 计划开始时段 没有天数概念
    	 @Column(name = "PLAN_START_TIME")
      private String planStartTime;
@@ -170,19 +170,19 @@ public class XsZcCycle implements Serializable{
 		return this.section;
 	}
 
-	public void setXsStartSort(Integer xsStartSort){
+	public void setXsStartSort(Long xsStartSort){
 		this.xsStartSort = xsStartSort;
 	}
 	@ExcelResources(title="巡视起始杆序号",order=6)
-	public Integer getXsStartSort(){
+	public Long getXsStartSort(){
 		return this.xsStartSort;
 	}
 
-	public void setXsEndSort(Integer xsEndSort){
+	public void setXsEndSort(Long xsEndSort){
 		this.xsEndSort = xsEndSort;
 	}
 	@ExcelResources(title="巡视终止杆序号",order=7)
-	public Integer getXsEndSort(){
+	public Long getXsEndSort(){
 		return this.xsEndSort;
 	}
 

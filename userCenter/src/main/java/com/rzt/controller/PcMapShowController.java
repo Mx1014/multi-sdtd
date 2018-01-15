@@ -6,6 +6,7 @@ import com.rzt.service.PcMapShowService;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DateUtil;
 import com.rzt.utils.RedisUtil;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,10 +17,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.web.bind.ServletRequestDataBinder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -51,50 +49,69 @@ public class PcMapShowController {
      * @author nwz
      */
     @GetMapping("menInMap")
-    public Object menInMap(String tdOrg,Integer workType,String userId,Date startDate,String currentUserId) {
+    public Object menInMap(String tdOrg,Integer workType,String userId,Date startDate,String currentUserId/*,@RequestParam(value = "userIds[]") String[] userIds*/) {
         try {
             //准备要返回的list
-            List<Object> menInMap = null;
-            HashOperations<String, String, Object> hashOperations = redisTemplate.opsForHash();
+            List<Map> menInMap = new ArrayList<>();
+            HashOperations<String, String, Map> hashOperations = redisTemplate.opsForHash();
             ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
             //0 根据人查 有人就直接结束
             if(userId != null) {
-                return hashOperations.get("menInMap",userId);
+                menInMap.add(hashOperations.get("menInMap",userId));
+                return WebApiResponse.success(menInMap);
             }
             String deptId = "";
-            /*if(tdOrg != null) {
+            if(!StringUtils.isEmpty(tdOrg)) {
                 deptId = tdOrg;
             } else {
                 deptId = pcMapShowService.dataAccessByUserId(currentUserId).toString();
-            }*/
-            deptId = pcMapShowService.dataAccessByUserId(currentUserId).toString();
+            }
             //1.初始数据权限
             if("err".equals(deptId)) {
 
             } else if("all".equals(deptId)) {
                 menInMap = hashOperations.values("menInMap");
-                Object xsMenAll = valueOperations.get("xsMenAll");
-                JSONObject allMen = JSONObject.parseObject(xsMenAll.toString());
-                Iterator<Object> iterator = menInMap.iterator();
-                while(iterator.hasNext()){
-                    Object menObj = iterator.next();
-                    JSONObject men = JSONObject.parseObject(menObj.toString());
-                    String userid = men.get("userid").toString();
-                    if(!allMen.containsKey(userid)) {
-                        iterator.remove();   //注意这个地方
-                    }
-                }
             } else {
                 //1.1 根据部门筛选
                 List<Map<String, Object>> userList = pcMapShowService.deptMenFromRedis(deptId);
                 Set<String> keys = new HashSet();
+                //单位 外协 组织 班组 都走这里
                 for (Map<String,Object> user: userList) {
                     String id = user.get("ID").toString();
                     keys.add(id);
                 }
                 menInMap = hashOperations.multiGet("menInMap",keys);
-//                menInMap.replaceAll(Collections.singleton(null));
+                //-->去除list中为null的元素
+                menInMap.removeAll(Collections.singleton(null));
             }
+            //2.根据工作类型来分
+            JSONObject allMen = new JSONObject();
+            if(workType == null || workType == 1)  {
+                JSONObject xsMenAll = JSONObject.parseObject(valueOperations.get("xsMenAll").toString());
+                allMen.putAll(xsMenAll);
+            }
+            if(workType == null || workType == 2)  {
+                /*JSONObject khMenAll = JSONObject.parseObject(valueOperations.get("khMenAll").toString());
+                allMen.putAll(khMenAll);*/
+            }
+            if(workType == null || workType == 3)  {
+
+            }
+            Iterator<Map> iterator = menInMap.iterator();
+            while(iterator.hasNext()){
+                Map men = iterator.next();
+                String userid = men.get("userid").toString();
+                if(!allMen.containsKey(userid)) {
+                    //注意这个地方
+                    iterator.remove();
+                } else {
+                    men.put("statuts",allMen.get(userid));
+                }
+            }
+            /*for (Object men:menInMap) {
+                JSONObject menMap = JSONObject.parseObject(men.toString());
+                String userid = menMap.get("userid").toString();
+            }*/
 
             return WebApiResponse.success(menInMap);
         } catch (Exception e) {
@@ -201,6 +218,38 @@ public class PcMapShowController {
             return WebApiResponse.erro("数据查询失败" + e.getMessage());
         }
     }
+    /***
+    * @Method menInLine
+    * @Description 线路上的人
+    * @param [lineId, currentUserId]
+    * @return java.lang.Object
+    * @date 2018/1/14 17:37
+    * @author nwz
+    */
+    @GetMapping("menInLine")
+    public Object menInLine(Long lineId,String currentUserId) {
+        try {
+            Map<String, Object> map = pcMapShowService.userInfoFromRedis(currentUserId);
+            String tempTable = "";
+            ArrayList list = new ArrayList();
+            Integer roletype = Integer.parseInt(map.get("ROLETYPE").toString());
+            if(roletype == 0) {
+                tempTable = "SELECT distinct CM_USER_ID userid from XS_ZC_CYCLE where LINE_ID = ?";
+                list.add(lineId);
+            } else {
+                tempTable = "SELECT distinct CM_USER_ID userid from XS_ZC_CYCLE where TD_ORG = ? and LINE_ID = ?";
+                list.add(map.get("DEPTID"));
+                list.add(lineId);
+
+            }
+            StringBuffer menInLineSql = new StringBuffer("select t.userid,tt.REALNAME from (" + tempTable + ") t join RZTSYSUSER tt on t.userid = tt.ID");
+            List<Map<String, Object>> userMaps = cmcoordinateService.execSql(menInLineSql.toString(),list.toArray());
+            return WebApiResponse.success(userMaps);
+        } catch (Exception e) {
+            return WebApiResponse.erro("数据查询失败" + e.getMessage());
+        }
+    }
+
 
     @InitBinder
     public void initBinder(ServletRequestDataBinder binder) {
@@ -225,10 +274,11 @@ public class PcMapShowController {
     public Object flushUserInfoRedis() {
         try {
             HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
-            String sql = "SELECT * from USERINFO";
+            String sql = "SELECT * from USERINFO where id = '4d12f0cf8a02496f89fb919498395b88'";
             List<Map<String, Object>> maps = cmcoordinateService.execSql(sql);
             for (Map<String,Object> map: maps) {
                 String id = map.get("ID").toString();
+                map.put("ROLETYPE",0);
                 hashOperations.put("UserInformation",id,map);
             }
             return WebApiResponse.success("成功了");
@@ -277,12 +327,24 @@ public class PcMapShowController {
     public Object menCurrentDay() {
         try {
             ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
-            String sql = "SELECT cm_user_id FROM XS_ZC_TASK WHERE (PLAN_END_TIME BETWEEN trunc(sysdate) AND trunc(sysdate + 1)) union select cm_user_id from XS_ZC_TASK WHERE ((PLAN_START_TIME BETWEEN trunc(sysdate) AND trunc(sysdate + 1)))";
+            String sql = "select t.CM_USER_ID,min(STAUTS) status from (\n" +
+                    "SELECT\n" +
+                    "  cm_user_id,\n" +
+                    "  stauts\n" +
+                    "FROM XS_ZC_TASK\n" +
+                    "WHERE (PLAN_END_TIME BETWEEN trunc(sysdate) AND trunc(sysdate + 1))\n" +
+                    "UNION\n" +
+                    "SELECT\n" +
+                    "        cm_user_id,\n" +
+                    "        STAUTS\n" +
+                    "      FROM XS_ZC_TASK\n" +
+                    "      WHERE ((PLAN_START_TIME BETWEEN trunc(sysdate) AND trunc(sysdate + 1)))\n" +
+                    "    ) t group by t.CM_USER_ID";
             List<Map<String, Object>> userList = cmcoordinateService.execSql(sql);
             Map<String,Object> map = new HashMap<String, Object>();
             for (Map<String,Object> user: userList) {
                 String id = user.get("CM_USER_ID").toString();
-                map.put(id,id);
+                map.put(id,user.get("STATUS"));
             }
             valueOperations.set("xsMenAll",map);
             return WebApiResponse.success("成功了");

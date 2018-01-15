@@ -99,7 +99,7 @@ public class CMLINESECTIONService extends CurdService<CMLINESECTION,CMLINESECTIO
 
     public WebApiResponse getLineInfoCommOptions(String tdOrg, String kv,String currentUserId) {
         List<String> list = new ArrayList<>();
-        String sql = "select line_id,line_name,line_jb,SECTION from cm_line_section where is_del=0 ";
+        String sql = "select line_id,line_name,line_jb,SECTION,TD_ORG_NAME from cm_line_section where is_del=0 ";
         if(StringUtils.isNotEmpty(currentUserId)){
             Map<String, Object> map = userInfoFromRedis(currentUserId);
             Integer roletype = Integer.parseInt(map.get("ROLETYPE").toString());
@@ -108,6 +108,7 @@ public class CMLINESECTIONService extends CurdService<CMLINESECTION,CMLINESECTIO
                 case 0:
                     break;
                 case 1:
+                    tdOrg = deptid;
                     break;
                 case 2:
                     tdOrg = deptid;
@@ -334,5 +335,10 @@ public class CMLINESECTIONService extends CurdService<CMLINESECTION,CMLINESECTIO
     public void addCmLineTower(String lineId) {
         reposiotry.addCmLineTower(Long.valueOf(lineId));
         reposiotry.updateTowerSort(Long.valueOf(lineId));
+    }
+
+    @Transactional
+    public void delCmLineSection(String id) {
+        reposiotry.deleteById(Long.valueOf(id));
     }
 }

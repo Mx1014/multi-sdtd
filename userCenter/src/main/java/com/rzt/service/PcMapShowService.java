@@ -43,7 +43,7 @@ public class PcMapShowService {
                         deptId = "all";
                         break;
                     case 1:
-                        deptId = "all";
+                        deptId = tdId;
                         break;
                     case 2:
                         deptId = tdId;

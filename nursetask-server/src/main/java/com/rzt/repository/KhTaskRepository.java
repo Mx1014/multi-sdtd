@@ -55,9 +55,9 @@ public interface KhTaskRepository extends JpaRepository<KhTask,String> {
     void updateTaskById(long id, String khfzrId1, String khfzrId2, String khdyId1, String khdyId2);*/
 
     @Modifying
-
-    @Query(value = "update kh_site set user_id = ?1,plan_start_time=?3,plan_end_time=?4 where id = ?2",nativeQuery = true)
-    void updateSiteById(String userId, String id,String startTime,String endTime);
+    @Transactional
+    @Query(value = "update kh_site set user_id = ?1 where id = ?2",nativeQuery = true)
+    void updateSiteById(String userId, String id);
 
     @Modifying
     @Transactional
