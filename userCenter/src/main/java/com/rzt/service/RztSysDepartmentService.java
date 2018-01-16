@@ -92,12 +92,12 @@ public class RztSysDepartmentService extends CurdService<RztSysDepartment, RztSy
     public List<Map<String, Object>> findDeptListByPid(int page, int size, String id) {
         RztSysDepartment rztSysDepartment = this.reposiotry.getOne(id);
         StringBuilder buffer = new StringBuilder();
-        buffer.append("SELECT node.id ,node.deptName ,node.lft,node.rgt,node.deptPid,node.lastnode,node.ORGTYPE  ");
+        buffer.append("SELECT node.id ,node.deptName ,node.lft,node.rgt,node.deptPid,node.lastnode,node.ORGTYPE,node.DEPTSORT  ");
         buffer.append("FROM RztSysDepartment node,RztSysDepartment parent WHERE node.lft BETWEEN parent.lft AND parent.rgt ");
         buffer.append("AND node.lft > " + rztSysDepartment.getLft());
         buffer.append(" AND node.rgt <" + rztSysDepartment.getRgt() + " ");
-        buffer.append("GROUP BY node.id,node.lft,node.deptName,node.rgt,node.deptPid,node.lastnode,node.ORGTYPE ");
-        buffer.append("ORDER BY node.lft");
+        buffer.append("GROUP BY node.id,node.lft,node.deptName,node.rgt,node.deptPid,node.lastnode,node.ORGTYPE,node.DEPTSORT  ");
+        buffer.append("ORDER BY node.DEPTSORT");
         if (size != 0) {
             buffer.append(PageUtil.getLimit(page, size));
         }

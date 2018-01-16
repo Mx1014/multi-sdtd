@@ -8,7 +8,7 @@ package com.rzt.service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.RztSysUser;
-//import com.rzt.eureka.StaffLine;
+import com.rzt.eureka.StaffLine;
 import com.rzt.repository.RztSysUserRepository;
 import com.rzt.security.JwtHelper;
 import com.rzt.security.TokenProp;
@@ -26,7 +26,6 @@ import org.springframework.util.StringUtils;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
 /**
@@ -48,8 +47,8 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
     private TokenProp tokenProp;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
-//    @Autowired
-//    StaffLine staffLine;
+    @Autowired
+    StaffLine staffLine;
 
     public Page<RztSysUser> findByName(String name, Pageable pageable) {
         if (StringUtils.isEmpty(name))
@@ -292,7 +291,6 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
      * @param password
      * @param account
      * @param loginType
-     * @param request
      * @return
      */
     public WebApiResponse userLogin(String password, String account, String loginType) {
@@ -327,15 +325,23 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
                             tokenProp.getExpireTime()).getAccess_token();
                     hashOperations.put("USERTOKEN", "USER:" + userid1.get("ID") + "," + userid1.get("REALNAME"), access_token);
                     userid1.put("TOKEN", access_token);
-//                    try {
-//                        staffLine.KHSX(String.valueOf(userid.get(0).get("ID")), Integer.valueOf(userid.get(0).get("WORKTYPE").toString()));
-//                    } catch (NumberFormatException e) {
-//                    }
+                    Integer typee = Integer.valueOf(userid.get(0).get("WORKTYPE").toString());
+                    if (typee == 1) {
+                        typee = 2;
+                    } else if (typee == 2) {
+                        typee = 1;
+                    }
+                    try {
+                        staffLine.KHSX(String.valueOf(userid.get(0).get("ID")), typee);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     return WebApiResponse.success(userid1);
                 }
             }
             return WebApiResponse.erro("erro");
         } catch (Exception e) {
+            System.err.println(e.getMessage());
             return WebApiResponse.erro("erro");
         }
     }
@@ -349,10 +355,16 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
             HashOperations hashOperations = redisTemplate.opsForHash();
             hashOperations.put("UserInformation", id, stringObjectMap);
             hashOperations.delete("USERTOKEN", "USER:" + stringObjectMap.get("ID") + "," + stringObjectMap.get("REALNAME"));
-//            try {
-//                staffLine.KHXX(String.valueOf(stringObjectMap.get("ID")), Integer.valueOf(stringObjectMap.get("WORKTYPE").toString()));
-//            } catch (NumberFormatException e) {
-//            }
+            try {
+                Integer typee = Integer.valueOf(String.valueOf(stringObjectMap.get("WORKTYPE")));
+                if (typee == 1) {
+                    typee = 2;
+                } else if (typee == 2) {
+                    typee = 1;
+                }
+                staffLine.KHXX(String.valueOf(stringObjectMap.get("ID")), typee);
+            } catch (NumberFormatException e) {
+            }
             return WebApiResponse.success("");
         } catch (Exception e) {
             e.printStackTrace();
