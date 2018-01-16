@@ -971,5 +971,4 @@ public class Anomalymonitoring2Service extends CurdService<Anomalymonitoring, An
 
     }
 
-
 }
