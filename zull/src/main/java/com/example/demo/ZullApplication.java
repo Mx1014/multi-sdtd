@@ -7,6 +7,7 @@ import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.cloud.netflix.feign.EnableFeignClients;
 import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 @EnableZuulProxy
@@ -68,11 +69,17 @@ public class ZullApplication {
 	@Bean
 	@LoadBalanced
 	RestTemplate restTemplate() {
-		return new RestTemplate();
+
+		SimpleClientHttpRequestFactory simpleClientHttpRequestFactory = new   SimpleClientHttpRequestFactory();
+		simpleClientHttpRequestFactory.setConnectTimeout(1000);
+		simpleClientHttpRequestFactory.setReadTimeout(1000);
+		return new RestTemplate(simpleClientHttpRequestFactory);
+
+
 	}
 	@Bean
-	public AccessFilter accessFilter(){
-		return  new AccessFilter();
+	public com.example.demo.AccessFilter accessFilter(){
+		return  new com.example.demo.AccessFilter();
 	}
 	public static void main(String[] args) {
 		SpringApplication.run(ZullApplication.class, args);
