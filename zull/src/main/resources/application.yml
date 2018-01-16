@@ -6,42 +6,85 @@ spring:
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://168.130.1.31:31814/eureka/
-zuul:
-  routes:
-    userCenter:
-      path: /userCenter/**
-      serviceId: http://168.130.1.31:32332
-      stripPrefix: false
-    xsTask:
-      path: /xsTask/**
-      serviceId: http://168.130.1.31:32165
-      stripPrefix: false
-    nurseTask:
-      path: /nurseTask/**
-      serviceId: http://168.130.1.31:32021
-      stripPrefix: false
-    linedata:
-      path: /linedata/**
-      serviceId: http://168.130.1.31:32727
-      stripPrefix: false
-    fileServer:
-      path: /fileserver/**
-      url: http://168.130.1.31:31235
-      stripPrefix: false
-    imgUrl:
-      path: /img/**
-      url: http://168.130.1.31:31141
-#hystrix:
-#  command:
-#    default:
-#      execution:
-#        isolation:
-#          thread:
-#            timeoutInMilliseconds: 60000
+#      defaultZone: http://39.106.206.129:7002/eureka/
+      defaultZone: http://127.0.0.1:7002/eureka/
+    #服务消费者 发现服务
+    fetch-registry: true
+    #服务消费者 刷新服务清单的缓存时间 默认为30秒
+    registry-fetch-interval-seconds: 10
+
+
+
 hystrix:
   command:
     default:
       execution:
         timeout:
           enabled: false
+        isolation:
+          thread:
+            timeoutInMilliseconds: 60000
+
+ribbon:
+  ReadTimeout: 15000
+  ConnectTimeout: 3000
+#  MaxAutoRetries: 0
+#  MaxAutoRetriesNextServer: 1
+
+zuul:
+  host:
+    socket-timeout-millis: 60000
+    connect-timeout-millis: 60000
+    max-total-connections: 5000
+    max-per-route-connections: 500
+
+  routes:
+    userCenter:
+      path: /userCenter/**
+      serviceId: userCenter
+      stripPrefix: false
+      ribbon:
+        ReadTimeout: 60000
+        ConnectTimeout: 60000
+    xsTask:
+      path: /xsTask/**
+      serviceId: xsTask
+      stripPrefix: false
+      ribbon:
+        ReadTimeout: 60000
+        ConnectTimeout: 60000
+    nurseTask:
+      path: /nurseTask/**
+      serviceId: nurseTask
+      stripPrefix: false
+      ribbon:
+        ReadTimeout: 60000
+        ConnectTimeout: 60000
+    linedata:
+      path: /linedata/**
+      serviceId: linedata
+      stripPrefix: false
+      ribbon:
+        ReadTimeout: 60000
+        ConnectTimeout: 60000
+    fileServer:
+      path: /fileserver/**
+      serviceId: fileServer
+      stripPrefix: false
+      ribbon:
+        ReadTimeout: 60000
+        ConnectTimeout: 60000
+    imgUrl:
+      path: /img/**
+      url: http://39.106.207.14:80
+    monitor:
+      path: /monitorServer/**
+      serviceId: monitorServer
+      stripPrefix: false
+      ribbon:
+        ReadTimeout: 60000
+        ConnectTimeout: 60000
+    warning:
+      path: /warningServer/**
+      serviceId: warningServer
+      stripPrefix: false

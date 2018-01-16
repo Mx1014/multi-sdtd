@@ -47,6 +47,7 @@ public class CmcoordinateController extends
     @Transactional
     public WebApiResponse addCmcoordinate(MyCoordinate myCoordinate) {
         try {
+            String currentDate = DateUtil.getCurrentDate();
             //1.处理数据
             Date date = DateUtil.dateNow();
             Cmcoordinate cmcoordinate = new Cmcoordinate();
@@ -67,12 +68,11 @@ public class CmcoordinateController extends
 
             //3.用来展示pc端地图的key
             HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
-//            String coorKey = myCoordinate.getDEPTID() + "_" + myCoordinate.getCOMPANYID() + "_" + myCoordinate.getCLASSID() + "_" + "temporyCoordinateMap";
             hashOperations.put("menInMap",cmcoordinate.getUserid(),cmcoordinate);
 
             //4.为每个用户每天创建一个key，用于保存当天的坐标  暂定三天失效
             ZSetOperations setOperations = redisTemplate.opsForZSet();
-            String key = DateUtil.getCurrentDate() + "_" + cmcoordinate.getUserid();
+            String key = currentDate + ":" + cmcoordinate.getUserid();
             setOperations.add(key, cmcoordinate, date.getTime());
             redisTemplate.expire(key,3, TimeUnit.DAYS);
 

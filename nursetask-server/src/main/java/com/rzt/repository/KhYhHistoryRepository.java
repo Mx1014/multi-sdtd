@@ -43,4 +43,9 @@ public interface KhYhHistoryRepository extends JpaRepository<KhYhHistory,String>
     @Transactional
     @Query(value = "update KH_YH_HISTORY SET JD=?2,WD=?3 WHERE ID=?1",nativeQuery = true)
     void xiugai(long id, String lon, String lat);
+
+    @Modifying
+    @Transactional
+    @Query(value = "update KH_YH_HISTORY SET sjxl=?2 WHERE ID=?1",nativeQuery = true)
+    void updateyh(long id, String xl);
 }

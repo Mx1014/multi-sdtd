@@ -109,15 +109,7 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
     }
 
 
-    public WebApiResponse appListCaptain(String taskId, String userId) {
-        try {
-            String sql = "select s.CAPATAIN,s.group_flag as flag FROM KH_SITE s,KH_TASK k where s.ID = k.SITE_ID AND  k.id=? and k.USER_ID =?";
-            return WebApiResponse.success(this.execSql(sql, taskId, userId));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return WebApiResponse.erro("数据获取失败");
-        }
-    }
+
 
     public WebApiResponse getYbCount(String userId) {
         try {
@@ -178,7 +170,7 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
             list = this.execSql(sql, taskId);
         }
         for (Map map : list) {
-            map.put("URL", "http://168.130.1.31:8097:/warningServer/warning/KHOffPost");
+            map.put("URL", "http://39.106.206.129:8097/warningServer/warning/KHOffPost");
         }
        /* Point point = null;
         for (Map map : list) {
@@ -197,18 +189,28 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
         }
     }
 
+    //查看是不是看护负责人
+    public WebApiResponse appListCaptain(String taskId, String userId) {
+        try {
+            String sql = "select s.CAPATAIN,s.group_flag as flag FROM KH_SITE s,KH_TASK k where s.ID = k.SITE_ID AND  k.id=? and k.USER_ID =?";
+            return WebApiResponse.success(this.execSql(sql, taskId, userId));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("数据获取失败");
+        }
+    }
 
-
+    //如果是队员，队长交班以后他才能交班
     public WebApiResponse appCaptainTime(String userId, long taskId, String flag) {
         try {
-            flag = flag.substring(0, flag.length() - 1) + 1;//0 + flag.substring(flag.length() - 1, flag.length())
+            /*flag = flag.substring(0, flag.length() - 1) + 1;//0 + flag.substring(flag.length() - 1, flag.length())
             String sql = "SELECT k.REAL_END_TIME \n" +
-                    "FROM KH_SITE s,KH_TASK k WHERE s.ID=k.SITE_ID and s.GROUP_FLAG=?";
+                    "FROM KH_SITE s,KH_TASK k WHERE s.ID=k.SITE_ID and s.GROUP_FLAG=? and ";
             Map<String, Object> map = this.execSqlSingleResult(sql, flag);
             if (map.get("REAL_END_TIME") == null) {
                 throw new Exception();
-            }
-            return WebApiResponse.success(map);
+            }*/
+            return WebApiResponse.success("");
         } catch (Exception e) {
             return WebApiResponse.erro("队长未交班");
         }
