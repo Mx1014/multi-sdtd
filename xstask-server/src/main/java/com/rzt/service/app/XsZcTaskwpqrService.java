@@ -48,6 +48,10 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
             this.reposiotry.updateXszcTaskZxys(1,id);//更新执行页数
             //更新redis中的人员 任务的状态
             updateXsMenInfoInRedis(userId);
+            //remove掉月宁那边的key
+            String s = "TWO+" + id + "+1+4*";
+            redisTemplate.keys(s);
+            redisTemplate.delete(s);
         }
     }
 
@@ -58,19 +62,7 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
             return;
         } else {
             JSONObject xsMenAll = JSONObject.parseObject(xsMenAllString.toString());
-            String sql = "select t.CM_USER_ID,min(STAUTS) status from (\n" +
-                    "SELECT\n" +
-                    "  cm_user_id,\n" +
-                    "  stauts\n" +
-                    "FROM XS_ZC_TASK\n" +
-                    "WHERE (PLAN_END_TIME BETWEEN trunc(sysdate) AND trunc(sysdate + 1)) and CM_USER_ID = ?1\n" +
-                    "UNION\n" +
-                    "SELECT\n" +
-                    "        cm_user_id,\n" +
-                    "        STAUTS\n" +
-                    "      FROM XS_ZC_TASK\n" +
-                    "      WHERE ((PLAN_START_TIME BETWEEN trunc(sysdate) AND trunc(sysdate + 1))) and CM_USER_ID = ?1\n" +
-                    "    ) t group by t.CM_USER_ID";
+            String sql = "SELECT cm_user_id,min(stauts) status from XS_ZC_TASK where PLAN_END_TIME >= trunc(sysdate) and  PLAN_START_TIME <= (sysdate+1) group by CM_USER_ID";
             try {
                 Map<String, Object> map = this.execSqlSingleResult(sql,userId);
                 Object status = map.get("STATUS");

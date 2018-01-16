@@ -83,7 +83,7 @@ public class CMLINESECTIONController extends
 		service.addCmLineTower(lineId);
 		return WebApiResponse.success("线路添加成功");
 	}
-	@ApiOperation(value = "删除线路区段",notes = "线路区段新增后,添加中间表数据")
+	@ApiOperation(value = "删除线路区段",notes = "删除线路区段")
 	@GetMapping("delCmLineSection")
 	public WebApiResponse delCmLineSection(String id){
 		service.delCmLineSection(id);

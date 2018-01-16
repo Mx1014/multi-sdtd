@@ -152,7 +152,7 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
                 xszctask.setClassId(classid);
 
                 xszctaskService.add(xszctask);
-                this.reposiotry.updateTotalTaskNum(xsZcCycleId, classid, companyid, userId);
+                this.reposiotry.updateTotalTaskNum(xsZcCycleId,classid, companyid, userId,deptid);
             }
 
 
@@ -991,14 +991,16 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
 
         StringBuffer sqlBuffer = new StringBuffer();
         ArrayList arrList = new ArrayList();
-        sqlBuffer.append("SELECT * FROM xs_zc_task where ((PLAN_END_TIME BETWEEN trunc(sysdate) and trunc(sysdate + 1)) or ((PLAN_START_TIME BETWEEN trunc(sysdate) and trunc(sysdate + 1)))) and is_delete = 0");
+        sqlBuffer.append("SELECT * FROM xs_zc_task where is_delete = 0");
         //开始日期 结束日期
-       /* Date startDate = xsTaskSch.getStartDate();
+        Date startDate = xsTaskSch.getStartDate();
         Date endDate = xsTaskSch.getEndDate();
-        if (startDate != null && endDate != null) {
-            sqlBuffer.append("and plan_start_time between ? and ? ");
+        if (startDate != null) {
+            sqlBuffer.append(" and PLAN_END_TIME >= trunc(?) and  PLAN_START_TIME <= (?+1)");
             arrList.add(startDate);
-            arrList.add(endDate);
+            arrList.add(startDate);
+        } else {
+            sqlBuffer.append(" and PLAN_END_TIME >= trunc(sysdate) and  PLAN_START_TIME <= (sysdate+1)");
         }
 
         //状态 0 未开始 1 巡视中 2 已完成
@@ -1007,7 +1009,7 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
             sqlBuffer.append("and stauts = ? ");
             arrList.add(status);
 
-        }*/
+        }
 
         //人员id
         String userId = xsTaskSch.getUserId();
@@ -1029,7 +1031,6 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
             sqlBuffer.append(" and task_name like ?");
             arrList.add("%" + taskName + "%");
         }*/
-
 
         Page<Map<String, Object>> maps = this.execSqlPage(pageable, sqlBuffer.toString(), arrList.toArray());
         return maps;

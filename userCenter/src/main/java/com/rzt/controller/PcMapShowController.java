@@ -52,6 +52,10 @@ public class PcMapShowController {
     public Object menInMap(String tdOrg,Integer workType,String userId,Date startDate,String currentUserId/*,@RequestParam(value = "userIds[]") String[] userIds*/) {
         try {
             Date date = new Date();
+            if(startDate == null) {
+                startDate = date;
+            }
+            String needDateString = DateUtil.dateFormatToDay(startDate);
             long timeSecond = date.getTime();
             //准备要返回的list
             List<Map> menInMap = new ArrayList<>();
@@ -89,11 +93,11 @@ public class PcMapShowController {
             //2.根据工作类型来分
             JSONObject allMen = new JSONObject();
             if(workType == null || workType == 1)  {
-                JSONObject xsMenAll = JSONObject.parseObject(valueOperations.get("xsMenAll").toString());
+                JSONObject xsMenAll = JSONObject.parseObject(valueOperations.get("xsMenAll:" + needDateString).toString());
                 allMen.putAll(xsMenAll);
             }
             if(workType == null || workType == 2)  {
-                JSONObject khMenAll = JSONObject.parseObject(valueOperations.get("khMenAll").toString());
+                JSONObject khMenAll = JSONObject.parseObject(valueOperations.get("khMenAll:" + needDateString).toString());
                 allMen.putAll(khMenAll);
             }
             if(workType == null || workType == 3)  {
@@ -325,25 +329,28 @@ public class PcMapShowController {
 
 
     /***
-     * @Method menCurrentDay
-     * @Description 刷新flushMenInDept缓存
+     * @Method menCurrentDayxs
+     * @Description 刷新巡视任务的人
      *
      * @return java.lang.Object
      * @date 2017/12/25 13:59
      * @author nwz
      */
     @GetMapping("menCurrentDayxs")
-    public Object menCurrentDayxs() {
+    public Object menCurrentDayxs(Date day) {
         try {
             ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
-            String sql = "SELECT cm_user_id,min(stauts) status from XS_ZC_TASK where PLAN_END_TIME >= trunc(sysdate) and  PLAN_START_TIME <= (sysdate+1) group by CM_USER_ID";
-            List<Map<String, Object>> userList = cmcoordinateService.execSql(sql);
+            if(day == null) {
+                day = new Date();
+            }
+            String sql = "SELECT cm_user_id,min(stauts) status from XS_ZC_TASK where PLAN_END_TIME >= trunc(?1) and  PLAN_START_TIME <= (?1+1) group by CM_USER_ID";
+            List<Map<String, Object>> userList = cmcoordinateService.execSql(sql,day);
             Map<String,Object> map = new HashMap<String, Object>();
             for (Map<String,Object> user: userList) {
                 String id = user.get("CM_USER_ID").toString();
                 map.put(id,user.get("STATUS"));
             }
-            valueOperations.set("xsMenAll",map);
+            valueOperations.set("xsMenAll:" + DateUtil.dateFormatToDay(day),map);
             return WebApiResponse.success("成功了");
         } catch (Exception e) {
             return WebApiResponse.erro("数据查询失败" + e.getMessage());
@@ -352,7 +359,7 @@ public class PcMapShowController {
 
 
     /***
-     * @Method menCurrentDay
+     * @Method menCurrentDayKh
      * @Description 刷新flushMenInDept缓存
      *
      * @return java.lang.Object
@@ -360,17 +367,20 @@ public class PcMapShowController {
      * @author nwz
      */
     @GetMapping("menCurrentDayKh")
-    public Object menCurrentDayKh() {
+    public Object menCurrentDayKh(Date day) {
         try {
             ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
-            String sql = "SELECT USER_ID,min(status) status from KH_TASK where PLAN_END_TIME >= trunc(sysdate) and  PLAN_START_TIME <= (sysdate+1) group by USER_ID";
-            List<Map<String, Object>> userList = cmcoordinateService.execSql(sql);
+            if(day == null) {
+                day = new Date();
+            }
+            String sql = "SELECT USER_ID,min(status) status from KH_TASK where PLAN_END_TIME >= trunc(?1) and  PLAN_START_TIME <= (?1+1) group by USER_ID";
+            List<Map<String, Object>> userList = cmcoordinateService.execSql(sql,day);
             Map<String,Object> map = new HashMap<String, Object>();
             for (Map<String,Object> user: userList) {
                 String id = user.get("USER_ID").toString();
                 map.put(id,user.get("STATUS"));
             }
-            valueOperations.set("khMenAll",map);
+            valueOperations.set("khMenAll:" + DateUtil.dateFormatToDay(day),map);
             return WebApiResponse.success("成功了");
         } catch (Exception e) {
             return WebApiResponse.erro("数据查询失败" + e.getMessage());

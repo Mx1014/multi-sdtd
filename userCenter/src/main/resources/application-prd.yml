@@ -36,7 +36,7 @@ spring:
         host: 39.106.206.129
         port: 6379
         password: Rzt82890758-Rzt82890758
-        timeout: 0
+        timeout: 5000
         pool:
           max-active: 100
           max-idle: 8
@@ -45,6 +45,6 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: http://39.106.206.129:7002/eureka/
+      defaultZone: http://127.0.0.1:7002/eureka/
 logging:
   config: classpath:logback-spring.xml
