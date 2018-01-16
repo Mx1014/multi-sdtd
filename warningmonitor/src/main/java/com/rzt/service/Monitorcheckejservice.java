@@ -48,6 +48,19 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej,Monitorche
     @Autowired
     private RedisService redisService;
 
+    //获取通道公司ID
+    public Object getDeptId(String userId) {
+        String deptID = getDeptID(userId);
+        String sql ="";
+        if("0".equals(deptID)){
+            sql = "SELECT DEPTNAME,ID  FROM RZTSYSDEPARTMENT WHERE DEPTSORT IS NOT NULL";
+        }else if(!"-1".equals(deptID) && !"0".equals(deptID)){
+            sql = "SELECT DEPTNAME,ID FROM RZTSYSDEPARTMENT WHERE DEPTSORT IS NOT NULL AND  ID='"+deptID+"'";
+        }
+        List<Map<String, Object>> maps = execSql(sql);
+        return maps;
+    }
+
 
     public void saveCheckEj(String[] messages) {
 
@@ -77,7 +90,7 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej,Monitorche
     }
 
     //告警未处理 列表查询
-    public Object XSGJW( Integer page, Integer size, String date,String userId,Integer warningType,String deptID,Integer type) {
+    public Object XSGJW( Integer page, Integer size, String startDate,String userId,Integer warningType,String deptID,Integer type,String endDate) {
         String deptId = getDeptID(userId);
         if(deptId==null){
             return "该用户状态为null";
@@ -88,9 +101,11 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej,Monitorche
         Pageable pageable = new PageRequest(page, size, null);
         List<Object> list = new ArrayList<Object>();
         String s = "";
-        if (!StringUtils.isEmpty(date)) {
-            list.add( date );
-            s += " AND  CREATE_TIME <= to_date( ?" + list.size() + ",'yyyy-MM-dd hh24:mi:ss')  ";
+        if (!StringUtils.isEmpty(startDate) && !StringUtils.isEmpty(endDate)) {
+            list.add( startDate );
+            s += " AND  CREATE_TIME BETWEEN to_date( ?"+list.size()+",'yyyy-MM-dd hh24:mi:ss') ";
+            list.add(endDate);
+            s+="  AND to_date( ?"+list.size()+",'yyyy-MM-dd hh24:mi:ss') ";
         }
         if (!StringUtils.isEmpty(warningType)) {
             list.add(warningType);
@@ -141,7 +156,7 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej,Monitorche
     }
 
     //告警处理中列表查询
-    public Object XSGJZ(Integer page, Integer size, String date, String userId, Integer warningType, String deptID, Integer type) {
+    public Object XSGJZ(Integer page, Integer size, String startDate, String userId, Integer warningType, String deptID, Integer type,String endDate) {
         String deptId = getDeptID(userId);
         if(deptId==null){
             return "该用户状态为null";
@@ -152,9 +167,11 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej,Monitorche
         Pageable pageable = new PageRequest(page, size, null);
         List<Object> list = new ArrayList<Object>();
         String s = "";
-        if (!StringUtils.isEmpty(date)) {
-            list.add( date );
-            s += " AND  CREATE_TIME <= to_date( ?" + list.size() + ",'yyyy-MM-dd hh24:mi:ss')  ";
+        if (!StringUtils.isEmpty(startDate) && !StringUtils.isEmpty(endDate)) {
+            list.add( startDate );
+            s += " AND  CREATE_TIME BETWEEN to_date( ?"+list.size()+",'yyyy-MM-dd hh24:mi:ss') ";
+            list.add(endDate);
+            s+="  AND to_date( ?"+list.size()+",'yyyy-MM-dd hh24:mi:ss') ";
         }
         if (!StringUtils.isEmpty(warningType)) {
             list.add(warningType);
@@ -167,12 +184,12 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej,Monitorche
 
         Page<Map<String, Object>> pageResult = null;
         if("0".equals(deptId)){
-            String sql = "SELECT CREATE_TIME,TASK_NAME, TASK_ID,TASK_TYPE,USER_ID,DEPTID,WARNING_TYPE FROM MONITOR_CHECK_YJ where STATUS=1 and trunc(CREATE_TIME) = trunc(sysdate) and TASK_TYPE="+type;
+            String sql = "SELECT CREATE_TIME_Z as CREATE_TIME,TASK_NAME, TASK_ID,TASK_TYPE,USER_ID,DEPTID,WARNING_TYPE FROM MONITOR_CHECK_YJ where STATUS=1 and trunc(CREATE_TIME) = trunc(sysdate) and TASK_TYPE="+type;
             //查询所有
             String sql1 = "SELECT * FROM ( " +sql+" ) where 1=1 "+s;
             pageResult = execSqlPage(pageable, sql1,list.toArray());
         }else{
-            String sql = "SELECT CREATE_TIME,TASK_NAME, TASK_ID,TASK_TYPE,USER_ID,DEPTID,WARNING_TYPE FROM MONITOR_CHECK_EJ where STATUS=1 and trunc(CREATE_TIME) = trunc(sysdate) and TASK_TYPE="+type;
+            String sql = "SELECT CREATE_TIME_Z  as CREATE_TIME,TASK_NAME, TASK_ID,TASK_TYPE,USER_ID,DEPTID,WARNING_TYPE FROM MONITOR_CHECK_EJ where STATUS=1 and trunc(CREATE_TIME) = trunc(sysdate) and TASK_TYPE="+type;
             //查询该deptId下的
             list.add(deptId);
             s+=" AND DEPTID = ?" + list.size();
@@ -205,7 +222,7 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej,Monitorche
     }
 
     //告警已处理查询列表
-    public Object XSGJY(Integer page, Integer size, String date, String userId, Integer warningType, String deptID, Integer type) {
+    public Object XSGJY(Integer page, Integer size, String startDate, String userId, Integer warningType, String deptID, Integer type,String endDate) {
         String deptId = getDeptID(userId);
         if(deptId==null){
             return "该用户状态为null";
@@ -216,9 +233,11 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej,Monitorche
         Pageable pageable = new PageRequest(page, size, null);
         List<Object> list = new ArrayList<Object>();
         String s = "";
-        if (!StringUtils.isEmpty(date)) {
-            list.add( date );
-            s += " AND  CREATE_TIME <= to_date( ?" + list.size() + ",'yyyy-MM-dd hh24:mi:ss')  ";
+        if (!StringUtils.isEmpty(startDate) && !StringUtils.isEmpty(endDate)) {
+            list.add( startDate );
+            s += " AND  CREATE_TIME BETWEEN to_date( ?"+list.size()+",'yyyy-MM-dd hh24:mi:ss') ";
+            list.add(endDate);
+            s+="  AND to_date( ?"+list.size()+",'yyyy-MM-dd hh24:mi:ss') ";
         }
         if (!StringUtils.isEmpty(warningType)) {
             list.add(warningType);
@@ -231,12 +250,12 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej,Monitorche
 
         Page<Map<String, Object>> pageResult = null;
         if("0".equals(deptId)){
-            String sql = "SELECT CREATE_TIME,TASK_NAME, TASK_ID,TASK_TYPE,USER_ID,DEPTID,WARNING_TYPE,CHECK_USER_ID,CHECK_DEPTID,CREATE_TIME_C FROM MONITOR_CHECK_YJ where STATUS=2 and trunc(CREATE_TIME) = trunc(sysdate) and TASK_TYPE="+type;
+            String sql = "SELECT CREATE_TIME_C as CREATE_TIME,TASK_NAME, TASK_ID,TASK_TYPE,USER_ID,DEPTID,WARNING_TYPE,CHECK_USER_ID,CHECK_DEPTID FROM MONITOR_CHECK_YJ where STATUS=2 and trunc(CREATE_TIME) = trunc(sysdate) and TASK_TYPE="+type;
             //查询所有
             String sql1 = "SELECT * FROM ( " +sql+" ) where 1=1 "+s;
             pageResult = execSqlPage(pageable, sql1,list.toArray());
         }else{
-            String sql = "SELECT CREATE_TIME,TASK_NAME, TASK_ID,TASK_TYPE,USER_ID,DEPTID,WARNING_TYPE,CHECK_USER_ID,CHECK_DEPTID,CREATE_TIME_C FROM MONITOR_CHECK_EJ where STATUS=2 and trunc(CREATE_TIME) = trunc(sysdate) and TASK_TYPE="+type;
+            String sql = "SELECT CREATE_TIME_C as CREATE_TIME,TASK_NAME, TASK_ID,TASK_TYPE,USER_ID,DEPTID,WARNING_TYPE,CHECK_USER_ID,CHECK_DEPTID FROM MONITOR_CHECK_EJ where STATUS=2 and trunc(CREATE_TIME) = trunc(sysdate) and TASK_TYPE="+type;
             //查询该deptId下的
             list.add(deptId);
             s+=" AND DEPTID = ?" + list.size();
@@ -369,5 +388,17 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej,Monitorche
             String key = "ONE+"+taskId+"+"+taskType+"+"+warningType+"+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
             redisService.delKey(key);
         }
+    }
+
+    //查询告警类型
+    public Object warningType(String taskType) {
+        String sql = "";
+        sql = "SELECT * FROM WARNING_TYPE WHERE TASK_TYPE=?1";
+        if(!StringUtils.isEmpty(taskType)&&"1".equals(taskType)){
+            return execSql(sql,1);
+        }else if(!StringUtils.isEmpty(taskType)&&"2".equals(taskType)){
+            return execSql(sql,2);
+        }
+        return "";
     }
 }

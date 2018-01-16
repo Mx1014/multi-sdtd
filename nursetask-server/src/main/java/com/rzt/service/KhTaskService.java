@@ -46,7 +46,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         String result = "k.id as id, k.task_name as taskName,k.tdyw_org as yworg,k.CREATE_TIME as createTime,k.plan_start_time as startTime,k.plan_end_time as endTime,k.status as status,u.realname as userName,d.DEPTNAME as class";
         List params = new ArrayList<>();
         StringBuffer buffer = new StringBuffer();
-        buffer.append(" where k.create_time between to_date(?,'YYYY-MM-DD hh24:mi') and to_date(?,'YYYY-MM-DD hh24:mi') ");
+        buffer.append(" where k.plan_start_time between to_date(?,'YYYY-MM-DD hh24:mi') and to_date(?,'YYYY-MM-DD hh24:mi') ");
         params.add(task.getPlanStartTime());
         params.add(task.getPlanEndTime());
         if (task.getTaskName() != null && !task.getTaskName().equals("")) {
@@ -115,15 +115,17 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         return this.reposiotry.getCount(id, userId);
     }
 
-
+    //可能需要修改外协单位
     public void updateTaskById(String userId, String id) {
+        Map<String, Object> map = new HashMap<>();
         try {
             String sql = "select c.id as id,c.companyname as name from rztsyscompany c left join rztsysuser u on u.companyid = c.id where u.id=?";
-
+             map = this.execSqlSingleResult(sql, userId);
         } catch (Exception e) {
             e.printStackTrace();
         }
         this.reposiotry.updateSiteById(userId, id);
+        this.reposiotry.updateTaskBySiteId(userId,id);
     }
 
 

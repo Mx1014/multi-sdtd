@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * 类名称：KHYHHISTORYController
@@ -66,10 +67,17 @@ public class KhYhHistoryController extends
 /* MultipartFile file */
 		return service.ImportYh();
 	}
+	@ApiOperation(value = "隐患导入接口",notes = "隐患导入接口")
+	@GetMapping("exportYhHistory")
+	public WebApiResponse exportYhHistory(HttpServletResponse response){
+/* MultipartFile file */
+		return service.exportYhHistory(response);
+	}
 
-	@GetMapping("xiugai")
-    public WebApiResponse xiugai(){
-	    return this.service.xiugai();
 
-    }
+	/*@GetMapping("exportKhHistory")
+    public WebApiResponse exportKhHistory(){
+	    return this.service.exportKhHistory();
+
+    }*/
 }

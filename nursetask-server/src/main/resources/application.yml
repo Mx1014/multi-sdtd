@@ -2,16 +2,12 @@ server:
   port: 7011
   context-path: /nurseTask/
 #log
-logging:
-  config: classpath:logback.xml
 spring:
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
     url: jdbc:oracle:thin:@47.94.131.120:1521:orcl
    # url: jdbc:oracle:thin:@47.94.131.120:1521:orcl
    # url: jdbc:mysql://168.130.1.31:30624/sdtd27?useUnicode=true&characterEncoding=utf8
-    #username: sdtd
-    #password: sdtd
     username: sdtd27
     password: sdtd27
     driver-class-name: oracle.jdbc.driver.OracleDriver
@@ -52,24 +48,9 @@ spring:
 eureka:
   client:
     service-url:
+#       defaultZone: http://168.130.1.31:7003/eureka/
     #  defaultZone: http://168.130.1.31:7003/eureka/
+    #  defaultZone: http://192.168.22.65:7002/eureka/
       defaultZone: http://localhost:7002/eureka/
-#      defaultZone: http://39.106.206.129:7002/eureka/
-
-#spring:
-#  profiles:
-#    active: prd
-#
-#    #
 
 
-#spring:
-#  datasource:
-#    type: com.alibaba.druid.pool.DruidDataSource
-#    url: jdbc:mysql://168.130.7.10:3306/sdtd2
-#    username: root
-#    password: root
-#    driver-class-name: com.mysql.jdbc.Driver
-#  jpa:
-#    database: mysql
-#    show-sql: true

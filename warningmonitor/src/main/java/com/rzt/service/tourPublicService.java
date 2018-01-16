@@ -29,13 +29,13 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
      * 巡视人员未到杆塔半径5米范围内
      */
     @Transactional(rollbackFor = Exception.class)
-    public WebApiResponse xsTourScope(Long taskid, String orgid, String userid) {
+    public WebApiResponse xsTourScope(Long taskid, String userid) {
         try {
-            String sql = "   SELECT TASK_NAME AS TASKNAME FROM XS_ZC_TASK WHERE ID=? ";
+            String sql = "   SELECT TASK_NAME AS TASKNAME,TD_ORG FROM XS_ZC_TASK WHERE ID=? ";
             Map<String, Object> map = this.execSqlSingleResult(sql, taskid);
             //往二级单位插数据
-            resp.saveCheckEj(new SnowflakeIdWorker(10, 12).nextId(),taskid,1,3,userid,orgid,map.get("TASKNAME").toString());
-            String key = "ONE+" + taskid + "+1+3+" + userid + "+" + orgid + "+" + map.get("TASKNAME").toString();
+            resp.saveCheckEj(new SnowflakeIdWorker(10, 12).nextId(),taskid,1,3,userid,map.get("TD_ORG").toString(),map.get("TASKNAME").toString());
+            String key = "ONE+" + taskid + "+1+3+" + userid + "+" + map.get("TD_ORG").toString() + "+" + map.get("TASKNAME").toString();
 
             redisService.setex(key);
             return WebApiResponse.success("");
@@ -166,18 +166,38 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
         }
     }
 
-    public void takePhoto(Long taskid, String orgid, String userid) {
+    //未按标准拍照
+    public void takePhoto(Long taskid, String userid) {
 
         try {
             Map<String, Object> map = null;
-            String sql = "   SELECT TASK_NAME AS TASKNAME FROM XS_ZC_TASK WHERE ID=? ";
+            String sql = "   SELECT TASK_NAME,TD_ORG AS TASKNAME FROM XS_ZC_TASK WHERE ID=? ";
             map = this.execSqlSingleResult(sql, taskid);
             //往二级单位插数据
-            resp.saveCheckEj(new SnowflakeIdWorker(10, 12).nextId(),taskid,1,5,userid,orgid,map.get("TASKNAME").toString());
-            String key = "ONE+" + taskid + "+1+5+" + userid + "+" + orgid + "+" + map.get("TASKNAME").toString();
+            resp.saveCheckEj(new SnowflakeIdWorker(10, 12).nextId(),taskid,1,5,userid,map.get("TD_ORG").toString(),map.get("TASKNAME").toString());
+            String key = "ONE+" + taskid + "+1+5+" + userid + "+" + map.get("TD_ORG").toString() + "+" + map.get("TASKNAME").toString();
             redisService.setex(key);
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    //删除键  巡视是1 看护是2
+    public void delKey(String userId, Long taskId, Integer taskType) {
+        String key = "";
+        if(1==taskType){
+            String sql = "SELECT TASK_NAME,TD_ORG FROM XS_ZC_TASK WHERE ID=?1";
+            List<Map<String, Object>> maps = execSql(sql, taskId);
+            if(maps.size()>0){
+                key = "TWO+"+taskId+"+"+taskType+"+4+"+userId+maps.get(0).get("TD_ORG").toString()+maps.get(0).get("TASK_NAME").toString();
+            }
+        }else if(2==taskType){
+            String sql = "SELECT TASK_NAME,TDYW_ORG FROM KH_TASK WHERE ID=?1";
+            List<Map<String, Object>> maps = execSql(sql, taskId);
+            if(maps.size()>0){
+                key = "TWO+"+taskId+"+"+taskType+"+10+"+userId+maps.get(0).get("TDYW_ORG").toString()+maps.get(0).get("TASK_NAME").toString();
+            }
+        }
+        redisService.delKey(key);
     }
 }

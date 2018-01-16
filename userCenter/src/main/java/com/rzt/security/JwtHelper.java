@@ -67,9 +67,9 @@ public class JwtHelper {
                 .setSigningKey(DatatypeConverter.parseBase64Binary("rzt82890758"))
                 .parseClaimsJws(jwt).getBody();
         Audience audience = new Audience();
-        if(claims!=null){
+        /*if(claims!=null){
             RztSysUser user = new RztSysUser();
-            user.setUsername(claims.get("userName").toString());
+            user.setUsername(claims.get("USERNAME").toString());
 //            user.setPassword(claims.get("password").toString());
             String[] roleIds = claims.get("roleIds").toString().split(",");
             List<RztSysRole> roleList = new ArrayList<RztSysRole>();
@@ -80,10 +80,16 @@ public class JwtHelper {
             }
             audience.setRoleList(roleList);
             audience.setUser(user);
-        }
+        }*/
 
         return audience;
     }
 
+    public static void main(String[] args) {
+        System.out.println(System.nanoTime());
+        String auth = "eyJ0eXBlIjoiSldUIiwiYWxnIjoiSFMyNTYifQ.eyJ1c2VyIjp7IldPUktUWVBFIjozLCJXT1JLWUVBUiI6MTIsIlJFQUxOQU1FIjoi6LW15YWtIiwiQ0VSVElGSUNBVEUiOiIxNDA0MzAxOTYwMDQyODI5MTEiLCJQSE9ORSI6IjE1MjE1NDY1NDc4IiwiVVNFUkRFTEVURSI6MSwiRU1BSUwiOiJ6aGFvbGl1QDE2My5jb20iLCJDTEFTU05BTUUiOiLmsZ_mtbfljZciLCJVU0VSVFlQRSI6MSwiVVNFUk5BTUUiOiJ6aGFvbGl1IiwiQ09NUEFOWU5BTUUiOiLkuqzlronpobrkv53lronlhazlj7giLCJERVBUIjoi5Liw5Y-w5YWs5Y-4IiwiQ09NUEFOWUlEIjoiMDIyZGFiNDhhZTMwNDQwZDlkMTExMjQ3YjhmYjNiZjMiLCJJRCI6IjQzMTE1MmE5MThmOTRmMDNiNDAyODZjOTU5YmI3ODQ0IiwiREVQVElEIjoiNDAyODgxZTY2MDNhNjliODAxNjAzYTcyNmQ2YTAwMTQiLCJST0xFSUQiOm51bGwsIkxPR0lOU1RBVFVTIjoxLCJBR0UiOjQyLCJDTEFTU0lEIjoiMjgwMjgxOWY2MDkxOWVjMDAxNjA5MmFlZTAxYTAwMDQifSwiZXhwIjoxNTE1MTg3NTExfQ.cPxBvBanJu8AZFzPK1Qf36dVQeloonF3vlV0UiVpb5Y";
+        parseJWT(auth);
+        System.out.println(System.nanoTime());
+    }
 
 }

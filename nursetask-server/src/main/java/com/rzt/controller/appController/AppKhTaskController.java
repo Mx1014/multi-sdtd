@@ -97,7 +97,7 @@ public class AppKhTaskController extends
 
     // 开始看护 →  交接班   现场环境照片保存
     // 问题：上报的危机信息保存到哪里 现场工况采集如何保存
-    @ApiOperation(value = "开始看护", notes = "收集现场环境照片、工况、危机信息  ")
+    @ApiOperation(value = "开始看护", notes = "返回队长标识以及队伍标识  ")
     @GetMapping("/appListCaptain.do")
     @ResponseBody
     public WebApiResponse appListCaptain(String taskId,String userId){

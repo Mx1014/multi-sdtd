@@ -8,6 +8,7 @@ package com.rzt.service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.RztSysUser;
+import com.rzt.eureka.StaffLine;
 import com.rzt.repository.RztSysUserRepository;
 import com.rzt.security.JwtHelper;
 import com.rzt.security.TokenProp;
@@ -46,6 +47,8 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
     private TokenProp tokenProp;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    StaffLine staffLine;
 
     public Page<RztSysUser> findByName(String name, Pageable pageable) {
         if (StringUtils.isEmpty(name))
@@ -61,13 +64,13 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
         JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", userId).toString());
         ArrayList<String> arrayList = new ArrayList<>();
         String s = "";
-        if (Integer.valueOf(jsonObject.get("ROLETYPE").toString()) == 1 || Integer.valueOf(jsonObject.get("ROLETYPE").toString()) == 2) {
+        if (Integer.parseInt(jsonObject.get("ROLETYPE").toString()) == 1 || Integer.parseInt(jsonObject.get("ROLETYPE").toString()) == 2) {
             arrayList.add(jsonObject.get("DEPTID").toString());
             s += " AND DEPTID = ?" + arrayList.size();
-        } else if (Integer.valueOf(jsonObject.get("ROLETYPE").toString()) == 3) {
+        } else if (Integer.parseInt(jsonObject.get("ROLETYPE").toString()) == 3) {
             arrayList.add(jsonObject.get("COMPANYID").toString());
             s += " AND COMPANYID = ?" + arrayList.size();
-        } else if (Integer.valueOf(jsonObject.get("ROLETYPE").toString()) == 4) {
+        } else if (Integer.parseInt(jsonObject.get("ROLETYPE").toString()) == 4) {
             arrayList.add(jsonObject.get("GROUPID").toString());
             s += " AND GROUPID=?" + arrayList.size();
         }
@@ -123,7 +126,7 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
     public WebApiResponse userQuertDeptZero(String userId) {
         HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
         JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", userId).toString());
-        if (Integer.valueOf(jsonObject.get("ROLETYPE").toString()) == 0) {
+        if (Integer.parseInt(jsonObject.get("ROLETYPE").toString()) == 0) {
             String sql = " SELECT * FROM RZTSYSDEPARTMENT WHERE ORGTYPE = 0 ";
             try {
                 return WebApiResponse.success(this.execSql(sql));
@@ -143,7 +146,7 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
     public WebApiResponse companyPage(String userId) {
         HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
         JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", userId).toString());
-        if (Integer.valueOf(jsonObject.get("ROLETYPE").toString()) == 0) {
+        if (Integer.parseInt(jsonObject.get("ROLETYPE").toString()) == 0) {
             String sql = " SELECT * FROM RZTSYSCOMPANY ";
             try {
                 return WebApiResponse.success(this.execSql(sql));

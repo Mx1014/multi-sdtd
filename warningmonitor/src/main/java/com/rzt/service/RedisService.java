@@ -3,6 +3,7 @@ package com.rzt.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -14,12 +15,13 @@ import redis.clients.jedis.JedisPool;
 public class RedisService {
     protected static Logger LOGGER = LoggerFactory.getLogger(RedisService.class);
     private static int faixTime = 20;
-
+    RedisTemplate<String,Object> redisTemplate;
 
     @Autowired
     JedisPool jedisPool;
 
     public void setex(String key){
+        //redisTemplate.
         Jedis jedis = jedisPool.getResource();
         jedis.select(1);
         try {

@@ -247,52 +247,66 @@ public class CMINSTALLController extends
      * @return
      */
     @GetMapping("notOnTime")
-    public Object notOnTime(Integer page, Integer size, String orgid) {
+    public Object notOnTime(Integer page, Integer size, String deptid) {
         Pageable pageable = new PageRequest(page, size);
         List list = new ArrayList();
         String s = "";
-        if (!StringUtils.isEmpty(orgid)) {
-            list.add(orgid);
+        if (!StringUtils.isEmpty(deptid)) {
+            list.add(deptid);
             s += " and d.id = ?" + list.size();
         }
-        String sql = "SELECT  " +
-                "  xs.TASK_NAME,  " +
-                "  r.PHONE,  " +
-                "  d.DEPTNAME,  " +
-                "  d2.DEPTNAME         classname,  " +
-                "  r.REALNAME,  " +
-                "  xs.plan_start_time,  " +
-                "  CASE xs.STAUTS  " +
-                "  WHEN 0  " +
-                "    THEN '待办'  " +
-                "  WHEN 1  " +
-                "    THEN '进行中'  " +
-                "  WHEN 2  " +
-                "    THEN '已完成' END AS STAUTS,  " +
-                "  xs.ID            AS taskid,  " +
-                "  r.ID             AS userid  " +
-                "FROM  " +
-                "  (SELECT  " +
-                "     ZC.ID,  " +
-                "     ZC.TASK_NAME,  " +
-                "     ZC.CM_USER_ID,  " +
-                "     ZC.plan_start_time,  " +
-                "     ZC.STAUTS  " +
-                "   FROM xs_zc_task ZC  " +
-                "   WHERE trunc(ZC.plan_start_time) = trunc(sysdate) AND ZC.plan_start_time < nvl(ZC.real_start_time, sysdate)  " +
-                "   UNION ALL  " +
-                "   SELECT  " +
-                "     TX.ID,  " +
-                "     TX.TASK_NAME,  " +
-                "     TX.CM_USER_ID,  " +
-                "     TX.plan_start_time,  " +
-                "     TX.STAUTS  " +
-                "   FROM xs_txbd_task TX  " +
-                "   WHERE trunc(TX.plan_start_time) = trunc(sysdate) AND TX.plan_start_time < nvl(TX.real_start_time, sysdate)) xs  " +
-                "  LEFT JOIN RZTSYSUSER r ON CM_USER_ID = r.ID  " +
-                "  LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = r.DEPTID  " +
-                "  LEFT JOIN RZTSYSDEPARTMENT d2 ON d2.ID = r.CLASSNAME  " +
-                "WHERE 1 = 1" + s;
+        String sql = "SELECT " +
+                "  xs.TASK_NAME, " +
+                "  r.PHONE, " +
+                "  d.DEPTNAME, " +
+                "  d2.DEPTNAME         classname, " +
+                "  r.REALNAME, " +
+                "  xs.plan_start_time, " +
+                "  CASE xs.STAUTS " +
+                "  WHEN 0 " +
+                "    THEN '待办' " +
+                "  WHEN 1 " +
+                "    THEN '进行中' " +
+                "  WHEN 2 " +
+                "    THEN '已完成' END AS STAUTS, " +
+                "  xs.ID            AS taskid, " +
+                "  r.ID             AS userid, " +
+                "  xs.worktype " +
+                "FROM " +
+                "  (SELECT " +
+                "     ZC.ID, " +
+                "     ZC.TASK_NAME, " +
+                "     ZC.CM_USER_ID, " +
+                "     ZC.plan_start_time, " +
+                "     ZC.STAUTS, " +
+                "     '巡视' AS worktype " +
+                "   FROM xs_zc_task ZC " +
+                "   WHERE trunc(ZC.plan_start_time) = trunc(sysdate) AND ZC.plan_start_time < nvl(ZC.real_start_time, sysdate) " +
+                "   UNION ALL " +
+                "   SELECT " +
+                "     TX.ID, " +
+                "     TX.TASK_NAME, " +
+                "     TX.CM_USER_ID, " +
+                "     TX.plan_start_time, " +
+                "     TX.STAUTS, " +
+                "     '巡视' AS worktype " +
+                "   FROM xs_txbd_task TX " +
+                "   WHERE trunc(TX.plan_start_time) = trunc(sysdate) AND TX.plan_start_time < nvl(TX.real_start_time, sysdate) " +
+                "   UNION ALL " +
+                "   SELECT " +
+                "     ID, " +
+                "     TASK_NAME, " +
+                "     USER_ID, " +
+                "     PLAN_START_TIME, " +
+                "     STATUS, " +
+                "     '看护' AS worktype " +
+                "   FROM KH_TASK " +
+                "   WHERE PLAN_START_TIME < nvl(REAL_START_TIME, sysdate) AND trunc(PLAN_START_TIME) = trunc(sysdate) " +
+                "  ) xs " +
+                "  LEFT JOIN RZTSYSUSER r ON CM_USER_ID = r.ID " +
+                "  LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = r.DEPTID " +
+                "  LEFT JOIN RZTSYSDEPARTMENT d2 ON d2.ID = r.CLASSNAME " +
+                " WHERE 1 = 1" + s + " ORDER BY PLAN_START_TIME DESC  ";
 
         try {
             return WebApiResponse.success(this.service.execSqlPage(pageable, sql, list.toArray()));
@@ -306,12 +320,12 @@ public class CMINSTALLController extends
      * 巡视不合格
      */
     @GetMapping("xsbhg")
-    public Object xsbhg(Integer page, Integer size, String orgid) {
+    public Object xsbhg(Integer page, Integer size, String deptid) {
         Pageable pageable = new PageRequest(page, size);
         List list = new ArrayList();
         String s = "";
-        if (!StringUtils.isEmpty(orgid)) {
-            list.add(orgid);
+        if (!StringUtils.isEmpty(deptid)) {
+            list.add(deptid);
             s += " AND p.ID=?" + list.size();
         }
         String sql = "SELECT " +
@@ -429,13 +443,13 @@ public class CMINSTALLController extends
 
 
     @GetMapping("tgry")
-    public WebApiResponse tgry(Integer page, Integer size, String orgid) {
+    public WebApiResponse tgry(Integer page, Integer size, String deptid) {
         Pageable pageable = new PageRequest(page, size);
         List list = new ArrayList();
         String s = "";
-        if (!StringUtils.isEmpty(orgid)) {
-            list.add(orgid);
-            s += " and dept=?" + list.size();
+        if (!StringUtils.isEmpty(deptid)) {
+            list.add(deptid);
+            s += " and dept.ID=?" + list.size();
         }
         String sql = " SELECT " +
                 "  wkh.CREATE_TIME AS CREATETIME, " +
@@ -464,12 +478,12 @@ public class CMINSTALLController extends
     }
 
     @GetMapping("touroverdue")
-    public WebApiResponse touroverdue(Integer page, Integer size, String orgid) {
+    public WebApiResponse touroverdue(Integer page, Integer size, String deptid) {
         Pageable pageable = new PageRequest(page, size);
         List list = new ArrayList();
         String s = "";
-        if (!StringUtils.isEmpty(orgid)) {
-            list.add(orgid);
+        if (!StringUtils.isEmpty(deptid)) {
+            list.add(deptid);
             s += " and d.id = ?" + list.size();
         }
         try {
@@ -488,7 +502,7 @@ public class CMINSTALLController extends
                     "    THEN '已完成' END AS STAUTS, " +
                     "  d.DEPTNAME , " +
                     "  dd.DEPTNAME as calssname, " +
-                    "  k.PLAN_START_TIME " +
+                    "  k.PLAN_START_TIME,'巡视' as worktype " +
                     "FROM (select ID,TASK_NAME,STAUTS,PLAN_START_TIME,CM_USER_ID,TD_ORG,CLASS_ID from  XS_ZC_TASK WHERE PLAN_END_TIME BETWEEN trunc( SYSDATE -1) AND trunc( SYSDATE ) AND STAUTS != 2 ) k LEFT JOIN  RZTSYSUSER u ON k.CM_USER_ID = u.ID " +
                     "  LEFT JOIN RZTSYSDEPARTMENT d ON k.TD_ORG = d.ID LEFT JOIN RZTSYSDEPARTMENT dd ON k.CLASS_ID=dd.ID where 1=1 " + s;
             return WebApiResponse.success(this.service.execSqlPage(pageable, sql, list.toArray()));

@@ -50,6 +50,7 @@ public class AlarmSituationPushService extends CurdService<websocket, websocketR
          * normalinspection 正常巡视当天未按时开始任务的
          */
         String normalinspection = "select count(id) from xs_zc_task where trunc(plan_start_time) = trunc(sysdate) and plan_start_time <nvl(real_start_time ,sysdate)";
+        String notKhstarttime = " SELECT count(*) FROM KH_TASK WHERE PLAN_START_TIME<nvl(REAL_START_TIME,sysdate) AND trunc(PLAN_START_TIME)=trunc(sysdate) ";
         /**
          * touroverdue 巡视超期
          */
@@ -62,7 +63,7 @@ public class AlarmSituationPushService extends CurdService<websocket, websocketR
         String xsbhg = " SELECT count(1) FROM XS_ZC_EXCEPTION WHERE trunc(CREATE_TIME) = trunc(sysdate) ";
         //遍历Map取出通道单位id用于数据库查询权限
         sendMsg.forEach((sessionId, session) -> {
-            String sql = "SELECT ((" + notstarttime + ")+(" + normalinspection + ")) as notstarttime,(" + touroverdue + ") as touroverdue,(" + xsbhg + ") as xsbhg,("+yhtg+") as yhtg  FROM DUAL";
+            String sql = "SELECT ((" + notstarttime + ")+(" + normalinspection + ")+(" + notKhstarttime + ")) as notstarttime,(" + touroverdue + ") as touroverdue,(" + xsbhg + ") as xsbhg,(" + yhtg + ") as yhtg  FROM DUAL";
             List<Map<String, Object>> execSql = this.execSql(sql);
             try {
                 alarmSituationServerEndpoint.sendText((Session) session.get("session"), execSql);
