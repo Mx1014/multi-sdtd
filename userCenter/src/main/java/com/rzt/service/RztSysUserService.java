@@ -8,7 +8,7 @@ package com.rzt.service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.RztSysUser;
-import com.rzt.eureka.StaffLine;
+//import com.rzt.eureka.StaffLine;
 import com.rzt.repository.RztSysUserRepository;
 import com.rzt.security.JwtHelper;
 import com.rzt.security.TokenProp;
@@ -48,8 +48,8 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
     private TokenProp tokenProp;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
-    @Autowired
-    StaffLine staffLine;
+//    @Autowired
+//    StaffLine staffLine;
 
     public Page<RztSysUser> findByName(String name, Pageable pageable) {
         if (StringUtils.isEmpty(name))
