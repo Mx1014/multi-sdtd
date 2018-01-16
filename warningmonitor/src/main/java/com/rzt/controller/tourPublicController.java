@@ -12,20 +12,44 @@ import org.springframework.web.bind.annotation.RestController;
 public class tourPublicController extends CurdController<Monitorcheckej, tourPublicService> {
 
     //未到杆塔半径5米内
-    @RequestMapping("xsTourScope")
-    public WebApiResponse xsTourScope(Long taskid, String orgid, String userid) {
-        return this.service.xsTourScope(taskid, orgid, userid);
+    @GetMapping("xsTourScope")
+    public WebApiResponse xsTourScope(Long taskid, String userid) {
+        return this.service.xsTourScope(taskid, userid);
     }
 
     //巡视未按标准速率拍照
-    @RequestMapping("takePhoto")
-    public void takePhoto(Long taskid, String orgid, String userid){
+    @GetMapping("takePhoto")
+    public void takePhoto(Long taskid, String userid){
         try {
-            service.takePhoto(taskid,orgid,userid);
+            service.takePhoto(taskid,userid);
         }catch (Exception e){
             e.getMessage();
         }
     }
+
+    /**
+     * 看护脱岗
+     * @param userId
+     * @param taskId
+     */
+    @GetMapping("khtg")
+    public void khtg(String userId,Long taskId){
+        try{
+            service.KHTG(userId,taskId);
+        }catch (Exception e){
+            e.getMessage();
+        }
+    }
+
+    @GetMapping("delKey")
+    public void delKey(String userId,Long taskId,Integer taskType){
+        try{
+            service.delKey(userId,taskId,taskType);
+        }catch (Exception e){
+            e.getMessage();
+        }
+    }
+
 
 
     //巡视下线

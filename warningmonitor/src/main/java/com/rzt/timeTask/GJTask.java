@@ -16,13 +16,15 @@ public class GJTask {
 
 
     //定时拉数据  1
-    //@Scheduled(cron = "0 30 0 * * ? ")
-    @Scheduled(fixedDelay = 30000000)
+    @Scheduled(cron = "0 30 0 * * ? ")
+    //@Scheduled(fixedDelay = 30000000)
     public void gjTask(){
-        System.out.println("00000000");
         khgj.inspectionMissionOverdue();// 巡视超期任务
         khgj.XSWJRW(); //未按时接任务
         khgj.XSWSX();  //人员未上线
+        khgj.KHWSX();  //看护未上线
+        khgj.KHWKH();  //未按时间接任务
+
     }
 
 
