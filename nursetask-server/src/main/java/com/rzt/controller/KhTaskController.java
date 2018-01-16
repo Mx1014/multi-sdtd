@@ -62,11 +62,11 @@ public class KhTaskController extends
 	 */
 	@GetMapping("/updateTaskById.do")
 	@ResponseBody
-	public WebApiResponse updateTaskById(String userId,String id){
+	public WebApiResponse updateTaskById(String khfzrId1,String id){
 	// 提交申请给 管理员  如何提交待定  还是说没有修改功能
 		try {
 			//分页参数 page size
- 				this.service.updateTaskById(userId,id);
+ 				this.service.updateTaskById(khfzrId1,id);
 			return WebApiResponse.success("修改成功");
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -93,9 +93,11 @@ public class KhTaskController extends
 
 	//任务查询页面的导出文件
 	@GetMapping("/exportKhTask.do")
-	public void exportKhTask(HttpServletRequest request, HttpServletResponse response){
+	public void exportKhTask(HttpServletRequest request, HttpServletResponse response,String userId){
 		try {
-			List<Map<String, Object>> taskList = this.service.findAlls();
+			HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
+			JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", userId).toString());
+			List<Map<String, Object>> taskList = this.service.findAlls(jsonObject,userId);
 			this.service.exportNursePlan(taskList,request,response);
 		}catch (Exception e){
 			e.printStackTrace();

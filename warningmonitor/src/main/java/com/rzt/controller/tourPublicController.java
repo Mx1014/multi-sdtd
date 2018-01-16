@@ -3,6 +3,7 @@ package com.rzt.controller;
 import com.rzt.entity.Monitorcheckej;
 import com.rzt.service.tourPublicService;
 import com.rzt.util.WebApiResponse;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,8 +27,9 @@ public class tourPublicController extends CurdController<Monitorcheckej, tourPub
         }
     }
 
+
     //巡视下线
-    @RequestMapping("KHXX")
+    @GetMapping("KHXX")
     public WebApiResponse KHXX(String userId,Integer taskType){
         try {
             this.service.KHXX(userId,taskType);
@@ -38,7 +40,7 @@ public class tourPublicController extends CurdController<Monitorcheckej, tourPub
     }
 
     //巡视上线
-    @RequestMapping("KHSX")
+    @GetMapping("KHSX")
     public WebApiResponse KHSX(String userId,Integer taskType){
         try {
             this.service.KHSX(userId,taskType);

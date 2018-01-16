@@ -39,4 +39,9 @@ public interface CheckLiveTaskRepository extends JpaRepository<CheckLiveTask,Str
  void updateWptsById(Long id, String str);
 
     CheckLiveTask findById(Long id);
+
+    @Modifying
+    @Query(value = "insert into CHECK_LIVE_SITE (id,TASK_ID,TASK_TYPE,CREATE_TIME,TASK_NAME,STATUS,line_id,TDYW_ORGID,TDWX_ORGID,yh_id) " +
+            " select id,id as taskid,0,sysdate,TASK_NAME,0,LINE_ID,TDYW_ORGID,WX_ORGID,YH_ID from KH_CYCLE",nativeQuery = true)
+    void generalKhSite();
 }

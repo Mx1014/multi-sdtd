@@ -6,13 +6,14 @@
  */
 package com.rzt.controller;
 
-import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.CMINSTALL;
 import com.rzt.service.CMINSTALLService;
 import com.rzt.util.WebApiResponse;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.StringUtils;
@@ -20,7 +21,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -84,6 +84,17 @@ public class CMINSTALLController extends
     private static ConcurrentHashMap<String, Integer> offLine_map = new ConcurrentHashMap<String, Integer>();
     private static ConcurrentHashMap<String, Integer> onLine_map = new ConcurrentHashMap<String, Integer>();
     private ConcurrentHashMap<String, Integer> map = new ConcurrentHashMap<String, Integer>();
+
+    @GetMapping("deptname")
+    public WebApiResponse deptname() {
+        String sql = " SELECT ID,DEPTNAME FROM RZTSYSDEPARTMENT WHERE DEPTSORT IS NOT NULL ";
+        try {
+            return WebApiResponse.success(this.service.execSql(sql));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("erro");
+        }
+    }
 
     @PostMapping("getCount")
     public Map<String, Integer> lineSize(String ID, Integer LOGINSTATUS, Integer WORKTYPE) {
@@ -172,30 +183,14 @@ public class CMINSTALLController extends
      * @return
      */
     @GetMapping("offLineUser")
-    public Object offLineUser() {
-
-//        String sql = "SELECT " +
-//                "  u.REALNAME, " +
-//                "  d.DEPTNAME, " +
-//                "  d2.DEPTNAME classname, " +
-//                "  u.PHONE, " +
-//                "  u.EMAIL, " +
-//                "CASE WORKTYPE " +
-//                "    WHEN 1 THEN '看护' " +
-//                "    WHEN 2 THEN '巡视' " +
-//                "    WHEN 3 THEN '现场稽查' " +
-//                "    WHEN 4 THEN '后台稽查' END  as WORKTYPE, " +
-//                "u.AGE " +
-//                "FROM RZTSYSUSER u LEFT JOIN RZTSYSDEPARTMENT d ON u.DEPTID = d.ID " +
-//                "  LEFT JOIN RZTSYSDEPARTMENT d2 ON u.CLASSNAME = d2.ID " +
-//                "WHERE LOGINSTATUS = 0 AND USERDELETE = 1  AND USERTYPE=0 ";
-//
-//        try {
-//            return WebApiResponse.success(this.service.execSql(sql));
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return WebApiResponse.erro("erro");
-//        }
+    public Object offLineUser(Integer page, Integer size, String deptid) {
+        Pageable pageable = new PageRequest(page, size);
+        List list = new ArrayList();
+        String s = "";
+        if (!StringUtils.isEmpty(deptid)) {
+            list.add(deptid);
+            s += " and id =?" + list.size();
+        }
         String sql = "SELECT " +
                 "  u.REALNAME, " +
                 "  d.DEPTNAME, " +
@@ -203,10 +198,11 @@ public class CMINSTALLController extends
                 "  u.PHONE, " +
                 "  u.EMAIL, " +
                 "  '巡视' AS     WORKTYPE, " +
-                "  u.AGE " +
+                "  u.AGE, " +
+                "  d.ID " +
                 "FROM (SELECT z.CM_USER_ID AS id " +
                 "      FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID " +
-                "      WHERE LOGINSTATUS = 0 AND USERDELETE = 1 AND trunc(z.PLAN_START_TIME) = trunc(sysdate) " +
+                "      WHERE LOGINSTATUS = 0 AND USERDELETE = 1 AND z.PLAN_START_TIME< = sysdate AND z.PLAN_END_TIME >= sysdate " +
                 "      GROUP BY z.CM_USER_ID) b LEFT JOIN RZTSYSUSER u ON b.id = u.ID " +
                 "  LEFT JOIN RZTSYSDEPARTMENT d ON u.DEPTID = d.ID " +
                 "  LEFT JOIN RZTSYSDEPARTMENT d2 ON u.CLASSNAME = d2.ID " +
@@ -218,10 +214,10 @@ public class CMINSTALLController extends
                 "  u.PHONE, " +
                 "  u.EMAIL, " +
                 "  '看护' AS     WORKTYPE, " +
-                "  u.AGE " +
+                "  u.AGE,d.id " +
                 "FROM (SELECT z.USER_ID AS id " +
                 "      FROM RZTSYSUSER r RIGHT JOIN KH_TASK z ON r.ID = z.USER_ID " +
-                "      WHERE LOGINSTATUS = 0 AND USERDELETE = 1 AND trunc(z.PLAN_START_TIME) = trunc(sysdate) " +
+                "      WHERE LOGINSTATUS = 0 AND USERDELETE = 1  AND z.PLAN_START_TIME< = sysdate AND z.PLAN_END_TIME >= sysdate " +
                 "      GROUP BY z.USER_ID) b LEFT JOIN RZTSYSUSER u ON b.id = u.ID " +
                 "  LEFT JOIN RZTSYSDEPARTMENT d ON u.DEPTID = d.ID " +
                 "  LEFT JOIN RZTSYSDEPARTMENT d2 ON u.CLASSNAME = d2.ID " +
@@ -233,16 +229,16 @@ public class CMINSTALLController extends
                 "  u.PHONE, " +
                 "  u.EMAIL, " +
                 "  '稽查' AS     WORKTYPE, " +
-                "  u.AGE " +
+                "  u.AGE,d.id " +
                 "FROM (SELECT z.USER_ID AS id " +
                 "      FROM RZTSYSUSER r RIGHT JOIN CHECK_LIVE_TASK z ON r.ID = z.USER_ID " +
-                "      WHERE LOGINSTATUS = 0 AND USERDELETE = 1 AND trunc(z.PLAN_START_TIME) = trunc(sysdate) " +
+                "      WHERE LOGINSTATUS = 0 AND USERDELETE = 1 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= sysdate " +
                 "      GROUP BY z.USER_ID) b LEFT JOIN RZTSYSUSER u ON b.id = u.ID " +
                 "  LEFT JOIN RZTSYSDEPARTMENT d ON u.DEPTID = d.ID " +
                 "  LEFT JOIN RZTSYSDEPARTMENT d2 ON u.CLASSNAME = d2.ID " +
                 "WHERE LOGINSTATUS = 0 AND USERDELETE = 1 ";
-        String sqlall = sql + "  union all " + sql1 + " union all " + sql2;
-        return WebApiResponse.success(this.service.execSql(sqlall));
+        String sqlall = " select * from ( " + sql + "  union all " + sql1 + " union all " + sql2 + ") where 1=1" + s;
+        return WebApiResponse.success(this.service.execSqlPage(pageable, sqlall, list.toArray()));
     }
 
     /**
@@ -251,34 +247,55 @@ public class CMINSTALLController extends
      * @return
      */
     @GetMapping("notOnTime")
-    public Object notOnTime() {
-
-        String sql = "SELECT " +
-                "  xs.TASK_NAME, " +
-                "  r.PHONE, " +
-                "  d.DEPTNAME, " +
-                "  d2.DEPTNAME classname, " +
-                "  r.REALNAME,r.EMAIL,CASE r.LOGINSTATUS WHEN 1 THEN '在线' WHEN 0 THEN '离线' END  AS LOGINSTATUS " +
-                "FROM " +
-                "  (SELECT " +
-                "     ZC.ID, " +
-                "     ZC.TASK_NAME, " +
-                "     ZC.CM_USER_ID " +
-                "   FROM xs_zc_task ZC " +
-                "   WHERE trunc(ZC.plan_start_time) = trunc(sysdate) AND ZC.plan_start_time < nvl(ZC.real_start_time, sysdate) " +
-                "   UNION ALL " +
-                "   SELECT " +
-                "     TX.ID, " +
-                "     TX.TASK_NAME, " +
-                "     TX.CM_USER_ID " +
-                "   FROM xs_txbd_task TX " +
-                "   WHERE trunc(TX.plan_start_time) = trunc(sysdate) AND TX.plan_start_time < nvl(TX.real_start_time, sysdate)) xs " +
-                "  LEFT JOIN RZTSYSUSER r ON CM_USER_ID = r.ID " +
-                "  LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = r.DEPTID " +
-                "  LEFT JOIN RZTSYSDEPARTMENT d2 ON d2.ID = r.CLASSNAME";
+    public Object notOnTime(Integer page, Integer size, String orgid) {
+        Pageable pageable = new PageRequest(page, size);
+        List list = new ArrayList();
+        String s = "";
+        if (!StringUtils.isEmpty(orgid)) {
+            list.add(orgid);
+            s += " and d.id = ?" + list.size();
+        }
+        String sql = "SELECT  " +
+                "  xs.TASK_NAME,  " +
+                "  r.PHONE,  " +
+                "  d.DEPTNAME,  " +
+                "  d2.DEPTNAME         classname,  " +
+                "  r.REALNAME,  " +
+                "  xs.plan_start_time,  " +
+                "  CASE xs.STAUTS  " +
+                "  WHEN 0  " +
+                "    THEN '待办'  " +
+                "  WHEN 1  " +
+                "    THEN '进行中'  " +
+                "  WHEN 2  " +
+                "    THEN '已完成' END AS STAUTS,  " +
+                "  xs.ID            AS taskid,  " +
+                "  r.ID             AS userid  " +
+                "FROM  " +
+                "  (SELECT  " +
+                "     ZC.ID,  " +
+                "     ZC.TASK_NAME,  " +
+                "     ZC.CM_USER_ID,  " +
+                "     ZC.plan_start_time,  " +
+                "     ZC.STAUTS  " +
+                "   FROM xs_zc_task ZC  " +
+                "   WHERE trunc(ZC.plan_start_time) = trunc(sysdate) AND ZC.plan_start_time < nvl(ZC.real_start_time, sysdate)  " +
+                "   UNION ALL  " +
+                "   SELECT  " +
+                "     TX.ID,  " +
+                "     TX.TASK_NAME,  " +
+                "     TX.CM_USER_ID,  " +
+                "     TX.plan_start_time,  " +
+                "     TX.STAUTS  " +
+                "   FROM xs_txbd_task TX  " +
+                "   WHERE trunc(TX.plan_start_time) = trunc(sysdate) AND TX.plan_start_time < nvl(TX.real_start_time, sysdate)) xs  " +
+                "  LEFT JOIN RZTSYSUSER r ON CM_USER_ID = r.ID  " +
+                "  LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = r.DEPTID  " +
+                "  LEFT JOIN RZTSYSDEPARTMENT d2 ON d2.ID = r.CLASSNAME  " +
+                "WHERE 1 = 1" + s;
 
         try {
-            return WebApiResponse.success(this.service.execSql(sql));
+            return WebApiResponse.success(this.service.execSqlPage(pageable, sql, list.toArray()));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("erro");
@@ -289,31 +306,37 @@ public class CMINSTALLController extends
      * 巡视不合格
      */
     @GetMapping("xsbhg")
-    public Object xsbhg() {
+    public Object xsbhg(Integer page, Integer size, String orgid) {
+        Pageable pageable = new PageRequest(page, size);
+        List list = new ArrayList();
+        String s = "";
+        if (!StringUtils.isEmpty(orgid)) {
+            list.add(orgid);
+            s += " AND p.ID=?" + list.size();
+        }
         String sql = "SELECT " +
-                "  a.TASK_NAME, " +
-                "  nvl(a.REASON, '未填写原因') AS REASON, " +
-                "  u.REALNAME, " +
-                "  r.DEPTNAME, " +
-                "  tt.DEPTNAME            AS classname, " +
-                "  u.PHONE, " +
-                "  CASE u.LOGINSTATUS " +
-                "  WHEN 1 " +
-                "    THEN '在线' " +
+                "  xx.ID            AS taskid, " +
+                "  r.ID             AS userid, " +
+                "  x.YCMS, " +
+                "  xx.TASK_NAME, " +
+                "  xx.PLAN_START_TIME, " +
+                "  r.REALNAME, " +
+                "  r.PHONE, " +
+                "  p.DEPTNAME, " +
+                "  pp.DEPTNAME      AS classnameCASE, " +
+                "  CASE xx.STAUTS " +
                 "  WHEN 0 " +
-                "    THEN '离线' END        AS LOGINSTATUS " +
-                "FROM (SELECT " +
-                "        ta.ID, " +
-                "        z.REASON, " +
-                "        ta.TASK_NAME, " +
-                "        ta.CM_USER_ID " +
-                "      FROM XS_ZC_TASK_EXEC_DETAIL z LEFT JOIN XS_ZC_TASK_EXEC e ON z.XS_ZC_TASK_EXEC_ID = e.ID " +
-                "        LEFT JOIN XS_ZC_TASK ta ON ta.ID = e.XS_ZC_TASK_ID " +
-                "      WHERE z.IS_DW = 1) a LEFT JOIN RZTSYSUSER u ON u.ID = a.CM_USER_ID " +
-                "  LEFT JOIN RZTSYSDEPARTMENT r ON r.ID = u.DEPTID " +
-                "  LEFT JOIN RZTSYSDEPARTMENT tt ON tt.ID = u.CLASSNAME";
+                "    THEN '待办' " +
+                "  WHEN 1 " +
+                "    THEN '进行中' " +
+                "  WHEN 2 " +
+                "    THEN '已完成' END AS STAUTS " +
+                "FROM (SELECT YCMS,TASK_ID FROM XS_ZC_EXCEPTION WHERE trunc(CREATE_TIME) = trunc(sysdate)) x LEFT JOIN XS_ZC_TASK xx ON x.TASK_ID = xx.ID " +
+                "  LEFT JOIN RZTSYSUSER r ON r.ID = xx.CM_USER_ID " +
+                "  LEFT JOIN RZTSYSDEPARTMENT p ON p.ID = xx.TD_ORG " +
+                "  LEFT JOIN RZTSYSDEPARTMENT pp ON pp.ID = xx.CLASS_ID WHERE 1=1 " + s;
         try {
-            return WebApiResponse.success(this.service.execSql(sql));
+            return WebApiResponse.success(this.service.execSqlPage(pageable, sql, list.toArray()));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("erro");
@@ -362,11 +385,11 @@ public class CMINSTALLController extends
         HashOperations hashOperations = redisTemplate.opsForHash();
         String xsUser = " SELECT z.CM_USER_ID AS USERID " +
                 "      FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID " +
-                "      WHERE LOGINSTATUS = ?1 AND USERDELETE = 1 AND trunc(z.PLAN_START_TIME) = trunc(sysdate) " +
+                "      WHERE LOGINSTATUS = ?1 AND USERDELETE = 1 AND z.PLAN_START_TIME< = sysdate AND z.PLAN_END_TIME >= sysdate " +
                 "      GROUP BY z.CM_USER_ID ";
         String khUser = " SELECT z.USER_ID AS USERID " +
                 "FROM RZTSYSUSER r RIGHT JOIN KH_TASK z ON r.ID = z.USER_ID " +
-                "WHERE LOGINSTATUS = ?1 AND USERDELETE = 1 AND trunc(z.PLAN_START_TIME) = trunc(sysdate) " +
+                "WHERE LOGINSTATUS = ?1 AND USERDELETE = 1 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= sysdate " +
                 "GROUP BY z.USER_ID ";
         String JCUSER = " SELECT z.USER_ID AS USERID " +
                 "      FROM RZTSYSUSER r RIGHT JOIN CHECK_LIVE_TASK z ON r.ID = z.USER_ID " +
@@ -406,15 +429,34 @@ public class CMINSTALLController extends
 
 
     @GetMapping("tgry")
-    public WebApiResponse tgry() {
-        String sql = " SELECT wkh.CREATE_TIME as CREATETIME, " +
-                "  wkh.TASK_NAME,us.REALNAME,com.COMPANYNAME,us.PHONE,dept.DEPTNAME  FROM   " +
-                "  (SELECT wop.CREATE_TIME,kh.TASK_NAME,kh.USER_ID FROM WARNING_OFF_POST_USER wop   " +
-                "  LEFT JOIN KH_TASK kh ON wop.TASK_ID = kh.ID " +
-                " WHERE wop.STATUS = 1 AND trunc (kh.CREATE_TIME) = trunc(sysdate))wkh " +
-                " LEFT JOIN RZTSYSUSER us ON wkh.USER_ID = us.ID " + "LEFT JOIN RZTSYSCOMPANY com ON us.CLASSNAME = com.ID LEFT JOIN  RZTSYSDEPARTMENT dept ON dept.DEPTPID = us.DEPTID ";
+    public WebApiResponse tgry(Integer page, Integer size, String orgid) {
+        Pageable pageable = new PageRequest(page, size);
+        List list = new ArrayList();
+        String s = "";
+        if (!StringUtils.isEmpty(orgid)) {
+            list.add(orgid);
+            s += " and dept=?" + list.size();
+        }
+        String sql = " SELECT " +
+                "  wkh.CREATE_TIME AS CREATETIME, " +
+                "  wkh.TASK_NAME, " +
+                "  us.REALNAME, " +
+                "  us.PHONE, " +
+                "  dept.DEPTNAME, " +
+                "  depts.DEPTNAME as classname " +
+                "FROM " +
+                "  (SELECT " +
+                "     wop.CREATE_TIME, " +
+                "     kh.TASK_NAME, " +
+                "     kh.USER_ID " +
+                "   FROM WARNING_OFF_POST_USER wop " +
+                "     LEFT JOIN KH_TASK kh ON wop.TASK_ID = kh.ID " +
+                "   WHERE wop.STATUS = 1 AND trunc(kh.CREATE_TIME) = trunc(sysdate)) wkh " +
+                "  LEFT JOIN RZTSYSUSER us ON wkh.USER_ID = us.ID " +
+                "  LEFT JOIN RZTSYSDEPARTMENT dept ON dept.ID = us.DEPTID " +
+                "  LEFT JOIN RZTSYSDEPARTMENT depts ON depts.ID = us.CLASSNAME WHERE 1=1 " + s;
         try {
-            return WebApiResponse.success(this.service.execSql(sql));
+            return WebApiResponse.success(this.service.execSqlPage(pageable, sql, list.toArray()));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("erro");
@@ -422,19 +464,34 @@ public class CMINSTALLController extends
     }
 
     @GetMapping("touroverdue")
-    public WebApiResponse touroverdue() {
+    public WebApiResponse touroverdue(Integer page, Integer size, String orgid) {
+        Pageable pageable = new PageRequest(page, size);
+        List list = new ArrayList();
+        String s = "";
+        if (!StringUtils.isEmpty(orgid)) {
+            list.add(orgid);
+            s += " and d.id = ?" + list.size();
+        }
         try {
             String sql = " SELECT " +
+                    "  k.ID as taskid, " +
+                    "  u.ID as userid, " +
                     "  k.TASK_NAME, " +
                     "  u.REALNAME, " +
-                    "  u.DEPT, " +
-                    "  k.PLAN_START_TIME  as STARTTIME, " +
                     "  u.PHONE, " +
-                    "  CASE u.LOGINSTATUS WHEN 1 THEN '在线' WHEN 0 THEN '离线' END as LOGINSTATUS " +
-                    "FROM XS_ZC_TASK k LEFT JOIN USERINFO u ON u.ID = k.CM_USER_ID " +
-                    "WHERE trunc(k.PLAN_END_TIME) = trunc(sysdate - 1) AND k.REAL_END_TIME IS NULL ";
-            List<Map<String, Object>> list = this.service.execSql(sql);
-            return WebApiResponse.success(list);
+                    "  CASE k.STAUTS " +
+                    "  WHEN 0 " +
+                    "    THEN '待办' " +
+                    "  WHEN 1 " +
+                    "    THEN '进行中' " +
+                    "  WHEN 2 " +
+                    "    THEN '已完成' END AS STAUTS, " +
+                    "  d.DEPTNAME , " +
+                    "  dd.DEPTNAME as calssname, " +
+                    "  k.PLAN_START_TIME " +
+                    "FROM (select ID,TASK_NAME,STAUTS,PLAN_START_TIME,CM_USER_ID,TD_ORG,CLASS_ID from  XS_ZC_TASK WHERE PLAN_END_TIME BETWEEN trunc( SYSDATE -1) AND trunc( SYSDATE ) AND STAUTS != 2 ) k LEFT JOIN  RZTSYSUSER u ON k.CM_USER_ID = u.ID " +
+                    "  LEFT JOIN RZTSYSDEPARTMENT d ON k.TD_ORG = d.ID LEFT JOIN RZTSYSDEPARTMENT dd ON k.CLASS_ID=dd.ID where 1=1 " + s;
+            return WebApiResponse.success(this.service.execSqlPage(pageable, sql, list.toArray()));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -479,4 +536,48 @@ public class CMINSTALLController extends
             return WebApiResponse.erro("erro");
         }
     }
+
+    @GetMapping("tasksprinkledpoint")
+    public WebApiResponse tasksprinkledpoint(String status) {
+        try {
+            String xsSql = " SELECT count(1) as xs,TD_ORG FROM XS_ZC_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STAUTS = ?1  GROUP BY TD_ORG";
+            String khSql = "   SELECT count(1) as KH,k.TDYW_ORG FROM KH_TASK k WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STATUS = ?1  GROUP BY k.TDYW_ORG ";
+            String deptnameSql = " SELECT t.ID,t.DEPTNAME FROM RZTSYSDEPARTMENT t WHERE t.DEPTSORT IS NOT NULL ORDER BY t.DEPTSORT ";
+            final List<Map<String, Object>> xs = this.service.execSql(xsSql, status);
+            List<Map<String, Object>> kh = this.service.execSql(khSql, status);
+            List<Map<String, Object>> deptname = this.service.execSql(deptnameSql);
+            Map xsMap = new HashMap();
+            Map khMap = new HashMap();
+            for (Map<String, Object> singleXs : xs) {
+                xsMap.put(singleXs.get("TD_ORG"), singleXs.get("XS"));
+            }
+            for (Map<String, Object> singleKh : kh) {
+                khMap.put(singleKh.get("TDYW_ORG"), singleKh.get("KH"));
+            }
+            for (Map<String, Object> dept : deptname) {
+                dept.put("xsNum", xsMap.get(dept.get("ID")));
+                dept.put("khNum", khMap.get(dept.get("DEPTNAME")));
+            }
+            return WebApiResponse.success(deptname);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("erro");
+        }
+    }
+//
+//    @GetMapping("flushUserInformationRedis")
+//    public Object flushUserInfoRedis() {
+//        try {
+//            HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
+//            String sql = " SELECT * from USERINFO ";
+//            List<Map<String, Object>> maps = this.service.execSql(sql);
+//            for (Map<String, Object> map : maps) {
+//                String id = map.get("ID").toString();
+//                hashOperations.put("UserInformation", id, map);
+//            }
+//            return WebApiResponse.success("成功了");
+//        } catch (Exception e) {
+//            return WebApiResponse.erro("数据查询失败" + e.getMessage());
+//        }
+//    }
 }

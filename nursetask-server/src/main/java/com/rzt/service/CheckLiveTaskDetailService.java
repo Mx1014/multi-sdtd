@@ -6,13 +6,13 @@
  */
 package com.rzt.service;
 import com.rzt.entity.CheckLiveTaskDetail;
-import com.rzt.entity.CheckLiveTaskDetailXs;
 import com.rzt.repository.CheckLiveTaskDetailRepository;
 import com.rzt.repository.CheckLiveTaskDetailXsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,13 +69,13 @@ public class CheckLiveTaskDetailService extends CurdService<CheckLiveTaskDetail,
     }
 
     @Transactional
-    public Object checkQuestionUpdate(CheckLiveTaskDetail checkLiveTaskDetail, CheckLiveTaskDetailXs checkLiveTaskDetailXs, String taskType) {
+    public Object checkQuestionUpdate(String detailId, String dydj, String yhxx, String czfa, String qtwt, String taskType) {
         Object obj = new Object();
         //0看护 1巡视 0待稽查 1已稽查
         if("0,0".equals(taskType)){
-            obj = reposiotry.save(checkLiveTaskDetail);
+            reposiotry.checkQuestionUpdate( detailId, dydj, yhxx, czfa, qtwt);
         }else if ("1,0".equals(taskType)){
-            obj = checkLiveTaskDetailXsRepository.save(checkLiveTaskDetailXs);
+            reposiotry.checkQuestionUpdateXs( detailId, dydj, yhxx, czfa, qtwt);
         }
         return obj;
     }
@@ -90,4 +90,18 @@ public class CheckLiveTaskDetailService extends CurdService<CheckLiveTaskDetail,
         }
         return obj;
     }
+
+    @Transactional
+    public void checkDgdwUpdate(String id, String sfzg, String ryyz, String dzwl,String yhId, String lon, String lat, String radius, String taskType) {
+        //0看护 1巡视 0待稽查 1已稽查
+        if("0,0".equals(taskType)){
+            reposiotry.checkDgdwUpdate(Long.valueOf(id),sfzg,ryyz,dzwl);
+            if(!StringUtils.isEmpty(radius)&& !StringUtils.isEmpty(lon)){
+                reposiotry.updateDzwl(yhId,lon,lat,radius);
+            }
+        }else if ("1,0".equals(taskType)){
+            reposiotry.checkDgdwUpdateXs(Long.valueOf(id),sfzg,ryyz,dzwl);
+        }
+    }
+
 }

@@ -51,28 +51,28 @@ public class PersonnelTasksPushService extends CurdService<websocket, websocketR
         String xsZxUser = " SELECT count(1) " +
                 "FROM (SELECT z.CM_USER_ID " +
                 "      FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID " +
-                "      WHERE LOGINSTATUS = 1 AND USERDELETE = 1 AND trunc(z.PLAN_START_TIME) = trunc(sysdate) " +
+                "      WHERE LOGINSTATUS = 1 AND USERDELETE = 1 AND z.PLAN_START_TIME< = sysdate AND z.PLAN_END_TIME >= sysdate " +
                 "      GROUP BY z.CM_USER_ID) ";
         /**
          * 巡视离线人员
          */
         String xsLxUser = " SELECT count(1) FROM (SELECT z.CM_USER_ID " +
                 "  FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID " +
-                "  WHERE LOGINSTATUS = 0 AND USERDELETE = 1 AND trunc(z.PLAN_START_TIME) = trunc(sysdate) " +
+                "  WHERE LOGINSTATUS = 0 AND USERDELETE = 1  AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= sysdate " +
                 "  GROUP BY z.CM_USER_ID) ";
         /**
          * 看护在线人员
          */
         String khZxUser = " SELECT count(1)FROM (SELECT count(u.ID) " +
                 "FROM RZTSYSUSER u LEFT JOIN KH_TASK k ON u.ID = k.USER_ID " +
-                "WHERE LOGINSTATUS = 1 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND trunc(PLAN_START_TIME)=trunc(sysdate) " +
+                "WHERE LOGINSTATUS = 1 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= sysdate " +
                 "GROUP BY k.USER_ID) ";
         /**
          * 看护离线人员
          */
         String khLxUser = " SELECT count(1)FROM (SELECT count(u.ID) " +
                 "FROM RZTSYSUSER u LEFT JOIN KH_TASK k ON u.ID = k.USER_ID " +
-                "WHERE LOGINSTATUS = 0 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND trunc(PLAN_START_TIME)=trunc(sysdate) " +
+                "WHERE LOGINSTATUS = 0 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= sysdate " +
                 "GROUP BY k.USER_ID) ";
 
         /**
@@ -93,11 +93,11 @@ public class PersonnelTasksPushService extends CurdService<websocket, websocketR
         /**
          * 后台稽查在线人员
          */
-//        String hjcZxUser = " SELECT count(id)  FROM RZTSYSUSER WHERE LOGINSTATUS = 1 AND WORKTYPE = 4 AND USERDELETE = 1  AND USERTYPE=0 ";
+        String hjcZxUser = " SELECT count(id)  FROM RZTSYSUSER WHERE LOGINSTATUS = 1 AND WORKTYPE = 4 AND USERDELETE = 1  AND USERTYPE=0 ";
         /**
          * 后台稽查离线人员
          */
-//        String hjcLxUser = " SELECT count(id)  FROM RZTSYSUSER WHERE LOGINSTATUS = 0 AND WORKTYPE = 4 AND USERDELETE = 1  AND USERTYPE=0 ";
+        String hjcLxUser = " SELECT count(id)  FROM RZTSYSUSER WHERE LOGINSTATUS = 0 AND WORKTYPE = 4 AND USERDELETE = 1  AND USERTYPE=0 ";
 
 
         /**
@@ -208,8 +208,8 @@ public class PersonnelTasksPushService extends CurdService<websocket, websocketR
                     "(" + xcJcYwc + ") as xcJcYwc," +
                     "(" + qjcZxUser + ") as qjcZxUser," +
                     "(" + qjcLxUser + ") as qjcLxUser," +
-//                    "(" + hjcZxUser + ") as hjcZxUser," +
-//                    "(" + hjcLxUser + ") as hjcLxUser, " +
+                    "(" + hjcZxUser + ") as hjcZxUser," +
+                    "(" + hjcLxUser + ") as hjcLxUser, " +
                     "(" + handlesql + ") as handlesql," +
                     "(" + addedsql + ") as addedsql," +
                     "(" + updateSql + ") as updateSql," +
@@ -219,63 +219,3 @@ public class PersonnelTasksPushService extends CurdService<websocket, websocketR
         });
     }
 }
-//            try {
-//                List<Map<String, Object>> list = new ArrayList();
-//                Map map = new HashMap();
-//                Map<String, Object> stringObjectMap = execSqlSingleResult(zxUser);
-//                map.put("ZXUSER", stringObjectMap.get("COUNT"));
-//                Map<String, Object> stringObjectMap1 = execSqlSingleResult(lxUser);
-//                map.put("LXUSER", stringObjectMap1.get("COUNT"));
-//                Map<String, Object> stringObjectMap2 = execSqlSingleResult(xsZxUser);
-//                map.put("XSZXUSER", stringObjectMap2.get("COUNT"));
-//                Map<String, Object> stringObjectMap3 = execSqlSingleResult(xsLxUser);
-//                map.put("XSLXUSER", stringObjectMap3.get("COUNT"));
-//                Map<String, Object> stringObjectMap4 = execSqlSingleResult(khZxUser);
-//                map.put("KHZXUSER", stringObjectMap4.get("COUNT"));
-//                Map<String, Object> stringObjectMap5 = execSqlSingleResult(khLxUser);
-//                map.put("KHLXUSER", stringObjectMap5.get("COUNT"));
-//                Map<String, Object> stringObjectMap6 = execSqlSingleResult(zcXsWks);
-//                map.put("ZCXSWKS", stringObjectMap6.get("COUNT"));
-//                Map<String, Object> stringObjectMap7 = execSqlSingleResult(bdXsWks);
-//                map.put("XSWKS", Integer.valueOf(String.valueOf(stringObjectMap6)) + Integer.valueOf(String.valueOf(stringObjectMap7)));
-//                Map<String, Object> stringObjectMap8 = execSqlSingleResult(zcXsJxz);
-//                Map<String, Object> stringObjectMap9 = execSqlSingleResult(bdXsJxz);
-//                map.put("XSJXZ", Integer.valueOf(String.valueOf(stringObjectMap8)) + Integer.valueOf(String.valueOf(stringObjectMap9)));
-//                Map<String, Object> stringObjectMap10 = execSqlSingleResult(zcXsYwc);
-//                Map<String, Object> stringObjectMap11 = execSqlSingleResult(bdXsYwc);
-//                map.put("XSYWC", Integer.valueOf(String.valueOf(stringObjectMap10)) + Integer.valueOf(String.valueOf(stringObjectMap11)));
-//                Map<String, Object> stringObjectMap12 = execSqlSingleResult(khJxz);
-//                map.put("KHJXZ", stringObjectMap12);
-//                Map<String, Object> stringObjectMap13 = execSqlSingleResult(khWks);
-//                map.put("KHWKS", stringObjectMap13);
-//                Map<String, Object> stringObjectMap14 = execSqlSingleResult(khYwc);
-//                map.put("KHYWC", stringObjectMap14);
-//                Map<String, Object> stringObjectMap15 = execSqlSingleResult(xcJcJxz);
-//                map.put("XCJCJXZ", stringObjectMap15);
-//                Map<String, Object> stringObjectMap16 = execSqlSingleResult(xcJcWks);
-//                map.put("XCJCWKS", stringObjectMap16);
-//                Map<String, Object> stringObjectMap17 = execSqlSingleResult(xcJcYwc);
-//                map.put("XCJCYWC", stringObjectMap17);
-//                Map<String, Object> stringObjectMap18 = execSqlSingleResult(qjcZxUser);
-//                map.put("QJCZXUSER", stringObjectMap18);
-//                Map<String, Object> stringObjectMap19 = execSqlSingleResult(qjcLxUser);
-//                map.put("QJCLXUSER", stringObjectMap19);
-//                Map<String, Object> stringObjectMap20 = execSqlSingleResult(hjcZxUser);
-//                map.put("HJCZXUSER", stringObjectMap20);
-//                Map<String, Object> stringObjectMap21 = execSqlSingleResult(hjcLxUser);
-//                map.put("HJCLXUSER", stringObjectMap21);
-//                Map<String, Object> stringObjectMap22 = execSqlSingleResult(handlesql);
-//                map.put("HANDLESQL", stringObjectMap22);
-//                Map<String, Object> stringObjectMap23 = execSqlSingleResult(updateSql);
-//                map.put("UPDATESQL", stringObjectMap23);
-//                Map<String, Object> stringObjectMap24 = execSqlSingleResult(addedsql);
-//                map.put("ADDEDSQL", stringObjectMap24);
-//                Map<String, Object> stringObjectMap25 = execSqlSingleResult(allSql);
-//                map.put("ALLSQL", stringObjectMap25);
-//
-//            } catch (Exception e) {
-//                LOGGER.error("Error: The user closes the browser , Session Does Not Exist", e);
-//            }
-//        });
-//    }
-//}
