@@ -105,7 +105,7 @@ public class KhYhHistory implements Serializable {
     //字段描述: 管控措施
     @Column(name = "GKCS")
     private String gkcs;
-        //字段描述: 维护单位（通道单位）
+    //字段描述: 维护单位（通道单位）
     @Column(name = "TDYW_ORG")
     private String tdywOrg;
     //字段描述: 通道外协单位
@@ -132,13 +132,13 @@ public class KhYhHistory implements Serializable {
     //字段描述: 更新时间
     @Column(name = "UPDATE_TIME")
     private Date updateTime;
-    //字段描述: 导线对隐患净空距离
+    //字段描述: 导线对隐患水平距离
     @Column(name = "DXDYHSPJL")
     private String dxdyhspjl;
-    //字段描述: 导线对隐患水平距离
+    //字段描述: 导线对隐患垂直距离
     @Column(name = "DXXYHCZJL")
     private String dxxyhczjl;
-    //字段描述: 导线对隐患垂直距离
+    //字段描述: 导线对隐患净空距离
     @Column(name = "XDXYHJKJL")
     private String xdxyhjkjl;
     //字段描述: 树木管控措施
@@ -222,6 +222,9 @@ public class KhYhHistory implements Serializable {
     //字段描述: 是否悬挂警示牌
     @Column(name="JSP")
     private String jsp;
+    //字段描述: 是否悬挂警示牌
+    @Column(name="SJXL")
+    private String sjxl;
 
     public String getSms() {
         return sms;
@@ -756,4 +759,11 @@ public class KhYhHistory implements Serializable {
         return className;
     }
 
+    public void setSjxl(String sjxl) {
+        this.sjxl = sjxl;
+    }
+
+    public String getSjxl() {
+        return sjxl;
+    }
 }

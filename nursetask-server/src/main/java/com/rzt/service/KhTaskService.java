@@ -124,6 +124,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
             e.printStackTrace();
         }
         this.reposiotry.updateSiteById(userId, id);
+        this.reposiotry.updateTaskBySiteId(userId,id);
     }
 
 
