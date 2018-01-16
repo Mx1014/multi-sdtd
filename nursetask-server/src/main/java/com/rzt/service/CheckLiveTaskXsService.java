@@ -95,7 +95,7 @@ public class CheckLiveTaskXsService extends CurdService<CheckLiveTaskXs, CheckLi
         CheckLiveTaskXs save = reposiotry.save(task);
 
         CheckLiveTaskDetailXs taskDetailXs = new CheckLiveTaskDetailXs();
-        taskDetailXs.setId();
+        taskDetailXs.setId(null);
         taskDetailXs.setCreateTime(new Date());
         taskDetailXs.setPlanStartTime(DateUtil.parseDate(planStartTime));
         taskDetailXs.setPlanEndTime(DateUtil.parseDate(planEndTime));

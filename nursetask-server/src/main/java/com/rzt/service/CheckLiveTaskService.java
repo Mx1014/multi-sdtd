@@ -114,9 +114,9 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
 
         String[] split = save.getTaskId().split(",");
         for (int i = 0; i < split.length; i++) {
-            Map<String,Object> map = execSqlSingleResult("select id,TDYW_ORGID,TDWX_ORGID from CHECK_LIVE_SITE where id = ?1", split[i]);
+            Map<String,Object> map = execSqlSingleResult("select id,TDYW_ORGID,TDWX_ORGID from CHECK_LIVE_SITE where YH_ID = ?1", split[i]);
             CheckLiveTaskDetail taskDetail = new CheckLiveTaskDetail();
-            taskDetail.setId();
+            taskDetail.setId(null);
             taskDetail.setCreateTime(new Date());
             taskDetail.setTdywOrgid(String.valueOf(map.get("TDYW_ORGID")).replace("null",""));
             taskDetail.setTdwxOrgid(String.valueOf(map.get("TDWX_ORGID")).replace("null",""));
@@ -189,13 +189,13 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
         //0看护 1巡视 0待稽查 1已稽查
         if("0,0".equals(taskType)){
             sql = "select d.id detail_id,c.yh_id,c.task_name,c.tdyw_org,wx_org,d.status from CHECK_LIVE_TASK_DETAIL d " +
-                    " left join KH_CYCLE c on d.kh_task_id=c.id " +
+                    " left join KH_CYCLE c on d.kh_task_id=c.YH_ID " +
                     " where 1=1 ";
             if (!StringUtils.isEmpty(id)) {
                 sql += " and d.task_id= "+id;
             }
             if (!StringUtils.isEmpty(taskId)) {
-                sql += " and c.id in ("+taskId+")";
+                sql += " and c.YH_ID in ("+taskId+")";
             }
         }else if("1,0".equals(taskType)){
             sql = "select d.id detail_id,t.id xs_zc_task_id,t.task_name,d.status,t.PLAN_START_TIME,u.realname from CHECK_LIVE_TASK_DETAILXS d left join XS_ZC_TASK t on d.xs_task_id=t.id " +
@@ -266,11 +266,8 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
     //@Scheduled(cron = "0/5 * *  * * ? ")
     @Scheduled(cron = "0 5 0 ? * *")
     @Transactional
-    public void general(){
-
-//
-//insert into CHECK_LIVE_SITE (id,TASK_ID,TASK_TYPE,CREATE_TIME,TASK_NAME,STATUS,line_id,TDYW_ORGID,TDWX_ORGID,yh_id)
-//select id,id as taskid,0,sysdate,TASK_NAME,0,LINE_ID,TDYW_ORGID,WX_ORGID,YH_ID from KH_CYCLE;
+    public void generalKhSite(){
+        //reposiotry.generalKhSite();
     }
 
 

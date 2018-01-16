@@ -293,7 +293,7 @@ public class CMLINESECTIONService extends CurdService<CMLINESECTION,CMLINESECTIO
                         cmtower.setId(null);
                         cmtower.setLineId(String.valueOf(cmlinesection.getLineId()));
                         cmtower.setName(String.valueOf(i));
-                        cmtowerRepository.save(cmtower);
+                        CMTOWER save1 = cmtowerRepository.save(cmtower);
                     }
                 }else {
                     if(startSort<a&&endSort>=a){
@@ -302,7 +302,7 @@ public class CMLINESECTIONService extends CurdService<CMLINESECTION,CMLINESECTIO
                             cmtower.setId(null);
                             cmtower.setLineId(String.valueOf(cmlinesection.getLineId()));
                             cmtower.setName(String.valueOf(i));
-                            cmtowerRepository.save(cmtower);
+                            CMTOWER save2 = cmtowerRepository.save(cmtower);
                         }
                     }
                     if(startSort<=b&&endSort>b){
@@ -311,7 +311,7 @@ public class CMLINESECTIONService extends CurdService<CMLINESECTION,CMLINESECTIO
                             cmtower.setId(null);
                             cmtower.setLineId(String.valueOf(cmlinesection.getLineId()));
                             cmtower.setName(String.valueOf(i));
-                            cmtowerRepository.save(cmtower);
+                            CMTOWER save3 = cmtowerRepository.save(cmtower);
                         }
                     }
                 }
