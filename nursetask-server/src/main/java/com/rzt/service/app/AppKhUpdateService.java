@@ -29,8 +29,6 @@ public class AppKhUpdateService extends CurdService<KhTask, AppKhUpdateRepositor
 
     @Autowired
     private KhTaskWpqrService wpqrService;
-    @Autowired
-    private JedisPool jedisPool;
 
     //修改实际开始时间
     public WebApiResponse updateRealTime(long taskId) {
