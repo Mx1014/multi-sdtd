@@ -42,10 +42,10 @@ public class CheckLiveTaskXsController extends CurdController<CheckLiveTaskXs, C
 	@GetMapping("/listXsCheckPage")
 	public WebApiResponse listXsCheckPage(@RequestParam(value = "page",defaultValue = "0") Integer page,
 											 @RequestParam(value = "size",defaultValue = "15") Integer size,
-											 String startTime, String endTime, String lineId,String tddwId){
+											 String startTime, String endTime, String lineId,String tddwId,String currentUserId){
 		try{
 			Pageable pageable = new PageRequest(page, size);
-			Page<Map<String, Object>> list = this.service.listXsCheckPage(pageable,startTime, endTime, lineId, tddwId);
+			Page<Map<String, Object>> list = this.service.listXsCheckPage(pageable,startTime, endTime, lineId, tddwId,currentUserId);
 			return WebApiResponse.success(list);
 		}catch (Exception e){
 			return WebApiResponse.erro("数据获取失败"+e.getMessage());
@@ -80,10 +80,10 @@ public class CheckLiveTaskXsController extends CurdController<CheckLiveTaskXs, C
 	@GetMapping("/listXsCheckTaskPage")
 	public WebApiResponse listXsCheckTaskPage(@RequestParam(value = "page",defaultValue = "0") Integer page,
 										  @RequestParam(value = "size",defaultValue = "15") Integer size,
-										  String startTime, String endTime, String userId,String tddwId){
+										  String startTime, String endTime, String userId,String tddwId,String currentUserId){
 		try{
 			Pageable pageable = new PageRequest(page, size);
-			Page<Map<String, Object>> list = this.service.listXsCheckTaskPage(pageable,startTime, endTime, userId, tddwId);
+			Page<Map<String, Object>> list = this.service.listXsCheckTaskPage(pageable,startTime, endTime, userId, tddwId,currentUserId);
 			return WebApiResponse.success(list);
 		}catch (Exception e){
 			LOGGER.error("巡视稽查任务已派发任务列表接口",e);
