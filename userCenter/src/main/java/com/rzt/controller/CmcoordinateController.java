@@ -74,7 +74,7 @@ public class CmcoordinateController extends
             ZSetOperations setOperations = redisTemplate.opsForZSet();
             String key = currentDate + ":" + cmcoordinate.getUserid();
             setOperations.add(key, cmcoordinate, date.getTime());
-            redisTemplate.expire(key,3, TimeUnit.DAYS);
+            redisTemplate.expire(key,2, TimeUnit.DAYS);
 
             this.service.add(cmcoordinate);
             return WebApiResponse.success("添加成功");
