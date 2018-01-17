@@ -356,8 +356,8 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
     }
 
     public List<Map<String,Object>> listKhCheckTaskDetail(Long id) {
-        String sql = " select d.CREATE_TIME,d.PLAN_START_TIME,d.PLAN_END_TIME,t.task_name,t.task_type,d.status,u.REALNAME,h.yhms,h.TDYW_ORG,h.TDWX_ORG,h.yhjb,h.yhjb1,h.YHZRDW,h.YHZRDWLXR,h.YHZRDWDH,h.YHFXSJ,h.gkcs,h.YHXCYY , " +
-                " h.XLZYCD,h.yhxcyy,h.classname " +
+        String sql = " select d.CREATE_TIME,d.PLAN_START_TIME,d.PLAN_END_TIME,t.task_name,t.task_type,d.status,u.REALNAME,h.yhms,h.TDYW_ORG,h.TDWX_ORG,h.yhjb,h.yhjb1,h.YHZRDW,h.YHZRDWLXR,h.YHZRDWDH,h.YHFXSJ,h.gkcs," +
+                " h.YHXCYY , h.XLZYCD,h.classname " +
                 " from CHECK_LIVE_TASK_DETAIL d " +
                 " left join CHECK_LIVE_TASK t on t.id=d.task_id " +
                 " left join KH_YH_HISTORY h on h.id=d.kh_task_id " +
