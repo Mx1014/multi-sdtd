@@ -37,7 +37,14 @@ public class CommonService extends CurdService<RztSysUser, RztSysUserRepository>
             List list1 = treeOrgRztsysroleList(list, list.get(0).get("ID").toString());
             return list1;
         } else if (roletype == 1 || roletype == 2) {
+            List list2 = new ArrayList();
             String deptid = String.valueOf(jsonObject.get("DEPTID"));
+            String s = "";
+            list2.add(deptid);
+            if (!StringUtils.isEmpty(worktype)) {
+                list2.add(worktype);
+                s += " OR ORGTYPE = ?" + list2.size();
+            }
             String sql = " SELECT * FROM (SELECT " +
                     "  id       AS \"value\", " +
                     "  DEPTNAME AS \"label\", " +
@@ -46,8 +53,8 @@ public class CommonService extends CurdService<RztSysUser, RztSysUserRepository>
                     "  ORGTYPE, " +
                     "  LASTNODE " +
                     "FROM RZTSYSDEPARTMENT " +
-                    "START WITH ID = ?1 CONNECT BY PRIOR id = DEPTPID) WHERE ORGTYPE = 0 OR ORGTYPE = ?2 ";
-            List<Map<String, Object>> list = this.execSql(sql, deptid, worktype);
+                    "START WITH ID = ?1 CONNECT BY PRIOR id = DEPTPID) WHERE ORGTYPE = 0  " + s;
+            List<Map<String, Object>> list = this.execSql(sql, list2.toArray());
             List list1 = treeOrgRztsysroleList(list, list.get(0).get("DEPTPID").toString());
             return list1;
         }
