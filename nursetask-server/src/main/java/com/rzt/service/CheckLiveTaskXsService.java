@@ -151,7 +151,7 @@ public class CheckLiveTaskXsService extends CurdService<CheckLiveTaskXs, CheckLi
         List params = new ArrayList<>();
         //状态查询
         if (!StringUtils.isEmpty(status)){
-            sql += " and status="+status;
+            sql += " and t.status="+status;
         }
         //时间段查询
         if (!StringUtils.isEmpty(startTime) && !StringUtils.isEmpty(endTime)){
