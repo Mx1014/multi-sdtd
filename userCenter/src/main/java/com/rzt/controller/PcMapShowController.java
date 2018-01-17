@@ -91,50 +91,7 @@ public class PcMapShowController {
                 }
             }
             //2.根据工作类型来分
-            JSONObject allMen = new JSONObject();
-            if(workType == null || workType == 1)  {
-                JSONObject xsMenAll = JSONObject.parseObject(valueOperations.get("xsMenAll:" + needDateString).toString());
-                allMen.putAll(xsMenAll);
-            }
-            if(workType == null || workType == 2)  {
-                JSONObject khMenAll = JSONObject.parseObject(valueOperations.get("khMenAll:" + needDateString).toString());
-                allMen.putAll(khMenAll);
-            }
-            if(workType == null || workType == 3)  {
-
-            }
-            Iterator<Map> iterator = menInMap.iterator();
-            while(iterator.hasNext()){
-                Map men = iterator.next();
-                String userid = men.get("userid").toString();
-
-                Long createtime = Long.parseLong(men.get("createtime").toString());
-
-                if(timeSecond - createtime > 600000) {
-                    //大于十分钟 离线
-                    //显示在线
-                    if(loginStatus == 1) {
-                        iterator.remove();
-                        continue;
-                    }
-                    men.put("loginStatus",0);
-                } else {
-                    //小于十分钟 在线
-                    //显示离线
-                    if (loginStatus == 0) {
-                        iterator.remove();
-                        continue;
-                    }
-                    men.put("loginStatus",1);
-                }
-
-                if(!allMen.containsKey(userid)) {
-                    //注意这个地方
-                    iterator.remove();
-                } else {
-                    men.put("statuts",allMen.get(userid));
-                }
-            }
+            chouYiXia(workType, loginStatus, needDateString, timeSecond, menInMap, valueOperations);
 
 
             return WebApiResponse.success(menInMap);
@@ -143,6 +100,101 @@ public class PcMapShowController {
             return WebApiResponse.erro("查询失败" + e.getStackTrace());
         }
     }
+
+    private void chouYiXia(Integer workType, Integer loginStatus, String needDateString, long timeSecond, List<Map> menInMap, ValueOperations<String, Object> valueOperations) {
+        JSONObject allMen = new JSONObject();
+        if(workType == null || workType == 1)  {
+            JSONObject xsMenAll = JSONObject.parseObject(valueOperations.get("xsMenAll:" + needDateString).toString());
+            allMen.putAll(xsMenAll);
+        }
+        if(workType == null || workType == 2)  {
+            JSONObject khMenAll = JSONObject.parseObject(valueOperations.get("khMenAll:" + needDateString).toString());
+            allMen.putAll(khMenAll);
+        }
+        if(workType == null || workType == 3)  {
+
+        }
+        Iterator<Map> iterator = menInMap.iterator();
+        while(iterator.hasNext()){
+            Map men = iterator.next();
+            String userid = men.get("userid").toString();
+
+            Long createtime = Long.parseLong(men.get("createtime").toString());
+
+            if(timeSecond - createtime > 600000) {
+                //大于十分钟 离线
+                //显示在线
+                if(loginStatus == 1) {
+                    iterator.remove();
+                    continue;
+                }
+                men.put("loginStatus",0);
+            } else {
+                //小于十分钟 在线
+                //显示离线
+                if (loginStatus == 0) {
+                    iterator.remove();
+                    continue;
+                }
+                men.put("loginStatus",1);
+            }
+
+            if(!allMen.containsKey(userid)) {
+                //注意这个地方
+                iterator.remove();
+            } else {
+                men.put("statuts",allMen.get(userid));
+            }
+        }
+    }
+
+
+    /***
+     * @Method menAboutLine
+     * @Description 地图上的人
+     *
+     * @return java.lang.Object
+     * @date 2017/12/25 13:59
+     * @author nwz
+     */
+    @GetMapping("menAboutLine")
+    public Object menAboutLine(Long lineId,String currentUserId,Date startDate) {
+        try {
+            Map<String,Object> res = new HashMap<String,Object>();
+            //拿到线路上的所有的杆塔
+            List<Map<String,Object>> coordinateList =  cmcoordinateService.lineCoordinateList(lineId);
+            Date date = new Date();
+            if(startDate == null) {
+                startDate = date;
+            }
+            String needDateString = DateUtil.dateFormatToDay(startDate);
+            long timeSecond = date.getTime();
+            ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
+            //准备要返回的list
+            List<Map> menInMap = new ArrayList<>();
+            HashOperations<String, String, Map> hashOperations = redisTemplate.opsForHash();
+            String deptId = pcMapShowService.dataAccessByUserId(currentUserId).toString();
+            //显示改线路当天关联的人
+            List<Map<String, Object>> menAboutLine = cmcoordinateService.getMenAboutLine(deptId, lineId, currentUserId, startDate);
+            Set<String> keys = new HashSet();
+            //单位 外协 组织 班组 都走这里
+              for (Map<String,Object> user: menAboutLine) {
+                String id = user.get("USERID").toString();
+                keys.add(id);
+            }
+            menInMap = hashOperations.multiGet("menInMap",keys);
+            //-->去除list中为null的元素
+            menInMap.removeAll(Collections.singleton(null));
+            chouYiXia(null, 2, needDateString, timeSecond, menInMap, valueOperations);
+            res.put("menInMap",menInMap);
+            res.put("coordinateList",coordinateList);
+            return WebApiResponse.success(res);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("失败");
+        }
+    }
+
 
     /***
      * @Method menInfo
@@ -288,12 +340,19 @@ public class PcMapShowController {
             ArrayList list = new ArrayList();
             Integer roletype = Integer.parseInt(map.get("ROLETYPE").toString());
             if(roletype == 0) {
-                tempTable = "SELECT distinct CM_USER_ID userid from XS_ZC_CYCLE where LINE_ID = ?";
+                tempTable = "SELECT DISTINCT userid from (select CM_USER_ID userid from xs_zc_cycle where LINE_ID = ?\n" +
+                        "union all\n" +
+                        "select USER_ID userid from KH_SITE where LINE_ID = ?) t where t.userid is not null ";
+                list.add(lineId);
                 list.add(lineId);
             } else {
-                tempTable = "SELECT distinct CM_USER_ID userid from XS_ZC_CYCLE where TD_ORG = ? and LINE_ID = ?";
+                tempTable = "SELECT DISTINCT userid from (select CM_USER_ID userid from xs_zc_cycle where LINE_ID = ? and TD_ORG = ?\n" +
+                        "union all\n" +
+                        "select USER_ID userid from KH_SITE where LINE_ID = ? and TDYW_ORGID = ?) t where t.userid is not null ";;
+                list.add(lineId);
                 list.add(map.get("DEPTID"));
                 list.add(lineId);
+                list.add(map.get("DEPTID"));
 
             }
             StringBuffer menInLineSql = new StringBuffer("select t.userid,tt.REALNAME from (" + tempTable + ") t join RZTSYSUSER tt on t.userid = tt.ID");
