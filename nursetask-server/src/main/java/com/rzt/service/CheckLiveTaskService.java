@@ -6,6 +6,7 @@
  */
 package com.rzt.service;
 
+import com.alibaba.fastjson.JSON;
 import com.rzt.entity.CheckLiveTask;
 import com.rzt.entity.CheckLiveTaskDetail;
 import com.rzt.repository.CheckLiveTaskDetailRepository;
@@ -13,6 +14,8 @@ import com.rzt.repository.CheckLiveTaskRepository;
 import com.rzt.repository.CheckLiveTaskXsRepository;
 import com.rzt.repository.KhYhHistoryRepository;
 import com.rzt.utils.DateUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -39,8 +42,9 @@ import java.util.Map;
 @Service
 public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTaskRepository> {
 
+    protected static Logger LOGGER = LoggerFactory.getLogger(CheckLiveTaskService.class);
     @Autowired
-    private CheckLiveTaskDetailRepository checkLiveTaskDetailRepository;
+    public CheckLiveTaskDetailRepository checkLiveTaskDetailRepository;
 
     @Autowired
     private CheckLiveTaskXsRepository checkLiveTaskXsRepository;
@@ -51,17 +55,43 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
     private RedisTemplate<String,Object> redisTemplate;
 
     //看护稽查列表查询展示
-    public Page<Map<String,Object>> listKhCheckPage(Pageable pageable, String lineId, String tddwId) {
+    public Page<Map<String,Object>> listKhCheckPage(Pageable pageable, String lineId, String tddwId,String currentUserId) {
 
-        String sql = "select s.task_id,s.TASK_NAME,h.yhms,h.yhjb,h.XLZYCD,d.DEPTNAME,s.yh_id from CHECK_LIVE_site s " +
+        String sql = "select s.id,s.task_id,s.TASK_NAME,h.yhms,h.yhjb,h.XLZYCD,d.DEPTNAME,s.yh_id from CHECK_LIVE_site s " +
                 " left JOIN KH_YH_HISTORY h on s.YH_ID=h.id " +
-                " LEFT JOIN  RZTSYSDEPARTMENT d on d.ID = s.TDYW_ORGID where 1=1 ";
+                " LEFT JOIN  RZTSYSDEPARTMENT d on d.ID = s.TDYW_ORGID where s.status=0 ";
 
         List params = new ArrayList<>();
         //线路查询
         if (!StringUtils.isEmpty(lineId)) {
             params.add(lineId);
             sql += " AND s.LINE_ID =?";
+        }
+
+        if(!StringUtils.isEmpty(currentUserId)){
+            Map<String, Object> map = userInfoFromRedis(currentUserId);
+            Integer roletype = Integer.parseInt(map.get("ROLETYPE").toString());
+            String deptid  = map.get("DEPTID").toString();
+            switch (roletype) {
+                case 0:
+                    break;
+                case 1:
+                    tddwId = deptid;
+                    break;
+                case 2:
+                    tddwId = deptid;
+                    break;
+                case 3:
+                    //外协角色
+                    break;
+                case 4:
+                    //班组角色
+                    break;
+                case 5:
+                    //个人角色
+                    break;
+            }
+
         }
         //通道单位查询
         if (!StringUtils.isEmpty(tddwId)) {
@@ -70,11 +100,30 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
         }
         return execSqlPage(pageable, sql, params.toArray());
     }
+    public Map<String, Object> userInfoFromRedis(String userId) {
+        HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
 
+        Map<String,Object> jsonObject = null;
+        Object userInformation = hashOperations.get("UserInformation", userId);
+        if(userInformation == null) {
+            String sql = "select * from userinfo where id = ?";
+            try {
+                jsonObject = this.execSqlSingleResult(sql, userId);
+            } catch (Exception e) {
+                LOGGER.error("currentUserId未获取到唯一数据!",e);
+            }
+            hashOperations.put("UserInformation",userId,jsonObject);
+        } else {
+            jsonObject = JSON.parseObject(userInformation.toString(),Map.class);
+        }
+        return jsonObject;
+    }
     //看护已派发稽查任务
-    public Page<Map<String,Object>> listKhCheckTaskPage(Pageable pageable, String userId, String tddwId) {
+    public Page<Map<String,Object>> listKhCheckTaskPage(Pageable pageable, String userId, String tddwId,String currentUserId,String startTime,String endTime) {
 
-        String sql = "select t.id,t.TASK_ID,t.CREATE_TIME,t.TASK_NAME,t.PLAN_START_TIME,t.PLAN_END_TIME,u.REALNAME,d.DEPTNAME,CASE t.TASK_TYPE WHEN 0 THEN '正常' WHEN 1 THEN '保电' WHEN 2 THEN '特殊' END aaa from CHECK_LIVE_TASK t " +
+        String sql = "select t.id,t.TASK_ID,t.CREATE_TIME,t.TASK_NAME,t.PLAN_START_TIME,t.PLAN_END_TIME,u.REALNAME,d.DEPTNAME, " +
+                "  t.status  t.TASK_TYPE " +
+                " from CHECK_LIVE_TASK t " +
                 "  LEFT JOIN  rztsysuser u on u.id=t.USER_ID " +
                 "  LEFT JOIN  RZTSYSDEPARTMENT d on d.ID = u.DEPTID where 1=1 ";
 
@@ -84,6 +133,37 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
             params.add(userId);
             sql += " AND u.id =?";
         }
+        //时间段查询
+        if (!StringUtils.isEmpty(startTime) && !StringUtils.isEmpty(endTime)){
+            params.add(endTime);
+            params.add(startTime);
+            sql += " and to_date(?,'yyyy-MM-dd HH24:mi') > t.plan_start_time and to_date(?,'yyyy-MM-dd HH24:mi') < t.plan_end_time ";
+        }
+        if(!StringUtils.isEmpty(currentUserId)){
+            Map<String, Object> map = userInfoFromRedis(currentUserId);
+            Integer roletype = Integer.parseInt(map.get("ROLETYPE").toString());
+            String deptid  = map.get("DEPTID").toString();
+            switch (roletype) {
+                case 0:
+                    break;
+                case 1:
+                    tddwId = deptid;
+                    break;
+                case 2:
+                    tddwId = deptid;
+                    break;
+                case 3:
+                    //外协角色
+                    break;
+                case 4:
+                    //班组角色
+                    break;
+                case 5:
+                    //个人角色
+                    break;
+            }
+
+        }
         //通道单位查询
         if (!StringUtils.isEmpty(tddwId)) {
             params.add(tddwId);
@@ -91,13 +171,11 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
         }
         return execSqlPage(pageable, sql, params.toArray());
     }
-
     public Map<String, Object> khTaskDetail(String taskId) throws Exception {
-        String sql = "select s.TASK_NAME,h.yhms,h.yhjb,h.XLZYCD,d.DEPTNAME from CHECK_LIVE_site s " +
-                "  left JOIN KH_YH_HISTORY h on s.YH_ID=h.id " +
-                "  LEFT JOIN  RZTSYSDEPARTMENT d on d.ID = s.TDYW_ORGID where s.id =?1 ";
-        Map<String, Object> map = execSqlSingleResult(sql, taskId);
-        return map;
+        String sql = "select s.TASK_NAME,h.yhms,h.yhjb,h.yhjb1,h.YHZRDW,h.YHZRDWLXR,h.YHZRDWDH,h.YHFXSJ,h.gkcs,h.yhxcyy,h.XLZYCD,h.YHLB,d.DEPTNAME from CHECK_LIVE_site s " +
+                " left JOIN KH_YH_HISTORY h on s.YH_ID=h.id " +
+                " LEFT JOIN  RZTSYSDEPARTMENT d on d.ID = s.TDYW_ORGID where s.id = "+taskId;
+        return execSqlSingleResult(sql);
     }
 
     @Transactional
@@ -127,6 +205,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
             taskDetail.setKhTaskId(Long.valueOf(split[i]));
             taskDetail.setTaskId(save.getId());
             checkLiveTaskDetailRepository.save(taskDetail);
+            reposiotry.updateLiveTaskStatus(1,Long.valueOf(split[i]));
         }
 
     }
@@ -260,6 +339,18 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
         return obj;
     }
 
+    @Transactional
+    public Object taskComplete(String id, String taskType) {
+        Object obj = new Object();
+        //0看护 1巡视 0待稽查 1已稽查
+        if("0,0".equals(taskType)){
+            obj = reposiotry.taskComplete(Long.valueOf(id));
+        }else if("1,0".equals(taskType)){
+            obj = checkLiveTaskXsRepository.taskComplete(Long.valueOf(id));
+        }
+        return obj;
+    }
+
     /**
      * 每天根据看护点生成待派发的看护稽查
      */
@@ -267,9 +358,8 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
     @Scheduled(cron = "0 5 0 ? * *")
     @Transactional
     public void generalKhSite(){
+        //更新check_live_site的状态
         //reposiotry.generalKhSite();
     }
-
-
 
 }
