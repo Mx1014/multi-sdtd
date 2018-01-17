@@ -49,7 +49,7 @@ public class PcMapShowController {
      * @author nwz
      */
     @GetMapping("menInMap")
-    public Object menInMap(String tdOrg,Integer workType,String userId,Date startDate,String currentUserId/*,@RequestParam(value = "userIds[]") String[] userIds*/) {
+    public Object menInMap(String tdOrg,Integer workType,String userId,Date startDate,String currentUserId,Integer loginStatus /*,@RequestParam(value = "userIds[]") String[] userIds*/) {
         try {
             Date date = new Date();
             if(startDate == null) {
@@ -112,9 +112,19 @@ public class PcMapShowController {
 
                 if(timeSecond - createtime > 600000) {
                     //大于十分钟 离线
+                    //显示在线
+                    if(loginStatus == 1) {
+                        iterator.remove();
+                        continue;
+                    }
                     men.put("loginStatus",0);
                 } else {
                     //小于十分钟 在线
+                    //显示离线
+                    if (loginStatus == 0) {
+                        iterator.remove();
+                        continue;
+                    }
                     men.put("loginStatus",1);
                 }
 
@@ -167,15 +177,45 @@ public class PcMapShowController {
         try {
             ZSetOperations<String, Object> zSetOperations = redisTemplate.opsForZSet();
             String prefixDate = DateUtil.dateFormatToDay(startTime);
+            Set<Object> set;
             if(endTime == null) {
                 endTime = DateUtil.dateNow();
             }
-            Set<Object> set = zSetOperations.rangeByScore( prefixDate + "_" + userId, startTime.getTime(), endTime.getTime());
+            set = zSetOperations.rangeByScore( prefixDate + ":" + userId, startTime.getTime(), endTime.getTime());
             return WebApiResponse.success(set);
         } catch (Exception e) {
             return WebApiResponse.erro("失败" + e.getMessage());
         }
     }
+
+    /***
+     * @Method t
+     * @Description 地图上人的位置
+     *
+     * @return java.lang.Object
+     * @date 2017/12/25 13:59
+     * @author nwz
+     */
+    @GetMapping("menPoint")
+    public Object menPoint(String userId,Date startTime,Date endTime,Integer lOrR) {
+        try {
+            ZSetOperations<String, Object> zSetOperations = redisTemplate.opsForZSet();
+            String prefixDate = DateUtil.dateFormatToDay(startTime);
+            Set<Object> set;
+            if(endTime == null) {
+                endTime = DateUtil.dateNow();
+            }
+            if(lOrR == 0) {
+                set = zSetOperations.reverseRangeByScore( prefixDate + ":" + userId, startTime.getTime(), endTime.getTime(),0,1);
+            } else {
+                set = zSetOperations.rangeByScore( prefixDate + ":" + userId, startTime.getTime(), endTime.getTime(),0,1);
+            }
+            return WebApiResponse.success(set);
+        } catch (Exception e) {
+            return WebApiResponse.erro("失败" + e.getMessage());
+        }
+    }
+
 
     /***
      * @Method lineCoordinateList
@@ -269,7 +309,7 @@ public class PcMapShowController {
     public void initBinder(ServletRequestDataBinder binder) {
         /*** 自动转换日期类型的字段格式
          */
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         binder.registerCustomEditor(Date.class, new CustomDateEditor(sdf, true));
 
     }
@@ -292,6 +332,7 @@ public class PcMapShowController {
             List<Map<String, Object>> maps = cmcoordinateService.execSql(sql);
             for (Map<String,Object> map: maps) {
                 String id = map.get("ID").toString();
+                map.put("ROLETYPE",0);
                 hashOperations.put("UserInformation",id,map);
             }
             return WebApiResponse.success("成功了");

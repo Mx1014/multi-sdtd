@@ -14,6 +14,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * 类名称：WarningOffPostUserTimeRepository    
@@ -34,5 +35,5 @@ public interface OffPostUserTimeRepository extends JpaRepository<OffPostUserTime
  void updateOffUserEndTime(String userId, Date date);
 
  @Query(value="select * from warning_off_post_user_time where fk_user_id=?1 and end_time is null",nativeQuery = true)
- OffPostUserTime findByUserIdAndDateisNull(String userId);
+ List<OffPostUserTime> findByUserIdAndDateisNull(String userId);
 }
