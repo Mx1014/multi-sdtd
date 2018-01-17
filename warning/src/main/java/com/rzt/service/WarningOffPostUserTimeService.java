@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.List;
 
 /**      
  * 类名称：WarningOffPostUserTimeService    
@@ -45,7 +46,7 @@ public class WarningOffPostUserTimeService extends CurdService<OffPostUserTime, 
      * @param userId
      * @return
      */
-    public OffPostUserTime findByUserIdAndDateisNull(String userId){
+    public List<OffPostUserTime> findByUserIdAndDateisNull(String userId){
         return repository.findByUserIdAndDateisNull(userId);
     }
 

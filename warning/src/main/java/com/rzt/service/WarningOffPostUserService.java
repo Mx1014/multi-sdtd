@@ -73,8 +73,8 @@ public class WarningOffPostUserService extends CurdService<OffPostUser, OffPostU
                     "  kh.WX_ORG, " +
                     "  kh.TDYW_ORG, " +
                     "  kh.STATUS " +
-                    "FROM KH_TASK kh " +
-                    "WHERE kh.USER_ID = ?1 and trunc(kh.PLAN_START_TIME) = trunc(sysdate)";
+                    "FROM KH_TASK kh RIGHT JOIN WARNING_OFF_POST_USER u ON u.TASK_ID=kh.ID " +
+                    " WHERE kh.USER_ID = ?1 and trunc(kh.PLAN_START_TIME) = trunc(sysdate)";
             List<Map<String, Object>> maps1 = execSql(sql2, userId);
             if(result.size()>0){
                 result.get(0).putAll(maps1.get(0));

@@ -3,6 +3,7 @@ package com.rzt.controller;
 
 import com.rzt.entity.OffPostUser;
 import com.rzt.entity.OffPostUserTime;
+import com.rzt.eureka.StaffLine;
 import com.rzt.service.WarningOffPostUserService;
 import com.rzt.service.WarningOffPostUserTimeService;
 import com.rzt.util.WebApiResponse;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Date;
+import java.util.List;
 
 @RestController
 @RequestMapping("warning")
@@ -22,6 +24,9 @@ public class WarningController extends CurdController<OffPostUser,WarningOffPost
 
 	@Autowired
 	private WarningOffPostUserTimeService timeService;
+
+	@Autowired
+	private StaffLine staffLine;
 	
 	/**
 	 * 添加看护人员脱岗信息
@@ -44,8 +49,9 @@ public class WarningController extends CurdController<OffPostUser,WarningOffPost
 				}else{
 					//判断该人员状态是否改变
 					if (offUser.getStatus()!=offPostUser.getStatus()){
-						OffPostUserTime offPostUserTime = timeService.findByUserIdAndDateisNull(offUser.getUserId());
-						if(offPostUserTime!=null){
+						List<OffPostUserTime> list = timeService.findByUserIdAndDateisNull(offUser.getUserId());
+						if(list.size()>0){
+							OffPostUserTime offPostUserTime = list.get(0);
 							//如果该条时间记录已经存在，则只更新回岗时间
 							offPostUserTime.setEndTime(new Date());
 							timeService.updateOffUserEndTime(offPostUserTime);
@@ -56,6 +62,12 @@ public class WarningController extends CurdController<OffPostUser,WarningOffPost
 						//更新脱岗人员状态
 						offUser.setStatus(offPostUser.getStatus());
 						service.updateOffUser(offUser);
+					}
+				}
+				if(offPostUser.getStatus()==1){
+					try {
+						staffLine.khtg(offPostUser.getUserId(),offPostUser.getTaskId());
+					} catch (Exception e) {
 					}
 				}
 			}
