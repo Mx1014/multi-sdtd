@@ -83,7 +83,7 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
             return;
         } else {
             JSONObject xsMenAll = JSONObject.parseObject(xsMenAllString.toString());
-            String sql = "SELECT cm_user_id,min(stauts) status from XS_ZC_TASK where PLAN_END_TIME >= trunc(sysdate) and  PLAN_START_TIME <= (sysdate+1) group by CM_USER_ID";
+            String sql = "SELECT cm_user_id,min(stauts) status from XS_ZC_TASK where PLAN_END_TIME >= trunc(sysdate) and  PLAN_START_TIME <= trunc(sysdate+1) group by CM_USER_ID";
             try {
                 Map<String, Object> map = this.execSqlSingleResult(sql,userId);
                 Object status = map.get("STATUS");

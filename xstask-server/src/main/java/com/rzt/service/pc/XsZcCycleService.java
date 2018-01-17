@@ -1028,11 +1028,11 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
         Date startDate = xsTaskSch.getStartDate();
         Date endDate = xsTaskSch.getEndDate();
         if (startDate != null) {
-            sqlBuffer.append(" and PLAN_END_TIME >= trunc(?) and  PLAN_START_TIME <= (?+1)");
+            sqlBuffer.append(" and PLAN_END_TIME >= trunc(?) and  PLAN_START_TIME <= trunc(?+1)");
             arrList.add(startDate);
             arrList.add(startDate);
         } else {
-            sqlBuffer.append(" and PLAN_END_TIME >= trunc(sysdate) and  PLAN_START_TIME <= (sysdate+1)");
+            sqlBuffer.append(" and PLAN_END_TIME >= trunc(sysdate) and  PLAN_START_TIME <= trunc(sysdate+1)");
         }
 
         //状态 0 未开始 1 巡视中 2 已完成

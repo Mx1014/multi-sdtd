@@ -42,17 +42,17 @@ public class CheckLiveTaskXsController extends CurdController<CheckLiveTaskXs, C
 	@GetMapping("/listXsCheckPage")
 	public WebApiResponse listXsCheckPage(@RequestParam(value = "page",defaultValue = "0") Integer page,
 											 @RequestParam(value = "size",defaultValue = "15") Integer size,
-											 String startTime, String endTime, String lineId,String tddwId){
+											 String startTime, String endTime, String lineId,String tddwId,String currentUserId){
 		try{
 			Pageable pageable = new PageRequest(page, size);
-			Page<Map<String, Object>> list = this.service.listXsCheckPage(pageable,startTime, endTime, lineId, tddwId);
+			Page<Map<String, Object>> list = this.service.listXsCheckPage(pageable,startTime, endTime, lineId, tddwId,currentUserId);
 			return WebApiResponse.success(list);
 		}catch (Exception e){
 			return WebApiResponse.erro("数据获取失败"+e.getMessage());
 		}
 	}
 
-	@ApiOperation(value = "巡视任务详情",notes = "巡视任务详情")
+	@ApiOperation(value = "巡视稽查任务派发前,巡视任务详情",notes = "巡视任务详情")
 	@GetMapping("/xsTaskDetail")
 	public WebApiResponse xsTaskDetail(String taskId){
 		Map<String, Object> map = new HashMap<>();
@@ -80,16 +80,27 @@ public class CheckLiveTaskXsController extends CurdController<CheckLiveTaskXs, C
 	@GetMapping("/listXsCheckTaskPage")
 	public WebApiResponse listXsCheckTaskPage(@RequestParam(value = "page",defaultValue = "0") Integer page,
 										  @RequestParam(value = "size",defaultValue = "15") Integer size,
-										  String startTime, String endTime, String userId,String tddwId){
+										  String startTime, String endTime, String userId,String tddwId,String currentUserId,String status){
 		try{
 			Pageable pageable = new PageRequest(page, size);
-			Page<Map<String, Object>> list = this.service.listXsCheckTaskPage(pageable,startTime, endTime, userId, tddwId);
+			Page<Map<String, Object>> list = this.service.listXsCheckTaskPage(pageable,startTime, endTime, userId, tddwId,currentUserId,status);
 			return WebApiResponse.success(list);
 		}catch (Exception e){
 			LOGGER.error("巡视稽查任务已派发任务列表接口",e);
 			return WebApiResponse.erro("数据获取失败");
 		}
 	}
+
+/*	@ApiOperation(value = "巡视稽查任务已派发巡视稽查任务详情",notes = "巡视稽查任务已派发看护任务详情")
+	@GetMapping("/listXsCheckTaskDetail")
+	public WebApiResponse listXsCheckTaskDetail(String id){
+		try{
+			Map<String, Object> map = this.service.listXsCheckTask(Long.valueOf(id));
+			return WebApiResponse.success(map);
+		}catch (Exception e){
+			return WebApiResponse.erro("数据获取失败"+e.getMessage());
+		}
+	}*/
 
 
 }

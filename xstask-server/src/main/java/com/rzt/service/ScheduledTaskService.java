@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.transaction.Transactional;
@@ -32,7 +33,7 @@ public class ScheduledTaskService {
      * @author: ningweize
      * @date: 2017年5月18日 上午10:49:23
      */
-//	@Scheduled(cron = "0 10 0 ? * *")
+	@Scheduled(cron = "0 10 0 ? * *")
 //	@Scheduled(cron="0/50 * *  * * ? ")
 // 每50秒执行一次
     @Modifying
