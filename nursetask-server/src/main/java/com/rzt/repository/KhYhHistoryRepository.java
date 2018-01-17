@@ -6,6 +6,7 @@
  */
 package com.rzt.repository;
 import com.rzt.entity.KhYhHistory;
+import com.rzt.utils.SnowflakeIdWorker;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -48,4 +49,20 @@ public interface KhYhHistoryRepository extends JpaRepository<KhYhHistory,String>
     @Transactional
     @Query(value = "update KH_YH_HISTORY SET sjxl=?2 WHERE ID=?1",nativeQuery = true)
     void updateyh(long id, String xl);
+
+    public static void main(String[] args) {
+        long l = 0l;
+        for (int i =0 ;i<=1;i++){
+            for (int j=0;j<=31;j++){
+                 l = new SnowflakeIdWorker(j, j).nextId();
+                System.out.println(l+"02");
+            }
+
+        }
+
+    }
+    @Modifying
+    @Transactional
+    @Query(value = "update kh_site SET USER_ID=?2 WHERE ID=?1",nativeQuery = true)
+    void updates(long id, String id1);
 }

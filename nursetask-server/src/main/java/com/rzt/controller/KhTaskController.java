@@ -99,6 +99,7 @@ public class KhTaskController extends
 			JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", userId).toString());
 			List<Map<String, Object>> taskList = this.service.findAlls(jsonObject,userId);
 			this.service.exportNursePlan(taskList,request,response);
+			//return WebApiResponse.success("");
 		}catch (Exception e){
 			e.printStackTrace();
 		}
@@ -107,8 +108,8 @@ public class KhTaskController extends
 	 *   获取某人当前的看护任务
 	 */
 	@GetMapping("/listCurrentTaskByUserId")
-	public WebApiResponse listCurrentTaskByUserId(String userId){
-		return this.service.listCurrentTaskByUserId(userId);
+	public WebApiResponse listCurrentTaskByUserId(String userId,String startDate){
+		return this.service.listCurrentTaskByUserId(userId,startDate);
 	}
 
 	/**

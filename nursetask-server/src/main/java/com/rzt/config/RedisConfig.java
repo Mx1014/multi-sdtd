@@ -13,6 +13,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
 import java.lang.reflect.Method;
@@ -115,5 +116,15 @@ RedisConfig {
         template.setHashValueSerializer(fastJsonRedisSerializer);
         template.setValueSerializer(fastJsonRedisSerializer);
         return template;
+    }
+    @Bean
+    public JedisPool redisPoolFactory() {
+
+        JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
+        jedisPoolConfig.setMaxIdle(maxIdle);
+        jedisPoolConfig.setMaxWaitMillis(maxWait);
+
+        JedisPool jedisPool = new JedisPool(jedisPoolConfig, host, port, timeout,password);
+        return jedisPool;
     }
 }
