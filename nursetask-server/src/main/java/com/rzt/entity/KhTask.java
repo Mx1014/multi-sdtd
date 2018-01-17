@@ -83,6 +83,12 @@ public class KhTask implements Serializable{
 	//字段描述: 任务状态 0未开始 1进行中 2已完成
 	@Column(name = "STATUS")
 	private int status;
+	//字段描述: 未到位原因
+	@Column(name = "REASON")
+	private String reason;
+	//字段描述: 是否到位 0到位 1未到位
+	@Column(name = "IS_DW")
+	private int isdw;
 
 	@Column(name="ZXYS_NUM")
 	private int zxysNum;
@@ -236,5 +242,24 @@ public class KhTask implements Serializable{
 
 	public int getZxysNum() {
 		return zxysNum;
+	}
+
+	public void setZxysNum(int zxysNum) {
+		this.zxysNum = zxysNum;
+	}
+
+	public int getIsdw() {
+		return isdw;
+	}
+
+	public String getReason() {
+		return reason;
+	}
+
+	public void setIsdw(int isdw) {
+		this.isdw = isdw;
+	}
+	public void setReason(String reason) {
+		this.reason = reason;
 	}
 }

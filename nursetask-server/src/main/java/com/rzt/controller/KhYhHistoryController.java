@@ -54,7 +54,7 @@ public class KhYhHistoryController extends
 		return this.service.listCoordinate(yhjb,yhlb);
 	}
 
-	@ApiOperation(notes = "地图撒坐标点",value = "地图撒坐标点")
+	@ApiOperation(notes = "地图查看隐患信息",value = "地图查看隐患信息")
 	@GetMapping("/listYhById")
 	@ResponseBody
 	public WebApiResponse listYhById(String yhId){
@@ -67,17 +67,16 @@ public class KhYhHistoryController extends
 /* MultipartFile file */
 		return service.ImportYh();
 	}
-	@ApiOperation(value = "隐患导入接口",notes = "隐患导入接口")
+	@ApiOperation(value = "隐患导出接口",notes = "隐患导出接口")
 	@GetMapping("exportYhHistory")
 	public WebApiResponse exportYhHistory(HttpServletResponse response){
-/* MultipartFile file */
+     /* MultipartFile file */
 		return service.exportYhHistory(response);
 	}
 
-
-	/*@GetMapping("exportKhHistory")
-    public WebApiResponse exportKhHistory(){
-	    return this.service.exportKhHistory();
-
-    }*/
+	@ApiOperation(value = "修改隐患信息",notes = "修改隐患信息")
+	@GetMapping("updateYhHistory")
+	public WebApiResponse updateYhHistory(KhYhHistory yh){
+		return service.updateYhHistory(yh);
+	}
 }

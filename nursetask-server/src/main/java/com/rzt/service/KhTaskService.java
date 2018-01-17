@@ -120,19 +120,25 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         Map<String, Object> map = new HashMap<>();
         try {
             String sql = "select c.id as id,c.companyname as name from rztsyscompany c left join rztsysuser u on u.companyid = c.id where u.id=?";
-             map = this.execSqlSingleResult(sql, userId);
+            map = this.execSqlSingleResult(sql, userId);
         } catch (Exception e) {
             e.printStackTrace();
         }
         this.reposiotry.updateSiteById(userId, id);
-        this.reposiotry.updateTaskBySiteId(userId,id);
+        this.reposiotry.updateTaskBySiteId(userId, id);
     }
 
 
-    public WebApiResponse listCurrentTaskByUserId(String userId) {
+    public WebApiResponse listCurrentTaskByUserId(String userId, String startDate) {
         try {
-            String sql = "select k.id as id,k.status as status,k.task_name as task_name from kh_task k where k.user_id = ? and trunc(k.plan_start_time)>=trunc(sysdate)"; //to_date(?,'yyyy-mm-dd hh24:mi:ss') and k.plan_start_time<=to_date(?,'yyyy-mm-dd hh24:mi:ss')";
-            return WebApiResponse.success(this.execSql(sql, userId));
+            String sql = "";
+            if (startDate == null) {
+                sql = "select k.id as id,k.status as status,k.task_name as task_name,k.plan_end_time as endTime from kh_task k where k.user_id = ? and trunc(k.plan_start_time)>=trunc(sysdate)"; //";
+                return WebApiResponse.success(this.execSql(sql, userId));
+            } else {
+                sql = "select k.id as id,k.status as status,k.task_name as task_name,k.plan_end_time as endTime from kh_task k where k.user_id = ? and k.plan_start_time <=to_date(?,'yyyy-mm-dd hh24:mi:ss') and k.plan_end_time>=to_date(?,'yyyy-mm-dd hh24:mi:ss')";
+                return WebApiResponse.success(this.execSql(sql, userId,startDate,startDate));
+            }
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("数据获取失败");

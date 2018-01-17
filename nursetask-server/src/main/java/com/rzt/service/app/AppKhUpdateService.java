@@ -8,12 +8,17 @@ import com.rzt.service.CurdService;
 import com.rzt.service.KhTaskWpqrService;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DateUtil;
+import com.rzt.utils.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
 import java.util.Date;
 import java.util.Map;
+
+import static java.lang.Integer.*;
 
 /**
  * Created by admin on 2017/12/22.
@@ -28,11 +33,13 @@ public class AppKhUpdateService extends CurdService<KhTask, AppKhUpdateRepositor
     //修改实际开始时间
     public WebApiResponse updateRealTime(long taskId) {
         try {
-                int num = this.reposiotry.findNum(taskId);
-                if (num < 1){
+            int num = this.reposiotry.findNum(taskId);
+            if (num < 1) {
+                //if (isdw != null && reason != null) {
                     this.reposiotry.updateRealStartTime(taskId, DateUtil.dateNow());
                     this.reposiotry.updateZxnum(1, taskId);//修改执行页数
-                }
+                    RedisUtil.removeSomeKey(taskId);
+            }
             return WebApiResponse.success("修改成功");
         } catch (Exception e) {
             e.printStackTrace();
@@ -43,11 +50,11 @@ public class AppKhUpdateService extends CurdService<KhTask, AppKhUpdateRepositor
     //修改身份确认时间
     public WebApiResponse updateSfqrTime(long taskId) {
         try {
-                int num = this.reposiotry.findNum(taskId);
-                if (num < 2) {
-                    this.reposiotry.updateSFQRTime(DateUtil.dateNow(), taskId);
-                    this.reposiotry.updateZxnum(2, taskId);//修改执行页数
-                }
+            int num = this.reposiotry.findNum(taskId);
+            if (num < 2) {
+                this.reposiotry.updateSFQRTime(DateUtil.dateNow(), taskId);
+                this.reposiotry.updateZxnum(2, taskId);//修改执行页数
+            }
             return WebApiResponse.success("修改成功");
         } catch (Exception e) {
             e.printStackTrace();
@@ -84,11 +91,11 @@ public class AppKhUpdateService extends CurdService<KhTask, AppKhUpdateRepositor
         }
     }
 
-    public WebApiResponse updateDdxcTime(Long taskId) {
+    public WebApiResponse updateDdxcTime(Long taskId,String isdw, String reason) {
         try {
             int num = this.reposiotry.findNum(taskId);
             if (num < 5) {
-                this.reposiotry.updateDDTime(DateUtil.dateNow(), taskId);
+                this.reposiotry.updateDDTime(DateUtil.dateNow(), taskId,Integer.parseInt(isdw),reason);
                 this.reposiotry.updateZxnum(5, taskId);//修改执行页数
             }
             return WebApiResponse.success("修改成功");
@@ -101,8 +108,8 @@ public class AppKhUpdateService extends CurdService<KhTask, AppKhUpdateRepositor
     public WebApiResponse updateClzt(String clzt, long taskId) {
         try {
             int num = this.reposiotry.findNum(taskId);
-                this.reposiotry.updateClzt(clzt, taskId);
-                this.reposiotry.updateZxnum(6, taskId);//修改执行页数
+            this.reposiotry.updateClzt(clzt, taskId);
+            this.reposiotry.updateZxnum(6, taskId);//修改执行页数
             return WebApiResponse.success("修改成功");
         } catch (Exception e) {
             e.printStackTrace();
