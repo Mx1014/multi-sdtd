@@ -56,4 +56,9 @@ public interface AppKhUpdateRepository extends JpaRepository<KhTask, String> {
 
     @Query(value = "select ZXYS_NUM  FROM KH_TASK where id=?1", nativeQuery = true)
     int findNum(long taskId);
+
+    @Modifying
+    @Transactional
+    @Query(value = "update kh_task set is_dw=?3,reason=?4 where id = ?2", nativeQuery = true)
+    void updateIsDz(Date date, Long taskId, int i, String reason);
 }

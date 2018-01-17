@@ -25,13 +25,4 @@ public class Application {
         SpringApplication.run(Application.class, args);
     }
 
-//    @Bean
-//    public ConversionService conversionService() {
-//        FormattingConversionServiceFactoryBean factory = new FormattingConversionServiceFactoryBean();
-//        DateTimeFormatterRegistrar registrar = new DateTimeFormatterRegistrar();
-//        registrar.setUseIsoFormat(true);
-//        factory.setFormatterRegistrars(Collections.singleton(registrar));
-//        factory.afterPropertiesSet();
-//        return factory.getObject();
-//    }
 }
