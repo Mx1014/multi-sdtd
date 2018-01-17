@@ -443,7 +443,7 @@ public class PcMapShowController {
             if(day == null) {
                 day = new Date();
             }
-            String sql = "SELECT cm_user_id,min(stauts) status from XS_ZC_TASK where PLAN_END_TIME >= trunc(?1) and  PLAN_START_TIME <= (?1+1) group by CM_USER_ID";
+            String sql = "SELECT cm_user_id,min(stauts) status from XS_ZC_TASK where PLAN_END_TIME >= trunc(?1) and  PLAN_START_TIME <= trunc(?1+1) group by CM_USER_ID";
             List<Map<String, Object>> userList = cmcoordinateService.execSql(sql,day);
             Map<String,Object> map = new HashMap<String, Object>();
             for (Map<String,Object> user: userList) {
@@ -473,7 +473,7 @@ public class PcMapShowController {
             if(day == null) {
                 day = new Date();
             }
-            String sql = "SELECT USER_ID,min(status) status from KH_TASK where PLAN_END_TIME >= trunc(?1) and  PLAN_START_TIME <= (?1+1) group by USER_ID";
+            String sql = "SELECT USER_ID,min(status) status from KH_TASK where PLAN_END_TIME >= trunc(?1) and  PLAN_START_TIME <= trunc(?1+1) group by USER_ID";
             List<Map<String, Object>> userList = cmcoordinateService.execSql(sql,day);
             Map<String,Object> map = new HashMap<String, Object>();
             for (Map<String,Object> user: userList) {

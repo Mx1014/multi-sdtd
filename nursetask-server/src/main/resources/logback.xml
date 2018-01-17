@@ -45,9 +45,9 @@
         level="ERROR" />
     <logger name="org.hibernate.type.descriptor.sql.BasicExtractor"
         level="ERROR" />
-    <logger name="org.hibernate.SQL" level="DEBUG" />
-    <logger name="org.hibernate.engine.QueryParameters" level="DEBUG" />
-    <logger name="org.hibernate.engine.query.HQLQueryPlan" level="DEBUG" />
+    <logger name="org.hibernate.SQL" level="ERROR" />
+    <logger name="org.hibernate.engine.QueryParameters" level="ERROR" />
+    <logger name="org.hibernate.engine.query.HQLQueryPlan" level="ERROR" />
 
     <!--myibatis log configure-->
     <!--<logger name="com.apache.ibatis" level="TRACE"/>

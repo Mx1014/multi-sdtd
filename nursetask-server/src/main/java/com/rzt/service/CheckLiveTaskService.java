@@ -119,15 +119,19 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
         return jsonObject;
     }
     //看护已派发稽查任务
-    public Page<Map<String,Object>> listKhCheckTaskPage(Pageable pageable, String userId, String tddwId,String currentUserId,String startTime,String endTime) {
+    public Page<Map<String,Object>> listKhCheckTaskPage(Pageable pageable, String userId, String tddwId,String currentUserId,String startTime,String endTime,String status) {
 
         String sql = "select t.id,t.TASK_ID,t.CREATE_TIME,t.TASK_NAME,t.PLAN_START_TIME,t.PLAN_END_TIME,u.REALNAME,d.DEPTNAME, " +
-                "  t.status  t.TASK_TYPE " +
+                "  t.status , t.TASK_TYPE " +
                 " from CHECK_LIVE_TASK t " +
                 "  LEFT JOIN  rztsysuser u on u.id=t.USER_ID " +
                 "  LEFT JOIN  RZTSYSDEPARTMENT d on d.ID = u.DEPTID where 1=1 ";
 
         List params = new ArrayList<>();
+        //稽查人查询
+        if (!StringUtils.isEmpty(status)) {
+            sql += " AND t.status =" + status;
+        }
         //稽查人查询
         if (!StringUtils.isEmpty(userId)) {
             params.add(userId);
@@ -351,6 +355,18 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
         return obj;
     }
 
+    public List<Map<String,Object>> listKhCheckTaskDetail(Long id) {
+        String sql = " select d.CREATE_TIME,d.PLAN_START_TIME,d.PLAN_END_TIME,t.task_name,t.task_type,d.status,u.REALNAME,h.yhms,h.TDYW_ORG,h.TDWX_ORG,h.yhjb,h.yhjb1,h.YHZRDW,h.YHZRDWLXR,h.YHZRDWDH,h.YHFXSJ,h.gkcs," +
+                " h.YHXCYY , h.XLZYCD,h.classname " +
+                " from CHECK_LIVE_TASK_DETAIL d " +
+                " left join CHECK_LIVE_TASK t on t.id=d.task_id " +
+                " left join KH_YH_HISTORY h on h.id=d.kh_task_id " +
+                " left join rztsysuser u on u.id = t.user_id " +
+                "where t.id = "+id;
+        List<Map<String, Object>> list = execSql(sql);
+        return list;
+    }
+
     /**
      * 每天根据看护点生成待派发的看护稽查
      */
@@ -361,5 +377,6 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
         //更新check_live_site的状态
         //reposiotry.generalKhSite();
     }
+
 
 }
