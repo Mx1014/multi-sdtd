@@ -5,8 +5,10 @@ import com.rzt.entity.app.XsZcTaskwpqr;
 import com.rzt.repository.app.XsZcTaskwpqrRepository;
 import com.rzt.service.CurdService;
 import com.rzt.utils.SnowflakeIdWorker;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
@@ -15,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @ProjectName: sdtd2-task
@@ -49,9 +52,25 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
             //更新redis中的人员 任务的状态
             updateXsMenInfoInRedis(userId);
             //remove掉月宁那边的key
-            String s = "TWO+" + id + "+1+4*";
-            redisTemplate.keys(s);
-            redisTemplate.delete(s);
+            removeSomeKey(id);
+        }
+    }
+
+    public void removeSomeKey(Long id) {
+        String s = "TWO+" + id + "+1+4*";
+        RedisConnection connection = null;
+        try {
+            connection = redisTemplate.getConnectionFactory().getConnection();
+            connection.select(1);
+            Set<byte[]> keys = connection.keys(s.getBytes());
+            byte[][] ts = keys.toArray(new byte[][]{});
+            if(ts.length > 0) {
+                connection.del(ts);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            connection.close();
         }
     }
 
@@ -343,4 +362,5 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
         long nextId = new SnowflakeIdWorker(18, 21).nextId();
         this.reposiotry.insertException(nextId,taskId,ycms,ycdata);
     }
+
 }
