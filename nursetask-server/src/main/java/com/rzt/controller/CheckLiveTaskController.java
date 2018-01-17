@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -78,16 +79,25 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 	@GetMapping("/listKhCheckTaskPage")
 	public WebApiResponse listKhCheckTaskPage(@RequestParam(value = "page",defaultValue = "0") Integer page,
 											  @RequestParam(value = "size",defaultValue = "15") Integer size,
-											  String userId,String tddwId,String currentUserId,String startTime, String endTime){
+											  String userId,String tddwId,String currentUserId,String startTime, String endTime,String status){
 		try{
 			Pageable pageable = new PageRequest(page, size);
-			Page<Map<String, Object>> list = this.service.listKhCheckTaskPage(pageable, userId, tddwId,currentUserId,startTime,endTime);
+			Page<Map<String, Object>> list = this.service.listKhCheckTaskPage(pageable, userId, tddwId,currentUserId,startTime,endTime,status);
 			return WebApiResponse.success(list);
 		}catch (Exception e){
 			return WebApiResponse.erro("数据获取失败"+e.getMessage());
 		}
 	}
-
+	@ApiOperation(value = "看护稽查任务已派发看护任务详情",notes = "看护稽查任务已派发看护任务详情")
+	@GetMapping("/listKhCheckTaskDetail")
+	public WebApiResponse listKhCheckTaskDetail(String id){
+		try{
+			List<Map<String, Object>> list = this.service.listKhCheckTaskDetail(Long.valueOf(id));
+			return WebApiResponse.success(list);
+		}catch (Exception e){
+			return WebApiResponse.erro("数据获取失败"+e.getMessage());
+		}
+	}
 
 	/**
 	 * app任务列表

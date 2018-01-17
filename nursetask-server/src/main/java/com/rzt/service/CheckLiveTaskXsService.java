@@ -55,7 +55,7 @@ public class CheckLiveTaskXsService extends CurdService<CheckLiveTaskXs, CheckLi
         String sql = "select " + result +
                 " from XS_ZC_TASK c LEFT JOIN  XS_ZC_CYCLE c1 on c.XS_ZC_CYCLE_ID = c1.ID" +
                 " LEFT JOIN  RZTSYSDEPARTMENT d on d.ID = c.TD_ORG" +
-                "   left join rztsysuser u on u.id=c.CM_USER_ID  where c.jc_status=0 and sysdate+1/24<c.plan_start_time ";
+                "   left join rztsysuser u on u.id=c.CM_USER_ID  where c.jc_status=0 and sysdate+1/24<c.plan_end_time ";
 
         List params = new ArrayList<>();
         //时间段查询
@@ -142,13 +142,17 @@ public class CheckLiveTaskXsService extends CurdService<CheckLiveTaskXs, CheckLi
     }
 
 
-    public Page<Map<String,Object>> listXsCheckTaskPage(Pageable pageable, String startTime, String endTime, String userId, String tddwId,String currentUserId) {
+    public Page<Map<String,Object>> listXsCheckTaskPage(Pageable pageable, String startTime, String endTime, String userId, String tddwId,String currentUserId,String status) {
         String sql = "select t.id,t.TASK_ID,t.CREATE_TIME,t.TASK_NAME,u.REALNAME,td.PLAN_START_TIME,td.PLAN_END_TIME,d.DEPTNAME, t.TASK_TYPE,t.status from CHECK_LIVE_TASKXS t " +
                 "  LEFT JOIN CHECK_LIVE_TASK_DETAILXS td ON t.id=td.task_id " +
                 "  LEFT JOIN  rztsysuser u on u.id=t.USER_ID " +
                 "  LEFT JOIN  RZTSYSDEPARTMENT d on d.ID = u.DEPTID where 1=1 ";
 
         List params = new ArrayList<>();
+        //状态查询
+        if (!StringUtils.isEmpty(status)){
+            sql += " and status="+status;
+        }
         //时间段查询
         if (!StringUtils.isEmpty(startTime) && !StringUtils.isEmpty(endTime)){
             params.add(endTime);
