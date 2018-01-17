@@ -124,7 +124,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
 
     public WebApiResponse saveCoordinate(String yhId, String lat, String lon, String radius) {
         try {
-            if (!radius.contains(".0")) {
+            if (!radius.contains(".")) {
                 radius = radius + ".0";
             }
             this.reposiotry.updateYh(Long.parseLong(yhId), lat, lon, radius);
@@ -177,18 +177,35 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
     public WebApiResponse ImportYh() {
         int i = 2;
         try {
-            FileInputStream file = new FileInputStream("E:\\826708743\\FileRecv\\隐患列表_20180111-程焕竹.xls");
+
+            FileInputStream file = new FileInputStream("E:\\win10\\新建文件夹\\WeChat Files\\yawang-\\Files\\检分安云云台看护任务.xls ");
+//            FileInputStream file = new FileInputStream("E:\\826708743\\FileRecv\\隐患列表_20180111-程焕竹.xls");
             //HSSFWorkbook wb = new HSSFWorkbook(file.getInputStream());
             HSSFWorkbook wb = new HSSFWorkbook(file);
             HSSFSheet sheet = wb.getSheetAt(0);
             HSSFRow row = sheet.getRow(i);
+            String sql = "SELECT *\n" +
+                    "FROM KH_SITE\n" +
+                    "WHERE JBD LIKE '一班倒'";
+            List<Map<String, Object>> list = this.execSql(sql);
             while (row != null && !"".equals(row.toString().trim())) {
-                KhYhHistory yh = new KhYhHistory();
+
+              KhYhHistory yh = new KhYhHistory();
                 HSSFCell cell = row.getCell(1);
                 if (cell == null || "".equals(ExcelUtil.getCellValue(cell))) {
                     break;
                 }
-                yh.setId(null);
+                for (Map map:list){
+                    if (map.get("TASK_NAME").toString().equals(ExcelUtil.getCellValue(row.getCell(1)))){
+                        String username = ExcelUtil.getCellValue(row.getCell(0));
+                        String sql1="select id,realname from rztsysuser where realname like ? and deptid='402881e6603a69b801603a70c9920007'";
+                        Map<String, Object> map1 = this.execSqlSingleResult(sql1, "%"+username+"%");
+                        System.out.println(map1.get("REALNAME").toString());
+                        this.reposiotry.updates(Long.parseLong(map.get("ID").toString()),map1.get("ID").toString());
+                    }
+                }
+
+                /*  yh.setId(null);
                 String yworg = ExcelUtil.getCellValue(row.getCell(1));
                 String sborg = ExcelUtil.getCellValue(row.getCell(2));
                 if (yworg.contains("供电")) {
@@ -287,7 +304,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 yh.setTaskId(cycle.getId());
                 addKhCycle(yh, cycle);
                 //}
-                this.add(yh);
+                this.add(yh);*/
                 row = sheet.getRow(++i);
                 /*
                 yh.setStartTower();
@@ -590,5 +607,14 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             e.printStackTrace();
         }
         return WebApiResponse.success("");
+    }
+
+    public WebApiResponse updateYhHistory(KhYhHistory yh) {
+        try {
+            return WebApiResponse.success("");
+        }catch (Exception e){
+            e.printStackTrace();
+            return WebApiResponse.erro("保存失败"+e.getMessage());
+        }
     }
 }

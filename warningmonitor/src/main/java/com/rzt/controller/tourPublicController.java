@@ -19,11 +19,12 @@ public class tourPublicController extends CurdController<Monitorcheckej, tourPub
 
     //巡视未按标准速率拍照
     @GetMapping("takePhoto")
-    public void takePhoto(Long taskid, String userid){
+    public WebApiResponse takePhoto(Long taskid, String userid){
         try {
             service.takePhoto(taskid,userid);
+            return WebApiResponse.success("success");
         }catch (Exception e){
-            e.getMessage();
+            return WebApiResponse.erro("巡视未按标准拍照添加失败");
         }
     }
 

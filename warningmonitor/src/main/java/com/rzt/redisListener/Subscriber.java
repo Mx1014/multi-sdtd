@@ -33,14 +33,7 @@ public class Subscriber extends JedisPubSub {
     // 取得按表达式的方式订阅的消息后的处理
     public void onPMessage(String pattern, String channel, String message) {
         try {
-            //System.out.println(pattern + "========================" + channel + "=" + message);
-            //以+号分隔
-            /*new Thread(new Runnable() {
-                @Override
-                public void run() {
 
-                }
-            }).start();*/
             String[] messages = message.split("\\+");
             if(messages.length<7){
                 LOGGER.error("redis信息录入不全");
@@ -49,12 +42,7 @@ public class Subscriber extends JedisPubSub {
             if("TWO".equals(messages[0])){  //表示告警任务生成，插入到二级单位表中
                 try{
 
-                    //未按时接任务,要先判断该任务有没有按规定时间开始，所以单独判断
-                   /* if("4".equals(messages[3])||"10".equals(messages[3])){ //未按时接任务
-                        monitorcheckej.addXSWAS(messages);
-                    }else{
 
-                    */
                      monitorcheckej.saveCheckEj(messages);
                      String key = "ONE+"+messages[1]+"+"+messages[2]+"+"+messages[3]+"+"+messages[4]+"+"+messages[5]+"+"+messages[6];
                      redisService.setex(key);

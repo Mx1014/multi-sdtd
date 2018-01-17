@@ -49,7 +49,8 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
 
     //看护脱岗 给脱岗用
     public void KHTG(String userId,Long taskId){
-        String sql = "SELECT TASK_NAME,TDYW_ORG FROM KH_TASK WHERE ID =?2 AND USER_ID=?1";
+        String sql = "SELECT kh.TASK_NAME,d.ID AS TDYW_ORG FROM KH_TASK kh LEFT JOIN RZTSYSDEPARTMENT d " +
+                " ON kh.TDYW_ORG = d.DEPTNAME  WHERE kh.ID =?2 AND kh.USER_ID=?1";
         try {
             Map<String, Object> map = execSqlSingleResult(sql, userId, taskId);
             //直接存到二级单位
@@ -68,8 +69,8 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
     public void KHXX(String userId,Integer taskType){
         String sql = "";
         if(taskType==2){
-            sql = " SELECT kh.ID,kh.TDYW_ORG as DEPTID,kh.PLAN_START_TIME,kh.PLAN_END_TIME, kh.TASK_NAME,kh.USER_ID FROM  KH_TASK kh  " +
-                    "WHERE trunc(kh.PLAN_START_TIME) = trunc(sysdate) AND kh.USER_ID =?1 ";
+            sql = " SELECT kh.ID,d.ID AS  DEPTID,kh.PLAN_START_TIME,kh.PLAN_END_TIME, kh.TASK_NAME,kh.USER_ID FROM  KH_TASK kh  LEFT JOIN RZTSYSDEPARTMENT d " +
+                    " ON kh.TDYW_ORG = d.DEPTNAME WHERE trunc(kh.PLAN_START_TIME) = trunc(sysdate) AND kh.USER_ID =?1 ";
         }else if(taskType==1){
             sql = "SELECT ID,TD_ORG as DEPTID,PLAN_START_TIME,TASK_NAME,CM_USER_ID,PLAN_END_TIME  " +
                     "FROM XS_ZC_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND CM_USER_ID=?1";
@@ -124,8 +125,8 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
     public void KHSX(String userId,Integer taskType){
         String sql = "";
         if(taskType==2){
-            sql = " SELECT kh.ID,kh.TDYW_ORG as DEPTID,kh.PLAN_START_TIME,kh.PLAN_END_TIME, kh.TASK_NAME,kh.USER_ID FROM  KH_TASK kh  " +
-                    "WHERE trunc(kh.PLAN_START_TIME) = trunc(sysdate) AND kh.USER_ID =?1 ";
+            sql = " SELECT kh.ID,d.ID as DEPTID,kh.PLAN_START_TIME,kh.PLAN_END_TIME, kh.TASK_NAME,kh.USER_ID FROM  KH_TASK kh   LEFT JOIN RZTSYSDEPARTMENT d " +
+                    " ON kh.TDYW_ORG = d.DEPTNAME  WHERE trunc(kh.PLAN_START_TIME) = trunc(sysdate) AND kh.USER_ID =?1 ";
         }else if(taskType==1){
             sql = "SELECT ID,TD_ORG as DEPTID,PLAN_START_TIME,TASK_NAME,CM_USER_ID,PLAN_END_TIME  " +
                     "FROM XS_ZC_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND CM_USER_ID=?1";
@@ -192,7 +193,8 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
                 key = "TWO+"+taskId+"+"+taskType+"+4+"+userId+maps.get(0).get("TD_ORG").toString()+maps.get(0).get("TASK_NAME").toString();
             }
         }else if(2==taskType){
-            String sql = "SELECT TASK_NAME,TDYW_ORG FROM KH_TASK WHERE ID=?1";
+            String sql = "SELECT kh.TASK_NAME,d.ID as TDYW_ORG FROM KH_TASK  kh LEFT JOIN RZTSYSDEPARTMENT d " +
+                    " ON kh.TDYW_ORG = d.DEPTNAME  WHERE kh.ID=?1";
             List<Map<String, Object>> maps = execSql(sql, taskId);
             if(maps.size()>0){
                 key = "TWO+"+taskId+"+"+taskType+"+10+"+userId+maps.get(0).get("TDYW_ORG").toString()+maps.get(0).get("TASK_NAME").toString();
