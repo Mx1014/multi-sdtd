@@ -117,6 +117,11 @@ public class CmcoordinateController extends
     }
 
     public static void main(String[] args) {
-        System.out.println(null + "-");
+       String admin = "我叫宁伟泽";
+        int length = admin.length();
+        for (int i= 0;i< length;i++) {
+            String substring = admin.substring(i, i + 1);
+            System.out.print(substring +"\n");
+        }
     }
 }
