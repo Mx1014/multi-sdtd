@@ -386,11 +386,33 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
             arrList.add(userId);
         }
 
-        //线路id
-        Long lineId = xsTaskSch.getLineId();
-        if (!StringUtils.isEmpty(lineId )) {
-            sqlBuffer.append("and line_id = ? ");
-            arrList.add(userId);
+        //电压等级
+        Integer v_type = xsTaskSch.getV_type();
+        if (!StringUtils.isEmpty(v_type )) {
+            String kv = "" ;
+            switch (v_type) {
+                case 0:
+                    kv = "35-%";
+                    break;
+                case 1:
+                    kv = "110-%";
+                    break;
+                case 2:
+                    kv = "220-%";
+                    break;
+                case 3:
+                    kv = "500-%";
+                    break;
+            };
+            sqlBuffer.append("and task_name like ? ");
+            arrList.add(kv);
+        }
+
+        //线路名称
+        String lineName = xsTaskSch.getLineName();
+        if (!StringUtils.isEmpty(lineName )) {
+            sqlBuffer.append("and task_name like ? ");
+            arrList.add("%" + lineName + "%");
         }
 
         //任务名
@@ -447,8 +469,18 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
     }
 
     //    @CacheEvict(value = "xsZcCycles" , key = "#id")
-    public void updateCycle(Long id, Integer cycle, Integer inUse, Integer planXsNum, String planStartTime, String planEndTime, Integer isKt) {
-        this.reposiotry.updateCycle(id, cycle, inUse, planXsNum,                                                                                                              planStartTime, planEndTime,isKt);
+    public void updateCycle(Long id, Integer cycle, Integer inUse, Integer planXsNum, String planStartTime, String planEndTime, Integer isKt, String cm_user_id) throws Exception {
+        if (!StringUtils.isEmpty(cm_user_id)) {
+            Map<String, Object> map = userInfoFromRedis(cm_user_id);
+            Object deptid = map.get("DEPTID");
+            Object companyid = map.get("COMPANYID");
+            Object groupid = map.get("GROUPID");
+            Object classid = map.get("CLASSID");
+
+            this.reposiotry.updateCycle(id, cycle, inUse, planXsNum,planStartTime, planEndTime,isKt,cm_user_id,deptid,companyid,groupid,classid);
+        } else {
+            this.reposiotry.updateCycleTwo(id, cycle, inUse, planXsNum,planStartTime, planEndTime,isKt);
+        }
     }
 
     public Object listPictureById(Long taskId, Integer zj) {
