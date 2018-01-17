@@ -44,35 +44,7 @@ public class JedisRunner implements ApplicationListener<ContextRefreshedEvent>/*
         });
         t.start();
     }
-//    @Async
-    private void subscribe() {
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Jedis jedis= jedisPool.getResource();
-                try {
-                    System.out.println("============");
-                    jedis.psubscribe(subscriber , "__keyevent@1__:expired");
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }finally {
-                    jedis.close();
-                }
-            }
-        });
-    }
 
-    /*@Override
-    public void run(String... strings) throws Exception {
-        Jedis jedis= jedisPool.getResource();
-        try {
-            //监听所有reids通道中的过期事件
-            jedis.psubscribe(subscriber, "__keyevent@1__:expired");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }finally {
-            jedis.close();
-        }
-    }*/
+
 
 }

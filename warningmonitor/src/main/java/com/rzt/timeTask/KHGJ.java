@@ -47,8 +47,8 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
 
     //看护未上线  给定时拉取数据用
     public void KHWSX(){
-        String sql = " SELECT kh.ID,kh.TDYW_ORG,kh.PLAN_START_TIME,kh.TASK_NAME,kh.USER_ID FROM  KH_TASK kh  " +
-                "WHERE trunc(kh.PLAN_START_TIME) = trunc(sysdate) ";
+        String sql = " SELECT kh.ID,d.ID AS TDYW_ORG,kh.PLAN_START_TIME,kh.TASK_NAME,kh.USER_ID FROM  KH_TASK kh LEFT JOIN RZTSYSDEPARTMENT d " +
+                " ON kh.TDYW_ORG = d.DEPTNAME WHERE trunc(kh.PLAN_START_TIME) = trunc(sysdate)";
         List<Map<String, Object>> maps = execSql(sql);
         for (Map<String, Object> map:maps) {
             Jedis jedis = jedisPool.getResource();
@@ -87,11 +87,12 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
             }
         });
     }
-
-    //看护人员未按规定时间看护任务 定时拉取数据用
+    /**
+     * 看护人员未按规定时间看护任务 定时拉取数据用
+     */
     public void KHWKH() {
-        String sql = "SELECT kh.ID,kh.TDYW_ORG,kh.PLAN_START_TIME, kh.TASK_NAME,kh.USER_ID FROM  KH_TASK kh  " +
-                "WHERE trunc(kh.PLAN_START_TIME) = trunc(sysdate)";
+        String sql = " SELECT kh.ID,d.ID AS TDYW_ORG,kh.PLAN_START_TIME,kh.TASK_NAME,kh.USER_ID FROM  KH_TASK kh LEFT JOIN RZTSYSDEPARTMENT  d" +
+                "    ON kh.TDYW_ORG = d.DEPTNAME WHERE trunc(kh.PLAN_START_TIME) = trunc(sysdate)";
         List<Object> list = new ArrayList<>();
         List<Map<String, Object>> maps = execSql(sql);
         for (Map<String, Object> map : maps) {
@@ -117,8 +118,8 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
         //判断在0点到拉数据时间段内有无未按时接任务的
         if(list.size()>0)
             for(Object obj:list){
-                String sql1 = "SELECT kh.ID,kh.TDYW_ORG,kh.PLAN_START_TIME, kh.TASK_NAME,kh.USER_ID FROM  KH_TASK kh " +
-                        "              WHERE kh.PLAN_START_TIME<nvl(kh.REAL_START_TIME,sysdate) AND ID=402125270137704448";
+                String sql1 = "SELECT kh.ID,d.ID AS TDYW_ORG,kh.PLAN_START_TIME,kh.TASK_NAME,kh.USER_ID FROM  KH_TASK kh LEFT JOIN RZTSYSDEPARTMENT d  " +
+                        " ON kh.TDYW_ORG = d.DEPTNAME WHERE kh.PLAN_START_TIME<nvl(kh.REAL_START_TIME,sysdate) AND kh.ID=?1";
                 List<Map<String, Object>> maps1 = execSql(sql1, obj);
                 if(maps1.size()>0){
                     Map<String, Object> map = maps1.get(0);
