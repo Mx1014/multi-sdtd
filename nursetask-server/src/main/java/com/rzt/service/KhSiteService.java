@@ -94,11 +94,11 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             buffer.append(" and u.realname like ? ");
             params.add("%" + userName + "%");
         }
-        if (yhjb != null && yhjb.equals("")) {
+        if (yhjb != null && !yhjb.equals("")) {
             buffer.append(" and y.yhjb like ?");
             params.add(("%" + yhjb + "%"));
         }
-        if (yworg != null && yworg.equals("")) {
+        if (yworg != null && !yworg.equals("")) {
             buffer.append(" and y.yhjb like ?");
             params.add(("%" + yhjb + "%"));
         }
