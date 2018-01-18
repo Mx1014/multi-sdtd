@@ -10,6 +10,8 @@ import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DateUtil;
 import com.rzt.utils.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import redis.clients.jedis.Jedis;
@@ -17,6 +19,7 @@ import redis.clients.jedis.JedisPool;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.Set;
 
 import static java.lang.Integer.*;
 
@@ -26,7 +29,8 @@ import static java.lang.Integer.*;
 @Service
 public class AppKhUpdateService extends CurdService<KhTask, AppKhUpdateRepository> {
 
-
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
     @Autowired
     private KhTaskWpqrService wpqrService;
 
@@ -36,10 +40,10 @@ public class AppKhUpdateService extends CurdService<KhTask, AppKhUpdateRepositor
             int num = this.reposiotry.findNum(taskId);
             if (num < 1) {
                 //if (isdw != null && reason != null) {
-                    this.reposiotry.updateRealStartTime(taskId, DateUtil.dateNow());
-                    this.reposiotry.updateZxnum(1, taskId);//修改执行页数
-                    RedisUtil.removeSomeKey(taskId);
+                this.reposiotry.updateRealStartTime(taskId, DateUtil.dateNow());
+                this.reposiotry.updateZxnum(1, taskId);//修改执行页数
             }
+            removeSomeKey(taskId);
             return WebApiResponse.success("修改成功");
         } catch (Exception e) {
             e.printStackTrace();
@@ -91,14 +95,14 @@ public class AppKhUpdateService extends CurdService<KhTask, AppKhUpdateRepositor
         }
     }
 
-    public WebApiResponse updateDdxcTime(Long taskId,String isdw, String reason) {
+    public WebApiResponse updateDdxcTime(Long taskId, String isdw, String reason) {
         try {
             int num = this.reposiotry.findNum(taskId);
             if (num < 5) {
-                this.reposiotry.updateDDTime(DateUtil.dateNow(), taskId,Integer.parseInt(isdw),reason);
+                this.reposiotry.updateDDTime(DateUtil.dateNow(), taskId, Integer.parseInt(isdw), reason);
                 this.reposiotry.updateZxnum(5, taskId);//修改执行页数
-            }else{
-                this.reposiotry.updateIsDz(DateUtil.dateNow(), taskId,Integer.parseInt(isdw),reason);
+            } else {
+                this.reposiotry.updateIsDz(DateUtil.dateNow(), taskId, Integer.parseInt(isdw), reason);
             }
             return WebApiResponse.success("修改成功");
         } catch (Exception e) {
@@ -126,6 +130,24 @@ public class AppKhUpdateService extends CurdService<KhTask, AppKhUpdateRepositor
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("修改失败");
+        }
+    }
+
+    public void removeSomeKey(Long id) {
+        String s = "TWO+" + id + "+2+10*";
+        RedisConnection connection = null;
+        try {
+            connection = redisTemplate.getConnectionFactory().getConnection();
+            connection.select(1);
+            Set<byte[]> keys = connection.keys(s.getBytes());
+            byte[][] ts = keys.toArray(new byte[][]{});
+            if (ts.length > 0) {
+                connection.del(ts);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            connection.close();
         }
     }
 }
