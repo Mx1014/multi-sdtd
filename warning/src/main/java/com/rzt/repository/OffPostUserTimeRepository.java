@@ -31,9 +31,9 @@ public interface OffPostUserTimeRepository extends JpaRepository<OffPostUserTime
 
  @Transactional
  @Modifying
- @Query(value = "update warning_off_post_user_time set end_time=?2 where fk_user_id=?1 and end_time is null",nativeQuery = true)
- void updateOffUserEndTime(String userId, Date date);
+ @Query(value = "update warning_off_post_user_time set end_time=?2 where fk_user_id=?1 and end_time is null and FK_TASK_ID=?3",nativeQuery = true)
+ void updateOffUserEndTime(String userId, Date date,Long taskId);
 
- @Query(value="select * from warning_off_post_user_time where fk_user_id=?1 and end_time is null",nativeQuery = true)
- List<OffPostUserTime> findByUserIdAndDateisNull(String userId);
+ @Query(value="select * from warning_off_post_user_time where fk_user_id=?1 and end_time is null and FK_TASK_ID=?2",nativeQuery = true)
+ List<OffPostUserTime> findByUserIdAndDateisNull(String userId,Long taskId);
 }
