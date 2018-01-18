@@ -38,7 +38,7 @@ public class WarningOffPostUserTimeService extends CurdService<OffPostUserTime, 
      */
     @Transactional
     public void updateOffUserEndTime(OffPostUserTime  offPostUserTime){
-        repository.saveAndFlush(offPostUserTime);
+        repository.updateOffUserEndTime(offPostUserTime.getFkUserId(),new Date(),offPostUserTime.getFkTaskId());
     }
 
     /**
@@ -46,8 +46,8 @@ public class WarningOffPostUserTimeService extends CurdService<OffPostUserTime, 
      * @param userId
      * @return
      */
-    public List<OffPostUserTime> findByUserIdAndDateisNull(String userId){
-        return repository.findByUserIdAndDateisNull(userId);
+    public List<OffPostUserTime> findByUserIdAndDateisNull(String userId,Long taskId){
+        return repository.findByUserIdAndDateisNull(userId,taskId);
     }
 
     /**
@@ -55,11 +55,12 @@ public class WarningOffPostUserTimeService extends CurdService<OffPostUserTime, 
      * @param userId
      */
     @Transactional
-    public void addOffUserTime(String userId){
+    public void addOffUserTime(String userId,Long taskId){
         OffPostUserTime offPostUserTime = new OffPostUserTime();
         offPostUserTime.setId(new SnowflakeIdWorker(0,0).nextId());
         offPostUserTime.setFkUserId(userId);
         offPostUserTime.setStartTime(new Date());
+        offPostUserTime.setFkTaskId(taskId);
         repository.save(offPostUserTime);
     }
 
