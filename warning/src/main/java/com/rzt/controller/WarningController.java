@@ -46,6 +46,12 @@ public class WarningController extends CurdController<OffPostUser,WarningOffPost
 					service.addUser(offPostUser);
 					//添加OffPostUserTime
 					timeService.addOffUserTime(offPostUser.getUserId());
+					if(offPostUser.getStatus()==1){
+						try {
+							staffLine.khtg(offPostUser.getUserId(),offPostUser.getTaskId());
+						} catch (Exception e) {
+						}
+					}
 				}else{
 					//判断该人员状态是否改变
 					if (offUser.getStatus()!=offPostUser.getStatus()){
@@ -62,14 +68,15 @@ public class WarningController extends CurdController<OffPostUser,WarningOffPost
 						//更新脱岗人员状态
 						offUser.setStatus(offPostUser.getStatus());
 						service.updateOffUser(offUser);
+						if(offPostUser.getStatus()==1){
+							try {
+								staffLine.khtg(offPostUser.getUserId(),offPostUser.getTaskId());
+							} catch (Exception e) {
+							}
+						}
 					}
 				}
-				if(offPostUser.getStatus()==1){
-					try {
-						staffLine.khtg(offPostUser.getUserId(),offPostUser.getTaskId());
-					} catch (Exception e) {
-					}
-				}
+
 			}
 			return new WebApiResponse().success("添加成功");
 		} catch (Exception e) {
