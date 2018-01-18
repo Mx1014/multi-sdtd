@@ -28,7 +28,7 @@ public class XsTaskController extends
      * @return
      */
     @GetMapping("/fingYHByTaskId")
-    public WebApiResponse fingYHByTaskId(String taskId,String TASKTYPE){
+    public WebApiResponse fingYHByTaskId(Long taskId,String TASKTYPE){
         if(null!= taskId && !"".equals(taskId)){
             return service.findYHByTaskId(taskId,TASKTYPE);
         }
