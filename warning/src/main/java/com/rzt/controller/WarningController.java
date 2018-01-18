@@ -45,7 +45,7 @@ public class WarningController extends CurdController<OffPostUser,WarningOffPost
 					offPostUser.setCreateTime(new Date());
 					service.addUser(offPostUser);
 					//添加OffPostUserTime
-					timeService.addOffUserTime(offPostUser.getUserId());
+					timeService.addOffUserTime(offPostUser.getUserId(),offPostUser.getTaskId());
 					if(offPostUser.getStatus()==1){
 						try {
 							staffLine.khtg(offPostUser.getUserId(),offPostUser.getTaskId());
@@ -55,15 +55,15 @@ public class WarningController extends CurdController<OffPostUser,WarningOffPost
 				}else{
 					//判断该人员状态是否改变
 					if (offUser.getStatus()!=offPostUser.getStatus()){
-						List<OffPostUserTime> list = timeService.findByUserIdAndDateisNull(offUser.getUserId());
+						List<OffPostUserTime> list = timeService.findByUserIdAndDateisNull(offUser.getUserId(),offUser.getTaskId());
 						if(list.size()>0){
 							OffPostUserTime offPostUserTime = list.get(0);
 							//如果该条时间记录已经存在，则只更新回岗时间
-							offPostUserTime.setEndTime(new Date());
+							//offPostUserTime.setEndTime(new Date());
 							timeService.updateOffUserEndTime(offPostUserTime);
 						}else{
 							//如果该条时间记录不存在，则重新添加一条
-							timeService.addOffUserTime(offPostUser.getUserId());
+							timeService.addOffUserTime(offPostUser.getUserId(),offPostUser.getTaskId());
 						}
 						//更新脱岗人员状态
 						offUser.setStatus(offPostUser.getStatus());

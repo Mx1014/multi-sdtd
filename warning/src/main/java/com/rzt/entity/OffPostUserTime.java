@@ -36,6 +36,17 @@ public class OffPostUserTime implements Serializable{
 	private Date startTime;  //脱岗时间
 	@Column(name="END_TIME")
 	private Date endTime;  //回岗时间
+	@Column(name = "FK_TASK_ID")
+	private Long FkTaskId; //任务id
+
+	public Long getFkTaskId() {
+		return FkTaskId;
+	}
+
+	public void setFkTaskId(Long fkTaskId) {
+		FkTaskId = fkTaskId;
+	}
+
 	public Long getId() {
 		return id;
 	}
