@@ -4,6 +4,7 @@ import org.aspectj.lang.annotation.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Component;
 import redis.clients.jedis.Jedis;
 
 import java.util.Set;
@@ -11,9 +12,10 @@ import java.util.Set;
 /**
  * Created by admin on 2017/12/25.
  */
+@Component
 public class RedisUtil {
     @Autowired
-    private static RedisTemplate<String, Object> redisTemplate;
+    private RedisTemplate<String, Object> redisTemplate;
     private static Jedis jedis;
 
     public static Jedis getConnection() {
@@ -24,7 +26,7 @@ public class RedisUtil {
         return jedis;
     }
 
-    public static void removeSomeKey(Long id) {
+    public  void removeSomeKey(Long id) {
         String s = "TWO+" + id + "+2+10*";
         RedisConnection connection = null;
         try {
