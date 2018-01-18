@@ -35,8 +35,8 @@ public interface XsZcCycleRepository extends JpaRepository<XsZcCycle,String> {
 
     @Modifying
     @Transactional
-    @Query(value = "update xs_zc_cycle set cycle = ?2, in_use = ?3,plan_xs_num = ?4,plan_start_time = ?5,plan_end_time = ?6,is_kt = ?7 where id= ?1", nativeQuery = true)
-    void updateCycle(Long id, Integer cycle, Integer inUse, Integer planXsNum, String planStartTime, String planEndTime, Integer isKt);
+    @Query(value = "update xs_zc_cycle set cycle = ?2, in_use = ?3,plan_xs_num = ?4,plan_start_time = ?5,plan_end_time = ?6,is_kt = ?7,cm_user_id = ?8,td_org = ?9,wx_org = ?10,group_id = ?11,class_id = ?12 where id= ?1", nativeQuery = true)
+    void updateCycle(Long id, Integer cycle, Integer inUse, Integer planXsNum, String planStartTime, String planEndTime, Integer isKt, String cm_user_id, Object deptid, Object companyid, Object groupid, Object classid);
 
 
     @Modifying
@@ -64,4 +64,10 @@ public interface XsZcCycleRepository extends JpaRepository<XsZcCycle,String> {
     @Transactional
     @Query(value = "update xs_zc_task set task_name = ?2 where id = ?1", nativeQuery = true)
     void updatetaskname2(long id, String taskName);
+
+
+    @Modifying
+    @Transactional
+    @Query(value = "update xs_zc_cycle set cycle = ?2, in_use = ?3,plan_xs_num = ?4,plan_start_time = ?5,plan_end_time = ?6,is_kt = ?7 where id= ?1", nativeQuery = true)
+    void updateCycleTwo(Long id, Integer cycle, Integer inUse, Integer planXsNum, String planStartTime, String planEndTime, Integer isKt);
 }

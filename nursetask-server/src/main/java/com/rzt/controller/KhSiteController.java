@@ -182,12 +182,17 @@ public class KhSiteController extends
      * @param response
      */
     @GetMapping("/exportNursePlan.do")
-    public void exportNursePlan(HttpServletRequest request, HttpServletResponse response,String userId) {
-        HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
-        JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", userId).toString());
+    public void exportNursePlan(HttpServletRequest request, HttpServletResponse response, String userId) {
 
-       // Object jsonObject = new Object();
-        this.service.exportNursePlan(request, response,jsonObject,userId);
+        try {
+            HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
+            JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", userId).toString());
+
+            // Object jsonObject = new Object();
+            this.service.exportNursePlan(request, response, jsonObject, userId);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 	 /* */
@@ -233,7 +238,7 @@ public class KhSiteController extends
             String sql = "select id,user_id as userId,yh_id yhid,wx_org as wx,wx_orgid as wxid from kh_site";
             List<Map<String, Object>> list = this.service.execSql(sql);
             for (Map map : list) {
-                if(map.get("WX") != null) {
+                if (map.get("WX") != null) {
                     this.service.updateSite(map.get("YHID").toString(), map.get("WX").toString(), map.get("WXID").toString());
                 }
             }

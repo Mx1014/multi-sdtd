@@ -48,8 +48,8 @@ public class AppKhUpdateController  extends
     @ApiOperation(value = "修改到达现场时间", notes = "修改到达现场时间、执行页数 ")
     @PatchMapping("/updateDdxcTime")
     @ResponseBody
-    public WebApiResponse updateDdxcTime(String taskId){
-        return this.service.updateDdxcTime(Long.parseLong(taskId));
+    public WebApiResponse updateDdxcTime(String isdw,String reason,String taskId){
+        return this.service.updateDdxcTime(Long.parseLong(taskId),isdw,reason);
     }
 
     @ApiOperation(value = "开始看护页面", notes = "开始看护页面 ")

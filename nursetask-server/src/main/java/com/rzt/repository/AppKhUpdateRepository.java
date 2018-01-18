@@ -31,8 +31,8 @@ public interface AppKhUpdateRepository extends JpaRepository<KhTask, String> {
 
     @Modifying
     @Transactional
-    @Query(value = "update kh_task set ddxc_time = ?1 where id = ?2", nativeQuery = true)
-    void updateDDTime(Date time, long id);
+    @Query(value = "update kh_task set ddxc_time = ?1,is_dw=?3,reason=?4 where id = ?2", nativeQuery = true)
+    void updateDDTime(Date time, Long taskId, int id, String reason);
 
     @Modifying
     @Transactional
@@ -56,4 +56,9 @@ public interface AppKhUpdateRepository extends JpaRepository<KhTask, String> {
 
     @Query(value = "select ZXYS_NUM  FROM KH_TASK where id=?1", nativeQuery = true)
     int findNum(long taskId);
+
+    @Modifying
+    @Transactional
+    @Query(value = "update kh_task set is_dw=?3,reason=?4 where id = ?2", nativeQuery = true)
+    void updateIsDz(Date date, Long taskId, int i, String reason);
 }

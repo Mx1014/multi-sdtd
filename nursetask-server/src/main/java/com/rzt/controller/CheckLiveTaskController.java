@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -40,10 +41,10 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 	@GetMapping("/listKhCheckPage")
 	public WebApiResponse listKhCheckPage(@RequestParam(value = "page",defaultValue = "0") Integer page,
 										  @RequestParam(value = "size",defaultValue = "15") Integer size,
-										 String lineId,String tddwId){
+										 String lineId,String tddwId,String currentUserId){
 		try{
 			Pageable pageable = new PageRequest(page, size);
-			Page<Map<String, Object>> list = this.service.listKhCheckPage(pageable, lineId, tddwId);
+			Page<Map<String, Object>> list = this.service.listKhCheckPage(pageable, lineId, tddwId,currentUserId);
 			return WebApiResponse.success(list);
 		}catch (Exception e){
 			return WebApiResponse.erro("数据获取失败"+e.getMessage());
@@ -53,11 +54,11 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 	@ApiOperation(value = "看护任务详情",notes = "看护任务详情")
 	@GetMapping("/khTaskDetail")
 	public WebApiResponse khTaskDetail(String taskId){
-		Map<String, Object> map = new HashMap<>();
+		Map<String, Object> map = new HashMap<String,Object>();
 		try {
 			map = service.khTaskDetail(taskId);
 		} catch (Exception e) {
-			WebApiResponse.erro(e.getMessage());
+			return WebApiResponse.erro(e.getMessage());
 		}
 		return WebApiResponse.success(map);
 	}
@@ -66,7 +67,6 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 	@GetMapping("/paifaKhCheckTask")
 	public WebApiResponse paifaKhCheckTask(CheckLiveTask task , String username){
 		try {
-
 			this.service.paifaKhCheckTask(task,username);
 			return WebApiResponse.success("任务派发成功");
 		}catch (Exception e){
@@ -79,16 +79,25 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 	@GetMapping("/listKhCheckTaskPage")
 	public WebApiResponse listKhCheckTaskPage(@RequestParam(value = "page",defaultValue = "0") Integer page,
 											  @RequestParam(value = "size",defaultValue = "15") Integer size,
-											  String userId,String tddwId){
+											  String userId,String tddwId,String currentUserId,String startTime, String endTime,String status){
 		try{
 			Pageable pageable = new PageRequest(page, size);
-			Page<Map<String, Object>> list = this.service.listKhCheckTaskPage(pageable, userId, tddwId);
+			Page<Map<String, Object>> list = this.service.listKhCheckTaskPage(pageable, userId, tddwId,currentUserId,startTime,endTime,status);
 			return WebApiResponse.success(list);
 		}catch (Exception e){
 			return WebApiResponse.erro("数据获取失败"+e.getMessage());
 		}
 	}
-
+	@ApiOperation(value = "看护稽查任务已派发看护任务详情",notes = "看护稽查任务已派发看护任务详情")
+	@GetMapping("/listKhCheckTaskDetail")
+	public WebApiResponse listKhCheckTaskDetail(String id){
+		try{
+			List<Map<String, Object>> list = this.service.listKhCheckTaskDetail(Long.valueOf(id));
+			return WebApiResponse.success(list);
+		}catch (Exception e){
+			return WebApiResponse.erro("数据获取失败"+e.getMessage());
+		}
+	}
 
 	/**
 	 * app任务列表
@@ -112,7 +121,7 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 		}
 	}
 
-	@ApiOperation(value = "看护人员信息",notes = "看护人员信息")
+	@ApiOperation(value = "app看护人员信息",notes = "看护人员信息")
 	@GetMapping("/userInfo")
 	public WebApiResponse userInfo(String userId){
 		try{
@@ -162,17 +171,29 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 		}
 	}
 
-	@ApiOperation(value = "稽查子任务详情",notes = "稽查子任务详情,即看护点隐患详情或巡视任务详情")
+	@ApiOperation(value = "稽查子任务详情",notes = "稽查子任务详情")
 	@GetMapping("/checkChildrenDetail")
 	public WebApiResponse checkChildrenDetail(String id,String taskType){
 		try{
 			Object obj = service.checkChildrenDetail(id,taskType);
 			return WebApiResponse.success(obj);
 		}catch (Exception e){
-			LOGGER.error("看护稽查子任务列表数据获取失败",e);
-			return WebApiResponse.erro("看护稽查子任务列表数据获取失败");
+			LOGGER.error("稽查子任务列表数据获取失败",e);
+			return WebApiResponse.erro("稽查子任务列表数据获取失败");
 		}
 
+	}
+
+	@ApiOperation(value = "稽查完成按钮",notes = "稽查完成按钮")
+	@GetMapping("/taskComplete")
+	public WebApiResponse taskComplete(String id,String taskType){
+		try{
+			Object obj = service.taskComplete(id,taskType);
+			return WebApiResponse.success(obj);
+		}catch (Exception e){
+			LOGGER.error("稽查任务更新失败",e);
+			return WebApiResponse.erro("稽查任务更新失败");
+		}
 	}
 
 

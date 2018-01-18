@@ -2,8 +2,10 @@ package com.rzt.service.app;
 
 import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.app.XsZcTaskwpqr;
+import com.rzt.eureka.WarningmonitorServerService;
 import com.rzt.repository.app.XsZcTaskwpqrRepository;
 import com.rzt.service.CurdService;
+import com.rzt.utils.DateUtil;
 import com.rzt.utils.SnowflakeIdWorker;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +32,8 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
-
+    @Autowired
+    WarningmonitorServerService warningmonitorServerService;
     /***
      * @Method updateJdTime
      * @Description
@@ -76,17 +79,18 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
 
     private void updateXsMenInfoInRedis(String userId) {
         ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
-        Object xsMenAllString = valueOperations.get("xsMenAll");
+        String key = "xsMenAll:" + DateUtil.dateToString(new Date()).split(" ")[0];
+        Object xsMenAllString = valueOperations.get(key);
         if (xsMenAllString == null) {
             return;
         } else {
             JSONObject xsMenAll = JSONObject.parseObject(xsMenAllString.toString());
-            String sql = "SELECT cm_user_id,min(stauts) status from XS_ZC_TASK where PLAN_END_TIME >= trunc(sysdate) and  PLAN_START_TIME <= (sysdate+1) group by CM_USER_ID";
+            String sql = "SELECT cm_user_id,min(stauts) status from XS_ZC_TASK where PLAN_END_TIME >= trunc(sysdate) and  PLAN_START_TIME <= trunc(sysdate+1) group by CM_USER_ID";
             try {
                 Map<String, Object> map = this.execSqlSingleResult(sql,userId);
                 Object status = map.get("STATUS");
                 xsMenAll.put(userId,status);
-                valueOperations.set("xsMenAll",xsMenAll);
+                valueOperations.set(key,xsMenAll);
             } catch (Exception e) {
                 e.printStackTrace();
                 return;
@@ -279,10 +283,17 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
     * @date 2017/12/18 19:08
     * @author nwz
     */
-    public void updateExecDetail(Integer xslx,Integer sfdw, String reason, Long execDetailId,String longtitude,String latitude) {
+    public void updateExecDetail(Integer xslx,Integer sfdw, String reason, Long execDetailId,String longtitude,String latitude,Long taskId,String userId) {
         if(xslx == 0 || xslx == 1) {
             this.reposiotry.updateTxbdExecDetail(sfdw,reason,execDetailId);
         } else {
+            try {
+                if(sfdw == 1) {
+                    warningmonitorServerService.xsTourScope(taskId,userId);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             this.reposiotry.updateZcxsExecDetail(sfdw,reason,execDetailId,longtitude,latitude);
         }
     }
@@ -357,10 +368,22 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
         long nextId = new SnowflakeIdWorker(18, 21).nextId();
         this.reposiotry.addXsZcTaskLsyh(nextId,id,execId,execDetailId,yhId,yhInfo);
     }
-
-    public void insertException(Long taskId, String ycms, String ycdata) {
+    /***
+    * @Method insertException
+    * @Description  插入十分钟五基塔的数据
+    * @param [taskId, ycms, ycdata]
+    * @return void
+    * @date 2018/1/17 16:55
+    * @author nwz
+    */
+    public void insertException(Long taskId, String ycms, String ycdata,String userId) {
         long nextId = new SnowflakeIdWorker(18, 21).nextId();
         this.reposiotry.insertException(nextId,taskId,ycms,ycdata);
+        try {
+            warningmonitorServerService.takePhoto(taskId,userId);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }

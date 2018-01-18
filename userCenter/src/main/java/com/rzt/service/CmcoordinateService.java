@@ -9,8 +9,7 @@ import com.rzt.entity.Cmcoordinate;
 import com.rzt.repository.CmcoordinateRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**      
  * 类名称：CMCOORDINATEService    
@@ -51,5 +50,33 @@ public class CmcoordinateService extends CurdService<Cmcoordinate, CmcoordinateR
             String sql = "select t.NAME \"name\",t.LONGITUDE \"longitude\",t.LATITUDE \"latitude\" from cm_tower t where id = ?";
             Map<String, Object> map = this.execSqlSingleResult(sql);
             return map;
+    }
+    /***
+    * @Method getMenAboutLine
+    * @Description 拿到这条线路的人
+    * @param [lineId, currentUserId, startDate]
+    * @param deptId
+     * @return void
+    * @date 2018/1/17 18:36
+    * @author nwz
+    */
+    public List<Map<String, Object>> getMenAboutLine(String deptId, Long lineId, String currentUserId, Date startDate) throws Exception {
+        List<Map<String, Object>> maps;
+        String sql = "";
+        if("err".equals(deptId)) {
+            throw new Exception();
+        } else if("all".equals(deptId)) {
+            sql = "SELECT DISTINCT userid from (select CM_USER_ID userid from xs_zc_cycle where LINE_ID = ?\n" +
+                    "union all\n" +
+                    "select USER_ID userid from KH_SITE where LINE_ID = ?) t where t.userid is not null ";
+            maps = this.execSql(sql, lineId, lineId);
+        } else {
+            sql = "SELECT DISTINCT userid from (select CM_USER_ID userid from xs_zc_cycle where LINE_ID = ? and TD_ORG = ?\n" +
+                    "union all\n" +
+                    "select USER_ID userid from KH_SITE where LINE_ID = ? and TDYW_ORGID = ?) t where t.userid is not null ";
+            maps = this.execSql(sql,lineId,deptId,lineId,deptId);
+
+        }
+        return maps;
     }
 }

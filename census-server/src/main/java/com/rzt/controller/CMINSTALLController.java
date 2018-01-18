@@ -514,16 +514,16 @@ public class CMINSTALLController extends
 
     @GetMapping("hiddenDetails")
     public WebApiResponse hiddenDetails(Integer type) {
-        String sql = " SELECT TDWX_ORG ,TDYW_ORG,YHJB,LINE_NAME,YHLB, SGQK " +
+        String sql = " SELECT TDWX_ORG ,TDYW_ORG,YHJB,LINE_NAME,YHLB, SGQK,YHMS " +
                 "FROM KH_YH_HISTORY h " +
                 "WHERE yhjb1 = '施工隐患' ";
-        String sql1 = " SELECT TDWX_ORG ,TDYW_ORG,YHJB,LINE_NAME,YHLB, SGQK " +
+        String sql1 = " SELECT TDWX_ORG ,TDYW_ORG,YHJB,LINE_NAME,YHLB, SGQK,YHMS " +
                 "FROM KH_YH_HISTORY h " +
                 "WHERE yhjb1 = '建筑隐患' ";
-        String sql2 = " SELECT TDWX_ORG ,TDYW_ORG,YHJB,LINE_NAME,YHLB, SGQK " +
+        String sql2 = " SELECT TDWX_ORG ,TDYW_ORG,YHJB,LINE_NAME,YHLB, SGQK,YHMS " +
                 "FROM KH_YH_HISTORY h " +
                 "WHERE yhjb1 = '异物隐患' ";
-        String sql3 = " SELECT TDWX_ORG ,TDYW_ORG,YHJB,LINE_NAME,YHLB, SGQK " +
+        String sql3 = " SELECT TDWX_ORG ,TDYW_ORG,YHJB,LINE_NAME,YHLB, SGQK,YHMS " +
                 "FROM KH_YH_HISTORY h " +
                 "WHERE yhjb1 = '树木隐患' ";
         if (type == 0) {

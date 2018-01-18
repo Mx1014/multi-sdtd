@@ -325,11 +325,11 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                     site.setCapatain(0);
                 }
                 this.add(site);
-                int count = taskService.getCount(Long.parseLong(id), userId);
+               // int count = taskService.getCount(Long.parseLong(id), userId);
                 task.setPlanStartTime(DateUtil.getPlanStartTime(startTime));
                 task.setPlanEndTime(DateUtil.getPlanStartTime(endTime));
                 task.setUserId(userId);
-                task.setCount(count);
+                task.setCount(1);
                 task.setWxOrg(site.getWxOrg());
                 task.setTdywOrg(cycle.getTdywOrg());
                 task.setCreateTime(new Date());
@@ -351,7 +351,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
 
     public WebApiResponse listJpgById(String taskId) {
         try {
-            String sql = "select file_path,PROCESS_ID,create_time,PROCESS_NAME,FILE_SMALL_PATH as smallPath from picture_kh where task_id = ? and file_type=1 order by PROCESS_ID";
+            String sql = "select file_path,PROCESS_ID,create_time,PROCESS_NAME,FILE_SMALL_PATH as smallPath from picture_kh where task_id = ? and file_type=1 order by create_time desc";
             return WebApiResponse.success(this.execSql(sql, Long.parseLong(taskId)));
         } catch (Exception e) {
             e.printStackTrace();
