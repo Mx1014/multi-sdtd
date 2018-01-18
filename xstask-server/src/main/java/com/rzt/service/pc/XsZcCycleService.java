@@ -1050,6 +1050,16 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
             arrList.add(userId);
         }
 
+        //通道单位
+        String tdOrg = xsTaskSch.getTdOrg();
+        if (!StringUtils.isEmpty(tdOrg)) {
+            sqlBuffer.append(" and (td_org = ? or wx_org = ? or group_id = ? or class_id = ? )");
+            arrList.add(tdOrg);
+            arrList.add(tdOrg);
+            arrList.add(tdOrg);
+            arrList.add(tdOrg);
+        }
+
         /*//线路id
         Long lineId = xsTaskSch.getLineId();
         if (lineId != null) {

@@ -155,7 +155,7 @@ public class AppKhTaskController extends
     }
 
     @ApiOperation(value = "确认是否能够提交任务", notes = "确认是否能够提交任务  ")
-        @GetMapping("/appCompareEndTime")
+    @GetMapping("/appCompareEndTime")
     @ResponseBody
     public WebApiResponse appCompareEndTime(long taskId){
         return this.service.appCompareEndTime(taskId);
