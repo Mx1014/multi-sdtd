@@ -102,7 +102,7 @@ public class AppKhUpdateService extends CurdService<KhTask, AppKhUpdateRepositor
                 this.reposiotry.updateDDTime(DateUtil.dateNow(), taskId, Integer.parseInt(isdw), reason);
                 this.reposiotry.updateZxnum(5, taskId);//修改执行页数
             } else {
-                this.reposiotry.updateIsDz(DateUtil.dateNow(), taskId, Integer.parseInt(isdw), reason);
+                this.reposiotry.updateIsDz(taskId, Integer.parseInt(isdw), reason);
             }
             return WebApiResponse.success("修改成功");
         } catch (Exception e) {
