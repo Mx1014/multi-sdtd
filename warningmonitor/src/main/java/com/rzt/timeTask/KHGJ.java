@@ -4,6 +4,7 @@ import com.rzt.entity.Monitorcheckyj;
 import com.rzt.repository.Monitorcheckejrepository;
 import com.rzt.repository.Monitorcheckyjrepository;
 import com.rzt.service.CurdService;
+import com.rzt.service.Monitorcheckyjservice;
 import com.rzt.service.RedisService;
 import com.rzt.utils.SnowflakeIdWorker;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -129,10 +130,11 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
                 }
             }
     }
-
+    @Autowired
+    private Monitorcheckyjservice monitorcheckyj;
     //巡视未按规定时间接任务 定时拉去数据用
     public void XSWJRW(){
-        String sql = "SELECT ID,TD_ORG,PLAN_START_TIME,CM_USER_ID,TASK_NAME FROM XS_ZC_TASK WHERE trunc(PLAN_START_TIME)=trunc(sysdate) ";
+        String sql = "SELECT ID,TD_ORG,PLAN_START_TIME,CM_USER_ID,TASK_NAME FROM XS_ZC_TASK WHERE PLAN_END_TIME >= trunc(SYSDATE) AND PLAN_START_TIME <= trunc(sysdate + 1) ";
         List<Map<String, Object>> maps = execSql(sql);
         List<Object> list = new ArrayList<>();
         for (Map<String, Object> map : maps) {
@@ -156,17 +158,29 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
         }
 
         //判断在0点到拉数据时间段内有无未按时接任务的
-        if(list.size()>0)
-            for(Object obj:list){
+        if(list.size()>0) {
+            for (Object obj : list) {
                 String sql1 = "SELECT ID,TD_ORG,PLAN_START_TIME,CM_USER_ID,TASK_NAME FROM XS_ZC_TASK WHERE PLAN_START_TIME<nvl(REAL_START_TIME,sysdate) AND ID=?1";
                 List<Map<String, Object>> maps1 = execSql(sql1, obj);
-                if(maps1.size()>0){
+                if (maps1.size() > 0) {
                     Map<String, Object> map = maps1.get(0);
-                    resp.saveCheckEj(new SnowflakeIdWorker(0,0).nextId(),Long.valueOf(map.get("ID").toString()),1,4,map.get("CM_USER_ID").toString(),map.get("TD_ORG").toString(),map.get("TASK_NAME").toString());
+                    resp.saveCheckEj(new SnowflakeIdWorker(0, 0).nextId(), Long.valueOf(map.get("ID").toString()), 1, 4, map.get("CM_USER_ID").toString(), map.get("TD_ORG").toString(), map.get("TASK_NAME").toString());
                     String key = "ONE+"+map.get("ID").toString()+"+1+4+"+map.get("CM_USER_ID")+"+"+map.get("TD_ORG")+"+"+map.get("TASK_NAME");
                     redisService.setex(key);
+                    /*String[] message = new String[7];
+                    message[0] = "ONE";
+                    message[1] = map.get("ID").toString();
+                    message[2] = "1";
+                    message[3] = "4";
+                    message[4] = map.get("CM_USER_ID").toString();
+                    message[5] = map.get("TD_ORG").toString();
+                    message[6] = map.get("TASK_NAME").toString();
+
+                    monitorcheckyj.saveCheckYj(message);*/
                 }
             }
+        }
+        System.out.println("结束------------------------");
 
     }
 
