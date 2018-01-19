@@ -42,14 +42,18 @@ public interface CheckLiveTaskRepository extends JpaRepository<CheckLiveTask,Str
 
     @Modifying
     @Query(value = "insert into CHECK_LIVE_SITE (id,TASK_ID,TASK_TYPE,CREATE_TIME,TASK_NAME,STATUS,line_id,TDYW_ORGID,TDWX_ORGID,yh_id) " +
-            " select id,id as taskid,0,sysdate,TASK_NAME,0,LINE_ID,TDYW_ORGID,WX_ORGID,YH_ID from KH_CYCLE",nativeQuery = true)
+            " select seq.nextval,id as taskid,0,sysdate,TASK_NAME,0,LINE_ID,TDYW_ORGID,WX_ORGID,YH_ID from KH_CYCLE",nativeQuery = true)
     void generalKhSite();
 
     @Modifying
     @Query(value = "update check_live_task set status=2 where id = ?1 ",nativeQuery = true)
-    CheckLiveTask taskComplete(Long id);
+    void taskComplete(Long id);
 
     @Modifying
     @Query(value = "update check_live_site set status=?1 where trunc(CREATE_TIME)=trunc(sysdate) and YH_ID= ?2 ",nativeQuery = true)
     void updateLiveTaskStatus(int status, Long id);
+
+    @Modifying
+    @Query(value = "update check_live_task set status=?1 where trunc(CREATE_TIME)=trunc(sysdate-1) ",nativeQuery = true)
+    void updateLiveTaskYesterday(int status);
 }

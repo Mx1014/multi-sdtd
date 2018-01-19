@@ -137,7 +137,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
                 return WebApiResponse.success(this.execSql(sql, userId));
             } else {
                 sql = "select k.id as id,k.status as status,k.task_name as task_name,k.plan_end_time as endTime from kh_task k where k.user_id = ? and k.plan_start_time <=to_date(?,'yyyy-mm-dd hh24:mi:ss') and k.plan_end_time>=to_date(?,'yyyy-mm-dd hh24:mi:ss')";
-                return WebApiResponse.success(this.execSql(sql, userId,startDate,startDate));
+                return WebApiResponse.success(this.execSql(sql, userId, startDate, startDate));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -398,12 +398,13 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
 
 
     public void saveTask(KhSite site, Date startTime, Date endTime) {
+        int count = this.getCount(site.getId(), site.getUserid());
+        this.reposiotry.updateSite(startTime, endTime, site.getId(), count);
         KhTask task = new KhTask();
         task.setId();
         task.setWxOrg(site.getWxOrg());
         task.setSiteId(site.getId());
         task.setTdywOrg(site.getTdywOrg());
-        int count = this.getCount(site.getId(), site.getUserid());
         task.setCount(count);
         task.setUserId(site.getUserid());
         task.setPlanStartTime(startTime);
@@ -415,7 +416,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         this.reposiotry.addTask(task.getId(), task.getSiteId(), task.getUserId(), task.getTaskName(), task.getYhId(),
                 task.getPlanStartTime(), task.getPlanEndTime(), task.getWxOrg(), task.getCount(), task.getTdywOrg());
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        this.reposiotry.updateSite(startTime, endTime, site.getId(), count);
+
     }
 
     public WebApiResponse listPictureByYhId(String yhId) {
@@ -426,6 +427,14 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
             e.printStackTrace();
             return WebApiResponse.erro("数据获取失败");
         }
+    }
+
+    public void deleteSiteById(long id) {
+        this.reposiotry.deleteSiteById(id);
+    }
+
+    public void deleteTaskById(long id) {
+        this.reposiotry.deleteTaskById(id);
     }
 }
 

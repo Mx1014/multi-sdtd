@@ -292,8 +292,8 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
      * @param taskId
      * @return
      */
-    public WebApiResponse findExecDetallByTaskId(String taskId,String taskType) {
-        ArrayList<String> strings = new ArrayList<>();
+    public WebApiResponse findExecDetallByTaskId(Long taskId,String taskType) {
+        ArrayList<Object> strings = new ArrayList<>();
         String sql = "";
         List<Map<String, Object>> maps = null;
 
@@ -330,8 +330,8 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
      * @param taskId
      * @return
      */
-    public WebApiResponse findYHByTaskId(String taskId,String TASKTYPE) {
-        ArrayList<String> strings = new ArrayList<>();
+    public WebApiResponse findYHByTaskId(Long taskId,String TASKTYPE) {
+        ArrayList<Object> strings = new ArrayList<>();
         List<Map<String, Object>> maps = null;
         List<Map<String, Object>> maps2 = null;
         List<Map<String, Object>> maps3 = null;
@@ -340,11 +340,11 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
            if(null != taskId && !"".equals(taskId)){
                if (null != TASKTYPE && !"".equals(TASKTYPE)){//判断当前任务类型   1 巡视 2 看护 其他待定
                 if("1".equals(TASKTYPE)){
-                    String sql = "SELECT yh.YHMS,li.LINE_NAME,li.SECTION" +
+                    strings.add(taskId);
+                   /* String sql = "SELECT yh.YHMS,li.LINE_NAME,li.SECTION" +
                             "       from KH_YH_HISTORY yh" +
                             "          LEFT JOIN" +
                             "            CM_LINE li on li.ID = yh.LINE_ID ";
-                    strings.add(taskId);
                     //取到当前隐患的详细信息
                     sql += "             WHERE yh.LINE_ID = (SELECT  xc.LINE_ID" +
                             "                FROM XS_ZC_TASK xt" +
@@ -360,7 +360,12 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                             "                FROM XS_ZC_TASK xt" +
                             "                   LEFT JOIN XS_ZC_CYCLE xc" +
                             "                       on xc.ID = xt.XS_ZC_CYCLE_ID" +
-                            "                           WHERE xt.ID = ?"+strings.size()+")";
+                            "                           WHERE xt.ID = ?"+strings.size()+")";*/
+
+                    String sql = "SELECT *" +
+                            "      FROM XS_SB_YH WHERE XSTASK_ID = ?"+strings.size();
+                    String sql3 =  "SELECT distinct LINE_NAME" +
+                            "      FROM XS_SB_YH WHERE XSTASK_ID = ?"+strings.size();
                     maps = this.execSql(sql, strings.toArray());
                     maps3 = this.execSql(sql3, strings.toArray());
                     maps2 = (List<Map<String, Object>>) findExecDetallByTaskId(taskId,TASKTYPE).getData();
@@ -371,7 +376,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
 
                        strings.add(taskId);
                        //取到当前隐患的详细信息
-                       String sql = "SELECT yh.YHMS,li.LINE_NAME,li.SECTION" +
+                       String sql = "SELECT yh.YHMS,li.LINE_NAME,li.SECTION,yh.ID" +
                                "        from KH_YH_HISTORY yh" +
                                "            LEFT JOIN" +
                                "              CM_LINE li on li.ID = yh.LINE_ID" +
@@ -384,8 +389,9 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                                "            CM_LINE li on li.ID = yh.LINE_ID" +
                                "             WHERE yh.ID = (SELECT k.YH_ID FROM KH_SITE k LEFT JOIN KH_TASK kh ON kh.SITE_ID = k.ID" +
                                "             WHERE kh.ID = ?"+strings.size()+")";
-                       //获取任务详情
-                       String sql4 = "SELECT p.PROCESS_NAME OPERATE_NAME,p.CREATE_TIME START_TIME,p.ID from PICTURE_KH p LEFT JOIN KH_TASK k ON  k.ID = p.TASK_ID  where k.ID = ?"+strings.size()+" ORDER BY p.CREATE_TIME";
+                       //获取任务详情  OPERATE_NAME
+                       String sql4 = "SELECT FILE_PATH,PROCESS_NAME as OPERATE_NAME,CREATE_TIME as START_TIME " +
+                               "  FROM PICTURE_KH WHERE TASK_ID = ?"+strings.size()+" AND FILE_TYPE = 1 ORDER BY CREATE_TIME";
 
                        maps = this.execSql(sql, strings.toArray());
                        maps3 = this.execSql(sql3, strings.toArray());

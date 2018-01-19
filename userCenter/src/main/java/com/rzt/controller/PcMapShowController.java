@@ -104,12 +104,12 @@ public class PcMapShowController {
     private void chouYiXia(Integer workType, Integer loginStatus, String needDateString, long timeSecond, List<Map> menInMap, ValueOperations<String, Object> valueOperations) {
         JSONObject allMen = new JSONObject();
         if(workType == null || workType == 1)  {
-            JSONObject xsMenAll = JSONObject.parseObject(valueOperations.get("xsMenAll:" + needDateString).toString());
-            allMen.putAll(xsMenAll);
-        }
-        if(workType == null || workType == 2)  {
             JSONObject khMenAll = JSONObject.parseObject(valueOperations.get("khMenAll:" + needDateString).toString());
             allMen.putAll(khMenAll);
+        }
+        if(workType == null || workType == 2)  {
+            JSONObject xsMenAll = JSONObject.parseObject(valueOperations.get("xsMenAll:" + needDateString).toString());
+            allMen.putAll(xsMenAll);
         }
         if(workType == null || workType == 3)  {
 
@@ -443,7 +443,7 @@ public class PcMapShowController {
             if(day == null) {
                 day = new Date();
             }
-            String sql = "SELECT cm_user_id,min(stauts) status from XS_ZC_TASK where PLAN_END_TIME >= trunc(?1) and  PLAN_START_TIME <= (?1+1) group by CM_USER_ID";
+            String sql = "SELECT cm_user_id,min(stauts) status from XS_ZC_TASK where PLAN_END_TIME >= trunc(?1) and  PLAN_START_TIME <= trunc(?1+1) group by CM_USER_ID";
             List<Map<String, Object>> userList = cmcoordinateService.execSql(sql,day);
             Map<String,Object> map = new HashMap<String, Object>();
             for (Map<String,Object> user: userList) {
@@ -473,7 +473,7 @@ public class PcMapShowController {
             if(day == null) {
                 day = new Date();
             }
-            String sql = "SELECT USER_ID,min(status) status from KH_TASK where PLAN_END_TIME >= trunc(?1) and  PLAN_START_TIME <= (?1+1) group by USER_ID";
+            String sql = "SELECT USER_ID,min(status) status from KH_TASK where PLAN_END_TIME >= trunc(?1) and  PLAN_START_TIME <= trunc(?1+1) group by USER_ID";
             List<Map<String, Object>> userList = cmcoordinateService.execSql(sql,day);
             Map<String,Object> map = new HashMap<String, Object>();
             for (Map<String,Object> user: userList) {
@@ -484,6 +484,34 @@ public class PcMapShowController {
             return WebApiResponse.success("成功了");
         } catch (Exception e) {
             return WebApiResponse.erro("数据查询失败" + e.getMessage());
+        }
+    }
+
+    /***
+     * @Method menCurrentDayKh
+     * @Description 刷新flushMenInDept缓存
+     *
+     * @return java.lang.Object
+     * @date 2017/12/25 13:59
+     * @author nwz
+     */
+    @GetMapping("updateKhInfoStatusInredis")
+    public void updateKhInfoStatusInredis(String userId) {
+        ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
+        String key = "khMenAll:" + DateUtil.dateFormatToDay(new Date());
+        Object khMenAllString = valueOperations.get(key);
+        if (khMenAllString == null) {
+        } else {
+            JSONObject khMenAll = JSONObject.parseObject(khMenAllString.toString());
+            String sql = "SELECT USER_ID,min(status) status from kh_task where PLAN_END_TIME >= trunc(sysdate) and  PLAN_START_TIME <= trunc(sysdate+1) and USER_ID = ? group by user_id";
+            try {
+                Map<String, Object> map = cmcoordinateService.execSqlSingleResult(sql,userId);
+                Object status = map.get("STATUS");
+                khMenAll.put(userId,status);
+                valueOperations.set(key,khMenAll);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 

@@ -241,11 +241,11 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
 
     public WebApiResponse appCompareEndTime(long taskId) {
         try {
-            String sql = "select plan_end_time as time from kh_task where id=?";
+            String sql = "select plan_end_time as time,is_dw as dw from kh_task where id=?";
             Map<String, Object> map = this.execSqlSingleResult(sql, taskId);
             int time = compareDate(DateUtil.parseDate(map.get("TIME").toString()), new Date());
             if (time != 1) {
-                return WebApiResponse.success("可以交班");
+                return WebApiResponse.success(map);
             } else {
                 throw new Exception();
             }

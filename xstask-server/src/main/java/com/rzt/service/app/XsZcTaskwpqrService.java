@@ -5,6 +5,7 @@ import com.rzt.entity.app.XsZcTaskwpqr;
 import com.rzt.eureka.WarningmonitorServerService;
 import com.rzt.repository.app.XsZcTaskwpqrRepository;
 import com.rzt.service.CurdService;
+import com.rzt.utils.DateUtil;
 import com.rzt.utils.SnowflakeIdWorker;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,19 +77,20 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
         }
     }
 
-    private void updateXsMenInfoInRedis(String userId) {
+    public void updateXsMenInfoInRedis(String userId) {
         ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
-        Object xsMenAllString = valueOperations.get("xsMenAll");
+        String key = "xsMenAll:" + DateUtil.dateToString(new Date()).split(" ")[0];
+        Object xsMenAllString = valueOperations.get(key);
         if (xsMenAllString == null) {
             return;
         } else {
             JSONObject xsMenAll = JSONObject.parseObject(xsMenAllString.toString());
-            String sql = "SELECT cm_user_id,min(stauts) status from XS_ZC_TASK where PLAN_END_TIME >= trunc(sysdate) and  PLAN_START_TIME <= trunc(sysdate+1) group by CM_USER_ID";
+            String sql = "SELECT cm_user_id,min(stauts) status from XS_ZC_TASK where PLAN_END_TIME >= trunc(sysdate) and  PLAN_START_TIME <= trunc(sysdate+1) and cm_user_id = ? group by cm_user_id";
             try {
                 Map<String, Object> map = this.execSqlSingleResult(sql,userId);
                 Object status = map.get("STATUS");
                 xsMenAll.put(userId,status);
-                valueOperations.set("xsMenAll",xsMenAll);
+                valueOperations.set(key,xsMenAll);
             } catch (Exception e) {
                 e.printStackTrace();
                 return;

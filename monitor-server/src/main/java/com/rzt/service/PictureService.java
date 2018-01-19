@@ -313,4 +313,64 @@ public class PictureService extends CurdService<CheckResult, CheckResultReposito
       }
         return WebApiResponse.success("");
     }
+    /**
+     * 根据当前流程id  获取当前流程的照片
+     * @param id  流程id
+     * @return
+     */
+    public WebApiResponse findProByproId(String id,String taskType) {
+
+        ArrayList<String> list = new ArrayList<>();
+        List<Map<String, Object>> maps = null;
+        String sql  = "";
+        if(null == id || "".equals(id)){
+            return WebApiResponse.erro("参数错误");
+        }
+        if(null == taskType || "".equals(taskType)){
+            return WebApiResponse.erro("参数错误");
+        }
+
+        list.add(id);
+        try {
+            //巡视
+            if("1".equals(taskType)){
+                 sql  = "SELECT * " +
+                        "  FROM PICTURE_TOUR WHERE   FILE_TYPE = 1  AND PROCESS_ID = ?"+list.size();
+            }
+
+            maps = this.execSql(sql, list.toArray());
+        }catch (Exception e){
+        LOGGER.error("参数错误"+e.getMessage());
+        return WebApiResponse.erro("参数错误"+e.getMessage());
+        }
+
+        return WebApiResponse.success(maps);
+
+    }
+
+
+    public WebApiResponse findPicByTaskId(Long id ,String taskType){
+
+        ArrayList<Object> list = new ArrayList<>();
+        List<Map<String, Object>> maps = null;
+        if(null == id || 0 == id){
+            return WebApiResponse.erro("参数错误");
+        }
+
+        try {
+            list.add(id);
+            String  sql = "SELECT * " +
+                        "      FROM PICTURE_YH  WHERE  YH_ID  =?"+list.size();
+
+             maps = this.execSql(sql, list.toArray());
+        }catch (Exception e){
+            LOGGER.error("隐患图片查询失败"+e.getMessage());
+            return WebApiResponse.erro("隐患图片查询失败"+e.getMessage());
+        }
+        return WebApiResponse.success(maps);
+    }
+
+
+
+
 }

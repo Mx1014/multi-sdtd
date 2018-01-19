@@ -220,27 +220,24 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
         //0看护 1巡视 0待稽查 1已稽查
         if("0,0".equals(taskType)){
             sql = "select t.id,t.TASK_ID,t.TASK_NAME,u.REALNAME, " +
-                    "  CASE t.TASK_TYPE WHEN 0 THEN '正常' WHEN 1 THEN '保电' WHEN 2 THEN '特殊' END task_type , " +
-                    "  CASE t.STATUS WHEN 0 THEN '未接单' WHEN 1 THEN '进行中' WHEN 2 THEN '已完成' WHEN 3 THEN '已超期' END task_status " +
+                    " t.TASK_TYPE , t.STATUS " +
                     "from CHECK_LIVE_TASK t " +
                     "  LEFT JOIN  rztsysuser u on u.id=t.USER_ID " +
                     " where t.status !=3 and t.status !=2 ";
         }else if("0,1".equals(taskType)){
-            sql = "select t.id,t.TASK_ID,t.TASK_NAME,u.REALNAME, " +
-                    "  CASE t.TASK_TYPE WHEN 0 THEN '正常' WHEN 1 THEN '保电' WHEN 2 THEN '特殊' END task_type  " +
+            sql = "select t.id,t.TASK_ID,t.TASK_NAME,u.REALNAME, t.TASK_TYPE " +
                     " from CHECK_LIVE_TASK t " +
                     "  LEFT JOIN  rztsysuser u on u.id=t.USER_ID " +
                     " where t.status =2 and trunc(t.PLAN_START_TIME) <= trunc(sysdate) and trunc(t.PLAN_END_TIME) >= trunc(sysdate) ";
         }else if("1,0".equals(taskType)){
             sql = "select t.id,t.TASK_ID,t.TASK_NAME,u.REALNAME, " +
-                    "  CASE t.TASK_TYPE WHEN 0 THEN '正常' WHEN 1 THEN '保电' WHEN 2 THEN '特殊' END task_type , " +
-                    "  CASE t.STATUS WHEN 0 THEN '未接单' WHEN 1 THEN '进行中' WHEN 2 THEN '已完成' WHEN 3 THEN '已超期' END task_status " +
+                    " t.TASK_TYPE ,  t.STATUS " +
                     " from CHECK_LIVE_TASKXS t " +
                     "  LEFT JOIN  rztsysuser u on u.id=t.USER_ID " +
                     " where t.status !=3 and t.status !=2 ";
         }else if("1,1".equals(taskType)){
             sql = "select t.id,t.TASK_ID,t.TASK_NAME,u.REALNAME, " +
-                    "  CASE t.TASK_TYPE WHEN 0 THEN '正常' WHEN 1 THEN '保电' WHEN 2 THEN '特殊' END task_type  " +
+                    " t.TASK_TYPE " +
                     " from CHECK_LIVE_TASKXS t " +
                     "  LEFT JOIN  rztsysuser u on u.id=t.USER_ID " +
                     " where t.status =2 ";
@@ -344,15 +341,13 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
     }
 
     @Transactional
-    public Object taskComplete(String id, String taskType) {
-        Object obj = new Object();
+    public void taskComplete(String id, String taskType) {
         //0看护 1巡视 0待稽查 1已稽查
         if("0,0".equals(taskType)){
-            obj = reposiotry.taskComplete(Long.valueOf(id));
+            reposiotry.taskComplete(Long.valueOf(id));
         }else if("1,0".equals(taskType)){
-            obj = checkLiveTaskXsRepository.taskComplete(Long.valueOf(id));
+            checkLiveTaskXsRepository.taskComplete(Long.valueOf(id));
         }
-        return obj;
     }
 
     public List<Map<String,Object>> listKhCheckTaskDetail(Long id) {
@@ -374,9 +369,15 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
     @Scheduled(cron = "0 5 0 ? * *")
     @Transactional
     public void generalKhSite(){
-        //更新check_live_site的状态
-        //reposiotry.generalKhSite();
+        //更新check_live_task的状态
+        reposiotry.updateLiveTaskYesterday(3);
+        //生成新一轮待派发看护稽查
+        reposiotry.generalKhSite();
     }
 
 
+    public Map<String,Object> getKhRange(String yhId) throws Exception {
+        String sql = "select to_number(RADIUS) jl,jd,WD from KH_YH_HISTORY where id ="+yhId;
+        return execSqlSingleResult(sql);
+    }
 }
