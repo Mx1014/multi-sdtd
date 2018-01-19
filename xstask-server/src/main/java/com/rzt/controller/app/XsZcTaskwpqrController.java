@@ -2,10 +2,12 @@ package com.rzt.controller.app;
 
 import com.rzt.controller.CurdController;
 import com.rzt.entity.app.XsZcTaskwpqr;
+import com.rzt.eureka.UserCenterService;
 import com.rzt.service.app.XsZcTaskwpqrService;
 import com.rzt.util.WebApiResponse;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
@@ -20,6 +22,8 @@ import java.util.Date;
 @RequestMapping("xsAppChange")
 @Api(value = "巡视任务app修改接口")
 public class XsZcTaskwpqrController extends CurdController<XsZcTaskwpqr, XsZcTaskwpqrService> {
+    @Autowired
+    UserCenterService userCenterService;
 
     /**
      * xslx 巡视类型 1 正常巡视 2 保电巡视 ID 任务id
@@ -238,6 +242,27 @@ public class XsZcTaskwpqrController extends CurdController<XsZcTaskwpqr, XsZcTas
         try {
             this.service.insertException(taskId,ycms,ycdata,userId);
             return WebApiResponse.success("数据更新成功");
+        } catch (Exception var3) {
+            return WebApiResponse.erro("数据更新失败" + var3.getMessage());
+        }
+    }
+
+
+    /**
+     * xslx 巡视类型
+     * 插入异常状态
+     *
+     * @param userId 用户id
+     * @return
+     */
+    @ApiOperation(value = "插入异常状态", notes = "插入异常状态 ")
+    @GetMapping("updateXsMenInfoInRedis")
+    public Object updateXsMenInfoInRedis(String userId) {
+        try {
+//            userCenterService.updateKhInfoStatusInredis(userId);
+            this.service.updateXsMenInfoInRedis(userId);
+            return WebApiResponse.success("数据更新成功");
+
         } catch (Exception var3) {
             return WebApiResponse.erro("数据更新失败" + var3.getMessage());
         }

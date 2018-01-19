@@ -92,6 +92,18 @@ public class KhTask implements Serializable{
 
 	@Column(name="ZXYS_NUM")
 	private int zxysNum;
+
+	/*//字段描述：逻辑删除（0未删除 1已删除）
+	@Column(name="IS_DELETE")
+	private double isDelete;
+
+	public double getIsDelete() {
+		return isDelete;
+	}
+
+	public void setIsDelete(double isDelete) {
+		this.isDelete = isDelete;
+	}*/
 	public void setId(){
 		this.id =   Long.valueOf(new SnowflakeIdWorker(1,2).nextId());
 	}
