@@ -22,7 +22,7 @@ public interface WarningmonitorServerService {
 
     /***
     * @Method takePhoto
-    * @Description 未按标准速率拍照片
+    * @Description 未按标准速率拍照片 
     * @param [taskid, userid]
     * @return void
     * @date 2018/1/17 16:52

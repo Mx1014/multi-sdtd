@@ -341,15 +341,13 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
     }
 
     @Transactional
-    public Object taskComplete(String id, String taskType) {
-        Object obj = new Object();
+    public void taskComplete(String id, String taskType) {
         //0看护 1巡视 0待稽查 1已稽查
         if("0,0".equals(taskType)){
-            obj = reposiotry.taskComplete(Long.valueOf(id));
+            reposiotry.taskComplete(Long.valueOf(id));
         }else if("1,0".equals(taskType)){
-            obj = checkLiveTaskXsRepository.taskComplete(Long.valueOf(id));
+            checkLiveTaskXsRepository.taskComplete(Long.valueOf(id));
         }
-        return obj;
     }
 
     public List<Map<String,Object>> listKhCheckTaskDetail(Long id) {
