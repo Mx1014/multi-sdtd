@@ -379,7 +379,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
 
 
     public Map<String,Object> getKhRange(String yhId) throws Exception {
-        String sql = "select to_number(RADIUS),jd,WD from KH_YH_HISTORY where id ="+yhId;
+        String sql = "select to_number(RADIUS) jl,jd,WD from KH_YH_HISTORY where id ="+yhId;
         return execSqlSingleResult(sql);
     }
 }
