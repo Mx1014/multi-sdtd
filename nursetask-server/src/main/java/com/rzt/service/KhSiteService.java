@@ -68,7 +68,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
     private KhCycleRepository cycleRepository;
 
 
-    public Object listAllTaskNotDo(KhTaskModel task, Pageable pageable, String userName, String roleType) {
+    public Object listAllTaskNotDo(KhTaskModel task, Pageable pageable, String userName, String roleType, String yhjb, String yworg) {
         List params = new ArrayList<>();
         StringBuffer buffer = new StringBuffer();
         String result = " k.id as id,k.task_name as taskName,k.tdyw_org as yworg,y.yhms as ms,y.yhjb as jb,k.create_time as createTime,k.COUNT as COUNT,u.realname as username,k.jbd as jbd,k.plan_start_time as starttime,k.plan_end_time as endtime,u.id as userId";
@@ -85,9 +85,22 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             buffer.append(" and k.task_name like ? ");
             params.add(task.getTaskName());
         }
-        if (userName != null) {
+        if (task.getTaskName() != null && !task.getTaskName().equals("")) {  //线路名查询
+            task.setTaskName("%" + task.getTaskName() + "%");
+            buffer.append(" and k.task_name like ? ");
+            params.add(task.getTaskName());
+        }
+        if (userName != null && !userName.equals("")) {
             buffer.append(" and u.realname like ? ");
-            params.add(userName);
+            params.add("%" + userName + "%");
+        }
+        if (yhjb != null && !yhjb.equals("")) {
+            buffer.append(" and y.yhjb like ?");
+            params.add(("%" + yhjb + "%"));
+        }
+        if (yworg != null && !yworg.equals("")) {
+            buffer.append(" and y.yhjb like ?");
+            params.add(("%" + yhjb + "%"));
         }
 
         String sql = "";
@@ -133,7 +146,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             //所有权限
         } else {
             if (task.getStatus().equals("1")) {
-                sql = "select " + result + " from kh_site k ,kh_yh_history y,rztsysuser u " + buffer.toString() + " and k.yh_id = y.id and u.id = k.user_id";
+                sql = "select " + result + " from kh_site k left join kh_yh_history y on y.id = k.YH_ID LEFT JOIN rztsysuser u on k.USER_ID=u.id " + buffer.toString();//+ " and k.yh_id = y.id and u.id = k.user_id";
             } else {
                 sql = "select " + result1 + "from kh_cycle k left join kh_yh_history y on k.yh_id = y.id " + buffer.toString();
             }
@@ -325,7 +338,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                     site.setCapatain(0);
                 }
                 this.add(site);
-               // int count = taskService.getCount(Long.parseLong(id), userId);
+                // int count = taskService.getCount(Long.parseLong(id), userId);
                 task.setPlanStartTime(DateUtil.getPlanStartTime(startTime));
                 task.setPlanEndTime(DateUtil.getPlanStartTime(endTime));
                 task.setUserId(userId);

@@ -30,4 +30,5 @@ public interface ProService {
 
 	InputStream checkInputStream(String id);
 
+	String findIdByProId(String proId);
 }

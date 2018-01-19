@@ -337,11 +337,6 @@ public class PictureService extends CurdService<CheckResult, CheckResultReposito
                  sql  = "SELECT * " +
                         "  FROM PICTURE_TOUR WHERE   FILE_TYPE = 1  AND PROCESS_ID = ?"+list.size();
             }
-            //看护任务在查询进度时已经传递到前段
-            /*if("2".equals(taskType)){
-                sql  = "SELECT * FROM PICTURE_KH WHERE TASK_ID = ?1  AND FILE_TYPE = 1 AND PROCESS_ID = ?2";
-            }*/
-
 
             maps = this.execSql(sql, list.toArray());
         }catch (Exception e){
@@ -361,9 +356,7 @@ public class PictureService extends CurdService<CheckResult, CheckResultReposito
         if(null == id || 0 == id){
             return WebApiResponse.erro("参数错误");
         }
-      /*  if(null == taskType || "".equals(taskType)){
-            return WebApiResponse.erro("参数错误");
-        }*/
+
         try {
             list.add(id);
             String  sql = "SELECT * " +

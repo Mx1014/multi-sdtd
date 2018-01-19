@@ -66,63 +66,9 @@ public class DefectServiceImpl   extends CurdService<CheckResult, CheckResultRep
      */
     @Override
     public WebApiResponse checkTask(String userName,Integer page,Integer size) {
-        //分页数据容错
-        if(null == page || 0 == page){
-            page = 1;
-        }
-        if(null == size || 0 == size){
-            size = 10;
-        }
 
-        List<Object> result = new ArrayList<>();
 
-        TaskQuery taskQuery = taskService.createTaskQuery();
-        //分页查询当前待办任务
-        //List<Task> list = taskQuery.taskAssignee(userName).orderByTaskCreateTime().desc().listPage(page,size);
-        List<Task> list = taskQuery.taskAssignee(userName).orderByTaskCreateTime().desc().list();
-        if(null == list  || list.size()==0){
-            return WebApiResponse.success("");
-        }
-        String ids = "";
-        try{
-            //这个sql可以用工作流提供的id查询到启动流程时传递的参数
-            for (Task task : list) {
-                System.out.println("当前任务  "+task);
-                System.out.println(task.getId());
-
-                Object yhid =  taskService.getVariable(task.getId(), "YHID");
-                Object info =  taskService.getVariable(task.getId(), "info");
-                Object khid =  taskService.getVariable(task.getId(), "khid");
-                System.out.println("########################################################");
-                System.out.println("任务ID:"+task.getId());
-                System.out.println("任务名称:"+task.getName());
-                System.out.println("任务的创建时间:"+task.getCreateTime());
-                System.out.println("任务的办理人:"+task.getAssignee());
-                System.out.println("流程实例ID："+task.getProcessInstanceId());
-                System.out.println("########################################################");
-                //测试
-                HashMap<String, Object> stringObjectHashMap = new HashMap<>();
-                stringObjectHashMap.put("yhid",yhid);
-                stringObjectHashMap.put("info",info);
-                stringObjectHashMap.put("khid",khid);
-                stringObjectHashMap.put("taskId",task.getId());
-                stringObjectHashMap.put("createTime",task.getCreateTime());
-                stringObjectHashMap.put("assignee",task.getAssignee());
-                stringObjectHashMap.put("name",task.getName());
-                result.add(stringObjectHashMap);
-
-               /*String sql = "SELECT * FROM XS_SB_YH WHERE ID = "+yhid;
-               Map<String, Object> map = this.execSqlSingleResult(sql, null);
-               map.put("acTaskId",task.getId());
-               map.put("createTime",task.getCreateTime());
-               map.put("assignee",task.getAssignee());
-               result.add(map);*/
-            }
-        }catch (Exception e){
-
-        }
-
-        return WebApiResponse.success(result);
+        return WebApiResponse.success("");
     }
 
 
