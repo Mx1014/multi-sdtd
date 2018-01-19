@@ -20,8 +20,8 @@ public class AppKhUpdateController  extends
     @ApiOperation(value = "修改实际开始时间", notes = "修改实际开始时间、执行页数 ")
     @PatchMapping("/updateRealTime")
     @ResponseBody
-    public WebApiResponse updateRealTime(String taskId){
-        return this.service.updateRealTime(Long.parseLong(taskId));
+    public WebApiResponse updateRealTime(String taskId,String userId){
+        return this.service.updateRealTime(Long.parseLong(taskId),userId);
     }
 
     @ApiOperation(value = "修改身份确认时间", notes = "修改身份确认时间、执行页数 ")
@@ -63,8 +63,8 @@ public class AppKhUpdateController  extends
     @ApiOperation(value = "交接班", notes = "交接班 ")
     @PatchMapping("/updateEndTime")
     @ResponseBody
-    public WebApiResponse updateEndTime(String taskId){
-        return this.service.updateEndTime(Long.parseLong(taskId));
+    public WebApiResponse updateEndTime(String taskId,String userId){
+        return this.service.updateEndTime(Long.parseLong(taskId),userId);
     }
   /*  @ApiOperation(value = "开始看护页面", notes = "开始看护页面 ")
     @PatchMapping("/updateClzt")

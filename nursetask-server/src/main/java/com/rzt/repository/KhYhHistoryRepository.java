@@ -50,19 +50,13 @@ public interface KhYhHistoryRepository extends JpaRepository<KhYhHistory,String>
     @Query(value = "update KH_YH_HISTORY SET sjxl=?2 WHERE ID=?1",nativeQuery = true)
     void updateyh(long id, String xl);
 
-    public static void main(String[] args) {
-        long l = 0l;
-        for (int i =0 ;i<=1;i++){
-            for (int j=0;j<=31;j++){
-                 l = new SnowflakeIdWorker(j, j).nextId();
-                System.out.println(l+"02");
-            }
-
-        }
-
-    }
     @Modifying
     @Transactional
     @Query(value = "update kh_site SET USER_ID=?2 WHERE ID=?1",nativeQuery = true)
     void updates(long id, String id1);
+
+    @Modifying
+    @Transactional
+    @Query(value = "update KH_YH_HISTORY SET =?2 WHERE ID=?1",nativeQuery = true)
+    void updateYhHistory(KhYhHistory yh);
 }

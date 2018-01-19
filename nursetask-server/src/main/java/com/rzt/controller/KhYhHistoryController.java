@@ -36,8 +36,8 @@ public class KhYhHistoryController extends
 	@ApiOperation(notes = "施工情况",value = "施工情况")
 	@PostMapping("/saveYh")
 	@ResponseBody
-	public WebApiResponse saveYh(XsSbYh yh, String fxtime, String startTowerName, String endTowerName, String pictureId){
-		return this.service.saveYh(yh,fxtime,startTowerName,endTowerName,pictureId);
+	public WebApiResponse saveYh(KhYhHistory yh,String startTowerName, String endTowerName, String pictureId){
+		return this.service.saveYh(yh,startTowerName,endTowerName,pictureId);
 	}
 
 	@ApiOperation(notes = "隐患台账保存坐标",value = "隐患台账保存坐标")
