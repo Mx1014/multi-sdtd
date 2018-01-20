@@ -28,7 +28,7 @@ public interface CheckLiveTaskXsRepository extends JpaRepository<CheckLiveTaskXs
 
     @Modifying
     @Query(value = "update CHECK_LIVE_TASKXS set status=2 where id = ?1 ",nativeQuery = true)
-    CheckLiveTaskXs taskComplete(Long id);
+    void taskComplete(Long id);
 
     @Modifying
     @Query(value = "update xs_zc_task set JC_STATUS=?1 where id = ?2 ",nativeQuery = true)

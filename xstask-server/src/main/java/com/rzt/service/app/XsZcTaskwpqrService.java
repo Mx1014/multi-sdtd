@@ -283,13 +283,13 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
     * @date 2017/12/18 19:08
     * @author nwz
     */
-    public void updateExecDetail(Integer xslx,Integer sfdw, String reason, Long execDetailId,String longtitude,String latitude,Long taskId,String userId) {
+    public void updateExecDetail(Integer xslx,Integer sfdw, String reason, Long execDetailId,String longtitude,String latitude,Long taskid,String userid) {
         if(xslx == 0 || xslx == 1) {
             this.reposiotry.updateTxbdExecDetail(sfdw,reason,execDetailId);
         } else {
             try {
                 if(sfdw == 1) {
-                    warningmonitorServerService.xsTourScope(taskId,userId);
+                    warningmonitorServerService.xsTourScope(taskid,userid);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -376,11 +376,11 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
     * @date 2018/1/17 16:55
     * @author nwz
     */
-    public void insertException(Long taskId, String ycms, String ycdata,String userId) {
+    public void insertException(Long taskid, String ycms, String ycdata,String userid) {
         long nextId = new SnowflakeIdWorker(18, 21).nextId();
-        this.reposiotry.insertException(nextId,taskId,ycms,ycdata);
+        this.reposiotry.insertException(nextId,taskid,ycms,ycdata);
         try {
-            warningmonitorServerService.takePhoto(taskId,userId);
+            warningmonitorServerService.takePhoto(taskid,userid);
         } catch (Exception e) {
             e.printStackTrace();
         }

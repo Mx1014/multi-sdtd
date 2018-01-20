@@ -43,7 +43,7 @@ import java.util.Map;
 @RequestMapping("RztSysUser")
 public class RztSysUserController extends
         CurdController<RztSysUser, RztSysUserService> {
-//    @Autowired
+    //    @Autowired
 //    private Cmuserfile cmuserfile;
     @Autowired
     private RztSysUserauthService userauthService;
@@ -79,13 +79,19 @@ public class RztSysUserController extends
         /**
          * 人员缓存Redis
          */
-        String sql = " SELECT * FROM USERINFO where USERDELETE = 1 ";
-        List<Map<String, Object>> maps = this.service.execSql(sql);
-        HashOperations hashOperations = redisTemplate.opsForHash();
-        for (Map map : maps) {
-            hashOperations.put("UserInformation", map.get("ID"), map);
-        }
+        userRedis(user);
         return WebApiResponse.success("添加成功！");
+    }
+
+    private void userRedis(RztSysUser user) {
+        try {
+            String sql = " SELECT * FROM USERINFO where USERDELETE = 1 AND ID=?1  ";
+            Map<String, Object> map1 = this.service.execSqlSingleResult(sql, user.getId());
+            HashOperations hashOperations = redisTemplate.opsForHash();
+            hashOperations.put("UserInformation", map1.get("ID"), map1);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -107,6 +113,10 @@ public class RztSysUserController extends
             return WebApiResponse.erro(flag);
         }
         this.service.updateUser(id, user);
+        /**
+         * 人员缓存Redis
+         */
+        userRedis(user);
         return WebApiResponse.success("修改成功");
     }
 

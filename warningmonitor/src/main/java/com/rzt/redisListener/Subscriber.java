@@ -41,8 +41,6 @@ public class Subscriber extends JedisPubSub {
             }
             if("TWO".equals(messages[0])){  //表示告警任务生成，插入到二级单位表中
                 try{
-
-
                      monitorcheckej.saveCheckEj(messages);
                      String key = "ONE+"+messages[1]+"+"+messages[2]+"+"+messages[3]+"+"+messages[4]+"+"+messages[5]+"+"+messages[6];
                      redisService.setex(key);

@@ -188,8 +188,8 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 	@GetMapping("/taskComplete")
 	public WebApiResponse taskComplete(String id,String taskType){
 		try{
-			Object obj = service.taskComplete(id,taskType);
-			return WebApiResponse.success(obj);
+			service.taskComplete(id,taskType);
+			return WebApiResponse.success("稽查任务完成!");
 		}catch (Exception e){
 			LOGGER.error("稽查任务更新失败",e);
 			return WebApiResponse.erro("稽查任务更新失败");

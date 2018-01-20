@@ -172,7 +172,7 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
 
         try {
             Map<String, Object> map = null;
-            String sql = "   SELECT TASK_NAME,TD_ORG AS TASKNAME FROM XS_ZC_TASK WHERE ID=? ";
+            String sql = "   SELECT TASK_NAME AS TASKNAME,TD_ORG FROM XS_ZC_TASK WHERE ID=? ";
             map = this.execSqlSingleResult(sql, taskid);
             //往二级单位插数据
             resp.saveCheckEj(new SnowflakeIdWorker(10, 12).nextId(),taskid,1,5,userid,map.get("TD_ORG").toString(),map.get("TASKNAME").toString());
