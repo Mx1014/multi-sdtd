@@ -1,37 +1,44 @@
 package com.rzt.activiti.controller;
 
-import com.rzt.activiti.service.impl.DefectServiceImpl;
+import com.rzt.activiti.service.impl.XSCycleServiceImpl;
 import com.rzt.util.WebApiResponse;
+import org.activiti.engine.runtime.ProcessInstance;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
+ * 巡视周期审核
  * 李成阳
- * 2018/1/18
- * 缺陷上报
+ * 2018/1/19
  */
 @RestController
-@RequestMapping("/def")
-public class DefectController {
+@RequestMapping("/XSCycle")
+public class XSCycleController {
     @Autowired
-    private DefectServiceImpl defectService;
+    private XSCycleServiceImpl xsCycleService;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
+
     /**
      * 开启流程
      * @return
      */
     @GetMapping("/start")
-    public WebApiResponse start(String key , String userName,String flag,String qxId,String info){
-        HashMap<String, Object> map = new HashMap<>();
+    public WebApiResponse start(String key , String userName,String userId,String XSID,String flag,String info){
+        HashMap<Object, Object> map = new HashMap<>();
         map.put("userName",userName);
         map.put("flag",flag);
-        map.put("qxId",qxId);
         map.put("info",info);
+        map.put("XSID",XSID);
 
-        defectService.start(key,map);
+        ProcessInstance start = xsCycleService.start(key, map);
         return WebApiResponse.success("");
     }
 
@@ -39,16 +46,23 @@ public class DefectController {
      * 进入流程节点
      * 此处可以选择当前待办是否进入  下一步流程
      * @param taskId   当前任务id
+     * @param XSID         当前上报id
      * @param flag          选择节点使用的标志
      * @return
      */
     @GetMapping("/complete")
-    public WebApiResponse complete(String taskId,String flag){
-        HashMap<String, Object> map = new HashMap<>();
+    public WebApiResponse complete(String taskId,String XSID,String flag,String info){
+        Map<String, Object> map = new HashMap<>();
+        map.put("XSID",XSID);
         map.put("flag",flag);
-        defectService.complete(taskId,map);
+        map.put("info",info);
+        xsCycleService.complete(taskId,map);
+
         return WebApiResponse.success("");
     }
+
+
+
 
     /**
      * 查看所有待办任务
@@ -57,7 +71,19 @@ public class DefectController {
      */
     @GetMapping("/findTaskByUserName")
     public WebApiResponse toTask(String userId,Integer page,Integer size){
-        return defectService.checkTask(userId,page,size);
+        return xsCycleService.checkTask(userId,page,size);
+
+    }
+
+    /**
+     * 查看待办任务
+     * @param userName 执行人
+     * @param taskId   当前任务
+     * @return
+     */
+    @GetMapping("/task")
+    public WebApiResponse task(String userName,String taskId){
+        return WebApiResponse.success(xsCycleService.checkTask(taskId,userName));
 
     }
 
@@ -68,9 +94,13 @@ public class DefectController {
      */
     @GetMapping("/deploy")
     private WebApiResponse deploy(){
-        defectService.deploy();
+        xsCycleService.deploy();
         return WebApiResponse.success("");
 
     }
+
+
+
+
 
 }

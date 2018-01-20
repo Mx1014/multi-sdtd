@@ -17,7 +17,6 @@ public class GJTask {
 
     //定时拉数据  1
     @Scheduled(cron = "0 30 0 * * ? ")
-    //@Scheduled(fixedDelay = 30000000)
     public void gjTask(){
         khgj.inspectionMissionOverdue();// 巡视超期任务
         khgj.XSWJRW(); //未按时接任务
@@ -34,8 +33,8 @@ public class GJTask {
         System.out.println("++XSWSX+++++++++++++++++++++++++++++++++++++++++++++++");
     }
 
-    //1
-   // @Scheduled(cron = "0/30 * * * * ?")
+
+  // @Scheduled(fixedDelay = 5000000)
     public void gjTask3(){
         khgj.XSWJRW();  //巡视未按规定时间接任务 定时拉去数据用
         System.out.println("++XSWJRW+++++++++++++++++++++++++++++++++++++++++++++++");

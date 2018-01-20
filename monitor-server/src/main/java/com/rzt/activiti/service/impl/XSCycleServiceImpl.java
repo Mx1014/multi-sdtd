@@ -5,6 +5,7 @@ import com.rzt.entity.CheckResult;
 import com.rzt.repository.CheckResultRepository;
 import com.rzt.service.CurdService;
 import com.rzt.util.WebApiResponse;
+import com.rzt.utils.RedisUtil;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
@@ -16,6 +17,7 @@ import org.activiti.engine.task.TaskQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
@@ -24,12 +26,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 隐患上报流程
  * 李成阳
- * 2018/1/15
+ * 2018/1/19
  */
 @Service
-public class ProServiceImpl  extends CurdService<CheckResult, CheckResultRepository> implements ActivitiService {
+public class XSCycleServiceImpl  extends CurdService<CheckResult, CheckResultRepository> implements ActivitiService {
 
     @Autowired
     private TaskService taskService;
@@ -37,6 +38,10 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
     private RuntimeService runtimeService;
     @Autowired
     private RepositoryService repositoryService;
+ /*   @Autowired
+    private RedisTemplate redisTemplate;
+    @Autowired
+    private RedisUtil redisUtil;*/
     protected static Logger LOGGER = LoggerFactory.getLogger(ProServiceImpl.class);
 
     /**
@@ -66,6 +71,12 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
      */
     @Override
     public WebApiResponse checkTask(String userName,Integer page,Integer size) {
+      /*  try {
+            String roleIdByUserId = redisUtil.findRoleIdByUserId(redisTemplate, userName);
+            System.out.println(roleIdByUserId+"******************************");
+        }catch (Exception e){
+
+        }*/
 
 
 
@@ -78,8 +89,9 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
         }
         List<Object> result = new ArrayList<>();
 
+
         //流程定义key（流程定义的标识）
-        String processDefinitionKey = "wtsh";
+        String processDefinitionKey = "xssh";
         //创建查询对象
         TaskQuery taskQuery = taskService.createTaskQuery();
         //设置查询条件
@@ -88,70 +100,78 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
         taskQuery.processDefinitionKey(processDefinitionKey);
         //获取查询列表
         List<Task> list = taskQuery.list();
+        //完整sql
+        /*SELECT x.CREATE_TIME,x.V_LEVEL,x.SECTION,x.TASK_NAME,x.WX_ORG,x.TD_ORG,(SELECT d.DEPTNAME
+        FROM RZTSYSDEPARTMENT d WHERE ID = x.TD_ORG) as tdorg,(SELECT d.DEPTNAME
+        FROM RZTSYSDEPARTMENT d WHERE ID = x.WX_ORG) as wxorg,x.ID,r.PROPOSER_ID,r.PROPOSER_TIME,r.CHANGE_REASON
 
-        list.stream().forEach(a-> System.out.println(a));
+        FROM XS_ZC_CYCLE x
+        LEFT JOIN XS_ZC_CYCLE_RECORD r ON r.XS_ZC_CYCLE_ID = x.ID
+        WHERE r.PROPOSER_STATUS = 0*/
 
 
-   /*     TaskQuery taskQuery = taskService.createTaskQuery();
+
         //分页查询当前待办任务
-        List<Task> list = taskQuery.taskAssignee(userName).orderByTaskCreateTime().desc().listPage(page,size);*/
+        //List<Task> list = taskQuery.taskAssignee(userName).orderByTaskCreateTime().desc().listPage(page, size);
         if(null == list  || list.size()==0){
             return WebApiResponse.success("");
         }
-       try{
-           //这个sql可以用工作流提供的id查询到启动流程时传递的参数
-           for (Task task : list) {
-               String realname = "";
-               System.out.println("当前任务  "+task);
-               System.out.println(task.getId());
+        try{
+           /* String ids = "";
+            for (Task task : list) {
+                ids += ","+task.getId();
+            }
+            System.out.println(ids+"****************");
+            if(ids.length()>0){
+                ids = ids.substring(1,ids.length());
+            }*/
+            //这个sql可以用工作流提供的id查询到启动流程时传递的参数
+            for (Task task : list) {
+                String realname = "";
+                System.out.println("当前任务  "+task);
+                System.out.println(task.getId());
 
-               Object yhid =  taskService.getVariable(task.getId(), "YHID");
-               Object info =  taskService.getVariable(task.getId(), "info");
-               Object khid =  taskService.getVariable(task.getId(), "khid");
-               Object isKH =  taskService.getVariable(task.getId(), "isKH");
-               System.out.println("########################################################");
-               System.out.println("任务ID:"+task.getId());
-               System.out.println("任务名称:"+task.getName());
-               System.out.println("任务的创建时间:"+task.getCreateTime());
-               System.out.println("任务的办理人:"+task.getAssignee());
-               System.out.println("流程实例ID："+task.getProcessInstanceId());
-               System.out.println("########################################################");
-               if(null == yhid || "".equals(yhid)){
-                   //拿不到隐患id的跳过
+                Object info =  taskService.getVariable(task.getId(), "info");
+                Object XSID =  taskService.getVariable(task.getId(), "XSID");
+                Object name =  taskService.getVariable(task.getId(), "userName");
+
+                if(null == XSID || "".equals(XSID)){
+                    //拿不到隐患id的跳过
                     continue;
-               }
-               ArrayList<Object> strings = new ArrayList<>();
-               strings.add(yhid);
+                }
+                ArrayList<Object> strings = new ArrayList<>();
+                strings.add(XSID);
+                Map<String, Object> map = null;
+                String sql = "  SELECT x.CREATE_TIME,x.WX_ORG,x.TD_ORG,(SELECT d.DEPTNAME" +
+                        "  FROM RZTSYSDEPARTMENT d WHERE ID = x.TD_ORG) as tdorg,(SELECT d.DEPTNAME" +
+                        "  FROM RZTSYSDEPARTMENT d WHERE ID = x.WX_ORG) as wxorg,x.ID," +
+                        "  (SELECT l.V_LEVEL" +
+                        "   FROM CM_LINE l WHERE l.ID = x.LINE_ID) as vlevel," +
+                        "  (SELECT l.SECTION" +
+                        "   FROM CM_LINE l WHERE l.ID = x.LINE_ID) as SECTION," +
+                        "  (SELECT l.LINE_NAME" +
+                        "   FROM CM_LINE l WHERE l.ID = x.LINE_ID) as lineName" +
+                        "   FROM XS_ZC_CYCLE x WHERE x.ID =   ?"+strings.size();
+                List<Map<String, Object>> maps = this.execSql(sql, strings);
+                if(null != maps && maps.size()>0){
+                     map = maps.get(0);
+                }else {
+                    continue;
+                }
+                map.put("acTaskId",task.getId());
+                map.put("createTime",task.getCreateTime());
+                map.put("assignee",task.getAssignee());
+                map.put("name",task.getName());
+                map.put("realname",realname);
+                map.put("name",name);
+                map.put("proId",task.getProcessInstanceId());
+                result.add(map);
 
-               String sql = "SELECT ID as YHID, TBRID,YHJB1,WXORG_ID,XSTASK_ID,LINE_ID,CREATE_TIME,DXDYHSPJL," +
-                       "    YHJB,LINE_NAME,TDWX_ORG,YHMS,YHLB,YWORG_ID,TDYW_ORG,SECTION,VTYPE " +
-                       "   FROM XS_SB_YH WHERE ID = ?"+strings.size();
-               Map<String, Object> map = this.execSqlSingleResult(sql, strings);
-               String tbrid = (String) map.get("TBRID");
-               if(null != tbrid  && !"".equals(tbrid)){
-                   ArrayList<String> strings1 = new ArrayList<>();
-                   strings1.add(tbrid);
-                   String tbrsql = "SELECT REALNAME from RZTSYSUSER WHERE ID  = ?"+strings1.size();
-                   Map<String, Object> map1 = this.execSqlSingleResult(tbrsql, strings1);
-                    realname = (String) map1.get("REALNAME");
-               }
-               map.put("acTaskId",task.getId());
-               map.put("createTime",task.getCreateTime());
-               map.put("assignee",task.getAssignee());
-               map.put("name",task.getName());
-               map.put("isKH",isKH);
-               map.put("realname",realname);
-               map.put("proId",task.getProcessInstanceId());
-               result.add(map);
-           }
+            }
 
-
-
-
-       }catch (Exception e){
-
-       }
-
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+        }
         return WebApiResponse.success(result);
     }
 
@@ -162,14 +182,14 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
      */
     @Override
     public void deploy() {
-        repositoryService.createDeployment().addClasspathResource("diagrams/ProActiviti.bpmn")
-                .addClasspathResource("diagrams/ProActiviti.png").deploy();
+        repositoryService.createDeployment().addClasspathResource("diagrams/CycleActiviti.bpmn")
+                .addClasspathResource("diagrams/CycleActiviti.png").deploy();
 
     }
 
     @Override
     public void delpd(String deploymentId) {
-    repositoryService.deleteDeployment(deploymentId,true);
+        repositoryService.deleteDeployment(deploymentId,true);
     }
 
     /**
@@ -223,33 +243,10 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
                 .createProcessDefinitionQuery()
                 .processDefinitionId(processDefinitionId).singleResult();
         return repositoryService.getResourceAsStream(
-                processDefinition.getDeploymentId(), "diagrams/ProActiviti.png");
+                processDefinition.getDeploymentId(), "diagrams/CycleActiviti.png");
     }
 
-    public String findIdByProId(String proId)  {
 
-       try {
-           if(null != proId && !"".equals(proId)){
-               ArrayList<String> strings = new ArrayList<>();
-               strings.add(proId);
-               String sql  = "SELECT ID_ " +
-                       "  FROM ACT_RU_TASK WHERE PROC_INST_ID_ = ?"+strings.size();
-               Map<String, Object> map = this.execSqlSingleResult(sql, strings);
-               String id_ = (String) map.get("ID_");
-               if(null != id_ && !"".equals(id_)){
-                   LOGGER.info("实例id查询节点id成功");
-                   return id_;
-               }
-           }
-       }catch (Exception e){
-           LOGGER.error("实例id查询节点id失败"+e.getMessage());
-            return "";
-       }
-
-
-
-        return "";
-    }
 
 
 }

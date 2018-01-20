@@ -207,6 +207,18 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 			return WebApiResponse.erro("稽查任务更新失败");
 		}
 	}
+	@ApiOperation(value = "已稽查任务详情",notes = "已稽查任务详情")
+	@GetMapping("/checkDetailDone")
+	public WebApiResponse checkDetailDone(String id,String taskId,String taskType){
+		try{
+			Object obj = service.checkDetailDone(id,taskId,taskType);
+			return WebApiResponse.success(obj);
+		}catch (Exception e){
+			LOGGER.error("稽查任务更新失败",e);
+			return WebApiResponse.erro("稽查任务更新失败");
+		}
+	}
+
 
 
 }

@@ -25,18 +25,44 @@ public class WarningInfoController extends
     }
 
     @GetMapping("/userInfo")
-    public WebApiResponse userInfo(String userId,Integer warningType){
+    public WebApiResponse userInfo(String userId,Integer warningType,Long taskId){
         try {
-            return WebApiResponse.success(service.userInfo(userId,warningType));
+            return WebApiResponse.success(service.userInfo(userId,warningType,taskId));
         }catch (Exception e){
             return WebApiResponse.erro(e.getMessage());
         }
     }
 
+    /**
+     *柱状图查询
+     * type 任务类型
+     */
     @GetMapping("/sumInfo")
     public WebApiResponse sumInfo(String userId,Integer type){
         try {
             return WebApiResponse.success(service.sumInfo(userId,type));
+        }catch (Exception e){
+            return WebApiResponse.erro(e.getMessage());
+        }
+    }
+
+    /**
+     * 总柱状图展示
+     * type 任务类型
+     */
+    @GetMapping("/totalSumInfo")
+    public WebApiResponse totalSumInfo(String userId,Integer type){
+        try {
+            return WebApiResponse.success(service.totalSumInfo(userId,type));
+        }catch (Exception e){
+            return WebApiResponse.erro(e.getMessage());
+        }
+    }
+
+    @GetMapping("pictureInfo")
+    public WebApiResponse pictureInfo(String taskId,Integer type,Integer warningType){
+        try {
+            return WebApiResponse.success(service.pictureInfo(taskId,type,warningType));
         }catch (Exception e){
             return WebApiResponse.erro(e.getMessage());
         }
