@@ -193,15 +193,14 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
         task.setCheckCycle(1);
         task.setTaskName(username+DateUtil.getCurrentDate()+"稽查任务");
         CheckLiveTask save = reposiotry.save(task);
-
-        String[] split = save.getTaskId().split(",");
+        String[] split = save.getTaskId().split(",");//隐患ids
         for (int i = 0; i < split.length; i++) {
-            Map<String,Object> map = execSqlSingleResult("select id,TDYW_ORGID,TDWX_ORGID from CHECK_LIVE_SITE where YH_ID = ?1", split[i]);
+            Map<String,Object> map = execSqlSingleResult("select id,YWORG_ID,WXORG_ID from KH_YH_HISTORY where id = = ?1", split[i]);
             CheckLiveTaskDetail taskDetail = new CheckLiveTaskDetail();
             taskDetail.setId(null);
             taskDetail.setCreateTime(new Date());
-            taskDetail.setTdywOrgid(String.valueOf(map.get("TDYW_ORGID")).replace("null",""));
-            taskDetail.setTdwxOrgid(String.valueOf(map.get("TDWX_ORGID")).replace("null",""));
+            taskDetail.setTdywOrgid(String.valueOf(map.get("YWORG_ID")).replace("null",""));
+            taskDetail.setTdwxOrgid(String.valueOf(map.get("WXORG_ID")).replace("null",""));
             taskDetail.setPlanStartTime(save.getPlanStartTime());
             taskDetail.setPlanEndTime(save.getPlanEndTime());
             taskDetail.setStatus(0);// 0未开始 1进行中 2已完成 3已超期
@@ -379,5 +378,16 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
     public Map<String,Object> getKhRange(String yhId) throws Exception {
         String sql = "select to_number(RADIUS) jl,jd,WD from KH_YH_HISTORY where id ="+yhId;
         return execSqlSingleResult(sql);
+    }
+
+    public Object checkDetailDone(String id, String taskId, String taskType) {
+        Object obj = new Object();
+        //0看护 1巡视 0待稽查 1已稽查
+        if("0,1".equals(taskType)){
+
+        }else if("1,1".equals(taskType)){
+
+        }
+        return obj;
     }
 }

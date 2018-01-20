@@ -126,7 +126,8 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             if (!radius.contains(".")) {
                 radius = radius + ".0";
             }
-            this.reposiotry.updateYh(Long.parseLong(yhId), lat, lon, radius);
+           // this.reposiotry.updateYh(Long.parseLong(yhId), lat, lon, radius);
+            this.reposiotry.updateCycle(Long.parseLong(yhId), lat, lon, radius);
             return WebApiResponse.success("保存成功");
         } catch (Exception e) {
             return WebApiResponse.erro("保存失败" + e.getMessage());

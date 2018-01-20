@@ -38,14 +38,16 @@ public class AppKhUpdateService extends CurdService<KhTask, AppKhUpdateRepositor
     private UserCenterService userService;
 
     //修改实际开始时间
-    public WebApiResponse updateRealTime(long taskId,String userId) {
+    public WebApiResponse updateRealTime(long taskId, String userId) {
         try {
             int num = this.reposiotry.findNum(taskId);
             if (num < 1) {
                 //if (isdw != null && reason != null) {
                 this.reposiotry.updateRealStartTime(taskId, DateUtil.dateNow());
                 this.reposiotry.updateZxnum(1, taskId);//修改执行页数
-                userService.updateKhInfoStatusInredis(userId);
+                if (userId != null) {
+                    userService.updateKhInfoStatusInredis(userId);
+                }
             }
             removeSomeKey(taskId);
             return WebApiResponse.success("修改成功");
@@ -127,10 +129,12 @@ public class AppKhUpdateService extends CurdService<KhTask, AppKhUpdateRepositor
         }
     }
 
-    public WebApiResponse updateEndTime(long taskId,String userId) {
+    public WebApiResponse updateEndTime(long taskId, String userId) {
         try {
             this.reposiotry.updateEndTime(DateUtil.dateNow(), taskId);
-            userService.updateKhInfoStatusInredis(userId);
+            if (userId != null) {
+                userService.updateKhInfoStatusInredis(userId);
+            }
             return WebApiResponse.success("修改成功");
         } catch (Exception e) {
             e.printStackTrace();
