@@ -1,11 +1,12 @@
 package com.rzt.activiti.controller;
 
-import com.rzt.activiti.Eureka.ProEureka;
-import com.rzt.activiti.service.ProService;
+import com.rzt.activiti.service.impl.ProServiceImpl;
 import com.rzt.util.WebApiResponse;
+import com.rzt.utils.RedisUtil;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,11 +23,13 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/pro")
-public class proController {
+public class ProController {
     @Autowired
-    private ProService proService;
+    private ProServiceImpl proService;
+    /*@Autowired
+    private ProEureka proEureka;*/
     @Autowired
-    private ProEureka proEureka;
+    private RedisTemplate redisTemplate;
 
     /**
      * 开启流程
@@ -129,12 +132,14 @@ public class proController {
     }
     /**
      * 查看所有待办任务
-     * @param userName   传入当前节点名
+     * @param userId   传入当前节点名
      * @return
      */
     @GetMapping("/findTaskByUserName")
-    public WebApiResponse toTask(String userName,Integer page,Integer size){
-        return proService.checkTask(userName,page,size);
+    public WebApiResponse toTask(String userId,Integer page,Integer size){
+        // 根据userId 获取当前 用户权限
+        //String roleId = RedisUtil.findRoleIdByUserId(redisTemplate, userId);
+        return proService.checkTask(userId,page,size);
 
     }
 

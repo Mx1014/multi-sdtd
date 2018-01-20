@@ -60,14 +60,12 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
     }
 
     @Transactional
-    public WebApiResponse saveYh(XsSbYh yh, String fxtime, String startTowerName, String endTowerName, String pictureId) {
+    public WebApiResponse saveYh(KhYhHistory yh, String startTowerName, String endTowerName, String pictureId) {
         try {
             yh.setYhfxsj(DateUtil.dateNow());
-            //yh.setYhfxsj(DateUtil.parseDate(fxtime));
             yh.setId(0l);
             if (!(yh.getStartTower() == null) && yh.getStartTower().equals("")) {
                 String startTower = "select longitude,latitude from cm_tower where id = ?";
-                //String endTower = "select longitude,latitude from cm_tower where id = ?";
                 Map<String, Object> map = execSqlSingleResult(startTower, Integer.parseInt(yh.getStartTower()));
                 //Map<String, Object> map1 = execSqlSingleResult(endTower, Integer.parseInt(yh.getEndTower()));
                 //经度
@@ -75,20 +73,20 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                     //double jd = (Double.parseDouble(map.get("LONGITUDE").toString()) + Double.parseDouble(map1.get("LONGITUDE").toString())) / 2;
                     // double wd = (Double.parseDouble(map.get("LATITUDE").toString()) + Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
                     // double radius = MapUtil.GetDistance(Double.parseDouble(map.get("LONGITUDE").toString()), Double.parseDouble(map.get("LATITUDE").toString()), Double.parseDouble(map1.get("LONGITUDE").toString()), Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
-                    yh.setRadius("100.0");
+                    yh.setRadius("200.0");
                     yh.setJd(map.get("LONGITUDE").toString());
                     yh.setWd(map.get("LATITUDE").toString());
                 }
             }
             try {
                 if (yh.getVtype().equals("0")) {
-                    yh.setVtype("35");
+                    yh.setVtype("35kV");
                 } else if (yh.getVtype().equals("1")) {
-                    yh.setVtype("110");
+                    yh.setVtype("110kV");
                 } else if (yh.getVtype().equals("2")) {
-                    yh.setVtype("220");
+                    yh.setVtype("220kV");
                 } else if (yh.getVtype().equals("3")) {
-                    yh.setVtype("550");
+                    yh.setVtype("550kV");
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -114,7 +112,8 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                     this.reposiotry.updateYhPicture(Long.parseLong(split[i]), yh.getId(), yh.getXstaskId());
                 }
             }
-            this.xsService.add(yh);
+            this.add(yh);
+
             return WebApiResponse.success("数据保存成功");
         } catch (Exception e) {
             e.printStackTrace();
@@ -127,7 +126,8 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             if (!radius.contains(".")) {
                 radius = radius + ".0";
             }
-            this.reposiotry.updateYh(Long.parseLong(yhId), lat, lon, radius);
+           // this.reposiotry.updateYh(Long.parseLong(yhId), lat, lon, radius);
+            this.reposiotry.updateCycle(Long.parseLong(yhId), lat, lon, radius);
             return WebApiResponse.success("保存成功");
         } catch (Exception e) {
             return WebApiResponse.erro("保存失败" + e.getMessage());
@@ -611,6 +611,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
 
     public WebApiResponse updateYhHistory(KhYhHistory yh) {
         try {
+            this.reposiotry.updateYhHistory(yh);
             return WebApiResponse.success("");
         }catch (Exception e){
             e.printStackTrace();

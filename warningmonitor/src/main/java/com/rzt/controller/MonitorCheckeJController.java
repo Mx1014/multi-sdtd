@@ -106,7 +106,7 @@ public class MonitorCheckeJController extends
 		try {
 			return WebApiResponse.success(ejService.XSGJY(page,size,startDate,userId,warningType,deptID,type,endDate));
 		}catch (Exception e){
-			return WebApiResponse.erro("巡视告警未处理查询失败"+e.getMessage());
+			return WebApiResponse.erro("巡视告警已处理查询失败"+e.getMessage());
 		}
 	}
 
@@ -120,13 +120,13 @@ public class MonitorCheckeJController extends
 	 * @return
 	 */
 	@PostMapping("GJCL")
-	public WebApiResponse GJCL(String userId,Long taskId,Integer type,Integer warningType,String checkInfo,String checkAppInfo){
-		return ejService.GJCL(userId,taskId,type,warningType,checkInfo,checkAppInfo);
+	public WebApiResponse GJCL(String userId, Long taskId, Integer type, Integer warningType, String checkInfo, String checkAppInfo, String createTime){
+		return ejService.GJCL(userId,taskId,type,warningType,checkInfo,checkAppInfo,createTime);
 	}
 
 	@PostMapping("GJCLC")
-	public WebApiResponse GJCLC(String userId,Long taskId,Integer type,Integer warningType,String checkInfo){
-		return ejService.GJCLC(userId,taskId,type,warningType,checkInfo);
+	public WebApiResponse GJCLC(String userId,Long taskId,Integer type,Integer warningType,String checkInfo, String createTime){
+		return ejService.GJCLC(userId,taskId,type,warningType,checkInfo,createTime);
 	}
 
 }

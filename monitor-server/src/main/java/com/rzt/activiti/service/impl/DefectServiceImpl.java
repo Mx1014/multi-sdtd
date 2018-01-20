@@ -1,7 +1,6 @@
 package com.rzt.activiti.service.impl;
 
-import com.rzt.activiti.service.DefectService;
-import com.rzt.activiti.service.ProService;
+import com.rzt.activiti.service.ActivitiService;
 import com.rzt.entity.CheckResult;
 import com.rzt.repository.CheckResultRepository;
 import com.rzt.service.CurdService;
@@ -12,14 +11,10 @@ import org.activiti.engine.TaskService;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.repository.ProcessDefinitionQuery;
 import org.activiti.engine.runtime.ProcessInstance;
-import org.activiti.engine.task.Task;
-import org.activiti.engine.task.TaskQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -29,7 +24,7 @@ import java.util.Map;
  * 缺陷上报实现类
  */
 @Service
-public class DefectServiceImpl   extends CurdService<CheckResult, CheckResultRepository> implements DefectService {
+public class DefectServiceImpl   extends CurdService<CheckResult, CheckResultRepository> implements ActivitiService {
 
 
     @Autowired
@@ -141,5 +136,7 @@ public class DefectServiceImpl   extends CurdService<CheckResult, CheckResultRep
         return repositoryService.getResourceAsStream(
                 processDefinition.getDeploymentId(), "diagrams/diagram.png");
     }
+
+
 
 }

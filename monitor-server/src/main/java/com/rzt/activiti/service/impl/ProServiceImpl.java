@@ -1,19 +1,13 @@
 package com.rzt.activiti.service.impl;
 
-import com.rzt.activiti.service.ProService;
+import com.rzt.activiti.service.ActivitiService;
 import com.rzt.entity.CheckResult;
 import com.rzt.repository.CheckResultRepository;
 import com.rzt.service.CurdService;
-import com.rzt.service.PictureService;
 import com.rzt.util.WebApiResponse;
-import com.sun.org.apache.regexp.internal.RE;
-import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
-import org.activiti.engine.history.HistoricTaskInstance;
-import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
-import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.repository.ProcessDefinitionQuery;
 import org.activiti.engine.runtime.ProcessInstance;
@@ -26,7 +20,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -36,7 +29,7 @@ import java.util.Map;
  * 2018/1/15
  */
 @Service
-public class ProServiceImpl  extends CurdService<CheckResult, CheckResultRepository> implements ProService{
+public class ProServiceImpl  extends CurdService<CheckResult, CheckResultRepository> implements ActivitiService {
 
     @Autowired
     private TaskService taskService;
@@ -155,8 +148,8 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
      */
     @Override
     public void deploy() {
-        repositoryService.createDeployment().addClasspathResource("diagrams/activiti.bpmn")
-                .addClasspathResource("diagrams/diagram.png").deploy();
+        repositoryService.createDeployment().addClasspathResource("diagrams/ProActiviti.bpmn")
+                .addClasspathResource("diagrams/ProActiviti.png").deploy();
 
     }
 
@@ -216,10 +209,9 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
                 .createProcessDefinitionQuery()
                 .processDefinitionId(processDefinitionId).singleResult();
         return repositoryService.getResourceAsStream(
-                processDefinition.getDeploymentId(), "diagrams/diagram.png");
+                processDefinition.getDeploymentId(), "diagrams/ProActiviti.png");
     }
 
-    @Override
     public String findIdByProId(String proId)  {
 
        try {

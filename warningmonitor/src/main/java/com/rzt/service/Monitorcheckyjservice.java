@@ -6,6 +6,7 @@
  */
 package com.rzt.service;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.Monitorcheckyj;
 import com.rzt.repository.Monitorcheckyjrepository;
@@ -15,8 +16,7 @@ import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 类名称：MONITORCHECKYJService
@@ -68,19 +68,34 @@ public class Monitorcheckyjservice extends CurdService<Monitorcheckyj, Monitorch
     /**
      * 查看人员详情
      */
-    public Object userInfo(String userId,Integer warningType) {
+    public Object userInfo(String userId,Integer warningType,Long taskId) {
         HashOperations<String, Object, Object> hash = redisTemplate.opsForHash();
         Object userInformation = hash.get("UserInformation", userId);
         JSONObject jsonObject = JSONObject.parseObject(userInformation.toString());
         if(warningType==7){
-            String sql = "SELECT count(kh_time.id) times," +
-                    "     sum(ROUND(TO_NUMBER(nvl(kh_time.END_TIME,sysdate) - kh_time.START_TIME) * 24 * 60 * 60)) timeLong " +
+            String sql1 = "SELECT nvl(REAL_END_TIME,PLAN_END_TIME) AS REAL_END_TIME FROM KH_TASK WHERE USER_ID=?1 AND ID=?2 ";
+            List<Map<String, Object>> maps1 = execSql(sql1, userId, taskId);
+            Date endTime = new Date();
+            if(maps1.size()>0){
+               Date end = (Date)maps1.get(0).get("REAL_END_TIME");
+                if(end!=null && end.getTime()<endTime.getTime()){
+                    endTime = end;
+                }
+            }
+
+            /*String sql = "SELECT count(kh_time.id) times," +
+                    "     sum(ROUND(TO_NUMBER(nvl(kh_time.END_TIME,?2) - kh_time.START_TIME) * 24 * 60 * 60)) timeLong " +
                     "     FROM WARNING_OFF_POST_USER_TIME kh_time " +
-                    "     WHERE kh_time.FK_USER_ID = ?1";
-            List<Map<String, Object>> maps = execSql(sql, userId);
+                    "     WHERE kh_time.FK_USER_ID = ?1";*/
+            String sql = "SELECT count(kh_time.id) times,  " +
+                    "   sum(ROUND(TO_NUMBER(nvl(kh_time.END_TIME,?2) - kh_time.START_TIME) * 24 * 60 * 60)) timeLong  " +
+                    "   FROM WARNING_OFF_POST_USER_TIME kh_time  " +
+                    "   WHERE kh_time.FK_TASK_ID=?3 AND kh_time.FK_USER_ID =?1";
+            List<Map<String, Object>> maps = execSql(sql, userId,endTime);
             if(maps.size()>0){
                 Map<String, Object> map = maps.get(0);
-                Long timelong = (Long) map.get("TIMELONG");
+                String time = map.get("TIMELONG").toString();
+                Long timelong = Long.valueOf(time);
                 Long h=timelong/3600;
                 Long m=(timelong%3600)/60;
                 Long s=(timelong%3600)%60;
@@ -101,24 +116,160 @@ public class Monitorcheckyjservice extends CurdService<Monitorcheckyj, Monitorch
         if("-1".equals(deptID)){
             return "该用户无此权限";
         }
+        List<Map<String, Object>> result = new ArrayList<>();
         if("0".equals(deptID)){
-            if(type==1){
+
                 //查询未出理
-                String sql1 = "SELECT count(1),DEPTID FROM MONITOR_CHECK_EJ WHERE TASK_TYPE=1 AND trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =0 GROUP BY DEPTID ";
+                String sql1 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE TASK_TYPE=?1 AND trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =0 GROUP BY DEPTID ";
                 //查询处理中
-                String sql2 = "SELECT count(1),DEPTID FROM MONITOR_CHECK_EJ WHERE TASK_TYPE=1 AND trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =1 GROUP BY DEPTID  ";
+                String sql2 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE TASK_TYPE=?1 AND trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =1 GROUP BY DEPTID  ";
                 //查询已处理
-                String sql3 = "SELECT count(1),DEPTID FROM MONITOR_CHECK_EJ WHERE TASK_TYPE=1 AND trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =2 GROUP BY DEPTID  ";
-                List<Map<String, Object>> maps = execSql(sql1);
-                List<Map<String, Object>> maps1 = execSql(sql2);
-                List<Map<String, Object>> maps2 = execSql(sql3);
+                String sql3 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE TASK_TYPE=?1 AND trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =2 GROUP BY DEPTID  ";
+                List<Map<String, Object>> maps = execSql(sql1,type);
+                List<Map<String, Object>> maps1 = execSql(sql2,type);
+                List<Map<String, Object>> maps2 = execSql(sql3,type);
+                String deptnameSql = " SELECT t.ID,t.DEPTNAME FROM RZTSYSDEPARTMENT t WHERE t.DEPTSORT IS NOT NULL ORDER BY t.DEPTSORT ";
+                List<Map<String, Object>> dept = execSql(deptnameSql);
+                for (Map<String,Object> map:dept){
+                    Map<String,Object> sumMap = new HashMap<String,Object>();
+                    String id = (String) map.get("ID");
+                    String deptName = (String) map.get("DEPTNAME");
+                    sumMap.put("ID",id);
+                    sumMap.put("DEPTNAME",deptName);
+                    sumMap.put("WCL",0);
+                    sumMap.put("CLZ",0);
+                    sumMap.put("YCL",0);
+                    //添加未处理
+                    for(Map<String,Object> m1:maps){
+                        if(id.equals(m1.get("DEPTID").toString())){
+                            sumMap.put("WCL",m1.get("SUM"));
+                        }
+                    }
+                    //添加处理中
+                    for(Map<String,Object> m1:maps1){
+                        if(id.equals(m1.get("DEPTID").toString())){
+                            sumMap.put("CLZ",m1.get("SUM"));
+                        }
+                    }
+                    //添加已处理
+                    for(Map<String,Object> m1:maps2){
+                        if(id.equals(m1.get("DEPTID").toString())){
+                            sumMap.put("YCL",m1.get("SUM"));
+                        }
+                    }
+                    result.add(sumMap);
+                }
+
+
+        }else{
+            String sql = "SELECT count(1) AS sum,u.CLASSNAME FROM MONITOR_CHECK_EJ ej LEFT JOIN RZTSYSUSER u ON ej.USER_ID=u.ID  " +
+                    "WHERE ej.TASK_TYPE=?2  AND trunc(ej.CREATE_TIME)=trunc(sysdate) AND ej.STATUS =0 AND ej.DEPTID=?1  " +
+                    "GROUP BY u.CLASSNAME";
+            String sql2 = "SELECT count(1) AS sum,u.CLASSNAME FROM MONITOR_CHECK_EJ ej LEFT JOIN RZTSYSUSER u ON ej.USER_ID=u.ID  " +
+                    "  WHERE ej.TASK_TYPE=?2  AND trunc(ej.CREATE_TIME)=trunc(sysdate) AND ej.STATUS =1 AND ej.DEPTID=?1 " +
+                    " GROUP BY u.CLASSNAME";
+            String sql3 = "SELECT count(1) AS sum,u.CLASSNAME FROM MONITOR_CHECK_EJ ej LEFT JOIN RZTSYSUSER u ON ej.USER_ID=u.ID  " +
+                    "  WHERE ej.TASK_TYPE=?2  AND trunc(ej.CREATE_TIME)=trunc(sysdate) AND ej.STATUS =2 AND ej.DEPTID=?1 " +
+                    " GROUP BY u.CLASSNAME";
+
+            List<Map<String, Object>> maps = execSql(sql, deptID, type);
+            List<Map<String, Object>> maps1 = execSql(sql2, deptID, type);
+            List<Map<String, Object>> maps2 = execSql(sql3, deptID, type);
+
+            String sqll = "SELECT ID,  DEPTNAME FROM (SELECT ID, DEPTNAME, LASTNODE  FROM RZTSYSDEPARTMENT  " +
+                    "  START WITH ID = ?1 CONNECT BY PRIOR ID = DEPTPID) WHERE LASTNODE = 0";
+            List<Map<String, Object>> maps3 = execSql(sqll, deptID);
+            for (Map<String,Object> map:maps3){
+                Map<String,Object> sumMap = new HashMap<String,Object>();
+                String id = (String) map.get("ID");
+                String deptName = (String) map.get("DEPTNAME");
+                sumMap.put("ID",id);
+                sumMap.put("DEPTNAME",deptName);
+                sumMap.put("WCL",0);
+                sumMap.put("CLZ",0);
+                sumMap.put("YCL",0);
+                //添加未处理
+                for(Map<String,Object> m1:maps){
+                    if(id.equals(m1.get("CLASSNAME").toString())){
+                        sumMap.put("WCL",m1.get("SUM"));
+                    }
+                }
+                //添加处理中
+                for(Map<String,Object> m1:maps1){
+                    if(id.equals(m1.get("CLASSNAME").toString())){
+                        sumMap.put("CLZ",m1.get("SUM"));
+                    }
+                }
+                //添加已处理
+                for(Map<String,Object> m1:maps2){
+                    if(id.equals(m1.get("CLASSNAME").toString())){
+                        sumMap.put("YCL",m1.get("SUM"));
+                    }
+                }
+                result.add(sumMap);
 
             }
 
-        }else{
-
         }
-        return null;
+        return result;
+    }
+
+    /**
+     * 查询所有柱状图
+     * @param userId
+     * @param type
+     * @return
+     */
+    public Object totalSumInfo(String userId, Integer type) {
+        String deptID = getDeptID(userId);
+        if(!"0".equals(deptID)){
+            return "该用户无此权限";
+        }
+        List<Map<String, Object>> result = new ArrayList<>();
+        //查询未出理
+        String sql1 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =0 GROUP BY DEPTID ";
+        //查询处理中
+        String sql2 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =1 GROUP BY DEPTID  ";
+        //查询已处理
+        String sql3 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =2 GROUP BY DEPTID  ";
+        List<Map<String, Object>> maps = execSql(sql1);
+        List<Map<String, Object>> maps1 = execSql(sql2);
+        List<Map<String, Object>> maps2 = execSql(sql3);
+        String deptnameSql = " SELECT t.ID,t.DEPTNAME FROM RZTSYSDEPARTMENT t WHERE t.DEPTSORT IS NOT NULL ORDER BY t.DEPTSORT ";
+        List<Map<String, Object>> dept = execSql(deptnameSql);
+
+        for (Map<String,Object> map:dept){
+            Map<String,Object> sumMap = new HashMap<String,Object>();
+            String id = (String) map.get("ID");
+            String deptName = (String) map.get("DEPTNAME");
+            sumMap.put("ID",id);
+            sumMap.put("DEPTNAME",deptName);
+            sumMap.put("WCL",0);
+            sumMap.put("CLZ",0);
+            sumMap.put("YCL",0);
+
+            //添加未处理
+            for(Map<String,Object> m1:maps){
+                if(id.equals(m1.get("DEPTID").toString())){
+                    sumMap.put("WCL",m1.get("SUM"));
+                }
+            }
+            //添加处理中
+            for(Map<String,Object> m1:maps1){
+                if(id.equals(m1.get("DEPTID").toString())){
+                    sumMap.put("CLZ",m1.get("SUM"));
+                }
+            }
+            //添加已处理
+            for(Map<String,Object> m1:maps2){
+                if(id.equals(m1.get("DEPTID").toString())){
+                    sumMap.put("YCL",m1.get("SUM"));
+                }
+            }
+            result.add(sumMap);
+        }
+        return result;
+
     }
 
     //判断权限，获取当前登录用户的deptId，如果是全部查询则返回0
@@ -142,4 +293,32 @@ public class Monitorcheckyjservice extends CurdService<Monitorcheckyj, Monitorch
             return "-1";
         }
     }
+
+    /**
+     * 查询照片
+     */
+    public Object pictureInfo(String taskId, Integer type,Integer warningType) {
+        List<Map<String, Object>> result = new ArrayList<>();
+        if(type==1){
+            if(warningType==5){
+                String sql = "select YCDATA from XS_ZC_EXCEPTION WHERE TASK_ID=?1";
+                List<Map<String, Object>> maps = execSql(sql, taskId);
+                maps.forEach(map ->{
+                    Object ycdata = map.get("YCDATA");
+                    JSONArray objects = JSONObject.parseArray(ycdata.toString());
+                    Map<String,Object> m = (Map<String, Object>) objects.get(0);
+                    String id = (String) m.get("ID");
+                    String sql1 = "select FILE_PATH,PROCESS_NAME from PICTURE_TOUR where PROCESS_ID =?1";
+                    List<Map<String, Object>> maps1 = execSql(sql1, id);
+                    result.addAll(maps1);
+                });
+
+            }
+        }else if(type==2){
+
+        }
+        return result;
+    }
+
+
 }

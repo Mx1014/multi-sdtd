@@ -1,15 +1,11 @@
 package com.rzt.activiti.controller;
 
-import com.rzt.activiti.service.DefectService;
+import com.rzt.activiti.service.impl.DefectServiceImpl;
 import com.rzt.util.WebApiResponse;
-import org.activiti.engine.runtime.ProcessInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * 李成阳
@@ -20,7 +16,7 @@ import java.util.Map;
 @RequestMapping("/def")
 public class DefectController {
     @Autowired
-    private DefectService defectService;
+    private DefectServiceImpl defectService;
     /**
      * 开启流程
      * @return

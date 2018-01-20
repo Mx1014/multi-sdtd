@@ -163,6 +163,14 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
                 if (map.get("WD") == null || map.get("JD") == null) {
                     sql = "select y.radius as ROUND,y.jd as jd,y.wd as wd from kh_yh_history y left join kh_task k on y.id = k.yh_id where k.id=?";
                     list = this.execSql(sql, taskId);
+                }else{
+                    String round = map.get("ROUND").toString();
+                    if (!round.contains(".")){
+                        if (Long.parseLong(round)>500){
+                            round="500";
+                        }
+                        map.put("ROUND",round+".0");
+                    }
                 }
             }
         } else {

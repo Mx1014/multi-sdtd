@@ -74,4 +74,12 @@ public class tourPublicController extends CurdController<Monitorcheckej, tourPub
             return WebApiResponse.erro("fail"+e.getMessage());
         }
     }
+
+   /* @Autowired
+    private RedisService redisService;
+    @GetMapping("del")
+    public String del(String key){
+        redisService.delKey(key);
+        return "success";
+    }*/
 }
