@@ -38,6 +38,12 @@ public interface KhYhHistoryRepository extends JpaRepository<KhYhHistory,String>
     @Query(value = "update KH_YH_HISTORY SET JD=?3,WD=?2,RADIUS=?4 WHERE ID=?1",nativeQuery = true)
     void updateYh(long yhId, String lat, String lon,String radius);
 
+
+    @Modifying
+    @Transactional
+    @Query(value = "update KH_CYCLE SET LATITUDE=?2,LONGITUDE=?3,RADIUS=?4 WHERE YH_ID=?1",nativeQuery = true)
+    void updateCycle(long yhId, String lat, String lon,String radius);
+
     KhYhHistory findById(Long id);
 
     @Modifying

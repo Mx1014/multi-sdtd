@@ -66,6 +66,8 @@ public class AppKhUpdateController  extends
     public WebApiResponse updateEndTime(String taskId,String userId){
         return this.service.updateEndTime(Long.parseLong(taskId),userId);
     }
+
+    
   /*  @ApiOperation(value = "开始看护页面", notes = "开始看护页面 ")
     @PatchMapping("/updateClzt")
     @ResponseBody
