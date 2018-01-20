@@ -37,7 +37,7 @@ public class KhLsCycleService extends CurdService<KhLsCycle, KhLsCycleRepository
     public WebApiResponse saveLsCycle(String yhId) {
         try {
             XsSbYh yh = yhRepository.findYh(Long.parseLong(yhId));
-            String kv = yh.getVtype();
+            String kv = yh.getVtype();//s
             if (kv.contains("kV")) {
                 kv = kv.substring(0, kv.indexOf("k"));
             }
