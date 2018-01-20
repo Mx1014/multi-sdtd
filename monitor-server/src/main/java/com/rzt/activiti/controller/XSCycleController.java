@@ -31,7 +31,7 @@ public class XSCycleController {
      * @return
      */
     @GetMapping("/start")
-    public WebApiResponse start(String key , String userName,String XSID,String flag,String info){
+    public WebApiResponse start(String key , String userName,String userId,String XSID,String flag,String info){
         HashMap<Object, Object> map = new HashMap<>();
         map.put("userName",userName);
         map.put("flag",flag);
@@ -39,7 +39,6 @@ public class XSCycleController {
         map.put("XSID",XSID);
 
         ProcessInstance start = xsCycleService.start(key, map);
-        System.out.println(start);
         return WebApiResponse.success("");
     }
 
@@ -47,61 +46,24 @@ public class XSCycleController {
      * 进入流程节点
      * 此处可以选择当前待办是否进入  下一步流程
      * @param taskId   当前任务id
-     * @param YHID         当前上报隐患id
+     * @param XSID         当前上报id
      * @param flag          选择节点使用的标志
      * @return
      */
     @GetMapping("/complete")
-    public WebApiResponse complete(String taskId,String YHID,String flag,String isKH){
+    public WebApiResponse complete(String taskId,String XSID,String flag,String info){
         Map<String, Object> map = new HashMap<>();
-        map.put("YHID",YHID);
+        map.put("XSID",XSID);
         map.put("flag",flag);
-        map.put("isKH",isKH);
+        map.put("info",info);
         xsCycleService.complete(taskId,map);
 
         return WebApiResponse.success("");
     }
 
-    /**
-     * 详细页中的处理按钮   针对监控中心
-     * 当发送处理请求 准备派出稽查人员  并且判断是否生成临时看护任务
-     * 生成稽查任务时需要带有 当前任务id   当稽查人员查看完毕时根据任务id判断节点方向
-     * @param taskId   当前任务id
-     * @param YHID      隐患id
-     * @param flag      节点判断标记
-     * @param isKH      是否派出看护任务
-     * @param info      描述
-     * @param proId      当前流程实例id
-     * @return
-     */
-    @GetMapping("/proClick")
-    public WebApiResponse chuLi(String taskId,String YHID,String flag,String isKH,String info,String proId){
-
-        return WebApiResponse.success("");
-
-    }
-
-    /**
-     * 稽查任务回调   回调时需要传递当前任务id  和flag  隐患id
-     * @param taskId
-     * @param YHID
-     * @param flag
-     * @return
-     */
-    @GetMapping("/jchd")
-    public WebApiResponse jicha(String taskId,String YHID,String flag,String isKH){
-        //稽查任务回调   回调时需要传递当前任务id  和flag  隐患id
 
 
 
-
-
-     /*   Map<String, Object> map = new HashMap<>();
-        map.put("YHID",YHID);
-        map.put("flag",flag);
-        xsCycleService.complete(taskId,map);*/
-        return null;
-    }
     /**
      * 查看所有待办任务
      * @param userId   传入当前节点名
@@ -109,8 +71,6 @@ public class XSCycleController {
      */
     @GetMapping("/findTaskByUserName")
     public WebApiResponse toTask(String userId,Integer page,Integer size){
-        // 根据userId 获取当前 用户权限
-        //String roleId = RedisUtil.findRoleIdByUserId(redisTemplate, userId);
         return xsCycleService.checkTask(userId,page,size);
 
     }

@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
+
 /**
  * 李成阳
  * 2018/1/18
@@ -22,8 +24,14 @@ public class DefectController {
      * @return
      */
     @GetMapping("/start")
-    public WebApiResponse start(String key , String userName){
+    public WebApiResponse start(String key , String userName,String flag,String qxId,String info){
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("userName",userName);
+        map.put("flag",flag);
+        map.put("qxId",qxId);
+        map.put("info",info);
 
+        defectService.start(key,map);
         return WebApiResponse.success("");
     }
 
@@ -36,10 +44,23 @@ public class DefectController {
      */
     @GetMapping("/complete")
     public WebApiResponse complete(String taskId,String flag){
-
-
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("flag",flag);
+        defectService.complete(taskId,map);
         return WebApiResponse.success("");
     }
+
+    /**
+     * 查看所有待办任务
+     * @param userId   传入当前节点名
+     * @return
+     */
+    @GetMapping("/findTaskByUserName")
+    public WebApiResponse toTask(String userId,Integer page,Integer size){
+        return defectService.checkTask(userId,page,size);
+
+    }
+
     /**
      * 在每一个流程开始时都需要先部署当前的流程
      * 部署流程
