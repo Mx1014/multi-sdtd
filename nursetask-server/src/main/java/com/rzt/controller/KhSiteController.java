@@ -82,8 +82,8 @@ public class KhSiteController extends
             HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
             Object userInformation = hashOperations.get("UserInformation", task.getUserId());
             JSONObject jsonObject = JSONObject.parseObject(userInformation.toString());
-           // String roleType = jsonObject.get("ROLETYPE").toString();
-            return WebApiResponse.success(this.service.listAllTaskNotDo(task, pageable, userName, "0",yhjb,yworg));
+            String roleType = jsonObject.get("ROLETYPE").toString();
+            return WebApiResponse.success(this.service.listAllTaskNotDo(task, pageable, userName, roleType,yhjb,yworg));
 //            return WebApiResponse.success(this.service.listAllTaskNotDo(task, pageable, userName,"0",yhjb,yworg));
         } catch (Exception e) {
             e.printStackTrace();

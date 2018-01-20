@@ -78,9 +78,23 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
         }
         List<Object> result = new ArrayList<>();
 
+        //流程定义key（流程定义的标识）
+        String processDefinitionKey = "wtsh";
+        //创建查询对象
         TaskQuery taskQuery = taskService.createTaskQuery();
+        //设置查询条件
+        taskQuery.taskAssignee(userName);
+        //指定流程定义key，只查询某个流程的任务
+        taskQuery.processDefinitionKey(processDefinitionKey);
+        //获取查询列表
+        List<Task> list = taskQuery.list();
+
+        list.stream().forEach(a-> System.out.println(a));
+
+
+   /*     TaskQuery taskQuery = taskService.createTaskQuery();
         //分页查询当前待办任务
-        List<Task> list = taskQuery.taskAssignee(userName).orderByTaskCreateTime().desc().listPage(page,size);
+        List<Task> list = taskQuery.taskAssignee(userName).orderByTaskCreateTime().desc().listPage(page,size);*/
         if(null == list  || list.size()==0){
             return WebApiResponse.success("");
         }

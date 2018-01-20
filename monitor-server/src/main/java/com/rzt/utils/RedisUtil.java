@@ -5,6 +5,7 @@ import com.rzt.entity.CheckResult;
 import com.rzt.repository.CheckResultRepository;
 import com.rzt.service.CurdService;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.Map;
  * 李成阳
  * 2018/1/19
  */
+@Component
 public class RedisUtil  extends CurdService<CheckResult, CheckResultRepository> {
     /**
      * 根据userId  获取到当前用户的角色id  工作流权限分化

@@ -11,10 +11,14 @@ import org.activiti.engine.TaskService;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.repository.ProcessDefinitionQuery;
 import org.activiti.engine.runtime.ProcessInstance;
+import org.activiti.engine.task.Task;
+import org.activiti.engine.task.TaskQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -62,8 +66,54 @@ public class DefectServiceImpl   extends CurdService<CheckResult, CheckResultRep
     @Override
     public WebApiResponse checkTask(String userName,Integer page,Integer size) {
 
+        //分页数据容错
+        if(null == page || 0 == page){
+            page = 1;
+        }
+        if(null == size || 0 == size){
+            size = 10;
+        }
+        List<Object> result = new ArrayList<>();
 
-        return WebApiResponse.success("");
+        TaskQuery taskQuery = taskService.createTaskQuery();
+        //分页查询当前待办任务
+        List<Task> list = taskQuery.taskAssignee(userName).processDefinitionKey("defect:2:92504").orderByTaskCreateTime().desc().listPage(page,size);
+        if(null == list  || list.size()==0){
+            return WebApiResponse.success("");
+        }
+        try{
+            //这个sql可以用工作流提供的id查询到启动流程时传递的参数
+            for (Task task : list) {
+                HashMap<String, Object> map = new HashMap<>();
+                String realname = "";
+                System.out.println("当前任务  "+task);
+                System.out.println(task.getId());
+
+                Object qxId =  taskService.getVariable(task.getId(), "qxId");
+                Object info =  taskService.getVariable(task.getId(), "info");
+                System.out.println("########################################################");
+                System.out.println("任务ID:"+task.getId());
+                System.out.println("任务名称:"+task.getName());
+                System.out.println("任务的创建时间:"+task.getCreateTime());
+                System.out.println("任务的办理人:"+task.getAssignee());
+                System.out.println("流程实例ID："+task.getProcessInstanceId());
+                System.out.println("########################################################");
+                map.put("qxId",qxId);
+                map.put("info",info);
+                map.put("acTaskId",task.getId());
+                map.put("acTaskName",task.getName());
+                map.put("acCreateTime",task.getCreateTime());
+                map.put("acAssignee",task.getAssignee());
+                map.put("acProId",task.getProcessInstanceId());
+                result.add(map);
+            }
+
+        }catch (Exception e){
+
+        }
+
+        return WebApiResponse.success(result);
+
     }
 
 
@@ -73,8 +123,8 @@ public class DefectServiceImpl   extends CurdService<CheckResult, CheckResultRep
      */
     @Override
     public void deploy() {
-        repositoryService.createDeployment().addClasspathResource("diagrams/defectActiviti.bpmn")
-                .addClasspathResource("diagrams/defectActiviti.png").deploy();
+        repositoryService.createDeployment().addClasspathResource("diagrams/DefectActiviti.bpmn")
+                .addClasspathResource("diagrams/DefectActiviti.png").deploy();
 
     }
 
@@ -134,7 +184,7 @@ public class DefectServiceImpl   extends CurdService<CheckResult, CheckResultRep
                 .createProcessDefinitionQuery()
                 .processDefinitionId(processDefinitionId).singleResult();
         return repositoryService.getResourceAsStream(
-                processDefinition.getDeploymentId(), "diagrams/diagram.png");
+                processDefinition.getDeploymentId(), "diagrams/DefectActiviti.png");
     }
 
 

@@ -28,7 +28,11 @@
     <userTask activiti:assignee="yjid" activiti:exclusive="true" id="_20" name="公司运检部"/>
     <sequenceFlow id="_21" sourceRef="_18" targetRef="_20"/>
     <sequenceFlow id="_22" sourceRef="_18" targetRef="_5"/>
-    <userTask activiti:assignee="bgzqTask" activiti:exclusive="true" id="_23" name="变更周期任务"/>
+    <userTask activiti:assignee="bgzqTask" activiti:exclusive="true" id="_23" name="变更周期任务">
+      <extensionElements>
+        <activiti:taskListener class="com.rzt.activiti.listener.CycleListener" event="create"/>
+      </extensionElements>
+    </userTask>
     <sequenceFlow id="_25" sourceRef="_23" targetRef="_5"/>
     <exclusiveGateway gatewayDirection="Unspecified" id="_26" name="ExclusiveGateway"/>
     <sequenceFlow id="_27" sourceRef="_20" targetRef="_26"/>
