@@ -195,7 +195,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
         CheckLiveTask save = reposiotry.save(task);
         String[] split = save.getTaskId().split(",");//隐患ids
         for (int i = 0; i < split.length; i++) {
-            Map<String,Object> map = execSqlSingleResult("select id,YWORG_ID,WXORG_ID from KH_YH_HISTORY where id = = ?1", split[i]);
+            Map<String,Object> map = execSqlSingleResult("select id,YWORG_ID,WXORG_ID from KH_YH_HISTORY where id = ?1", split[i]);
             CheckLiveTaskDetail taskDetail = new CheckLiveTaskDetail();
             taskDetail.setId(null);
             taskDetail.setCreateTime(new Date());

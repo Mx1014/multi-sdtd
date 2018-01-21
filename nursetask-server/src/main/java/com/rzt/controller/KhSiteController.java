@@ -158,8 +158,8 @@ public class KhSiteController extends
     @PostMapping("/paifaTask.do")
     @ResponseBody
     @Transactional
-    public WebApiResponse paifaTask(String id, String tasks, KhTaskModel model) {
-        return this.service.paifaTask(id, tasks, model);
+    public WebApiResponse paifaTask(String id, String tasks) {
+        return this.service.paifaTask(id, tasks);
     }
 
     //  PC查看任务详情
