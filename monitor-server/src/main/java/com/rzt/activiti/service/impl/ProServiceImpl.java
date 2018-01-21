@@ -16,6 +16,9 @@ import org.activiti.engine.task.TaskQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
@@ -70,14 +73,15 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
 
 
         //分页数据容错
-        if(null == page || 0 == page){
+      /*  if(null == page || 0 == page){
             page = 1;
         }
         if(null == size || 0 == size){
             size = 10;
-        }
-        List<Object> result = new ArrayList<>();
-
+        }*/
+        Page<Map<String, Object>> maps = null;
+        //List<Object> result = new ArrayList<>();
+/*
         //流程定义key（流程定义的标识）
         String processDefinitionKey = "wtsh";
         //创建查询对象
@@ -89,18 +93,18 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
         //获取查询列表
         List<Task> list = taskQuery.list();
 
-        list.stream().forEach(a-> System.out.println(a));
+        list.stream().forEach(a-> System.out.println(a));*/
 
 
    /*     TaskQuery taskQuery = taskService.createTaskQuery();
         //分页查询当前待办任务
         List<Task> list = taskQuery.taskAssignee(userName).orderByTaskCreateTime().desc().listPage(page,size);*/
-        if(null == list  || list.size()==0){
+    /*    if(null == list  || list.size()==0){
             return WebApiResponse.success("");
-        }
+        }*/
        try{
            //这个sql可以用工作流提供的id查询到启动流程时传递的参数
-           for (Task task : list) {
+          /* for (Task task : list) {
                String realname = "";
                System.out.println("当前任务  "+task);
                System.out.println(task.getId());
@@ -141,18 +145,33 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
                map.put("name",task.getName());
                map.put("isKH",isKH);
                map.put("realname",realname);
+               map.put("info",info);
                map.put("proId",task.getProcessInstanceId());
                result.add(map);
+
            }
+*/
+           Pageable pageable = new PageRequest(page, size, null);
+           ArrayList<String> strings = new ArrayList<>();
+           strings.add(userName);
+           String sql = "SELECT y.*,h.TEXT_,t.ID_ as actaskid,t.PROC_INST_ID_,t.ASSIGNEE_," +
+                  "  (SELECT v.TEXT_ FROM ACT_HI_VARINST v WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'info') as info," +
+                  "  (SELECT u.REALNAME FROM ACT_HI_VARINST v LEFT JOIN RZTSYSUSER u ON u.ID = v.TEXT_ WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'userName' ) as squsername," +
+                  "  (SELECT u.REALNAME FROM RZTSYSUSER u WHERE u.ID = y.TBRID) as tbrName," +
+                  "  (SELECT u.PHONE FROM RZTSYSUSER u WHERE u.ID = y.TBRID) as phone" +
+                  "   FROM ACT_RU_TASK t LEFT JOIN ACT_HI_VARINST h ON t.PROC_INST_ID_ = h.PROC_INST_ID_" +
+                  "  LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_" +
+                  "   WHERE h.NAME_ = 'YHID' AND t.PROC_DEF_ID_ LIKE 'wtsh%' AND ASSIGNEE_ = ?"+strings.size();
 
-
-
+            maps = this.execSqlPage(pageable, sql, strings);
+            LOGGER.info("当前节点待办任务查询成功"+strings);
 
        }catch (Exception e){
-
+            LOGGER.error("当前节点待办信息查询失败"+e.getMessage());
+           return WebApiResponse.erro("当前节点待办信息查询失败"+e.getMessage());
        }
 
-        return WebApiResponse.success(result);
+        return WebApiResponse.success(maps);
     }
 
 
@@ -250,6 +269,8 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
 
         return "";
     }
+
+
 
 
 }
