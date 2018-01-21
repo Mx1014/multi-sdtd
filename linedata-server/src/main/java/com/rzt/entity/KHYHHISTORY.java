@@ -222,6 +222,9 @@ public class KHYHHISTORY implements Serializable {
 	//字段描述: 是否悬挂警示牌
 	@Column(name="JSP")
 	private String jsp;
+	//字段描述: 设计线路
+	@Column(name="SJXL")
+	private String sjxl;
 
 	public String getSms() {
 		return sms;
@@ -754,5 +757,13 @@ public class KHYHHISTORY implements Serializable {
 
 	public String getClassName() {
 		return className;
+	}
+
+	public void setSjxl(String sjxl) {
+		this.sjxl = sjxl;
+	}
+
+	public String getSjxl() {
+		return sjxl;
 	}
 }
