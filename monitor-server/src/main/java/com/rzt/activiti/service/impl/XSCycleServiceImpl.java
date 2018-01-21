@@ -3,6 +3,7 @@ package com.rzt.activiti.service.impl;
 import com.rzt.activiti.service.ActivitiService;
 import com.rzt.entity.CheckResult;
 import com.rzt.repository.CheckResultRepository;
+import com.rzt.repository.YHrepository;
 import com.rzt.service.CurdService;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.RedisUtil;
@@ -20,8 +21,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -38,6 +41,8 @@ public class XSCycleServiceImpl  extends CurdService<CheckResult, CheckResultRep
     private RuntimeService runtimeService;
     @Autowired
     private RepositoryService repositoryService;
+    @Autowired
+    private YHrepository yHrepository;
  /*   @Autowired
     private RedisTemplate redisTemplate;
     @Autowired
@@ -142,16 +147,22 @@ public class XSCycleServiceImpl  extends CurdService<CheckResult, CheckResultRep
                 ArrayList<Object> strings = new ArrayList<>();
                 strings.add(XSID);
                 Map<String, Object> map = null;
-                String sql = "  SELECT x.CREATE_TIME,x.WX_ORG,x.TD_ORG,(SELECT d.DEPTNAME" +
-                        "  FROM RZTSYSDEPARTMENT d WHERE ID = x.TD_ORG) as tdorg,(SELECT d.DEPTNAME" +
-                        "  FROM RZTSYSDEPARTMENT d WHERE ID = x.WX_ORG) as wxorg,x.ID," +
+                String sql = " SELECT r.PROPOSER_TIME,x.WX_ORG,x.TD_ORG,(SELECT d.DEPTNAME" +
+                        "  FROM RZTSYSDEPARTMENT d WHERE d.ID = x.TD_ORG) as tdorg,(SELECT d.COMPANYNAME" +
+                        "  FROM RZTSYSCOMPANY d WHERE d.ID = x.WX_ORG) as wxorg,x.ID," +
                         "  (SELECT l.V_LEVEL" +
                         "   FROM CM_LINE l WHERE l.ID = x.LINE_ID) as vlevel," +
                         "  (SELECT l.SECTION" +
                         "   FROM CM_LINE l WHERE l.ID = x.LINE_ID) as SECTION," +
                         "  (SELECT l.LINE_NAME" +
                         "   FROM CM_LINE l WHERE l.ID = x.LINE_ID) as lineName" +
-                        "   FROM XS_ZC_CYCLE x WHERE x.ID =   ?"+strings.size();
+                        "   , r.CHANGE_REASON," +
+                        "  (SELECT u.REALNAME FROM RZTSYSUSER u WHERE  u.id = r.PROPOSER_ID) as name," +
+                        "  (SELECT u.PHONE FROM RZTSYSUSER u WHERE  u.id = r.PROPOSER_ID) as PHONE" +
+                        "    ,x.IS_KT,x.CYCLE,x.PLAN_XS_NUM,r.XS_ZC_CYCLE cycle1,r.PLAN_XS_NUM as plan_xs_num1,r.PROPOSER_TYPE" +
+                        "   FROM XS_ZC_CYCLE x" +
+                        "    LEFT JOIN XS_ZC_CYCLE_RECORD r ON r.XS_ZC_CYCLE_ID = x.ID" +
+                        "    WHERE r.PROPOSER_STATUS = 0  AND  x.ID = ?"+strings.size();
                 List<Map<String, Object>> maps = this.execSql(sql, strings);
                 if(null != maps && maps.size()>0){
                      map = maps.get(0);
@@ -159,11 +170,8 @@ public class XSCycleServiceImpl  extends CurdService<CheckResult, CheckResultRep
                     continue;
                 }
                 map.put("acTaskId",task.getId());
-                map.put("createTime",task.getCreateTime());
                 map.put("assignee",task.getAssignee());
-                map.put("name",task.getName());
-                map.put("realname",realname);
-                map.put("name",name);
+                map.put("info",info);
                 map.put("proId",task.getProcessInstanceId());
                 result.add(map);
 
@@ -215,17 +223,21 @@ public class XSCycleServiceImpl  extends CurdService<CheckResult, CheckResultRep
         return taskService.getVariable(taskId,variaName);
     }
 
+    @Override
+    public void complete(String taskId, Map<String, Object> map) {
+
+    }
+
     /**
      * 进入下一节点
      *  流程逻辑
      * @param taskId
      * @param map
      */
-    @Override
-    public void complete(String taskId, Map<String, Object> map) {
-        System.out.println(taskId);
-        System.out.println(map);
-
+    @Transactional
+    public void complete1(String taskId, Map<String, Object> map,String userId) {
+        //此处更改当前任务的审核人id
+        yHrepository.updateAppId(map.get("XSID").toString(),userId,new Date(),"0");
         taskService.complete(taskId,map);
 
     }

@@ -68,13 +68,13 @@ public class CmcoordinateController extends
 
             //3.用来展示pc端地图的key
             HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
-            hashOperations.put("menInMap",cmcoordinate.getUserid(),cmcoordinate);
+            hashOperations.put("menInMap", cmcoordinate.getUserid(), cmcoordinate);
 
             //4.为每个用户每天创建一个key，用于保存当天的坐标  暂定三天失效
             ZSetOperations setOperations = redisTemplate.opsForZSet();
             String key = currentDate + ":" + cmcoordinate.getUserid();
             setOperations.add(key, cmcoordinate, date.getTime());
-            redisTemplate.expire(key,2, TimeUnit.DAYS);
+            redisTemplate.expire(key, 2, TimeUnit.DAYS);
 
             this.service.add(cmcoordinate);
             return WebApiResponse.success("添加成功");
@@ -109,19 +109,10 @@ public class CmcoordinateController extends
     }
 
     @GetMapping("getUserCoordinate")
-    public List<Point> getUserCoordinate(String userids){
+    public List<Point> getUserCoordinate(String userids) {
         String[] str = userids.split(",");
         GeoOperations geoOperations = redisTemplate.opsForGeo();
-        List<Point> list = geoOperations.geoPos(Constances.LOCATION_OBJ,str);
+        List<Point> list = geoOperations.geoPos(Constances.LOCATION_OBJ, str);
         return list;
-    }
-
-    public static void main(String[] args) {
-       String admin = "我叫宁伟泽";
-        int length = admin.length();
-        for (int i= 0;i< length;i++) {
-            String substring = admin.substring(i, i + 1);
-            System.out.print(substring +"\n");
-        }
     }
 }

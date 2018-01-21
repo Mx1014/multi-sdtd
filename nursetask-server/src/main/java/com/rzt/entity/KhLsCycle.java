@@ -24,11 +24,10 @@ import java.util.Date;
  * 修改人：张虎成
  * 修改时间：2017/12/25 21:36:18
  * 修改备注：
- * @version
  */
 @Entity
-@Table(name="KH_LS_CYCLE")
-public class KhLsCycle implements Serializable{
+@Table(name = "KH_LS_CYCLE")
+public class KhLsCycle implements Serializable {
     //字段描述:
     @Id
     private Long id;
@@ -73,70 +72,78 @@ public class KhLsCycle implements Serializable{
     @Column(name = "LATITUDE")
     private String latitude;
     //字段描述: 隐患点半径
-    @Column(name="radius")
+    @Column(name = "radius")
     private String radius;
     //字段描述: 运维单位id
-    @Column(name="TDYW_ORGID")
+    @Column(name = "TDYW_ORGID")
     private String tdywOrgId;
     //字段描述: 外协单位id
-    @Column(name="WX_ORGID")
+    @Column(name = "WX_ORGID")
     private String wxOrgId;
 
 
-    @ExcelResources(title="被稽查的任务id",order=1)
-    public void setId(){
-            this.id = new SnowflakeIdWorker(1,0).nextId();
+    @ExcelResources(title = "被稽查的任务id", order = 1)
+    public void setId() {
+        this.id = new SnowflakeIdWorker(1, 0).nextId();
     }
-    public Long getId(){
+
+    public Long getId() {
         return this.id;
     }
 
-    public void setVtype(String vtype){
+    public void setVtype(String vtype) {
         this.vtype = vtype;
     }
-    public String getVtype(){
+
+    public String getVtype() {
         return this.vtype;
     }
 
-    public void setLineName(String lineName){
+    public void setLineName(String lineName) {
         this.lineName = lineName;
     }
-    public String getLineName(){
+
+    public String getLineName() {
         return this.lineName;
     }
 
-    public void setSection(String section){
+    public void setSection(String section) {
         this.section = section;
     }
-    public String getSection(){
+
+    public String getSection() {
         return this.section;
     }
 
-    public void setTaskName(String taskName){
+    public void setTaskName(String taskName) {
         this.taskName = taskName;
     }
-    public String getTaskName(){
+
+    public String getTaskName() {
         return this.taskName;
     }
 
-    public void setTdywOrg(String tdywOrg){
+    public void setTdywOrg(String tdywOrg) {
         this.tdywOrg = tdywOrg;
     }
-    public String getTdywOrg(){
+
+    public String getTdywOrg() {
         return this.tdywOrg;
     }
 
-    public void setXqTime(Date xqTime){
+    public void setXqTime(Date xqTime) {
         this.xqTime = xqTime;
     }
-    public Date getXqTime(){
+
+    public Date getXqTime() {
         return this.xqTime;
     }
 
-    public void setWxOrg(String wxOrg){
+    public void setWxOrg(String wxOrg) {
         this.wxOrg = wxOrg;
     }
-    public String getWxOrg(){
+
+    public String getWxOrg() {
         return this.wxOrg;
     }
 
