@@ -1,10 +1,11 @@
 package com.rzt.activiti.controller;
 
+import com.rzt.activiti.Eureka.nurseTaskService;
+import com.rzt.entity.KhYhHistory;
+import com.rzt.repository.YHrepository;
 import com.rzt.activiti.service.impl.ProServiceImpl;
 import com.rzt.util.WebApiResponse;
-import com.rzt.utils.RedisUtil;
 import org.activiti.engine.runtime.ProcessInstance;
-import org.activiti.engine.task.Task;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,7 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -26,10 +26,12 @@ import java.util.Map;
 public class ProController {
     @Autowired
     private ProServiceImpl proService;
-    /*@Autowired
-    private ProEureka proEureka;*/
+    @Autowired
+    private nurseTaskService nurseTaskService;
     @Autowired
     private RedisTemplate redisTemplate;
+    @Autowired
+    private YHrepository yHrepository;
 
     /**
      * 开启流程
@@ -43,7 +45,6 @@ public class ProController {
         map.put("flag",flag);
         map.put("info",info);
         map.put("khid",khid);
-        map.put("isKH",isKH);
         ProcessInstance start = proService.start(key, map);
         System.out.println(start);
         return WebApiResponse.success("");
@@ -58,11 +59,11 @@ public class ProController {
      * @return
      */
     @GetMapping("/complete")
-    public WebApiResponse complete(String taskId,String YHID,String flag,String isKH){
+    public WebApiResponse complete(String taskId,String YHID,String flag,String khid){
         Map<String, Object> map = new HashMap<>();
         map.put("YHID",YHID);
         map.put("flag",flag);
-        map.put("isKH",isKH);
+        map.put("khid",khid);
         proService.complete(taskId,map);
 
         return WebApiResponse.success("");
@@ -81,33 +82,56 @@ public class ProController {
      * @return
      */
     @GetMapping("/proClick")
-    public WebApiResponse chuLi(String taskId,String YHID,String flag,String isKH,String info,String proId){
-        //将稽查和看护任务派发     完成后拿到看护任务的id  进入下一个节点 稽查节点
-        if (null != isKH && "1".equals(isKH)){
-            //需要派发看护任务
-            System.out.println("看护任务派发---------------------------------------");
-            //调用看护派发接口
-            //proEureka.saveYh();
-        }
+    public WebApiResponse chuLi(String taskId,String YHID,String flag,String isKH,String info,String proId,String userName){
+      try {
 
 
-        //需要派发稽查任务
-        Map<String, Object> map = new HashMap<>();
-        map.put("YHID",YHID);
-        map.put("isKH",isKH);
-        map.put("flag",flag);
-        map.put("info",info);
-        proService.complete(taskId,map);
-        //获取节点前进后的id   用流程实例id做条件
-        String id = proService.findIdByProId(proId);
-        if(null == id || "".equals(id)){
-            return WebApiResponse.erro("当前节点任务不存在");
-        }
-        System.out.println("节点任务id"+id+"-------------------------------------------");
-        //调用稽查接口   派发稽查任务
+          //将稽查和看护任务派发     完成后拿到看护任务的id  进入下一个节点 稽查节点
+          String khid = "";
+          //需要派发稽查任务
+          Map<String, Object> map = new HashMap<>();
+          if (null != isKH && "1".equals(isKH)){
+              //需要派发看护任务
+
+              String sql = "";
+              if(null != YHID && !"".equals(YHID)){
+                  Object data = nurseTaskService.saveLsCycle(YHID).getData();
+                  System.out.println("++++++++++++++++"+data);
+                  //生成看护任务成功  添加看护id到流程
+                  map.put("khid",khid);
+              }
+              System.out.println("看护任务派发---------------------------------------");
+          }
+
+
+          map.put("YHID",YHID);
+          map.put("flag",flag);
+          map.put("info",info);
+          proService.complete(taskId,map);
+
+          //获取节点前进后的id   用流程实例id做条件
+          String id = proService.findIdByProId(proId);
+          //测试稽查
+          if("sdid".equals(userName) || "jkid".equals(userName)){
+              proService.complete(id,map);
+          }
+
+          if(null == id || "".equals(id)){
+              return WebApiResponse.erro("当前节点任务不存在");
+          }
+          System.out.println("节点任务id"+id+"-------------------------------------------");
+          //调用稽查接口   派发稽查任务
+      }catch (Exception e){
+          System.out.println("------------");
+          System.out.println(e.getMessage());
+      }
         return WebApiResponse.success("进入下一节点");
 
     }
+
+
+
+
 
     /**
      * 稽查任务回调   回调时需要传递当前任务id  和flag  隐患id
@@ -137,8 +161,6 @@ public class ProController {
      */
     @GetMapping("/findTaskByUserName")
     public WebApiResponse toTask(String userId,Integer page,Integer size){
-        // 根据userId 获取当前 用户权限
-        //String roleId = RedisUtil.findRoleIdByUserId(redisTemplate, userId);
         return proService.checkTask(userId,page,size);
 
     }
@@ -165,6 +187,11 @@ public class ProController {
         proService.deploy();
         return WebApiResponse.success("");
 
+    }
+
+    @GetMapping("/history")
+    public WebApiResponse gethi(String assignee,Integer page,Integer size){
+       return proService.historyActInstanceList(assignee, page, size);
     }
 
 

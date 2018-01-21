@@ -85,11 +85,11 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             buffer.append(" and k.task_name like ? ");
             params.add(task.getTaskName());
         }
-        if (task.getTaskName() != null && !task.getTaskName().equals("")) {  //线路名查询
+        /*if (task.getTaskName() != null && !task.getTaskName().equals("")) {  //线路名查询
             task.setTaskName("%" + task.getTaskName() + "%");
             buffer.append(" and k.task_name like ? ");
             params.add(task.getTaskName());
-        }
+        }*/
         if (userName != null && !userName.equals("")) {
             buffer.append(" and u.realname like ? ");
             params.add("%" + userName + "%");
@@ -99,8 +99,8 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             params.add(("%" + yhjb + "%"));
         }
         if (yworg != null && !yworg.equals("")) {
-            buffer.append(" and y.yhjb like ?");
-            params.add(("%" + yhjb + "%"));
+            buffer.append(" and k.tdyw_org like ?");
+            params.add(("%" + yworg + "%"));
         }
 
         String sql = "";
@@ -292,7 +292,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
         }
     }
 
-    public WebApiResponse paifaTask(String id, String tasks, KhTaskModel model) {
+    public WebApiResponse paifaTask(String id, String tasks) {
         try {
             List<Map<Object, String>> list = (List<Map<Object, String>>) JSONObject.parse(tasks);
             KhCycle cycle = this.cycleRepository.findCycle(Long.parseLong(id));
@@ -355,6 +355,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                 task.setYhId(cycle.getYhId());
                 task.setTaskName(cycle.getTaskName());
                 task.setId();
+                task.setTaskType(0);
                 taskService.add(task);
             }
             this.reposiotry.updateCycleById(id);  // 重新生成多个周期

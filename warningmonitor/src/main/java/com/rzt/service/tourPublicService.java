@@ -63,6 +63,20 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
         }
     }
 
+    //看护未到位
+    public void khWFDW(Long taskid, String userid) {
+        try {
+            String sql = "   SELECT  kh.TASK_NAME AS TASKNAME,d.ID AS TDYW_ORG  FROM KH_TASK kh LEFT JOIN RZTSYSDEPARTMENT d ON d.DEPTNAME=kh.TDYW_ORG  " +
+                    "WHERE kh.ID=? ";
+            Map<String, Object> map = this.execSqlSingleResult(sql, taskid);
+            //往二级单位插数据
+            resp.saveCheckEj(new SnowflakeIdWorker(10, 12).nextId(),taskid,2,9,userid,map.get("TDYW_ORG").toString(),map.get("TASKNAME").toString());
+            String key = "ONE+" + taskid + "+2+9+" + userid + "+" + map.get("TDYW_ORG").toString() + "+" + map.get("TASKNAME").toString();
+
+            redisService.setex(key);
+        } catch (Exception e) {
+        }
+    }
 
     //看护/巡视未上线 给下线用
     //下线时如果该用户在任务时间段内，就把该用户放入redis准备往一级推，并且直接往二级查数据
@@ -202,4 +216,6 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
         }
         redisService.delKey(key);
     }
+
+
 }
