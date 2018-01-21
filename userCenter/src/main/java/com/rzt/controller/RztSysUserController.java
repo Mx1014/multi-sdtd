@@ -352,4 +352,20 @@ public class RztSysUserController extends
     public WebApiResponse userQuit(String id) {
         return this.service.userQuit(id);
     }
+
+    @GetMapping("flushUserInformationRedis")
+    public Object flushUserInfoRedis() {
+        try {
+            HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
+            String sql = "SELECT * from USERINFO";
+            List<Map<String, Object>> maps = this.service.execSql(sql);
+            for (Map<String, Object> map : maps) {
+                String id = map.get("ID").toString();
+                hashOperations.put("UserInformation", id, map);
+            }
+            return WebApiResponse.success("成功了");
+        } catch (Exception e) {
+            return WebApiResponse.erro("数据查询失败" + e.getMessage());
+        }
+    }
 }
