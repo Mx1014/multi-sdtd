@@ -107,6 +107,7 @@ public class KHYHHISTORYService extends CurdService<KHYHHISTORY, KHYHHISTORYRepo
             list.add(date);
             sql += " and YHFXSJ < ?" + list.size();
         }
+        sql +=" order by create_time desc";
         return execSqlPage(pageable, sql, list.toArray());
     }
 
@@ -115,14 +116,14 @@ public class KHYHHISTORYService extends CurdService<KHYHHISTORY, KHYHHISTORYRepo
         int i = 2;
         HanyuPinyinHelper helper = new HanyuPinyinHelper();
         try {
-            FileInputStream file = new FileInputStream("F:\\隐患列表.xls");
+            FileInputStream file = new FileInputStream("E:\\826708743\\FileRecv\\隐患列表_20180111-程焕竹.xls");
             //HSSFWorkbook wb = new HSSFWorkbook(file.getInputStream());
             HSSFWorkbook wb = new HSSFWorkbook(file);
             HSSFSheet sheet = wb.getSheetAt(0);
             KHYHHISTORY yh = new KHYHHISTORY();
             HSSFRow row = sheet.getRow(i);
             while (row != null && !"".equals(row.toString().trim())) {
-                HSSFCell cell = row.getCell(0);
+                HSSFCell cell = row.getCell(1);
                 if (cell == null || "".equals(ExcelUtil.getCellValue(cell))) {
                     break;
                 }
@@ -136,15 +137,47 @@ public class KHYHHISTORYService extends CurdService<KHYHHISTORY, KHYHHISTORYRepo
                     e.printStackTrace();
                     //LOGGER.error("通道单位匹配失败！",e);
                 }
+                //长青一
                 String lineName = ExcelUtil.getCellValue(row.getCell(3));
-                yh.setLineName(helper.toHanyuPinyin(lineName));//线路名称
+                String linename1 = "";
                 try {
-                    List<Map<String, Object>> list = execSql("select a.id from cm_line a,CM_LINE_SECTION b where b.line_name1  like ?1 and a.id = b.LINE_ID GROUP BY a.id", "%" + lineName + "%");
+                    List<Map<String, Object>> list = execSql("select a.id,b.line_jb as jb from cm_line a left join CM_LINE_SECTION b on a.id = b.LINE_ID where b.line_name1  like ?1 ", "%" + lineName + "%");
                     yh.setLineId(Long.valueOf(String.valueOf(list.get(0).get("ID"))));
+                    yh.setXlzycd(String.valueOf(list.get(0).get("JB")));
+                    break;
                 } catch (Exception e) {
                     e.printStackTrace();
                     //LOGGER.error("线路匹配失败！",e);
                 }
+                if (lineName != null) {
+                    if (lineName.contains("一")) {
+                        lineName = lineName.replace("一", "1");
+                    }
+                    if (lineName.contains("二")) {
+                        lineName = lineName.replace("二", "2");
+                    }
+                    if (lineName.contains("三")) {
+                        lineName = lineName.replace("三", "3");
+                    }
+                    if (lineName.contains("四")) {
+                        lineName = lineName.replace("四", "4");
+                    }
+                    linename1 = helper.toHanyuPinyin(lineName);//changqing1
+                    if (linename1.contains("1")) {
+                        linename1 = linename1.replace("1", "一");
+                    }
+                    if (linename1.contains("2")) {
+                        linename1 = linename1.replace("2", "二");
+                    }
+                    if (linename1.contains("3")) {
+                        linename1 = linename1.replace("3", "三");
+                    }
+                    if (linename1.contains("4")) {
+                        linename1 = linename1.replace("4", "四");
+                    }
+                }
+                yh.setLineName(linename1);//线路名称
+
                 yh.setClassName(ExcelUtil.getCellValue(row.getCell(4)));//所属班组
                 yh.setVtype(ExcelUtil.getCellValue(row.getCell(5)));//电压等级
                 String startTower = ExcelUtil.getCellValue(row.getCell(6));
@@ -167,22 +200,33 @@ public class KHYHHISTORYService extends CurdService<KHYHHISTORY, KHYHHISTORYRepo
                 yh.setXdxyhjkjl(ExcelUtil.getCellValue(row.getCell(22)));//导线对隐患净空距离
                 yh.setYhxcyy(ExcelUtil.getCellValue(row.getCell(23)));//隐患形成原因
                 yh.setJsp(ExcelUtil.getCellValue(row.getCell(24)));//是否栽装警示牌
-                yh.setYhjb(ExcelUtil.getCellValue(row.getCell(25)));//危急程度
+                String wjcd = ExcelUtil.getCellValue(row.getCell(25));//危急程度
+                if (wjcd !=null &&! wjcd.equals("")){
+                    yh.setYhjb(wjcd);
+                }else {
+                    yh.setYhjb("一般");
+                }
                 yh.setGkcs(ExcelUtil.getCellValue(row.getCell(26)));//管控措施
-                yh.setZpxgsj(DateUtil.parse(ExcelUtil.getCellValue(row.getCell(27))));//照片修改时间
+                //yh.setZpxgsj(DateUtil.parse(ExcelUtil.getCellValue(row.getCell(27))));//照片修改时间
                 yh.setYhzt(0);//隐患状态
                 yh.setRadius("100.0");
                 yh.setSdgs(2);//execl导入
                 yh.setSfdj(1);//已定级
-                yh.setCreateTime(new Date());
+                yh.setCreateTime(DateUtil.parse(ExcelUtil.getCellValue(row.getCell(12))));
                 this.add(yh);
                 row = sheet.getRow(++i);
-                System.out.println(i+lineName+"--");
-                String sql = "select t.id from cm_line_tower t where t.line_name like ? and t.tower_name like?";
+                String sql = "select t.tower_Id id from cm_line_tower t where t.line_name like ? and t.tower_name like ?";
                 try {
-                    List<Map<String, Object>> list = this.execSql(sql, "%" + yh.getLineName() + "%", "%" + startTower + "%");
-                    List<Map<String, Object>> list1 = this.execSql(sql, "%" + yh.getLineName() + "%", "%" + endTower + "%");
-                }catch (Exception e){
+                    System.out.println(lineName + ",杆塔号:" +linename1+":"+ startTower + ",终止杆塔：" + endTower);
+                    List<Map<String, Object>> start = this.execSql(sql, "%" + linename1 + "%", "%" + startTower + "%");
+                    List<Map<String, Object>> end = this.execSql(sql, "%" + linename1 + "%", "%" + endTower + "%");
+                    yh.setStartTower(start.get(0).get("ID").toString());
+                    yh.setEndTower(end.get(0).get("ID").toString());
+                    String sql2 = "select longitude lon,latitude lat from cm_tower where id=?";
+                    List<Map<String, Object>> zuobiao = this.execSql(sql2, Long.parseLong(yh.getStartTower()));
+                    yh.setJd(zuobiao.get(0).get("LON").toString());
+                    yh.setWd(zuobiao.get(0).get("LAT").toString());
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
                 /*

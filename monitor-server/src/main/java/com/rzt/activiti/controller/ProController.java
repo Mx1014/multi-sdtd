@@ -84,6 +84,8 @@ public class ProController {
     @GetMapping("/proClick")
     public WebApiResponse chuLi(String taskId,String YHID,String flag,String isKH,String info,String proId,String userName){
       try {
+
+
           //将稽查和看护任务派发     完成后拿到看护任务的id  进入下一个节点 稽查节点
           String khid = "";
           //需要派发稽查任务
@@ -95,16 +97,18 @@ public class ProController {
               if(null != YHID && !"".equals(YHID)){
                   Object data = nurseTaskService.saveLsCycle(YHID).getData();
                   System.out.println("++++++++++++++++"+data);
+                  //生成看护任务成功  添加看护id到流程
+                  map.put("khid",khid);
               }
               System.out.println("看护任务派发---------------------------------------");
           }
 
 
           map.put("YHID",YHID);
-          map.put("khid",khid);
           map.put("flag",flag);
           map.put("info",info);
           proService.complete(taskId,map);
+
           //获取节点前进后的id   用流程实例id做条件
           String id = proService.findIdByProId(proId);
           //测试稽查
@@ -124,6 +128,10 @@ public class ProController {
         return WebApiResponse.success("进入下一节点");
 
     }
+
+
+
+
 
     /**
      * 稽查任务回调   回调时需要传递当前任务id  和flag  隐患id
@@ -179,6 +187,11 @@ public class ProController {
         proService.deploy();
         return WebApiResponse.success("");
 
+    }
+
+    @GetMapping("/history")
+    public WebApiResponse gethi(String assignee,Integer page,Integer size){
+       return proService.historyActInstanceList(assignee, page, size);
     }
 
 

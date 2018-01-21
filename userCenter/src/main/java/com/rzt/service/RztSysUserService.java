@@ -326,15 +326,37 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
                     hashOperations.put("USERTOKEN", "USER:" + userid1.get("ID") + "," + userid1.get("REALNAME"), access_token);
                     userid1.put("TOKEN", access_token);
                     Integer typee = Integer.valueOf(userid.get(0).get("WORKTYPE").toString());
-                    if (typee == 1) {
-                        typee = 2;
-                    } else if (typee == 2) {
-                        typee = 1;
+                    String roleid2 = userid1.get("ROLEID").toString();
+                    /**
+                     606DE762BD183D21E0501AAC38EF5184 一级运检部
+                     606DE762BD1A3D21E0501AAC38EF5184 一级反外力中心
+                     606DE762BD213D21E0501AAC38EF5184 二级运检部
+                     606DE762BD233D21E0501AAC38EF5184 二级反外力中心
+                     */
+                    if (Integer.parseInt(loginType) == 1) {
+                        String LOOKTYPE = "0";
+                        if (roleid2.equals("606DE762BD183D21E0501AAC38EF5184")) {
+                            LOOKTYPE = "1_1";
+                        } else if (roleid2.equals("606DE762BD1A3D21E0501AAC38EF5184")) {
+                            LOOKTYPE = "1_2";
+                        } else if (roleid2.equals("606DE762BD213D21E0501AAC38EF5184")) {
+                            LOOKTYPE = "2_1";
+                        } else if (roleid2.equals("606DE762BD233D21E0501AAC38EF5184")) {
+                            LOOKTYPE = "2_2";
+                        }
+                        userid1.put("LOOKTYPE", LOOKTYPE);
                     }
-                    try {
-                        staffLine.KHSX(String.valueOf(userid.get(0).get("ID")), typee);
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                    if (Integer.parseInt(loginType) == 0) {
+                        if (typee == 1) {
+                            typee = 2;
+                        } else if (typee == 2) {
+                            typee = 1;
+                        }
+                        try {
+                            staffLine.KHSX(String.valueOf(userid.get(0).get("ID")), typee);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                     return WebApiResponse.success(userid1);
                 }

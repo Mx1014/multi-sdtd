@@ -16,6 +16,7 @@ import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.data.redis.core.ZSetOperations;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.bind.annotation.*;
 
@@ -376,6 +377,35 @@ public class PcMapShowController {
     //下面是开发中用到的一些方法
 
     /***
+     * @Method menCurrentDayxs
+     * @Description 刷新巡视任务的人
+     *
+     * @return java.lang.Object
+     * @date 2017/12/25 13:59
+     * @author nwz
+     */
+    @GetMapping("menCurrentDayxs")
+    public Object menCurrentDayxs(Date day) {
+        try {
+            ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
+            if(day == null) {
+                day = new Date();
+            }
+            String sql = "SELECT cm_user_id,min(stauts) status from XS_ZC_TASK where PLAN_END_TIME >= trunc(?1) and  PLAN_START_TIME <= trunc(?1+1) group by CM_USER_ID";
+            List<Map<String, Object>> userList = cmcoordinateService.execSql(sql,day);
+            Map<String,Object> map = new HashMap<String, Object>();
+            for (Map<String,Object> user: userList) {
+                String id = user.get("CM_USER_ID").toString();
+                map.put(id,user.get("STATUS"));
+            }
+            valueOperations.set("xsMenAll:" + DateUtil.dateFormatToDay(day),map);
+            return WebApiResponse.success("成功了");
+        } catch (Exception e) {
+            return WebApiResponse.erro("数据查询失败" + e.getMessage());
+        }
+    }
+
+    /***
      * @Method flushUserInformationRedis
      * @Description 刷新flushUserInformationRedis缓存
      *
@@ -387,11 +417,10 @@ public class PcMapShowController {
     public Object flushUserInfoRedis() {
         try {
             HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
-            String sql = "SELECT * from USERINFO where id = '4d12f0cf8a02496f89fb919498395b88'";
+            String sql = "SELECT * from USERINFO";
             List<Map<String, Object>> maps = cmcoordinateService.execSql(sql);
             for (Map<String,Object> map: maps) {
                 String id = map.get("ID").toString();
-                map.put("ROLETYPE",0);
                 hashOperations.put("UserInformation",id,map);
             }
             return WebApiResponse.success("成功了");
@@ -427,35 +456,6 @@ public class PcMapShowController {
         }
     }
 
-
-    /***
-     * @Method menCurrentDayxs
-     * @Description 刷新巡视任务的人
-     *
-     * @return java.lang.Object
-     * @date 2017/12/25 13:59
-     * @author nwz
-     */
-    @GetMapping("menCurrentDayxs")
-    public Object menCurrentDayxs(Date day) {
-        try {
-            ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
-            if(day == null) {
-                day = new Date();
-            }
-            String sql = "SELECT cm_user_id,min(stauts) status from XS_ZC_TASK where PLAN_END_TIME >= trunc(?1) and  PLAN_START_TIME <= trunc(?1+1) group by CM_USER_ID";
-            List<Map<String, Object>> userList = cmcoordinateService.execSql(sql,day);
-            Map<String,Object> map = new HashMap<String, Object>();
-            for (Map<String,Object> user: userList) {
-                String id = user.get("CM_USER_ID").toString();
-                map.put(id,user.get("STATUS"));
-            }
-            valueOperations.set("xsMenAll:" + DateUtil.dateFormatToDay(day),map);
-            return WebApiResponse.success("成功了");
-        } catch (Exception e) {
-            return WebApiResponse.erro("数据查询失败" + e.getMessage());
-        }
-    }
 
 
     /***
@@ -515,6 +515,12 @@ public class PcMapShowController {
         }
     }
 
-
+    //两个定时计划
+    @Scheduled(cron = "0 25 0 ? * *")
+    public void Scheduled() {
+        Date day = new Date();
+        menCurrentDayKh(day);
+        menCurrentDayxs(day);
+    }
 
 }
