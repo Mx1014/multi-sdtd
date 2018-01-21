@@ -5,14 +5,11 @@ import com.rzt.entity.CheckResult;
 import com.rzt.repository.CheckResultRepository;
 import com.rzt.service.CurdService;
 import com.rzt.util.WebApiResponse;
-import org.activiti.engine.RepositoryService;
-import org.activiti.engine.RuntimeService;
-import org.activiti.engine.TaskService;
+import org.activiti.engine.*;
+import org.activiti.engine.history.HistoricActivityInstance;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.repository.ProcessDefinitionQuery;
 import org.activiti.engine.runtime.ProcessInstance;
-import org.activiti.engine.task.Task;
-import org.activiti.engine.task.TaskQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +31,9 @@ import java.util.Map;
 @Service
 public class ProServiceImpl  extends CurdService<CheckResult, CheckResultRepository> implements ActivitiService {
 
+
+    @Autowired
+    private ProcessEngine processEngine;
     @Autowired
     private TaskService taskService;
     @Autowired
@@ -154,12 +154,14 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
            Pageable pageable = new PageRequest(page, size, null);
            ArrayList<String> strings = new ArrayList<>();
            strings.add(userName);
-           String sql = "SELECT y.*,h.TEXT_,t.ID_ as actaskid,t.PROC_INST_ID_,t.ASSIGNEE_," +
-                  "  (SELECT v.TEXT_ FROM ACT_HI_VARINST v WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'info') as info," +
-                  "  (SELECT u.REALNAME FROM ACT_HI_VARINST v LEFT JOIN RZTSYSUSER u ON u.ID = v.TEXT_ WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'userName' ) as squsername," +
-                  "  (SELECT u.REALNAME FROM RZTSYSUSER u WHERE u.ID = y.TBRID) as tbrName," +
-                  "  (SELECT u.PHONE FROM RZTSYSUSER u WHERE u.ID = y.TBRID) as phone" +
-                  "   FROM ACT_RU_TASK t LEFT JOIN ACT_HI_VARINST h ON t.PROC_INST_ID_ = h.PROC_INST_ID_" +
+           String sql = "SELECT y.ID,y.SECTION,y.CREATE_TIME,y.TDYW_ORG,y.TDWX_ORG,y.YHLB,y.YHMS,y.YHJB,y.YHJB1,h.TEXT_,t.ID_ as actaskid,t.PROC_INST_ID_,t.ASSIGNEE_," +
+                   "    (SELECT DISTINCT l.LINE_NAME1 FROM CM_LINE_SECTION l WHERE l.LINE_ID = y.LINE_ID) as linename1,"+
+                  "  (SELECT DISTINCT v.TEXT_ FROM ACT_HI_VARINST v WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'info') as info," +
+                   "    (SELECT DISTINCT v.TEXT_ FROM ACT_HI_VARINST v WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'khid') as khid,"+
+                  "  (SELECT DISTINCT u.REALNAME FROM ACT_HI_VARINST v LEFT JOIN RZTSYSUSER u ON u.ID = v.TEXT_ WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'userName' ) as squsername," +
+                  "  (SELECT DISTINCT u.REALNAME FROM RZTSYSUSER u WHERE u.ID = y.TBRID) as tbrName," +
+                  "  (SELECT DISTINCT u.PHONE FROM RZTSYSUSER u WHERE u.ID = y.TBRID) as phone" +
+                  "   FROM ACT_RU_TASK t LEFT JOIN ACT_RU_VARIABLE h ON t.PROC_INST_ID_ = h.PROC_INST_ID_" +
                   "  LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_" +
                   "   WHERE h.NAME_ = 'YHID' AND t.PROC_DEF_ID_ LIKE 'wtsh%' AND ASSIGNEE_ = ?"+strings.size();
 
@@ -271,6 +273,29 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
     }
 
 
-
+    public WebApiResponse historyActInstanceList(String assignee,Integer page,Integer size){
+        ArrayList<String> strings = new ArrayList<>();
+        Page<Map<String, Object>> maps = null;
+        strings.add(assignee);
+        String sql = "SELECT y.ID,y.SECTION,y.CREATE_TIME,y.TDYW_ORG,y.TDWX_ORG,y.YHLB,y.YHMS,y.YHJB,y.YHJB1,h.TEXT_,t.ID_ as actaskid,t.PROC_INST_ID_,t.ASSIGNEE_," +
+              "  (SELECT DISTINCT l.LINE_NAME1 FROM CM_LINE_SECTION l WHERE l.LINE_ID = y.LINE_ID) as linename1,t.END_TIME_,t.START_TIME_," +
+              "  (SELECT DISTINCT  v.TEXT_ FROM ACT_HI_VARINST v WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'info') as info," +
+              "  (SELECT DISTINCT  v.TEXT_ FROM ACT_HI_VARINST v WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'khid') as khid," +
+              "  (SELECT DISTINCT  u.REALNAME FROM ACT_HI_VARINST v LEFT JOIN RZTSYSUSER u ON u.ID = v.TEXT_ WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'userName' ) as squsername," +
+              "  (SELECT DISTINCT  u.REALNAME FROM RZTSYSUSER u WHERE u.ID = y.TBRID) as tbrName," +
+              "  (SELECT DISTINCT  u.PHONE FROM RZTSYSUSER u WHERE u.ID = y.TBRID) as phone" +
+              "  FROM ACT_HI_ACTINST t LEFT JOIN ACT_RU_VARIABLE h ON t.PROC_INST_ID_ = h.PROC_INST_ID_" +
+              "  LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_" +
+              "  WHERE h.NAME_ = 'YHID' AND t.PROC_DEF_ID_ LIKE 'wtsh%' AND ASSIGNEE_ = ?"+strings.size()+" AND t.END_TIME_ IS NOT NULL ";
+        try {
+            Pageable pageable = new PageRequest(page, size, null);
+             maps = this.execSqlPage(pageable, sql, strings);
+             LOGGER.info("历史记录查询成功");
+        }catch (Exception e){
+                LOGGER.error("查询历史记录失败"+e.getMessage());
+            return WebApiResponse.erro("查询历史记录失败"+e.getMessage());
+        }
+        return WebApiResponse.success(maps);
+    }
 
 }
