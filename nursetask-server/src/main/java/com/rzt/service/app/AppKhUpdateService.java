@@ -2,6 +2,7 @@ package com.rzt.service.app;
 
 import com.rzt.entity.KhTask;
 import com.rzt.entity.KhTaskWpqr;
+import com.rzt.eureka.UserCenterService;
 import com.rzt.repository.AppKhTaskRepository;
 import com.rzt.repository.AppKhUpdateRepository;
 import com.rzt.service.CurdService;
@@ -33,15 +34,20 @@ public class AppKhUpdateService extends CurdService<KhTask, AppKhUpdateRepositor
     private RedisTemplate<String, Object> redisTemplate;
     @Autowired
     private KhTaskWpqrService wpqrService;
+    @Autowired
+    private UserCenterService userService;
 
     //修改实际开始时间
-    public WebApiResponse updateRealTime(long taskId) {
+    public WebApiResponse updateRealTime(long taskId, String userId) {
         try {
             int num = this.reposiotry.findNum(taskId);
             if (num < 1) {
                 //if (isdw != null && reason != null) {
                 this.reposiotry.updateRealStartTime(taskId, DateUtil.dateNow());
                 this.reposiotry.updateZxnum(1, taskId);//修改执行页数
+                if (userId != null) {
+                    userService.updateKhInfoStatusInredis(userId);
+                }
             }
             removeSomeKey(taskId);
             return WebApiResponse.success("修改成功");
@@ -123,9 +129,12 @@ public class AppKhUpdateService extends CurdService<KhTask, AppKhUpdateRepositor
         }
     }
 
-    public WebApiResponse updateEndTime(long taskId) {
+    public WebApiResponse updateEndTime(long taskId, String userId) {
         try {
             this.reposiotry.updateEndTime(DateUtil.dateNow(), taskId);
+            if (userId != null) {
+                userService.updateKhInfoStatusInredis(userId);
+            }
             return WebApiResponse.success("修改成功");
         } catch (Exception e) {
             e.printStackTrace();

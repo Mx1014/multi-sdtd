@@ -1,32 +1,25 @@
 package com.rzt.activiti.service.impl;
 
-import com.rzt.activiti.service.ProService;
+import com.rzt.activiti.service.ActivitiService;
 import com.rzt.entity.CheckResult;
 import com.rzt.repository.CheckResultRepository;
 import com.rzt.service.CurdService;
-import com.rzt.service.PictureService;
 import com.rzt.util.WebApiResponse;
-import com.sun.org.apache.regexp.internal.RE;
-import org.activiti.engine.ProcessEngine;
-import org.activiti.engine.RepositoryService;
-import org.activiti.engine.RuntimeService;
-import org.activiti.engine.TaskService;
-import org.activiti.engine.history.HistoricTaskInstance;
-import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
-import org.activiti.engine.impl.pvm.process.ActivityImpl;
+import org.activiti.engine.*;
+import org.activiti.engine.history.HistoricActivityInstance;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.repository.ProcessDefinitionQuery;
 import org.activiti.engine.runtime.ProcessInstance;
-import org.activiti.engine.task.Task;
-import org.activiti.engine.task.TaskQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -36,8 +29,11 @@ import java.util.Map;
  * 2018/1/15
  */
 @Service
-public class ProServiceImpl  extends CurdService<CheckResult, CheckResultRepository> implements ProService{
+public class ProServiceImpl  extends CurdService<CheckResult, CheckResultRepository> implements ActivitiService {
 
+
+    @Autowired
+    private ProcessEngine processEngine;
     @Autowired
     private TaskService taskService;
     @Autowired
@@ -77,23 +73,38 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
 
 
         //分页数据容错
-        if(null == page || 0 == page){
+      /*  if(null == page || 0 == page){
             page = 1;
         }
         if(null == size || 0 == size){
             size = 10;
-        }
-        List<Object> result = new ArrayList<>();
-
+        }*/
+        Page<Map<String, Object>> maps = null;
+        //List<Object> result = new ArrayList<>();
+/*
+        //流程定义key（流程定义的标识）
+        String processDefinitionKey = "wtsh";
+        //创建查询对象
         TaskQuery taskQuery = taskService.createTaskQuery();
+        //设置查询条件
+        taskQuery.taskAssignee(userName);
+        //指定流程定义key，只查询某个流程的任务
+        taskQuery.processDefinitionKey(processDefinitionKey);
+        //获取查询列表
+        List<Task> list = taskQuery.list();
+
+        list.stream().forEach(a-> System.out.println(a));*/
+
+
+   /*     TaskQuery taskQuery = taskService.createTaskQuery();
         //分页查询当前待办任务
-        List<Task> list = taskQuery.taskAssignee(userName).orderByTaskCreateTime().desc().listPage(page,size);
-        if(null == list  || list.size()==0){
+        List<Task> list = taskQuery.taskAssignee(userName).orderByTaskCreateTime().desc().listPage(page,size);*/
+    /*    if(null == list  || list.size()==0){
             return WebApiResponse.success("");
-        }
+        }*/
        try{
            //这个sql可以用工作流提供的id查询到启动流程时传递的参数
-           for (Task task : list) {
+          /* for (Task task : list) {
                String realname = "";
                System.out.println("当前任务  "+task);
                System.out.println(task.getId());
@@ -134,18 +145,35 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
                map.put("name",task.getName());
                map.put("isKH",isKH);
                map.put("realname",realname);
+               map.put("info",info);
                map.put("proId",task.getProcessInstanceId());
                result.add(map);
+
            }
+*/
+           Pageable pageable = new PageRequest(page, size, null);
+           ArrayList<String> strings = new ArrayList<>();
+           strings.add(userName);
+           String sql = "SELECT y.ID,y.SECTION,y.CREATE_TIME,y.TDYW_ORG,y.TDWX_ORG,y.YHLB,y.YHMS,y.YHJB,y.YHJB1,h.TEXT_,t.ID_ as actaskid,t.PROC_INST_ID_,t.ASSIGNEE_," +
+                   "    (SELECT DISTINCT l.LINE_NAME1 FROM CM_LINE_SECTION l WHERE l.LINE_ID = y.LINE_ID) as linename1,"+
+                  "  (SELECT DISTINCT v.TEXT_ FROM ACT_HI_VARINST v WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'info') as info," +
+                   "    (SELECT DISTINCT v.TEXT_ FROM ACT_HI_VARINST v WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'khid') as khid,"+
+                  "  (SELECT DISTINCT u.REALNAME FROM ACT_HI_VARINST v LEFT JOIN RZTSYSUSER u ON u.ID = v.TEXT_ WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'userName' ) as squsername," +
+                  "  (SELECT DISTINCT u.REALNAME FROM RZTSYSUSER u WHERE u.ID = y.TBRID) as tbrName," +
+                  "  (SELECT DISTINCT u.PHONE FROM RZTSYSUSER u WHERE u.ID = y.TBRID) as phone" +
+                  "   FROM ACT_RU_TASK t LEFT JOIN ACT_RU_VARIABLE h ON t.PROC_INST_ID_ = h.PROC_INST_ID_" +
+                  "  LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_" +
+                  "   WHERE h.NAME_ = 'YHID' AND t.PROC_DEF_ID_ LIKE 'wtsh%' AND ASSIGNEE_ = ?"+strings.size();
 
-
-
+            maps = this.execSqlPage(pageable, sql, strings);
+            LOGGER.info("当前节点待办任务查询成功"+strings);
 
        }catch (Exception e){
-
+            LOGGER.error("当前节点待办信息查询失败"+e.getMessage());
+           return WebApiResponse.erro("当前节点待办信息查询失败"+e.getMessage());
        }
 
-        return WebApiResponse.success(result);
+        return WebApiResponse.success(maps);
     }
 
 
@@ -155,8 +183,8 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
      */
     @Override
     public void deploy() {
-        repositoryService.createDeployment().addClasspathResource("diagrams/activiti.bpmn")
-                .addClasspathResource("diagrams/diagram.png").deploy();
+        repositoryService.createDeployment().addClasspathResource("diagrams/ProActiviti.bpmn")
+                .addClasspathResource("diagrams/ProActiviti.png").deploy();
 
     }
 
@@ -216,10 +244,9 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
                 .createProcessDefinitionQuery()
                 .processDefinitionId(processDefinitionId).singleResult();
         return repositoryService.getResourceAsStream(
-                processDefinition.getDeploymentId(), "diagrams/diagram.png");
+                processDefinition.getDeploymentId(), "diagrams/ProActiviti.png");
     }
 
-    @Override
     public String findIdByProId(String proId)  {
 
        try {
@@ -245,5 +272,30 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
         return "";
     }
 
+
+    public WebApiResponse historyActInstanceList(String assignee,Integer page,Integer size){
+        ArrayList<String> strings = new ArrayList<>();
+        Page<Map<String, Object>> maps = null;
+        strings.add(assignee);
+        String sql = "SELECT y.ID,y.SECTION,y.CREATE_TIME,y.TDYW_ORG,y.TDWX_ORG,y.YHLB,y.YHMS,y.YHJB,y.YHJB1,h.TEXT_,t.ID_ as actaskid,t.PROC_INST_ID_,t.ASSIGNEE_," +
+              "  (SELECT DISTINCT l.LINE_NAME1 FROM CM_LINE_SECTION l WHERE l.LINE_ID = y.LINE_ID) as linename1,t.END_TIME_,t.START_TIME_," +
+              "  (SELECT DISTINCT  v.TEXT_ FROM ACT_HI_VARINST v WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'info') as info," +
+              "  (SELECT DISTINCT  v.TEXT_ FROM ACT_HI_VARINST v WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'khid') as khid," +
+              "  (SELECT DISTINCT  u.REALNAME FROM ACT_HI_VARINST v LEFT JOIN RZTSYSUSER u ON u.ID = v.TEXT_ WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'userName' ) as squsername," +
+              "  (SELECT DISTINCT  u.REALNAME FROM RZTSYSUSER u WHERE u.ID = y.TBRID) as tbrName," +
+              "  (SELECT DISTINCT  u.PHONE FROM RZTSYSUSER u WHERE u.ID = y.TBRID) as phone" +
+              "  FROM ACT_HI_ACTINST t LEFT JOIN ACT_RU_VARIABLE h ON t.PROC_INST_ID_ = h.PROC_INST_ID_" +
+              "  LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_" +
+              "  WHERE h.NAME_ = 'YHID' AND t.PROC_DEF_ID_ LIKE 'wtsh%' AND ASSIGNEE_ = ?"+strings.size()+" AND t.END_TIME_ IS NOT NULL ";
+        try {
+            Pageable pageable = new PageRequest(page, size, null);
+             maps = this.execSqlPage(pageable, sql, strings);
+             LOGGER.info("历史记录查询成功");
+        }catch (Exception e){
+                LOGGER.error("查询历史记录失败"+e.getMessage());
+            return WebApiResponse.erro("查询历史记录失败"+e.getMessage());
+        }
+        return WebApiResponse.success(maps);
+    }
 
 }

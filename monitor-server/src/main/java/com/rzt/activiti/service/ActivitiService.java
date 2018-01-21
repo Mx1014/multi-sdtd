@@ -10,7 +10,7 @@ import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 
-public interface ProService {
+public interface ActivitiService {
 
 	List<ProcessDefinition> checkDeploy();
 
@@ -30,5 +30,4 @@ public interface ProService {
 
 	InputStream checkInputStream(String id);
 
-	String findIdByProId(String proId);
 }

@@ -45,12 +45,17 @@ public class KhTaskController extends
      */
     @GetMapping("/listAllKhTask.do")
     @ResponseBody
-    public WebApiResponse listAllKhTask(KhTaskModel task, String status, Pageable pageable) {
+    public WebApiResponse listAllKhTask(KhTaskModel task, String status, Pageable pageable, String yworg, String currentUserId) {
         try {
             //分页参数 page size
             HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
-            JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", task.getUserId()).toString());
-            Object o = this.service.listAllKhTask(task, status, pageable, Integer.valueOf(jsonObject.get("ROLETYPE").toString()));
+            JSONObject jsonObject = new JSONObject();
+            if (currentUserId != null) {
+                jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", currentUserId).toString());
+            } else {
+                jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", task.getUserId()).toString());
+            }
+            Object o = this.service.listAllKhTask(task, status, pageable, Integer.valueOf(jsonObject.get("ROLETYPE").toString()), yworg);
             //Object o = this.service.listAllKhTask(	task, status,pageable,0);
             return WebApiResponse.success(o);
         } catch (Exception e) {
@@ -176,6 +181,7 @@ public class KhTaskController extends
         }
     }
 
+    //删除单、多个任务
     @DeleteMapping("/deleteTaskById")
     @ResponseBody
     public WebApiResponse deleteTaskById(String id) {

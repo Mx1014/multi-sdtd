@@ -82,9 +82,9 @@ public class KhSiteController extends
             HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
             Object userInformation = hashOperations.get("UserInformation", task.getUserId());
             JSONObject jsonObject = JSONObject.parseObject(userInformation.toString());
-           // String roleType = jsonObject.get("ROLETYPE").toString();
-            return WebApiResponse.success(this.service.listAllTaskNotDo(task, pageable, userName, "0",yhjb,yworg));
-            //return WebApiResponse.success(this.service.listAllTaskNotDo(task, pageable, userName,deptId,"0"));
+            String roleType = jsonObject.get("ROLETYPE").toString();
+            return WebApiResponse.success(this.service.listAllTaskNotDo(task, pageable, userName, roleType,yhjb,yworg));
+//            return WebApiResponse.success(this.service.listAllTaskNotDo(task, pageable, userName,"0",yhjb,yworg));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("数据查询失败" + e.getMessage());
@@ -158,8 +158,8 @@ public class KhSiteController extends
     @PostMapping("/paifaTask.do")
     @ResponseBody
     @Transactional
-    public WebApiResponse paifaTask(String id, String tasks, KhTaskModel model) {
-        return this.service.paifaTask(id, tasks, model);
+    public WebApiResponse paifaTask(String id, String tasks) {
+        return this.service.paifaTask(id, tasks);
     }
 
     //  PC查看任务详情
@@ -232,20 +232,4 @@ public class KhSiteController extends
             return WebApiResponse.erro("数据查询失败" + e.getMessage());
         }
     }*/
-    @GetMapping("/qwer")
-    public WebApiResponse qwer() {
-        try {
-            String sql = "select id,user_id as userId,yh_id yhid,wx_org as wx,wx_orgid as wxid from kh_site";
-            List<Map<String, Object>> list = this.service.execSql(sql);
-            for (Map map : list) {
-                if (map.get("WX") != null) {
-                    this.service.updateSite(map.get("YHID").toString(), map.get("WX").toString(), map.get("WXID").toString());
-                }
-            }
-            return WebApiResponse.success("成功");
-        } catch (Exception e) {
-            e.printStackTrace();
-            return WebApiResponse.erro("失败");
-        }
-    }
 }

@@ -41,9 +41,9 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
     @Autowired
     private KhSiteRepository siteRepository;
 
-    public Object listAllKhTask(KhTaskModel task, String status, Pageable pageable, int roleType) {
+    public Object listAllKhTask(KhTaskModel task, String status, Pageable pageable, int roleType,String yworg) {
         task = timeUtil(task);
-        String result = "k.id as id, k.task_name as taskName,k.tdyw_org as yworg,k.CREATE_TIME as createTime,k.plan_start_time as startTime,k.plan_end_time as endTime,k.status as status,u.realname as userName,d.DEPTNAME as class";
+        String result = "k.id as id, k.task_name as taskName,k.tdyw_org as yworg,k.CREATE_TIME as createTime,k.plan_start_time as startTime,k.plan_end_time as endTime,k.status as status,u.realname as userName,d.DEPTNAME as class,k.task_type as type";
         List params = new ArrayList<>();
         StringBuffer buffer = new StringBuffer();
         buffer.append(" where k.plan_start_time between to_date(?,'YYYY-MM-DD hh24:mi') and to_date(?,'YYYY-MM-DD hh24:mi') ");
@@ -416,7 +416,6 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         this.reposiotry.addTask(task.getId(), task.getSiteId(), task.getUserId(), task.getTaskName(), task.getYhId(),
                 task.getPlanStartTime(), task.getPlanEndTime(), task.getWxOrg(), task.getCount(), task.getTdywOrg());
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
     }
 
     public WebApiResponse listPictureByYhId(String yhId) {
