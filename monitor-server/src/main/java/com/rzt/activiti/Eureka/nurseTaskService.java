@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient("NURSETASK")
 public interface nurseTaskService {
     /**
-     * 生成看护任务
+     * 生成看护任务   或 变更看护任务
      * @param YHID
      * @return
      */
