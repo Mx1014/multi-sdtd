@@ -91,7 +91,7 @@ public class PICTURETOURController extends
             notes = "根据execId获取某一轮的照片"
     )
     @GetMapping("getImgsByExecId")
-    public Object getImgsByExecId(String execId) {
+    public Map<String, Object> getImgsByExecId(String execId) {
         return service.getImgsByExecId(execId);
     }
 

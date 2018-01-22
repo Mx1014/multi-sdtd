@@ -174,10 +174,10 @@ public class KhTaskController extends
                     this.service.deleteSiteById(Long.parseLong(split[i]));
                 }
             }
-            return WebApiResponse.success("任务消缺成功");
+            return WebApiResponse.success("任务删除成功");
         } catch (Exception e) {
-            e.printStackTrace();
-            return WebApiResponse.erro("任务消缺失败" + e.getMessage());
+            //e.printStackTrace();
+            return WebApiResponse.erro("任务删除成功" + e.getMessage());
         }
     }
 
@@ -192,10 +192,10 @@ public class KhTaskController extends
                     this.service.deleteTaskById(Long.parseLong(split[i]));
                 }
             }
-            return WebApiResponse.success("任务消缺成功");
+            return WebApiResponse.success("任务删除成功");
         } catch (Exception e) {
             e.printStackTrace();
-            return WebApiResponse.erro("任务消缺失败" + e.getMessage());
+            return WebApiResponse.erro("任务删除失败" + e.getMessage());
         }
     }
 }

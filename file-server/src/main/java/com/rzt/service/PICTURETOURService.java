@@ -68,9 +68,9 @@ public class PICTURETOURService extends CurdService<PICTURETOUR,PICTURETOURRepos
                 result.put("id",String.valueOf(picturetour.getId()));
                 result.put("thumPath",thumPath);
                 result.put("picPath",targetPath);
-                System.out.println(targetPath);
-                System.out.println(thumPath);
-                System.out.println(picName);
+//                System.out.println(targetPath);
+//                System.out.println(thumPath);
+//                System.out.println(picName);
             }
 
         } catch (IOException e) {
@@ -178,7 +178,7 @@ public class PICTURETOURService extends CurdService<PICTURETOUR,PICTURETOURRepos
 
     }
 
-    public Object getImgsByExecId(String execId) {
+    public Map<String, Object> getImgsByExecId(String execId) {
         Map<String, Object> result = new HashMap<>();
         ArrayList<String> params = new ArrayList<>();
         String sql= "select id,file_path,file_small_path,PROCESS_NAME from picture_tour where 1=1 ";

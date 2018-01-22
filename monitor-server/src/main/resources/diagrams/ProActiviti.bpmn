@@ -11,7 +11,7 @@
       </extensionElements>
     </userTask>
     <sequenceFlow id="_29" sourceRef="_27" targetRef="_10"/>
-    <userTask activiti:assignee="jkid" activiti:exclusive="true" id="_4" name="公司反外力监控中心"/>
+    <userTask activiti:assignee="jkid" activiti:exclusive="true" id="_44" name="公司反外力监控中心"/>
     <userTask activiti:assignee="jkjcid" activiti:exclusive="true" id="_6" name="公司派出稽查人员"/>
     <userTask activiti:assignee="yjid" activiti:exclusive="true" id="_9" name="公司运检部"/>
     <userTask activiti:assignee="tzid" activiti:exclusive="true" id="_13" name="入隐患台账">
@@ -30,7 +30,7 @@
     </sequenceFlow>
     <exclusiveGateway gatewayDirection="Unspecified" id="exclusivegateway2" name="隐患稽查"/>
     <sequenceFlow id="flow4" sourceRef="_25" targetRef="exclusivegateway2"/>
-    <sequenceFlow id="flow5" name="隐患稽查属实" sourceRef="exclusivegateway2" targetRef="_4">
+    <sequenceFlow id="flow5" name="隐患稽查属实" sourceRef="exclusivegateway2" targetRef="_44">
       <conditionExpression xsi:type="tFormalExpression"><![CDATA[${flag==1}]]></conditionExpression>
     </sequenceFlow>
     <sequenceFlow id="flow6" name="隐患稽查不符" sourceRef="exclusivegateway2" targetRef="_27">
@@ -63,9 +63,9 @@
       <conditionExpression xsi:type="tFormalExpression"><![CDATA[${flag == 0}]]></conditionExpression>
     </sequenceFlow>
     <exclusiveGateway gatewayDirection="Unspecified" id="_14" name="ExclusiveGateway"/>
-    <sequenceFlow id="_16" sourceRef="_4" targetRef="_14"/>
+    <sequenceFlow id="_16" sourceRef="_44" targetRef="_14"/>
     <sequenceFlow id="_17" sourceRef="_14" targetRef="_6">
-      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${flag == 0}]]></conditionExpression>
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${flag == 1}]]></conditionExpression>
     </sequenceFlow>
     <sequenceFlow id="_18" sourceRef="_14" targetRef="_27">
       <conditionExpression xsi:type="tFormalExpression"><![CDATA[${flag == 0}]]></conditionExpression>
@@ -103,7 +103,7 @@
           <omgdc:Bounds height="55.0" width="85.0" x="0.0" y="0.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="_4" id="Shape-_4">
+      <bpmndi:BPMNShape bpmnElement="_44" id="Shape-_44">
         <omgdc:Bounds height="55.0" width="85.0" x="115.0" y="460.0"/>
         <bpmndi:BPMNLabel>
           <omgdc:Bounds height="55.0" width="85.0" x="0.0" y="0.0"/>
@@ -164,13 +164,13 @@
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="_14" id="Shape-_14" isMarkerVisible="false">
-        <omgdc:Bounds height="32.0" width="32.0" x="250.0" y="370.0"/>
+        <omgdc:Bounds height="32.0" width="32.0" x="245.0" y="335.0"/>
         <bpmndi:BPMNLabel>
           <omgdc:Bounds height="32.0" width="32.0" x="0.0" y="0.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge bpmnElement="_17" id="BPMNEdge__17" sourceElement="_14" targetElement="_6">
-        <omgdi:waypoint x="282.0" y="386.0"/>
+        <omgdi:waypoint x="277.0" y="351.0"/>
         <omgdi:waypoint x="310.0" y="487.5"/>
         <bpmndi:BPMNLabel>
           <omgdc:Bounds height="0.0" width="0.0" x="0.0" y="0.0"/>
@@ -178,13 +178,13 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="_16" id="BPMNEdge__16" sourceElement="_4" targetElement="_14">
         <omgdi:waypoint x="200.0" y="487.5"/>
-        <omgdi:waypoint x="250.0" y="386.0"/>
+        <omgdi:waypoint x="245.0" y="351.0"/>
         <bpmndi:BPMNLabel>
           <omgdc:Bounds height="0.0" width="0.0" x="0.0" y="0.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="_18" id="BPMNEdge__18" sourceElement="_14" targetElement="_27">
-        <omgdi:waypoint x="282.0" y="386.0"/>
+        <omgdi:waypoint x="277.0" y="351.0"/>
         <omgdi:waypoint x="790.0" y="282.5"/>
         <bpmndi:BPMNLabel>
           <omgdc:Bounds height="0.0" width="0.0" x="0.0" y="0.0"/>

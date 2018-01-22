@@ -223,6 +223,18 @@ public class XsSbYh implements Serializable {
     @Column(name="JSP")
     private String jsp;
 
+    //字段描述: 是否悬挂警示牌
+    @Column(name="SJXL")
+    private String sjxl;
+
+    public String getSjxl() {
+        return sjxl;
+    }
+
+    public void setSjxl(String sjxl) {
+        this.sjxl = sjxl;
+    }
+
     public String getSms() {
         return sms;
     }
