@@ -4,8 +4,11 @@ import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.CheckResult;
 import com.rzt.repository.CheckResultRepository;
 import com.rzt.service.CurdService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,48 +27,74 @@ public class RedisUtil  extends CurdService<CheckResult, CheckResultRepository> 
      * @param userId
      * @return
      */
-    public  String findRoleIdByUserId(RedisTemplate redisTemplate,String userId) throws Exception {
+    @Autowired
+    private JedisPool redisTemplate;
+
+    public  String findRoleIdByUserId(String userId) {
         /**
          * -- 管理员角色(角色管理)        yjid            公司运检部
          -- 后台稽查角色(角色管理)        jkid            公司反外力监控中心
          --  管理员角色(通道运维单位)      sdyjid          属地运检部
          -- 后台稽查角色(通道运维单位)     sdid          属地反外力监控中心
          */
+        Jedis resource = null;
         try {
-            Object userInformation1 = redisTemplate.opsForHash().get("UserInformation", userId);
-            JSONObject jsonObject1 = JSONObject.parseObject(userInformation1.toString());
-            String roleid = (String) jsonObject1.get("ROLEID");
-            ArrayList<String> strings = new ArrayList<>();
-            strings.add(roleid);
-            String sql = "SELECT ROLENAME" +
-                    "    FROM RZTSYSROLE WHERE ID = ?"+strings.size();
-            Map<String, Object> map = this.execSqlSingleResult(sql, strings);
-            if(null != map ){
-                String rolename = (String) map.get("ROLENAME");
-                if(null != rolename && !"".equals(rolename)){
-                    if("管理员角色(角色管理)".equals(rolename)){
-                        return "yjid";
-                    }else if("后台稽查角色(角色管理)".equals(rolename)){
-                        return "jkid";
-                    }else if("管理员角色(通道运维单位)".equals(rolename)){
-                        return "sdyjid";
-                    }else if("后台稽查角色(通道运维单位)".equals(rolename)){
-                        return "sdid";
-                    }else {
-                        return "0";
+            resource = redisTemplate.getResource();
+            String userInformation = resource.hget("UserInformation", userId);
+//            Object userInformation1 = redisTemplate.opsForHash().get("UserInformation", userId);
+            if (null != userInformation) {
+                JSONObject jsonObject1 = JSONObject.parseObject(userInformation);
+                if (null != jsonObject1) {
+                    String roleId = (String) jsonObject1.get("ROLEID");
+
+                    if (null != roleId && !"".equals(roleId)) {
+                        if ("606DE762BD183D21E0501AAC38EF5184".equals(roleId)) {
+                            return "yjid";
+                        } else if ("606DE762BD1A3D21E0501AAC38EF5184".equals(roleId)) {
+                            return "jkid";
+                        } else if ("606DE762BD213D21E0501AAC38EF5184".equals(roleId)) {
+                            return "sdyjid";
+                        } else if ("606DE762BD233D21E0501AAC38EF5184".equals(roleId)) {
+                            return "sdid";
+                        }
+                    } else {
+                        return null;
                     }
-                }else {
-                    return "0";
                 }
             }
 
-        }catch (Exception e){
-            return "0";
+
+        } catch (Exception e) {
+
+            return null;
+        }finally {
+            if(null != resource){
+                resource.close();
+            }
         }
 
-
-        return "0";
+        return null;
     }
 
+   public  String findTDByUserId(String userId) {
+       Jedis resource = null;
+        try {
+            resource = redisTemplate.getResource();
+            String userInformation = resource.hget("UserInformation", userId);
+            JSONObject jsonObject1 = JSONObject.parseObject(userInformation);
+            String DEPT = (String) jsonObject1.get("DEPT");
+            if (null != DEPT && !"".equals(DEPT)) {
+                return DEPT;
+            }
 
+        } catch (Exception e) {
+            return null;
+        }finally {
+            if(null != resource){
+                resource.close();
+        }
+        }
+        return null;
+
+    }
 }

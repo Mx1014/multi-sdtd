@@ -70,8 +70,8 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
                     "WHERE kh.ID=? ";
             Map<String, Object> map = this.execSqlSingleResult(sql, taskid);
             //往二级单位插数据
-            resp.saveCheckEj(new SnowflakeIdWorker(10, 12).nextId(),taskid,2,9,userid,map.get("TDYW_ORG").toString(),map.get("TASKNAME").toString());
-            String key = "ONE+" + taskid + "+2+9+" + userid + "+" + map.get("TDYW_ORG").toString() + "+" + map.get("TASKNAME").toString();
+            resp.saveCheckEj(new SnowflakeIdWorker(10, 12).nextId(),taskid,2,11,userid,map.get("TDYW_ORG").toString(),map.get("TASKNAME").toString());
+            String key = "ONE+" + taskid + "+2+11+" + userid + "+" + map.get("TDYW_ORG").toString() + "+" + map.get("TASKNAME").toString();
 
             redisService.setex(key);
         } catch (Exception e) {
