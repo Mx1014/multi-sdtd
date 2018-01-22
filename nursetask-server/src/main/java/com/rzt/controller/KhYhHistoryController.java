@@ -10,6 +10,7 @@ import com.rzt.entity.KhYhHistory;
 import com.rzt.entity.XsSbYh;
 import com.rzt.service.KhYhHistoryService;
 import com.rzt.util.WebApiResponse;
+import com.sun.xml.internal.bind.v2.model.core.ID;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -75,8 +76,24 @@ public class KhYhHistoryController extends
 	}
 
 	@ApiOperation(value = "修改隐患信息",notes = "修改隐患信息")
-	@GetMapping("updateYhHistory")
-	public WebApiResponse updateYhHistory(KhYhHistory yh){
-		return service.updateYhHistory(yh);
+	@PatchMapping("updateYhHistory")
+	public WebApiResponse updateYhHistory(KhYhHistory yh,String startTowerName, String endTowerName){
+		return service.updateYhHistory(yh,startTowerName,endTowerName);
 	}
+
+	@ApiOperation(value = "隐患重新定级",notes = "隐患重新定级")
+	@PatchMapping("updateYhjb")
+	public WebApiResponse updateYhjb(String yhjb){
+     /* MultipartFile file */
+		return service.updateYhjb(yhjb);
+	}
+
+	@ApiOperation(value = "区镇村三级联动",notes = "区镇村三级联动")
+	@GetMapping("lineArea")
+	public WebApiResponse lineArea(Integer id){
+     /* MultipartFile file */
+		return service.lineArea(id);
+
+	}
+
 }
