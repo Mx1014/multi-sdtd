@@ -33,8 +33,9 @@ public class ProTZListener  implements TaskListener {
         }*/
         //添加隐患台账
         if(null != YHID && !"".equals(YHID)){
+
             //变更看护任务和生成看护任务为一个接口
-            nurseTaskService.saveLsCycle(YHID);
+            //nurseTaskService.saveLsCycle(YHID);
             //添加隐患台账
             System.out.println("添加隐患台账"+YHID);
         }

@@ -45,6 +45,9 @@ public class XsTaskController extends
         return service.getXsTaskAll(page,size,taskType,userId);
     }
 
+
+
+
     /**
      * 根据当前用户权限获取当前的刷新周期
      * @param userId

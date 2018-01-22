@@ -115,7 +115,7 @@ public class PictureService extends CurdService<CheckResult, CheckResultReposito
              }
              if("2".equals(taskType)){//看护
 
-                 String sql = "SELECT p.ID,FILE_PATH,p.CREATE_TIME,p.PROCESS_NAME,y.LINE_NAME as OPERATE_NAME,k.TASK_NAME " +
+                 String sql = "SELECT p.ID,FILE_PATH,p.CREATE_TIME,p.PROCESS_NAME,y.LINE_NAME as OPERATE_NAME,k.TASK_NAME  " +
                          " FROM KH_TASK k LEFT JOIN PICTURE_KH p ON k.ID = p.TASK_ID LEFT JOIN  KH_YH_HISTORY y ON  k.ID = y.TASK_ID" +
                          "  WHERE k.ID = ?"+list.size()+" AND FILE_TYPE = 1" +
                          "   ORDER BY p.CREATE_TIME DESC";
@@ -318,7 +318,7 @@ public class PictureService extends CurdService<CheckResult, CheckResultReposito
      * @param id  流程id
      * @return
      */
-    public WebApiResponse findProByproId(String id,String taskType) {
+    public WebApiResponse findProByproId(String id,String taskType,String proId,String dtId) {
 
         ArrayList<String> list = new ArrayList<>();
         List<Map<String, Object>> maps = null;
@@ -329,16 +329,30 @@ public class PictureService extends CurdService<CheckResult, CheckResultReposito
         if(null == taskType || "".equals(taskType)){
             return WebApiResponse.erro("参数错误");
         }
+        if(null == dtId || "".equals(dtId)){
+            return WebApiResponse.erro("参数错误");
+        }
 
         list.add(id);
         try {
             //巡视
             if("1".equals(taskType)){
-                 sql  = "SELECT * " +
-                        "  FROM PICTURE_TOUR WHERE   FILE_TYPE = 1  AND PROCESS_ID = ?"+list.size();
+                 sql  = " SELECT * FROM PICTURE_TOUR p WHERE p.FILE_TYPE = 1 AND p.PROCESS_ID =  "+dtId;
+                List<Map<String, Object>> maps1 = this.execSql(sql, null);
+                return WebApiResponse.success(maps1);
+            }
+            if("2".equals(taskType)){//看护
+
+                if(null == proId || "".equals(proId)){
+                    return WebApiResponse.erro("参数错误");
+                }
+                list.add(proId);
+                sql = "SELECT *" +
+                        "   FROM PICTURE_KH WHERE TASK_ID = ?1 AND FILE_TYPE = 1 and PROCESS_ID = ?2";
             }
 
             maps = this.execSql(sql, list.toArray());
+            LOGGER.info("流程图片查询成功");
         }catch (Exception e){
         LOGGER.error("参数错误"+e.getMessage());
         return WebApiResponse.erro("参数错误"+e.getMessage());
@@ -349,7 +363,7 @@ public class PictureService extends CurdService<CheckResult, CheckResultReposito
     }
 
 
-    public WebApiResponse findPicByTaskId(Long id ,String taskType){
+    public WebApiResponse findPicByTaskId(Long id ,String taskType ){
 
         ArrayList<Object> list = new ArrayList<>();
         List<Map<String, Object>> maps = null;

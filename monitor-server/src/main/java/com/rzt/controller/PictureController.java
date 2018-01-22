@@ -64,17 +64,19 @@ public class PictureController extends
     /**
      * 根据当前流程id  获取当前流程的照片
      * @param id  流程id
+     * @param proId  看护任务时的流程id
      * @return
      */
     @GetMapping("/findProByproId")
-    public WebApiResponse findProByproId(String id,String taskType){
-       return service.findProByproId(id,taskType);
+    public WebApiResponse findProByproId(String id,String taskType,String proId,String dtId){
+       return service.findProByproId(id,taskType,proId,dtId);
     }
 
     /**
      * 获取当前隐患的图片
      * @param id
      * @param taskType
+
      * @return
      */
     @GetMapping("/findPicByTaskId")

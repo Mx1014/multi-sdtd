@@ -52,7 +52,6 @@ public class ProController {
         map.put("info",info);
         map.put("khid",khid);
         ProcessInstance start = proService.start(key, map);
-        System.out.println(start);
         return WebApiResponse.success("");
     }
 
@@ -125,10 +124,11 @@ public class ProController {
           //测试稽查  sdid 代表属地监控中心   jkid 代表公司监控中心
           if("sdid".equals(userName) || "jkid".equals(userName)){
             // 当dept.equals(TDYW_ORG)?"2":"1"   等于时代表是第二次派出稽查   不等于是派出第一次稽查
-              nurseTaskService.addCheckLiveTasksb(id,
+              /*nurseTaskService.addCheckLiveTasksb(id,
                       "0",LINE_NAME+"隐患点",YHID,YWORG_ID,
-                      TDYW_ORG,dept.equals(TDYW_ORG)?"2":"1",dept);
-              //proService.complete(id,map);
+                      TDYW_ORG,dept.equals(TDYW_ORG)?"2":"1",dept);*/
+              //  测试模拟稽查   默认为true
+              proService.complete(id,map);
           }
 
           if(null == id || "".equals(id)){
@@ -206,10 +206,12 @@ public class ProController {
 
 
     @GetMapping("/history")
-    public WebApiResponse gethi(String assignee,Integer page,Integer size){
-        String roleIdByUserId = redisUtil.findRoleIdByUserId(assignee);
-        System.out.println(roleIdByUserId+"====================用户id换 节点名");
-        return proService.historyActInstanceList(assignee, page, size);
+    public WebApiResponse gethi(String userId,Integer page,Integer size){
+        userId = redisUtil.findRoleIdByUserId(userId);
+        if(null == userId || "".equals(userId)){
+            return WebApiResponse.erro("当前用户没有权限查看记录");
+        }
+        return proService.historyActInstanceList(userId, page, size);
     }
 
 
@@ -228,7 +230,6 @@ public class ProController {
     @GetMapping("/perfectYH")
     @Transactional
     public WebApiResponse perfectYH(String YHID,String YHMS,String YHTDQX,String YHTDXZJD,String YHTDC,String GKCS,String XCP){
-        System.out.println(GKCS);
         try {
             yHrepository.perfectYH(YHID,YHMS,YHTDQX,YHTDXZJD,YHTDC,GKCS,XCP);
             return WebApiResponse.success("");

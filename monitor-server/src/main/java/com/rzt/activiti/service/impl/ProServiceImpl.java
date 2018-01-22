@@ -129,6 +129,7 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
      */
     @Override
     public ProcessInstance start(String key, Map map) {
+        LOGGER.info(key+"--流程开始了，携带参数："+map);
         ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(key, map);
         return processInstance;
 
@@ -153,11 +154,8 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
      */
     @Override
     public void complete(String taskId, Map<String, Object> map) {
-        System.out.println(taskId);
-        System.out.println(map);
-
+        LOGGER.info(taskId+"节点进入了下一个节点，携带参数："+map);
         taskService.complete(taskId,map);
-
     }
 
     /**
@@ -206,16 +204,17 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
         ArrayList<String> strings = new ArrayList<>();
         Page<Map<String, Object>> maps = null;
         strings.add(assignee);
+
         String sql = "SELECT y.ID,y.SECTION,y.CREATE_TIME,y.TDYW_ORG,y.TDWX_ORG,y.YHLB,y.YHMS,y.YHJB,y.YHJB1,h.TEXT_,t.ID_ as actaskid,t.PROC_INST_ID_,t.ASSIGNEE_," +
               "  (SELECT DISTINCT l.LINE_NAME1 FROM CM_LINE_SECTION l WHERE l.LINE_ID = y.LINE_ID) as linename1,t.END_TIME_,t.START_TIME_," +
               "  (SELECT DISTINCT  v.TEXT_ FROM ACT_HI_VARINST v WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'info') as info," +
               "  (SELECT DISTINCT  v.TEXT_ FROM ACT_HI_VARINST v WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'khid') as khid," +
-              "  (SELECT DISTINCT  u.REALNAME FROM ACT_HI_VARINST v LEFT JOIN RZTSYSUSER u ON u.ID = v.TEXT_ WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'userName' ) as squsername," +
               "  (SELECT DISTINCT  u.REALNAME FROM RZTSYSUSER u WHERE u.ID = y.TBRID) as tbrName," +
               "  (SELECT DISTINCT  u.PHONE FROM RZTSYSUSER u WHERE u.ID = y.TBRID) as phone" +
               "  FROM ACT_HI_ACTINST t LEFT JOIN ACT_RU_VARIABLE h ON t.PROC_INST_ID_ = h.PROC_INST_ID_" +
               "  LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_" +
-              "  WHERE h.NAME_ = 'YHID' AND t.PROC_DEF_ID_ LIKE 'wtsh%' AND ASSIGNEE_ = ?"+strings.size()+" AND t.END_TIME_ IS NOT NULL ";
+              "  WHERE h.NAME_ = 'YHID' AND t.PROC_DEF_ID_ LIKE 'wtsh%' AND ASSIGNEE_ = ?"+strings.size()+" AND y.ID IS NOT NULL";
+         //sql += "  AND t.END_TIME_ IS NOT NULL ";    // 有结束时间代表已经经过当前节点     没有代表还停留在当前节点
         try {
             Pageable pageable = new PageRequest(page, size, null);
              maps = this.execSqlPage(pageable, sql, strings);
