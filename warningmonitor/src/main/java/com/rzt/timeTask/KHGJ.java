@@ -39,10 +39,11 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
         List<Map<String, Object>> list = this.execSql(sql);
         for (int i = 0; i < list.size(); i++) {
             Map<String, Object> map = list.get(i);
-            if(resp!=null)
-                resp.saveCheckEj(new SnowflakeIdWorker(0,0).nextId(),Long.valueOf(map.get("ID").toString()),1,1,map.get("CM_USER_ID").toString(),map.get("TD_ORG").toString(),map.get("TASK_NAME").toString());
+            //if(resp!=null)
+            resp.saveCheckEj(new SnowflakeIdWorker(0,0).nextId(),Long.valueOf(map.get("ID").toString()),1,1,map.get("CM_USER_ID").toString(),map.get("TD_ORG").toString(),map.get("TASK_NAME").toString());
             String key = "ONE+"+map.get("ID").toString()+"+1+1+"+map.get("CM_USER_ID")+"+"+map.get("TD_ORG")+"+"+map.get("TASK_NAME");
             redisService.setex(key);
+
         }
     }
 

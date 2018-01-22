@@ -77,6 +77,17 @@ public class Monitorcheckej implements Serializable{
 	@Column(name = "CHECK_DEPTID")
 	private String checkDeptId;
 
+	@Column(name = "ONLINE_TIME")
+	private Date onLineTime;
+
+	public Date getOnLineTime() {
+		return onLineTime;
+	}
+
+	public void setOnLineTime(Date onLineTime) {
+		this.onLineTime = onLineTime;
+	}
+
 	public String getCheckUserId() {
 		return checkUserId;
 	}

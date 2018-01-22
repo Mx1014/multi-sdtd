@@ -105,6 +105,8 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
             s += " AND  CREATE_TIME BETWEEN to_date( ?" + list.size() + ",'yyyy-MM-dd hh24:mi:ss') ";
             list.add(endDate);
             s += "  AND to_date( ?" + list.size() + ",'yyyy-MM-dd hh24:mi:ss') ";
+        }else{
+            s+=" and trunc(CREATE_TIME) = trunc(sysdate) ";
         }
         if (!StringUtils.isEmpty(warningType)) {
             list.add(warningType);
@@ -116,13 +118,23 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
         }
 
         Page<Map<String, Object>> pageResult = null;
+        String sql ="";
+        //巡视的sql
+        if(type==1){
+            sql = "SELECT DISTINCT j.TASK_ID, j.CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,xs.PLAN_START_TIME FROM MONITOR_CHECK_YJ j " +
+                    "  LEFT JOIN XS_ZC_TASK xs ON j.TASK_ID=xs.ID where j.STATUS=0 and j.TASK_TYPE=" + type;
+        }else if(type==2){
+            //看护的sql
+            sql = "SELECT DISTINCT j.TASK_ID, j.CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,kh.PLAN_START_TIME FROM MONITOR_CHECK_YJ j " +
+                    "  LEFT JOIN KH_TASK kh ON j.TASK_ID=kh.ID where j.STATUS=0 and j.TASK_TYPE=" + type;
+
+        }
         if ("0".equals(deptId)) {
-            String sql = "SELECT DISTINCT TASK_ID, CREATE_TIME,TASK_NAME,TASK_TYPE,USER_ID,DEPTID,WARNING_TYPE FROM MONITOR_CHECK_YJ where STATUS=0 and trunc(CREATE_TIME) = trunc(sysdate) and TASK_TYPE=" + type;
             //查询所有
             String sql1 = "SELECT * FROM ( " + sql + " ) where 1=1 " + s;
             pageResult = execSqlPage(pageable, sql1, list.toArray());
         } else {
-            String sql = "SELECT DISTINCT TASK_ID, CREATE_TIME,TASK_NAME,TASK_TYPE,USER_ID,DEPTID,WARNING_TYPE FROM MONITOR_CHECK_EJ where STATUS=0 and trunc(CREATE_TIME) = trunc(sysdate) and TASK_TYPE=" + type;
+            //String sql = "SELECT DISTINCT TASK_ID, CREATE_TIME,TASK_NAME,TASK_TYPE,USER_ID,DEPTID,WARNING_TYPE FROM MONITOR_CHECK_EJ where STATUS=0 and TASK_TYPE=" + type;
             //查询该deptId下的
             list.add(deptId);
             s += " AND DEPTID = ?" + list.size();
@@ -170,6 +182,8 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
             s += " AND  CREATE_TIME BETWEEN to_date( ?" + list.size() + ",'yyyy-MM-dd hh24:mi:ss') ";
             list.add(endDate);
             s += "  AND to_date( ?" + list.size() + ",'yyyy-MM-dd hh24:mi:ss') ";
+        }else{
+            s+=" and trunc(CREATE_TIME) = trunc(sysdate) ";
         }
         if (!StringUtils.isEmpty(warningType)) {
             list.add(warningType);
@@ -180,8 +194,19 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
             s += " AND DEPTID = ?" + list.size();
         }
         Page<Map<String, Object>> pageResult=null;
+        String sql="";
+        //巡视的sql
+        if(type==1){
+            sql = "SELECT DISTINCT j.TASK_ID, j.CREATE_TIME_Z as CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,xs.PLAN_START_TIME FROM MONITOR_CHECK_YJ j " +
+                    "  LEFT JOIN XS_ZC_TASK xs ON j.TASK_ID=xs.ID where j.STATUS=1 and j.TASK_TYPE=" + type;
+        }else if(type==2){
+            //看护的sql
+            sql = "SELECT DISTINCT j.TASK_ID, j.CREATE_TIME_Z as CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,kh.PLAN_START_TIME FROM MONITOR_CHECK_YJ j " +
+                    "  LEFT JOIN KH_TASK kh ON j.TASK_ID=kh.ID where j.STATUS=1 and j.TASK_TYPE=" + type;
+
+        }
         if ("0".equals(deptId)) {
-            String sql = "SELECT DISTINCT TASK_ID, CREATE_TIME_Z as CREATE_TIME,TASK_NAME,TASK_TYPE,USER_ID,DEPTID,WARNING_TYPE FROM MONITOR_CHECK_YJ where STATUS=1 and trunc(CREATE_TIME) = trunc(sysdate) and TASK_TYPE=" + type;
+           // String sql = "SELECT DISTINCT TASK_ID, CREATE_TIME_Z as CREATE_TIME,TASK_NAME,TASK_TYPE,USER_ID,DEPTID,WARNING_TYPE FROM MONITOR_CHECK_YJ where STATUS=1 and TASK_TYPE=" + type;
             //查询所有
             String sql1 = "SELECT * FROM ( " + sql + " ) where 1=1 " + s;
             /*Page<Map<String, Object>> maps = this.execSqlPage(pageable, sql1, list.toArray());
@@ -189,14 +214,11 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
             return maps;*/
             pageResult = this.execSqlPage(pageable, sql1, list.toArray());
         } else {
-            String sql = "SELECT DISTINCT TASK_ID, CREATE_TIME_Z  as CREATE_TIME,TASK_NAME,TASK_TYPE,USER_ID,DEPTID,WARNING_TYPE FROM MONITOR_CHECK_EJ where STATUS=1 and trunc(CREATE_TIME) = trunc(sysdate) and TASK_TYPE=" + type;
+            //String sql = "SELECT DISTINCT TASK_ID, CREATE_TIME_Z  as CREATE_TIME,TASK_NAME,TASK_TYPE,USER_ID,DEPTID,WARNING_TYPE FROM MONITOR_CHECK_EJ where STATUS=1 and TASK_TYPE=" + type;
             //查询该deptId下的
             list.add(deptId);
             s += " AND DEPTID = ?" + list.size();
             String sql1 = "SELECT * FROM ( " + sql + " ) where 1=1 " + s;
-            /*Page<Map<String, Object>> maps = execSqlPage(pageable, sql1, list.toArray());
-            redisQuery(maps);
-            return maps;*/
             pageResult = this.execSqlPage(pageable, sql1, list.toArray());
         }
         Iterator<Map<String, Object>> iterator = pageResult.iterator();
@@ -264,6 +286,8 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
             s += " AND  CREATE_TIME BETWEEN to_date( ?" + list.size() + ",'yyyy-MM-dd hh24:mi:ss') ";
             list.add(endDate);
             s += "  AND to_date( ?" + list.size() + ",'yyyy-MM-dd hh24:mi:ss') ";
+        }else{
+            s+=" and trunc(CREATE_TIME) = trunc(sysdate) ";
         }
         if (!StringUtils.isEmpty(warningType)) {
             list.add(warningType);
@@ -275,13 +299,24 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
         }
 
         Page<Map<String, Object>> pageResult = null;
+        String sql="";
+        //巡视的sql
+        if(type==1){
+            sql = "SELECT DISTINCT j.TASK_ID, j.CREATE_TIME_C as CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,xs.PLAN_START_TIME,j.CHECK_USER_ID,j.CHECK_DEPTID FROM MONITOR_CHECK_YJ j " +
+                    "  LEFT JOIN XS_ZC_TASK xs ON j.TASK_ID=xs.ID where j.STATUS=2 and j.TASK_TYPE=" + type;
+        }else if(type==2){
+            //看护的sql
+            sql = "SELECT DISTINCT j.TASK_ID, j.CREATE_TIME_C as CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,kh.PLAN_START_TIME,j.CHECK_USER_ID,j.CHECK_DEPTID FROM MONITOR_CHECK_YJ j " +
+                    "  LEFT JOIN KH_TASK kh ON j.TASK_ID=kh.ID where j.STATUS=2 and j.TASK_TYPE=" + type;
+
+        }
         if ("0".equals(deptId)) {
-            String sql = "SELECT DISTINCT TASK_ID, CREATE_TIME_C as CREATE_TIME,TASK_NAME,TASK_TYPE,USER_ID,DEPTID,WARNING_TYPE,CHECK_USER_ID,CHECK_DEPTID FROM MONITOR_CHECK_YJ where STATUS=2 and trunc(CREATE_TIME) = trunc(sysdate) and TASK_TYPE=" + type;
+           // String sql = "SELECT DISTINCT TASK_ID, CREATE_TIME_C as CREATE_TIME,TASK_NAME,TASK_TYPE,USER_ID,DEPTID,WARNING_TYPE,CHECK_USER_ID,CHECK_DEPTID FROM MONITOR_CHECK_YJ where STATUS=2 and TASK_TYPE=" + type;
             //查询所有
             String sql1 = "SELECT * FROM ( " + sql + " ) where 1=1 " + s;
             pageResult = execSqlPage(pageable, sql1, list.toArray());
         } else {
-            String sql = "SELECT DISTINCT TASK_ID, CREATE_TIME_C as CREATE_TIME,TASK_NAME,TASK_TYPE,USER_ID,DEPTID,WARNING_TYPE,CHECK_USER_ID,CHECK_DEPTID FROM MONITOR_CHECK_EJ where STATUS=2 and trunc(CREATE_TIME) = trunc(sysdate) and TASK_TYPE=" + type;
+           // String sql = "SELECT DISTINCT TASK_ID, CREATE_TIME_C as CREATE_TIME,TASK_NAME,TASK_TYPE,USER_ID,DEPTID,WARNING_TYPE,CHECK_USER_ID,CHECK_DEPTID FROM MONITOR_CHECK_EJ where STATUS=2 and TASK_TYPE=" + type;
             //查询该deptId下的
             list.add(deptId);
             s += " AND DEPTID = ?" + list.size();
@@ -346,9 +381,9 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
         //0表示是一级单位
         try {
             if ("0".equals(deptId)) {
-                return WebApiResponse.success(resp.updateYJ(taskId, type, warningType, checkInfo, checkAppInfo));
+                return WebApiResponse.success(resp.updateYJ(taskId, type, warningType, checkInfo, checkAppInfo,createTime));
             } else {
-                return WebApiResponse.success(resp.updateEJ(taskId, type, warningType, checkInfo, checkAppInfo));
+                return WebApiResponse.success(resp.updateEJ(taskId, type, warningType, checkInfo, checkAppInfo,createTime));
             }
         } catch (Exception e) {
             return WebApiResponse.erro("添加失败" + e.getMessage());
@@ -366,9 +401,9 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
         //0表示是一级单位
         try {
             if ("0".equals(deptId)) {
-                return WebApiResponse.success(resp.updateYJC(taskId, type, warningType, checkInfo, userId));
+                return WebApiResponse.success(resp.updateYJC(taskId, type, warningType, checkInfo, userId,createTime));
             } else {
-                return WebApiResponse.success(resp.updateEJC(taskId, type, warningType, checkInfo, userId));
+                return WebApiResponse.success(resp.updateEJC(taskId, type, warningType, checkInfo, userId,createTime));
             }
         } catch (Exception e) {
             return WebApiResponse.erro("添加失败" + e.getMessage());

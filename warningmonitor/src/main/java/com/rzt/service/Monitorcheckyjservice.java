@@ -73,7 +73,7 @@ public class Monitorcheckyjservice extends CurdService<Monitorcheckyj, Monitorch
         Object userInformation = hash.get("UserInformation", userId);
         JSONObject jsonObject = JSONObject.parseObject(userInformation.toString());
         if(warningType==7){
-            String sql1 = "SELECT nvl(REAL_END_TIME,PLAN_END_TIME) AS REAL_END_TIME FROM KH_TASK WHERE USER_ID=?1 AND ID=?2 ";
+            String sql1 = "SELECT nvl(REAL_END_TIME,sysdate) AS REAL_END_TIME FROM KH_TASK WHERE USER_ID=?1 AND ID=?2 ";
             List<Map<String, Object>> maps1 = execSql(sql1, userId, taskId);
             Date endTime = new Date();
             if(maps1.size()>0){
@@ -190,19 +190,19 @@ public class Monitorcheckyjservice extends CurdService<Monitorcheckyj, Monitorch
                 sumMap.put("YCL",0);
                 //添加未处理
                 for(Map<String,Object> m1:maps){
-                    if(id.equals(m1.get("CLASSNAME").toString())){
+                    if(m1.get("CLASSNAME")!=null && id.equals(m1.get("CLASSNAME").toString())){
                         sumMap.put("WCL",m1.get("SUM"));
                     }
                 }
                 //添加处理中
                 for(Map<String,Object> m1:maps1){
-                    if(id.equals(m1.get("CLASSNAME").toString())){
+                    if(m1.get("CLASSNAME")!=null && id.equals(m1.get("CLASSNAME").toString())){
                         sumMap.put("CLZ",m1.get("SUM"));
                     }
                 }
                 //添加已处理
                 for(Map<String,Object> m1:maps2){
-                    if(id.equals(m1.get("CLASSNAME").toString())){
+                    if(m1.get("CLASSNAME")!=null && id.equals(m1.get("CLASSNAME").toString())){
                         sumMap.put("YCL",m1.get("SUM"));
                     }
                 }
@@ -222,51 +222,103 @@ public class Monitorcheckyjservice extends CurdService<Monitorcheckyj, Monitorch
      */
     public Object totalSumInfo(String userId, Integer type) {
         String deptID = getDeptID(userId);
-        if(!"0".equals(deptID)){
+        if("-1".equals(deptID)){
             return "该用户无此权限";
         }
         List<Map<String, Object>> result = new ArrayList<>();
-        //查询未出理
-        String sql1 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =0 GROUP BY DEPTID ";
-        //查询处理中
-        String sql2 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =1 GROUP BY DEPTID  ";
-        //查询已处理
-        String sql3 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =2 GROUP BY DEPTID  ";
-        List<Map<String, Object>> maps = execSql(sql1);
-        List<Map<String, Object>> maps1 = execSql(sql2);
-        List<Map<String, Object>> maps2 = execSql(sql3);
-        String deptnameSql = " SELECT t.ID,t.DEPTNAME FROM RZTSYSDEPARTMENT t WHERE t.DEPTSORT IS NOT NULL ORDER BY t.DEPTSORT ";
-        List<Map<String, Object>> dept = execSql(deptnameSql);
+        if("0".equals(deptID)){
+            //查询未出理
+            String sql1 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =0 GROUP BY DEPTID ";
+            //查询处理中
+            String sql2 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =1 GROUP BY DEPTID  ";
+            //查询已处理
+            String sql3 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =2 GROUP BY DEPTID  ";
+            List<Map<String, Object>> maps = execSql(sql1);
+            List<Map<String, Object>> maps1 = execSql(sql2);
+            List<Map<String, Object>> maps2 = execSql(sql3);
+            String deptnameSql = " SELECT t.ID,t.DEPTNAME FROM RZTSYSDEPARTMENT t WHERE t.DEPTSORT IS NOT NULL ORDER BY t.DEPTSORT ";
+            List<Map<String, Object>> dept = execSql(deptnameSql);
 
-        for (Map<String,Object> map:dept){
-            Map<String,Object> sumMap = new HashMap<String,Object>();
-            String id = (String) map.get("ID");
-            String deptName = (String) map.get("DEPTNAME");
-            sumMap.put("ID",id);
-            sumMap.put("DEPTNAME",deptName);
-            sumMap.put("WCL",0);
-            sumMap.put("CLZ",0);
-            sumMap.put("YCL",0);
+            for (Map<String,Object> map:dept){
+                Map<String,Object> sumMap = new HashMap<String,Object>();
+                String id = (String) map.get("ID");
+                String deptName = (String) map.get("DEPTNAME");
+                sumMap.put("ID",id);
+                sumMap.put("DEPTNAME",deptName);
+                sumMap.put("WCL",0);
+                sumMap.put("CLZ",0);
+                sumMap.put("YCL",0);
 
-            //添加未处理
-            for(Map<String,Object> m1:maps){
-                if(id.equals(m1.get("DEPTID").toString())){
-                    sumMap.put("WCL",m1.get("SUM"));
+                //添加未处理
+                for(Map<String,Object> m1:maps){
+                    if(id.equals(m1.get("DEPTID").toString())){
+                        sumMap.put("WCL",m1.get("SUM"));
+                    }
                 }
-            }
-            //添加处理中
-            for(Map<String,Object> m1:maps1){
-                if(id.equals(m1.get("DEPTID").toString())){
-                    sumMap.put("CLZ",m1.get("SUM"));
+                //添加处理中
+                for(Map<String,Object> m1:maps1){
+                    if(id.equals(m1.get("DEPTID").toString())){
+                        sumMap.put("CLZ",m1.get("SUM"));
+                    }
                 }
-            }
-            //添加已处理
-            for(Map<String,Object> m1:maps2){
-                if(id.equals(m1.get("DEPTID").toString())){
-                    sumMap.put("YCL",m1.get("SUM"));
+                //添加已处理
+                for(Map<String,Object> m1:maps2){
+                    if(id.equals(m1.get("DEPTID").toString())){
+                        sumMap.put("YCL",m1.get("SUM"));
+                    }
                 }
+                result.add(sumMap);
             }
-            result.add(sumMap);
+
+        }else{
+            String sql = "SELECT count(1) AS sum,u.CLASSNAME FROM MONITOR_CHECK_EJ ej LEFT JOIN RZTSYSUSER u ON ej.USER_ID=u.ID  " +
+                    "WHERE trunc(ej.CREATE_TIME)=trunc(sysdate) AND ej.STATUS =0 AND ej.DEPTID=?1  " +
+                    "GROUP BY u.CLASSNAME";
+            String sql2 = "SELECT count(1) AS sum,u.CLASSNAME FROM MONITOR_CHECK_EJ ej LEFT JOIN RZTSYSUSER u ON ej.USER_ID=u.ID  " +
+                    "  WHERE  trunc(ej.CREATE_TIME)=trunc(sysdate) AND ej.STATUS =1 AND ej.DEPTID=?1 " +
+                    " GROUP BY u.CLASSNAME";
+            String sql3 = "SELECT count(1) AS sum,u.CLASSNAME FROM MONITOR_CHECK_EJ ej LEFT JOIN RZTSYSUSER u ON ej.USER_ID=u.ID  " +
+                    "  WHERE trunc(ej.CREATE_TIME)=trunc(sysdate) AND ej.STATUS =2 AND ej.DEPTID=?1 " +
+                    " GROUP BY u.CLASSNAME";
+
+            List<Map<String, Object>> maps = execSql(sql, deptID);
+            List<Map<String, Object>> maps1 = execSql(sql2, deptID);
+            List<Map<String, Object>> maps2 = execSql(sql3, deptID);
+
+            String sqll = "SELECT ID,  DEPTNAME FROM (SELECT ID, DEPTNAME, LASTNODE  FROM RZTSYSDEPARTMENT  " +
+                    "  START WITH ID = ?1 CONNECT BY PRIOR ID = DEPTPID) WHERE LASTNODE = 0";
+            List<Map<String, Object>> maps3 = execSql(sqll, deptID);
+            for (Map<String,Object> map:maps3){
+                Map<String,Object> sumMap = new HashMap<String,Object>();
+                String id = (String) map.get("ID");
+                String deptName = (String) map.get("DEPTNAME");
+                sumMap.put("ID",id);
+                sumMap.put("DEPTNAME",deptName);
+                sumMap.put("WCL",0);
+                sumMap.put("CLZ",0);
+                sumMap.put("YCL",0);
+                //添加未处理
+                for(Map<String,Object> m1:maps){
+
+                    if(m1.get("CLASSNAME")!=null && id.equals(m1.get("CLASSNAME").toString())){
+                        sumMap.put("WCL",m1.get("SUM"));
+                    }
+                }
+                //添加处理中
+                for(Map<String,Object> m1:maps1){
+                    if(m1.get("CLASSNAME")!=null && id.equals(m1.get("CLASSNAME").toString())){
+                        sumMap.put("CLZ",m1.get("SUM"));
+                    }
+                }
+                //添加已处理
+                for(Map<String,Object> m1:maps2){
+                    if(m1.get("CLASSNAME")!=null && id.equals(m1.get("CLASSNAME").toString())){
+                        sumMap.put("YCL",m1.get("SUM"));
+                    }
+                }
+                result.add(sumMap);
+
+            }
         }
         return result;
 
@@ -314,8 +366,6 @@ public class Monitorcheckyjservice extends CurdService<Monitorcheckyj, Monitorch
                 });
 
             }
-        }else if(type==2){
-
         }
         return result;
     }
