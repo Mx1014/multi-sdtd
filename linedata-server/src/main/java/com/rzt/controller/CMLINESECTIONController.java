@@ -48,8 +48,8 @@ public class CMLINESECTIONController extends
 
 	@ApiOperation(value = "公共接口--线路下拉框",notes = "根据电压等级、通道单位id获取线路信息")
 	@GetMapping("getLineInfoCommOptions")
-	public WebApiResponse getLineInfoCommOptions(String tdOrg, String kv){
-		return service.getLineInfoCommOptions(tdOrg,kv);
+	public WebApiResponse getLineInfoCommOptions(String tdOrg, String kv,String currentUserId){
+		return service.getLineInfoCommOptions(tdOrg,kv,currentUserId);
 	}
 
 	@ApiOperation(value = "获取通道单位列表",notes = "获取各通道单位列表")
@@ -71,5 +71,22 @@ public class CMLINESECTIONController extends
 		}
 		return result;
 	}
-	
+
+	@ApiOperation(value = "线路区段新增",notes = "线路区段新增")
+	@PostMapping("addLineSection")
+	public Map<String,Object> addLineSection(CMLINESECTION cmlinesection){
+		return service.addLineSection(cmlinesection);
+	}
+	@ApiOperation(value = "线路区段新增后,添加中间表数据",notes = "线路区段新增后,添加中间表数据")
+	@PostMapping("addCmLineTower")
+	public WebApiResponse addCmLineTower(String lineId){
+		service.addCmLineTower(lineId);
+		return WebApiResponse.success("线路添加成功");
+	}
+	@ApiOperation(value = "删除线路区段",notes = "删除线路区段")
+	@GetMapping("delCmLineSection")
+	public WebApiResponse delCmLineSection(String id){
+		service.delCmLineSection(id);
+		return WebApiResponse.success("线路删除成功");
+	}
 }

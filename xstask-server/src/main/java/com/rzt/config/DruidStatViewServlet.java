@@ -10,7 +10,7 @@ import javax.servlet.annotation.WebServlet;
  *
  * @author Administrator
  */
-@WebServlet(urlPatterns = "/druid/*",
+@WebServlet(urlPatterns = "/druid/*,/swagger-ui.html",
         initParams = {
 //                @WebInitParam(name = "allow", value = ""),// IP白名单(没有配置或者为空，则允许所有访问)
 //                @WebInitParam(name = "deny", value = ""),// IP黑名单 (存在共同时，deny优先于allow)

@@ -15,7 +15,7 @@ spring:
         initialSize: 5
         timeBetweenEvictionRunsMillis: 3000
         minEvictableIdleTimeMillis: 300000
-        validationQuery: SELECT 'ZTM' FROM DUAL
+        validationQuery: SELECT 'ZTM''FROM DUAL
         testWhileIdle: true
         testOnBorrow: false
         testOnReturn: false

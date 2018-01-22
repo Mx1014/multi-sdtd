@@ -6,6 +6,7 @@
  */
 package com.rzt.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.rzt.service.CurdService;
 import com.rzt.entity.RztSysDepartment;
 import com.rzt.repository.RztSysDepartmentRepository;
@@ -14,6 +15,9 @@ import com.rzt.utils.DateUtil;
 import com.rzt.utils.DbUtil;
 import com.rzt.utils.PageUtil;
 import com.sun.org.apache.regexp.internal.RE;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +43,10 @@ import java.util.Map;
 public class RztSysDepartmentService extends CurdService<RztSysDepartment, RztSysDepartmentRepository> {
     @PersistenceContext
     private EntityManager entityManager;
+
+    @Autowired
+
+    private RedisTemplate<String, Object> redisTemplate;
 
     //添加子节点
     @Transactional
@@ -84,18 +92,36 @@ public class RztSysDepartmentService extends CurdService<RztSysDepartment, RztSy
     public List<Map<String, Object>> findDeptListByPid(int page, int size, String id) {
         RztSysDepartment rztSysDepartment = this.reposiotry.getOne(id);
         StringBuilder buffer = new StringBuilder();
-        buffer.append("SELECT node.id ,node.deptName ,node.lft,node.rgt,node.deptPid,node.lastnode,node.ORGTYPE  ");
+        buffer.append("SELECT node.id ,node.deptName ,node.lft,node.rgt,node.deptPid,node.lastnode,node.ORGTYPE,node.DEPTSORT  ");
         buffer.append("FROM RztSysDepartment node,RztSysDepartment parent WHERE node.lft BETWEEN parent.lft AND parent.rgt ");
         buffer.append("AND node.lft > " + rztSysDepartment.getLft());
         buffer.append(" AND node.rgt <" + rztSysDepartment.getRgt() + " ");
-        buffer.append("GROUP BY node.id,node.lft,node.deptName,node.rgt,node.deptPid,node.lastnode,node.ORGTYPE ");
-        buffer.append("ORDER BY node.lft");
+        buffer.append("GROUP BY node.id,node.lft,node.deptName,node.rgt,node.deptPid,node.lastnode,node.ORGTYPE,node.DEPTSORT  ");
+        buffer.append("ORDER BY node.DEPTSORT");
         if (size != 0) {
             buffer.append(PageUtil.getLimit(page, size));
         }
 //		Query queryentityManager.createNativeQuery(buffer.toString());
         List<Map<String, Object>> list = DbUtil.list(entityManager, buffer.toString());
         return list;
+    }
+
+    /**
+     * 根据ID查询子父节点
+     *
+     * @return
+     */
+    public List<Map<String, Object>> findDeptListByPidZiFu(String id) {
+        String sql = "   SELECT *" +
+                "  FROM RZTSYSDEPARTMENT" +
+                "  START WITH ID = ?1" +
+                "  CONNECT BY NOCYCLE PRIOR DEPTPID = ID AND DEPTPID!='0'" +
+                "  UNION ALL" +
+                "  SELECT *" +
+                "  FROM RZTSYSDEPARTMENT" +
+                "  START WITH DEPTPID = ?2" +
+                "  CONNECT BY NOCYCLE PRIOR ID = DEPTPID AND DEPTPID!='0' ";
+        return this.execSql(sql, id, id);
     }
 
     //根据父节点id查询所有子节点
@@ -149,15 +175,30 @@ public class RztSysDepartmentService extends CurdService<RztSysDepartment, RztSy
     /**
      * 查询通道运维单位
      *
-     * @return
+     * @returnString userId
      */
     public WebApiResponse queryOrgName() {
+//        HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
+//        JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", userId).toString());
+//        Integer roletype = Integer.valueOf(jsonObject.get("ROLETYPE").toString());
+//        String deptid = String.valueOf(jsonObject.get("DEPTID"));
+//        if (roletype == 0) {
         String sql = "SELECT * FROM RZTSYSDEPARTMENT WHERE DEPTPID='402881e6603a69b801603a6ab1d70000' ";
-        try {
-            return WebApiResponse.success(this.execSql(sql));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return WebApiResponse.erro("数据修改失败");
-        }
+//            try {
+        return WebApiResponse.success(this.execSql(sql));
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//                return WebApiResponse.erro("数据查询失败");
+//            }
+//        } else if (roletype == 1 || roletype == 2) {
+//            String sql = "SELECT * FROM RZTSYSDEPARTMENT WHERE DEPTPID=?1 ";
+//            try {
+//                return WebApiResponse.success(this.execSql(sql, deptid));
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//                return WebApiResponse.erro("数据查询失败");
+//            }
+//        }
+//        return WebApiResponse.erro("");
     }
 }

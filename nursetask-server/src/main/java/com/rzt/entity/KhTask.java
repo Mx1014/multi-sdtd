@@ -82,12 +82,41 @@ public class KhTask implements Serializable{
 	private String wpqrTime;
 	//字段描述: 任务状态 0未开始 1进行中 2已完成
 	@Column(name = "STATUS")
-	private String status;
+	private int status;
+	//字段描述: 未到位原因
+	@Column(name = "REASON")
+	private String reason;
+	//字段描述: 是否到位 0到位 1未到位
+	@Column(name = "IS_DW")
+	private int isdw;
 
 	@Column(name="ZXYS_NUM")
 	private int zxysNum;
+	//字段描述：任务类型
+	@Column(name="TASK_TYPE")
+	private int taskType;
+
+	public int getTaskType() {
+		return taskType;
+	}
+
+	public void setTaskType(int taskType) {
+		this.taskType = taskType;
+	}
+
+	/*//字段描述：逻辑删除（0未删除 1已删除）
+            @Column(name="IS_DELETE")
+            private double isDelete;
+
+            public double getIsDelete() {
+                return isDelete;
+            }
+
+            public void setIsDelete(double isDelete) {
+                this.isDelete = isDelete;
+            }*/
 	public void setId(){
-		this.id =   Long.valueOf(new SnowflakeIdWorker(0,0).nextId());
+		this.id =   Long.valueOf(new SnowflakeIdWorker(1,2).nextId());
 	}
 	@ExcelResources(title="",order=1)
 	public Long getId(){
@@ -222,11 +251,11 @@ public class KhTask implements Serializable{
 		return this.wpqrTime;
 	}
 
-	public void setStatus(String status){
+	public void setStatus(int status){
 		this.status = status;
 	}
 	@ExcelResources(title="任务状态 0未开始 1进行中 2已完成 ",order=20)
-	public String getStatus(){
+	public int getStatus(){
 		return this.status;
 	}
 
@@ -236,5 +265,24 @@ public class KhTask implements Serializable{
 
 	public int getZxysNum() {
 		return zxysNum;
+	}
+
+	public void setZxysNum(int zxysNum) {
+		this.zxysNum = zxysNum;
+	}
+
+	public int getIsdw() {
+		return isdw;
+	}
+
+	public String getReason() {
+		return reason;
+	}
+
+	public void setIsdw(int isdw) {
+		this.isdw = isdw;
+	}
+	public void setReason(String reason) {
+		this.reason = reason;
 	}
 }

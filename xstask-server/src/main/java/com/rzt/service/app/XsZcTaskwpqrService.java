@@ -1,16 +1,25 @@
 package com.rzt.service.app;
 
+import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.app.XsZcTaskwpqr;
+import com.rzt.eureka.WarningmonitorServerService;
 import com.rzt.repository.app.XsZcTaskwpqrRepository;
 import com.rzt.service.CurdService;
+import com.rzt.utils.DateUtil;
 import com.rzt.utils.SnowflakeIdWorker;
+import org.apache.poi.ss.formula.functions.T;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @ProjectName: sdtd2-task
@@ -21,6 +30,10 @@ import java.util.Map;
 @Service
 public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrRepository> {
 
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+    @Autowired
+    WarningmonitorServerService warningmonitorServerService;
     /***
      * @Method updateJdTime
      * @Description
@@ -29,7 +42,8 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
      * @date 2017/12/17 15:18
      * @author nwz
      */
-    public void updateJdTime(Long id, Integer xslx) {
+    @Transactional
+    public void updateJdTime(Long id, Integer xslx,String userId) {
         if (xslx == 0 || xslx == 1) {
             this.reposiotry.bdtxJiedan(id);//更新接单时间
             this.reposiotry.bdtxUpdateTaskStatus(id);//更新任务状态
@@ -38,6 +52,49 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
             this.reposiotry.zcXsJiedan(id);//更新接单时间
             this.reposiotry.zcXsUpdateTaskStatus(id);//更新任务状态
             this.reposiotry.updateXszcTaskZxys(1,id);//更新执行页数
+            //更新redis中的人员 任务的状态
+            updateXsMenInfoInRedis(userId);
+            //remove掉月宁那边的key
+            removeSomeKey(id);
+        }
+    }
+
+    public void removeSomeKey(Long id) {
+        String s = "TWO+" + id + "+1+4*";
+        RedisConnection connection = null;
+        try {
+            connection = redisTemplate.getConnectionFactory().getConnection();
+            connection.select(1);
+            Set<byte[]> keys = connection.keys(s.getBytes());
+            byte[][] ts = keys.toArray(new byte[][]{});
+            if(ts.length > 0) {
+                connection.del(ts);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            connection.close();
+        }
+    }
+
+    public void updateXsMenInfoInRedis(String userId) {
+        ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
+        String key = "xsMenAll:" + DateUtil.dateToString(new Date()).split(" ")[0];
+        Object xsMenAllString = valueOperations.get(key);
+        if (xsMenAllString == null) {
+            return;
+        } else {
+            JSONObject xsMenAll = JSONObject.parseObject(xsMenAllString.toString());
+            String sql = "SELECT cm_user_id,min(stauts) status from XS_ZC_TASK where PLAN_END_TIME >= trunc(sysdate) and  PLAN_START_TIME <= trunc(sysdate+1) and cm_user_id = ? group by cm_user_id";
+            try {
+                Map<String, Object> map = this.execSqlSingleResult(sql,userId);
+                Object status = map.get("STATUS");
+                xsMenAll.put(userId,status);
+                valueOperations.set(key,xsMenAll);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return;
+            }
         }
     }
 
@@ -226,10 +283,17 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
     * @date 2017/12/18 19:08
     * @author nwz
     */
-    public void updateExecDetail(Integer xslx,Integer sfdw, String reason, Long execDetailId,String longtitude,String latitude) {
+    public void updateExecDetail(Integer xslx,Integer sfdw, String reason, Long execDetailId,String longtitude,String latitude,Long taskid,String userid) {
         if(xslx == 0 || xslx == 1) {
             this.reposiotry.updateTxbdExecDetail(sfdw,reason,execDetailId);
         } else {
+            try {
+                if(sfdw == 1) {
+                    warningmonitorServerService.xsTourScope(taskid,userid);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             this.reposiotry.updateZcxsExecDetail(sfdw,reason,execDetailId,longtitude,latitude);
         }
     }
@@ -288,11 +352,13 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
     * @date 2017/12/19 15:03
     * @author nwz
     */
-    public void updateTaskStatus(Integer xslx,Long id) {
+    @Transactional
+    public void updateTaskStatus(Integer xslx,Long id,String userId) {
         if(xslx == 0 || xslx == 1) {
             this.reposiotry.updateTxbdTaskToOff(id);
         } else {
             this.reposiotry.updateZcxsTaskToOff(id);
+            updateXsMenInfoInRedis(userId);
         }
 
 
@@ -302,4 +368,22 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
         long nextId = new SnowflakeIdWorker(18, 21).nextId();
         this.reposiotry.addXsZcTaskLsyh(nextId,id,execId,execDetailId,yhId,yhInfo);
     }
+    /***
+    * @Method insertException
+    * @Description  插入十分钟五基塔的数据
+    * @param [taskId, ycms, ycdata]
+    * @return void
+    * @date 2018/1/17 16:55
+    * @author nwz
+    */
+    public void insertException(Long taskid, String ycms, String ycdata,String userid) {
+        long nextId = new SnowflakeIdWorker(18, 21).nextId();
+        this.reposiotry.insertException(nextId,taskid,ycms,ycdata);
+        try {
+            warningmonitorServerService.takePhoto(taskid,userid);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }

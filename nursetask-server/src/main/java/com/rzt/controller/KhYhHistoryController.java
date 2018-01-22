@@ -5,19 +5,24 @@
  * Copyright 融智通科技(北京)股份有限公司 版权所有    
  */
 package com.rzt.controller;
+import com.alibaba.fastjson.JSONObject;
+import com.netflix.discovery.converters.Auto;
 import com.rzt.entity.KhTask;
 import com.rzt.entity.KhYhHistory;
+import com.rzt.entity.XsSbYh;
 import com.rzt.service.KhYhHistoryService;
 import com.rzt.util.WebApiResponse;
+import com.sun.xml.internal.bind.v2.model.core.ID;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * 类名称：KHYHHISTORYController
@@ -33,10 +38,81 @@ import javax.persistence.PersistenceContext;
 @RequestMapping("kyYhHistory")
 public class KhYhHistoryController extends
 		CurdController<KhYhHistory, KhYhHistoryService> {
+	@Autowired
+	private RedisTemplate<String,Object> redisTemplate;
 
 	@ApiOperation(notes = "施工情况",value = "施工情况")
 	@PostMapping("/saveYh")
-	public WebApiResponse saveYh(KhYhHistory yh,String fxtime,String startTowerName,String endTowerName,String pictureId){
-		return this.service.saveYh(yh,fxtime,startTowerName,endTowerName,pictureId);
+	@ResponseBody
+	public WebApiResponse saveYh(KhYhHistory yh,String startTowerName, String endTowerName, String pictureId){
+		return this.service.saveYh(yh,startTowerName,endTowerName,pictureId);
 	}
+
+	@ApiOperation(notes = "隐患台账保存坐标",value = "隐患台账保存坐标")
+	@PostMapping("/saveCoordinate")
+	@ResponseBody
+	public WebApiResponse saveCoordinate(String yhId,String lat,String lon,String radius){
+		return this.service.saveCoordinate(yhId,lat,lon,radius);
+	}
+
+	@ApiOperation(notes = "地图撒坐标点",value = "地图撒坐标点")
+	@GetMapping("/listCoordinate")
+	@ResponseBody
+	public WebApiResponse listCoordinate(String yhjb,String yhlb){
+		return this.service.listCoordinate(yhjb,yhlb);
+	}
+
+	@ApiOperation(notes = "地图查看隐患信息",value = "地图查看隐患信息")
+	@GetMapping("/listYhById")
+	@ResponseBody
+	public WebApiResponse listYhById(String yhId){
+		return this.service.listYhById(yhId);
+	}
+
+	@ApiOperation(value = "隐患导入接口",notes = "隐患导入接口")
+	@PostMapping("ImportYh")
+	public WebApiResponse ImportYh(){
+/* MultipartFile file */
+		return service.ImportYh();
+	}
+	@ApiOperation(value = "隐患导出接口",notes = "隐患导出接口")
+	@GetMapping("exportYhHistory")
+	public WebApiResponse exportYhHistory(HttpServletResponse response,String userId){
+     /* MultipartFile file */
+		HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
+		JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", userId).toString());
+		return service.exportYhHistory(response,jsonObject,userId);
+	}
+
+	@ApiOperation(value = "修改隐患信息",notes = "修改隐患信息")
+	@PatchMapping("updateYhHistory")
+	public WebApiResponse updateYhHistory(KhYhHistory yh,String startTowerName, String endTowerName){
+		return service.updateYhHistory(yh,startTowerName,endTowerName);
+	}
+
+	@ApiOperation(value = "隐患重新定级",notes = "隐患重新定级")
+	@PatchMapping("updateYhjb")
+	public WebApiResponse updateYhjb(String yhjb){
+		return service.updateYhjb(yhjb);
+	}
+
+	@ApiOperation(value = "区镇村三级联动",notes = "区镇村三级联动")
+	@GetMapping("lineArea")
+	public WebApiResponse lineArea(Integer id){
+     /* MultipartFile file */
+		return service.lineArea(id);
+
+	}
+	@GetMapping("/a123")
+	public void a123(){
+		this.service.find();
+	}
+
+	@ApiOperation(value = "隐患审核通过",notes = "隐患审核通过")
+	@GetMapping("reviewYh")
+	public WebApiResponse reviewYh(long yhId){
+		return this.service.reviewYh(yhId);
+	}
+
+
 }

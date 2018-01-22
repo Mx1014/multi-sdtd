@@ -44,10 +44,10 @@ public class RztSysUserauthService extends CurdService<RztSysUserauth, RztSysUse
 //            flag = "该邮箱已存在";
         int userauth1 = this.reposiotry.VerificationUsername(user.getUsername(), user.getId());
         if (userauth1 != 0)
-            flag = "该账号已存在";
+            flag = "0";
         int userauth2 = this.reposiotry.VerificationPhone(user.getPhone(), user.getId());
         if (userauth2 != 0)
-            flag = "该手机号已存在";
+            flag = "2";
         return flag;
     }
 
@@ -59,6 +59,7 @@ public class RztSysUserauthService extends CurdService<RztSysUserauth, RztSysUse
         userauth.setIdentitytype(user.getUsername());
         userauth.setPassword(password);
         userauth.setUserid(user.getId());
+        userauth.setUserdelete(1);
         this.reposiotry.save(userauth);
         if (!StringUtils.isEmpty(user.getPhone())) {
             RztSysUserauth userauth1 = new RztSysUserauth();
@@ -67,6 +68,7 @@ public class RztSysUserauthService extends CurdService<RztSysUserauth, RztSysUse
             userauth1.setIdentitytype(user.getPhone());
             userauth1.setPassword(password);
             userauth1.setUserid(user.getId());
+            userauth1.setUserdelete(1);
             this.reposiotry.save(userauth1);
         }
         if (!StringUtils.isEmpty(user.getEmail())) {
@@ -76,6 +78,7 @@ public class RztSysUserauthService extends CurdService<RztSysUserauth, RztSysUse
             userauth2.setIdentitytype(user.getEmail());
             userauth2.setPassword(password);
             userauth2.setUserid(user.getId());
+            userauth2.setUserdelete(1);
             this.reposiotry.save(userauth2);
         }
     }

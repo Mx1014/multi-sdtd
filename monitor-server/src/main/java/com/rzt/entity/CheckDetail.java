@@ -84,7 +84,18 @@ public class CheckDetail implements Serializable {
 	public void setQuestionUserId(String questionUserId) {
 		this.questionUserId = questionUserId;
 	}
-	
-	
-	
+
+	@Override
+	public String toString() {
+		return "CheckDetail{" +
+				"id=" + id +
+				", tdOrg='" + tdOrg + '\'' +
+				", checkDetailType=" + checkDetailType +
+				", questionTaskId=" + questionTaskId +
+				", createTime=" + createTime +
+				", checkUser='" + checkUser + '\'' +
+				", checkOrg='" + checkOrg + '\'' +
+				", questionUserId='" + questionUserId + '\'' +
+				'}';
+	}
 }

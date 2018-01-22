@@ -8,6 +8,7 @@ package com.rzt.service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.RztSysUser;
+import com.rzt.eureka.StaffLine;
 import com.rzt.repository.RztSysUserRepository;
 import com.rzt.security.JwtHelper;
 import com.rzt.security.TokenProp;
@@ -25,11 +26,7 @@ import org.springframework.util.StringUtils;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 类名称：RztSysUserService
@@ -50,6 +47,8 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
     private TokenProp tokenProp;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    StaffLine staffLine;
 
     public Page<RztSysUser> findByName(String name, Pageable pageable) {
         if (StringUtils.isEmpty(name))
@@ -60,10 +59,22 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
         }
     }
 
-    public Page<Map<String, Object>> findUserList(Integer page, Integer size, String id, String REALNAME, String COMPANYID, String WORKTYPE) {
+    public Page<Map<String, Object>> findUserList(String userId, Integer page, Integer size, String id, String REALNAME, String COMPANYID, String WORKTYPE) {
+        HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
+        JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", userId).toString());
         ArrayList<String> arrayList = new ArrayList<>();
-        Pageable pageable = new PageRequest(page, size);
         String s = "";
+        if (Integer.parseInt(jsonObject.get("ROLETYPE").toString()) == 1 || Integer.parseInt(jsonObject.get("ROLETYPE").toString()) == 2) {
+            arrayList.add(jsonObject.get("DEPTID").toString());
+            s += " AND DEPTID = ?" + arrayList.size();
+        } else if (Integer.parseInt(jsonObject.get("ROLETYPE").toString()) == 3) {
+            arrayList.add(jsonObject.get("COMPANYID").toString());
+            s += " AND COMPANYID = ?" + arrayList.size();
+        } else if (Integer.parseInt(jsonObject.get("ROLETYPE").toString()) == 4) {
+            arrayList.add(jsonObject.get("GROUPID").toString());
+            s += " AND GROUPID=?" + arrayList.size();
+        }
+        Pageable pageable = new PageRequest(page, size);
         if (!StringUtils.isEmpty(id)) {
             arrayList.add(id);
             s += " AND DEPTID = ?" + arrayList.size();
@@ -97,13 +108,13 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
                 "  U.AVATAR, " +
                 "  y.DEPTNAME, " +
                 "  m.COMPANYNAME , " +
-                "  t.DEPTNAME as classname" +
-                "  FROM rztsysuser u LEFT JOIN rztsysuserrole l ON u.id = l.userId " +
-                "  LEFT JOIN rztsysrole r ON l.roleId = r.id " +
+                "  t.DEPTNAME as classname,u.roleId,u.alleyway,u.COMPANYID,u.CLASSNAME as classid,u.GROUPID " +
+                "  FROM rztsysuser u " +
+                "  LEFT JOIN rztsysrole r ON u.roleId = r.id " +
                 "  LEFT JOIN RZTSYSDEPARTMENT y ON u.DEPTID = y.ID " +
                 "  LEFT JOIN RZTSYSDEPARTMENT t ON u.CLASSNAME = t.ID " +
                 "  LEFT JOIN RZTSYSCOMPANY m ON m.ID = u.COMPANYID " +
-                "WHERE USERDELETE = 1" + s;
+                "WHERE USERDELETE = 1" + s + " order by u.CREATETIME desc ";
         return this.execSqlPage(pageable, sql, arrayList.toArray());
     }
 
@@ -112,14 +123,19 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
      *
      * @return
      */
-    public WebApiResponse userQuertDeptZero() {
-        String sql = " SELECT * FROM RZTSYSDEPARTMENT WHERE ORGTYPE = 0 ";
-        try {
-            return WebApiResponse.success(this.execSql(sql));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return WebApiResponse.erro("erro");
+    public WebApiResponse userQuertDeptZero(String userId) {
+        HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
+        JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", userId).toString());
+        if (Integer.parseInt(jsonObject.get("ROLETYPE").toString()) == 0) {
+            String sql = " SELECT * FROM RZTSYSDEPARTMENT WHERE ORGTYPE = 0 ";
+            try {
+                return WebApiResponse.success(this.execSql(sql));
+            } catch (Exception e) {
+                e.printStackTrace();
+                return WebApiResponse.erro("erro");
+            }
         }
+        return WebApiResponse.success("");
     }
 
     /**
@@ -127,14 +143,19 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
      *
      * @return
      */
-    public WebApiResponse companyPage() {
-        String sql = " SELECT * FROM RZTSYSCOMPANY ";
-        try {
-            return WebApiResponse.success(this.execSql(sql));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return WebApiResponse.erro("erro");
+    public WebApiResponse companyPage(String userId) {
+        HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
+        JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", userId).toString());
+        if (Integer.parseInt(jsonObject.get("ROLETYPE").toString()) == 0) {
+            String sql = " SELECT * FROM RZTSYSCOMPANY ";
+            try {
+                return WebApiResponse.success(this.execSql(sql));
+            } catch (Exception e) {
+                e.printStackTrace();
+                return WebApiResponse.erro("erro");
+            }
         }
+        return WebApiResponse.success("");
     }
 
     public RztSysUser findByUsernameAndDeptid(String username, String deptid) {
@@ -148,8 +169,9 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
      * @return
      */
     @Transactional
-    public int logicUser(String id) {
-        return this.reposiotry.logicUser(id);
+    public void logicUser(String id) {
+        this.reposiotry.logicUsers(id);
+        this.reposiotry.logicUser(id);
     }
 
     /**
@@ -161,27 +183,34 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
      */
     @Transactional
     public WebApiResponse updateUser(String id, RztSysUser user) {
-        String AVATAR = null;
+//        String AVATAR = null;
         if (StringUtils.isEmpty(user.getAvatar())) {
             String sql = " SELECT AVATAR FROM RZTSYSUSER where id = ?1 ";
-            AVATAR = String.valueOf(this.execSql(sql, user.getId()).get(0).get("AVATAR"));
-        } else {
+            user.setAvatar(String.valueOf(this.execSql(sql, user.getId()).get(0).get("AVATAR")));
+        } /*else {
             AVATAR = user.getAvatar();
-        }
-        int age = user.getAge();
-        String certificate = user.getCertificate();
-        String deptid = user.getDeptid();
-        String phone = user.getPhone();
-        String realname = user.getRealname();
-        String serialnumber = user.getSerialnumber();
-        int userType = user.getUserType();
-        String username = user.getUsername();
-        int worktype = user.getWorktype();
-        int workyear = user.getWorkyear();
-        String classname = user.getClassName();
-        String companyid = user.getCompanyid();
+        }*/
         try {
-            this.reposiotry.updateUser(age, certificate, deptid, phone, realname, serialnumber, userType, username, worktype, workyear, AVATAR, classname, companyid ,id);
+            user.setUserdelete(1);
+            this.update(user, id);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+//        int age = user.getAge();
+//        String certificate = user.getCertificate();
+//        String deptid = user.getDeptid();
+//        String phone = user.getPhone();
+//        String realname = user.getRealname();
+//        String serialnumber = user.getSerialnumber();
+//        int userType = user.getUserType();
+//        String username = user.getUsername();
+//        int worktype = user.getWorktype();
+//        int workyear = user.getWorkyear();
+//        String classname = user.getClassName();
+//        String companyid = user.getCompanyid();
+//        String roleid = user.getRoleid();
+//            this.reposiotry.updateUser(age, certificate, deptid, phone, realname, serialnumber, userType, username, worktype, workyear, AVATAR, classname, companyid, roleid, id);
+        try {
             /**
              * 修改Redis人员信息
              */
@@ -192,7 +221,7 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
             return WebApiResponse.success("修改成功");
         } catch (Exception e) {
             e.printStackTrace();
-            return WebApiResponse.success("修改失败");
+            return WebApiResponse.erro("erro");
         }
     }
 
@@ -239,6 +268,7 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
         List list1 = treeOrgRztsysroleList(list, list.get(0).get("ID").toString());
         return list1;
 
+
     }
 
     public List treeOrgRztsysroleList(List<Map<String, Object>> orgList, String parentId) {
@@ -261,12 +291,10 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
      * @param password
      * @param account
      * @param loginType
-     * @param request
      * @return
      */
-    @Transactional
-    public WebApiResponse userLogin(String password, String account, String loginType, HttpServletRequest request) {
-        String auth = "SELECT USERID FROM RZTSYSUSERAUTH WHERE IDENTITYTYPE = ?1 AND PASSWORD =?2 ";
+    public WebApiResponse userLogin(String password, String account, String loginType) {
+        String auth = "SELECT USERID FROM RZTSYSUSERAUTH WHERE IDENTITYTYPE = ?1 AND PASSWORD =?2 and USERDELETE=1 ";
         String user = "SELECT * FROM RZTSYSUSER  WHERE id=?1 AND USERDELETE = 1 AND USERTYPE = ?2 ";
         String userAccout = "SELECT * FROM USERINFO where id=?1";
         String access_token = null;
@@ -275,40 +303,90 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
             if (!StringUtils.isEmpty(stringObjectMap.get("USERID"))) {
                 List<Map<String, Object>> userid = this.execSql(user, String.valueOf(stringObjectMap.get("USERID")), loginType);
                 if (userid.size() == 1) {
-                    this.reposiotry.updateUserLOGINSTATUS(String.valueOf(stringObjectMap.get("USERID")));
-                    List<Map<String, Object>> userid1 = this.execSql(userAccout, String.valueOf(stringObjectMap.get("USERID")));
                     HashOperations hashOperations = redisTemplate.opsForHash();
+                    Object roleid1 = userid.get(0).get("ROLEID");
+                    Object rztsysdata = hashOperations.get("RZTSYSDATA", roleid1);
+                    if (StringUtils.isEmpty(rztsysdata)) {
+                        String sql = " SELECT * FROM  RZTSYSDATA WHERE ROLEID = ?1 ";
+                        Map<String, Object> map2 = this.execSqlSingleResult(sql, roleid1);
+                        hashOperations.put("RZTSYSDATA", roleid1, map2);
+                    }
+                    this.reposiotry.updateUserLOGINSTATUS(String.valueOf(stringObjectMap.get("USERID")));
+                    Map userid1 = this.execSqlSingleResult(userAccout, String.valueOf(stringObjectMap.get("USERID")));
+
                     hashOperations.put("UserInformation", stringObjectMap.get("USERID"), userid1);
-                    Object roleid = userid1.get(0).get("ROLEID");
+                    Object roleid = userid1.get("ROLEID");
                     if (!StringUtils.isEmpty(roleid)) {
                         Object object = hashOperations.get("RZTSYSDATA", roleid);
                         JSONObject jsonObject = JSONObject.parseObject(object.toString());
-                        userid1.get(0).put("ROLETYPE", jsonObject.get("TYPE"));
+                        userid1.put("ROLETYPE", jsonObject.get("TYPE"));
                     }
-                    access_token = JwtHelper.createJWT(userid1.get(0),
+                    access_token = JwtHelper.createJWT(userid1,
                             tokenProp.getExpireTime()).getAccess_token();
-                    hashOperations.put("USERTOKEN", "USER:" + userid1.get(0).get("ID") + "," + userid1.get(0).get("REALNAME"), access_token);
-                    userid1.get(0).put("TOKEN", access_token);
-                    request.getSession().setAttribute("user", userid1);
+                    hashOperations.put("USERTOKEN", "USER:" + userid1.get("ID") + "," + userid1.get("REALNAME"), access_token);
+                    userid1.put("TOKEN", access_token);
+                    Integer typee = Integer.valueOf(userid.get(0).get("WORKTYPE").toString());
+                    String roleid2 = userid1.get("ROLEID").toString();
+                    /**
+                     606DE762BD183D21E0501AAC38EF5184 一级运检部
+                     606DE762BD1A3D21E0501AAC38EF5184 一级反外力中心
+                     606DE762BD213D21E0501AAC38EF5184 二级运检部
+                     606DE762BD233D21E0501AAC38EF5184 二级反外力中心
+                     */
+                    if (Integer.parseInt(loginType) == 1) {
+                        String LOOKTYPE = "0";
+                        if (roleid2.equals("606DE762BD183D21E0501AAC38EF5184")) {
+                            LOOKTYPE = "1_1";
+                        } else if (roleid2.equals("606DE762BD1A3D21E0501AAC38EF5184")) {
+                            LOOKTYPE = "1_2";
+                        } else if (roleid2.equals("606DE762BD213D21E0501AAC38EF5184")) {
+                            LOOKTYPE = "2_1";
+                        } else if (roleid2.equals("606DE762BD233D21E0501AAC38EF5184")) {
+                            LOOKTYPE = "2_2";
+                        }
+                        userid1.put("LOOKTYPE", LOOKTYPE);
+                    }
+                    if (Integer.parseInt(loginType) == 0) {
+                        if (typee == 1) {
+                            typee = 2;
+                        } else if (typee == 2) {
+                            typee = 1;
+                        }
+                        try {
+                            staffLine.KHSX(String.valueOf(userid.get(0).get("ID")), typee);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
                     return WebApiResponse.success(userid1);
                 }
             }
             return WebApiResponse.erro("erro");
         } catch (Exception e) {
+            System.err.println(e.getMessage());
             return WebApiResponse.erro("erro");
         }
     }
 
     @Transactional
-    public WebApiResponse userQuit(String id, HttpServletRequest request) {
-        String userAccout = "SELECT * FROM USERINFO where id=?1";
+    public WebApiResponse userQuit(String id) {
+        String userAccout = "SELECT * FROM RZTSYSUSER where id=?1";
         try {
             this.reposiotry.quitUserLOGINSTATUS(id);
-            request.getSession().removeAttribute("user");
-            List<Map<String, Object>> maps = this.execSql(userAccout, id);
+            Map<String, Object> stringObjectMap = this.execSqlSingleResult(userAccout, id);
             HashOperations hashOperations = redisTemplate.opsForHash();
-            hashOperations.put("UserInformation", id, maps);
-            hashOperations.delete("USERTOKEN", "USER:" + maps.get(0).get("ID") + "," + maps.get(0).get("REALNAME"));
+            hashOperations.put("UserInformation", id, stringObjectMap);
+            hashOperations.delete("USERTOKEN", "USER:" + stringObjectMap.get("ID") + "," + stringObjectMap.get("REALNAME"));
+            try {
+                Integer typee = Integer.valueOf(String.valueOf(stringObjectMap.get("WORKTYPE")));
+                if (typee == 1) {
+                    typee = 2;
+                } else if (typee == 2) {
+                    typee = 1;
+                }
+                staffLine.KHXX(String.valueOf(stringObjectMap.get("ID")), typee);
+            } catch (NumberFormatException e) {
+            }
             return WebApiResponse.success("");
         } catch (Exception e) {
             e.printStackTrace();

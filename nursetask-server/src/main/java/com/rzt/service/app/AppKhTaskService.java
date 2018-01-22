@@ -18,6 +18,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -33,9 +34,9 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
         String result = " k.id as taskId,k.plan_start_time as startTime,k.task_name as taskName,k.status as status,u.realname as name,k.zxys_num as num";
         StringBuffer buffer = new StringBuffer();
         if (dbyb == 1) {
-            buffer.append("where (status like '未开始' or status like '进行中')  and user_id = ? order by k.plan_start_time");
+            buffer.append("where (status = 0 or status = 1)  and user_id = ? and (k.plan_start_time >= trunc(sysdate) or  k.plan_end_time >= trunc(sysdate)) order by k.plan_start_time");
         } else if (dbyb == 2) {
-            buffer.append(" where (status like '已完成' or status like '已取消')  and user_id = ? order by k.real_end_time desc");
+            buffer.append(" where (status = 2 or status = 3)  and user_id = ? and trunc(k.plan_end_time)=trunc(sysdate) order by k.real_end_time");
         }
         String sql = "select " + result + " from kh_task k left join rztsysuser u on u.id = k.user_id " + buffer.toString();
         return this.execSqlPage(pageable, sql, userId);
@@ -45,9 +46,10 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
         try {
             String result = "K.TASK_NAME AS TASKNAME,H.YHMS AS MS,H.YHJB AS JB,K.PLAN_START_TIME AS STARTTIME,K.PLAN_END_TIME AS ENDTIME,K.STATUS AS STATUS ";
             String sql = "SELECT " + result + " FROM KH_TASK k LEFT JOIN KH_YH_HISTORY H on k.yh_id = h.id WHERE K.ID=?";
-            return WebApiResponse.success(this.execSql(sql, Long.parseLong(taskId)));
+            List<Map<String, Object>> list = this.execSql(sql, Long.parseLong(taskId));
+            return WebApiResponse.success(list);
         } catch (Exception e) {
-            return WebApiResponse.erro("数据获取失败");
+            return WebApiResponse.erro("数据获取失败"+e.getMessage());
         }
     }
 
@@ -68,8 +70,22 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
             List<Map<String, Object>> map = this.execSql(sql, taskId);
             if (map.isEmpty()) {
                 Map map1 = new HashMap<>();
-                map1.put("wp_zt", "1,1,1,1,1");
+                map1.put("WP_ZT", "0,0,0,0,0");
                 map.add(map1);
+            }
+            return WebApiResponse.success(map);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("数据获取失败");
+        }
+    }
+
+    public WebApiResponse appListZl(String taskId) {
+        try {
+            String sql = "select cl_zt from kh_task_wpqr where taskId=?";
+            Map<String, Object> map = this.execSqlSingleResult(sql, taskId);
+            if (map.get("CL_ZT") == null) {
+                map.put("CL_ZT", "0,0,0,0,0,0");
             }
             return WebApiResponse.success(map);
         } catch (Exception e) {
@@ -93,15 +109,7 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
     }
 
 
-    public WebApiResponse appListCaptain(String taskId, String userId) {
-        try {
-            String sql = "select s.CAPATAIN,s.group_flag as flag FROM KH_SITE s,KH_TASK k where s.ID = k.SITE_ID AND  k.id=? and k.USER_ID =?";
-            return WebApiResponse.success(this.execSql(sql, taskId, userId));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return WebApiResponse.erro("数据获取失败");
-        }
-    }
+
 
     public WebApiResponse getYbCount(String userId) {
         try {
@@ -115,7 +123,7 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
 
     public WebApiResponse getDbCount(String userId) {
         try {
-            String sql = "select a.count as db,b.count as yb from (select count(*) as count from KH_TASK WHERE (STATUS LIKE '未开始' OR  status like '进行中') AND USER_ID = ? ) a , (select count(*) as count from KH_TASK WHERE STATUS LIKE '已完成' AND USER_ID=?) b";
+            String sql = "select a.count as db,b.count as yb from (select count(*) as count from KH_TASK WHERE (STATUS = 0 OR  status = 1) AND (plan_start_time >= trunc(sysdate) or  plan_end_time >= trunc(sysdate)) AND USER_ID = ? ) a , (select count(*) as count from KH_TASK WHERE (STATUS =2 or status=3) and trunc(plan_end_time)=trunc(sysdate) AND USER_ID=?) b";
             List<Map<String, Object>> list = this.execSql(sql, userId, userId);
             //保存现场照片    this.reposiotry.getdbCount(userId)
             return WebApiResponse.success(list);
@@ -155,6 +163,14 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
                 if (map.get("WD") == null || map.get("JD") == null) {
                     sql = "select y.radius as ROUND,y.jd as jd,y.wd as wd from kh_yh_history y left join kh_task k on y.id = k.yh_id where k.id=?";
                     list = this.execSql(sql, taskId);
+                }else{
+                    String round = map.get("ROUND").toString();
+                    if (!round.contains(".")){
+                        if (Long.parseLong(round)>500){
+                            round="500";
+                        }
+                        map.put("ROUND",round+".0");
+                    }
                 }
             }
         } else {
@@ -162,7 +178,7 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
             list = this.execSql(sql, taskId);
         }
         for (Map map : list) {
-            map.put("URL", "http://168.130.1.31:8097:/warningServer/warning/KHOffPost");
+            map.put("URL", "http://39.106.206.129:8097/warningServer/warning/KHOffPost");
         }
        /* Point point = null;
         for (Map map : list) {
@@ -181,30 +197,28 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
         }
     }
 
-    public WebApiResponse appListZl(String taskId) {
+    //查看是不是看护负责人
+    public WebApiResponse appListCaptain(String taskId, String userId) {
         try {
-            String sql = "select cl_zt from kh_task_wpqr where taskId=?";
-            Map<String, Object> map = this.execSqlSingleResult(sql, taskId);
-            if (map.get("CL_ZT") == null) {
-                map.put("CL_ZT", "0,0,0,0,0,0");
-            }
-            return WebApiResponse.success(map);
+            String sql = "select s.CAPATAIN,s.group_flag as flag FROM KH_SITE s,KH_TASK k where s.ID = k.SITE_ID AND  k.id=? and k.USER_ID =?";
+            return WebApiResponse.success(this.execSql(sql, taskId, userId));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("数据获取失败");
         }
     }
 
+    //如果是队员，队长交班以后他才能交班
     public WebApiResponse appCaptainTime(String userId, long taskId, String flag) {
         try {
-            flag = flag.substring(0, flag.length() - 2) + 0 + flag.substring(flag.length() - 1, flag.length());
+            /*flag = flag.substring(0, flag.length() - 1) + 1;//0 + flag.substring(flag.length() - 1, flag.length())
             String sql = "SELECT k.REAL_END_TIME \n" +
-                    "FROM KH_SITE s,KH_TASK k WHERE s.ID=k.SITE_ID and s.GROUP_FLAG=?";
+                    "FROM KH_SITE s,KH_TASK k WHERE s.ID=k.SITE_ID and s.GROUP_FLAG=? and ";
             Map<String, Object> map = this.execSqlSingleResult(sql, flag);
             if (map.get("REAL_END_TIME") == null) {
                 throw new Exception();
-            }
-            return WebApiResponse.success(map);
+            }*/
+            return WebApiResponse.success("");
         } catch (Exception e) {
             return WebApiResponse.erro("队长未交班");
         }
@@ -212,7 +226,7 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
 
     public WebApiResponse appListTaskDone(String userId, long taskId) {
         try {
-            String sql = "SELECT k.TASK_NAME taskname,y.YHMS ms,y.YHJB jb,k.PLAN_START_TIME starttime,k.PLAN_END_TIME endtime,u.REALNAME name,u.PHONE phone,d.DEPTNAME\n" +
+            String sql = "SELECT k.status status,k.TASK_NAME taskname,y.YHMS ms,y.YHJB jb,k.PLAN_START_TIME starttime,k.PLAN_END_TIME endtime,u.REALNAME name,u.PHONE phone,d.DEPTNAME\n" +
                     "from KH_TASK k,KH_YH_HISTORY y,RZTSYSUSER u,RZTSYSDEPARTMENT d\n" +
                     "where k.YH_ID=y.id and k.USER_ID = u.id and d.ID = u.CLASSNAME\n" +
                     "and k.id = ?";
@@ -235,11 +249,11 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
 
     public WebApiResponse appCompareEndTime(long taskId) {
         try {
-            String sql = "select plan_end_time as time from kh_task where id=?";
+            String sql = "select plan_end_time as time,is_dw as dw from kh_task where id=?";
             Map<String, Object> map = this.execSqlSingleResult(sql, taskId);
             int time = compareDate(DateUtil.parseDate(map.get("TIME").toString()), new Date());
             if (time != 1) {
-                return WebApiResponse.success("可以交班");
+                return WebApiResponse.success(map);
             } else {
                 throw new Exception();
             }

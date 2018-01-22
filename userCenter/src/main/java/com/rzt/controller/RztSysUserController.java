@@ -8,7 +8,7 @@ package com.rzt.controller;
 
 import com.rzt.entity.RztSysUser;
 import com.rzt.entity.RztSysUserauth;
-import com.rzt.eureka.Cmuserfile;
+//import com.rzt.eureka.Cmuserfile;
 import com.rzt.security.JwtHelper;
 import com.rzt.security.TokenProp;
 import com.rzt.service.RztMenuPrivilegeService;
@@ -25,12 +25,10 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * 类名称：RztSysUserController
@@ -45,8 +43,8 @@ import java.util.UUID;
 @RequestMapping("RztSysUser")
 public class RztSysUserController extends
         CurdController<RztSysUser, RztSysUserService> {
-    @Autowired
-    private Cmuserfile cmuserfile;
+    //    @Autowired
+//    private Cmuserfile cmuserfile;
     @Autowired
     private RztSysUserauthService userauthService;
     @Autowired
@@ -81,13 +79,19 @@ public class RztSysUserController extends
         /**
          * 人员缓存Redis
          */
-        String sql = " SELECT * FROM USERINFO where USERDELETE = 1 ";
-        List<Map<String, Object>> maps = this.service.execSql(sql);
-        HashOperations hashOperations = redisTemplate.opsForHash();
-        for (Map map : maps) {
-            hashOperations.put("UserInformation", map.get("ID"), map);
-        }
+        userRedis(user);
         return WebApiResponse.success("添加成功！");
+    }
+
+    private void userRedis(RztSysUser user) {
+        try {
+            String sql = " SELECT * FROM USERINFO where USERDELETE = 1 AND ID=?1  ";
+            Map<String, Object> map1 = this.service.execSqlSingleResult(sql, user.getId());
+            HashOperations hashOperations = redisTemplate.opsForHash();
+            hashOperations.put("UserInformation", map1.get("ID"), map1);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -109,6 +113,10 @@ public class RztSysUserController extends
             return WebApiResponse.erro(flag);
         }
         this.service.updateUser(id, user);
+        /**
+         * 人员缓存Redis
+         */
+        userRedis(user);
         return WebApiResponse.success("修改成功");
     }
 
@@ -172,9 +180,9 @@ public class RztSysUserController extends
      */
     @GetMapping("findAllUser")
     @ApiOperation(value = "人员分页查询", notes = "人员分页查询")
-    public WebApiResponse findAllUser(int page, int size, String id, String realname, String companyid, String worktype) {
+    public WebApiResponse findAllUser(String userId, int page, int size, String id, String realname, String companyid, String worktype) {
         try {
-            return WebApiResponse.success(this.service.findUserList(page, size, id, realname, companyid, worktype));
+            return WebApiResponse.success(this.service.findUserList(userId, page, size, id, realname, companyid, worktype));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("数据错误");
@@ -188,8 +196,8 @@ public class RztSysUserController extends
      */
     @GetMapping("userQuertDeptZero")
     @ApiOperation(value = "人员分页查询下拉框", notes = "人员分页查询下拉框")
-    public WebApiResponse userQuertDeptZero() {
-        return this.service.userQuertDeptZero();
+    public WebApiResponse userQuertDeptZero(String userId) {
+        return this.service.userQuertDeptZero(userId);
     }
 
     /**
@@ -199,8 +207,8 @@ public class RztSysUserController extends
      */
     @GetMapping("companyPage")
     @ApiOperation(value = "下拉框外协单位", notes = "下拉框外协单位")
-    public WebApiResponse companyPage() {
-        return this.service.companyPage();
+    public WebApiResponse companyPage(String userId) {
+        return this.service.companyPage(userId);
     }
 
     @GetMapping("findUserById/{id}")
@@ -329,20 +337,35 @@ public class RztSysUserController extends
      */
     @PostMapping("userLogin")
     @ApiOperation(value = "人员登陆", notes = "人员登陆")
-    public WebApiResponse userLogin(String password, String account, String loginType, HttpServletRequest request) {
-        return this.service.userLogin(password, account, loginType, request);
+    public WebApiResponse userLogin(String password, String account, String loginType) {
+        return this.service.userLogin(password, account, loginType);
     }
 
     /**
      * 退出
      *
      * @param id
-     * @param request
      * @return
      */
     @ApiOperation(value = "人员退出", notes = "人员退出")
     @PostMapping("userQuit")
-    public WebApiResponse userQuit(String id, HttpServletRequest request) {
-        return this.service.userQuit(id, request);
+    public WebApiResponse userQuit(String id) {
+        return this.service.userQuit(id);
+    }
+
+    @GetMapping("flushUserInformationRedis")
+    public Object flushUserInfoRedis() {
+        try {
+            HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
+            String sql = "SELECT * from USERINFO";
+            List<Map<String, Object>> maps = this.service.execSql(sql);
+            for (Map<String, Object> map : maps) {
+                String id = map.get("ID").toString();
+                hashOperations.put("UserInformation", id, map);
+            }
+            return WebApiResponse.success("成功了");
+        } catch (Exception e) {
+            return WebApiResponse.erro("数据查询失败" + e.getMessage());
+        }
     }
 }

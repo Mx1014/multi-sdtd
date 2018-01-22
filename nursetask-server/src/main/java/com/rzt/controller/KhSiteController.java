@@ -6,6 +6,7 @@
  */
 package com.rzt.controller;
 
+import com.alibaba.druid.sql.visitor.functions.If;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.CheckLiveTask;
@@ -23,6 +24,8 @@ import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,31 +42,32 @@ import java.util.Map;
 
 /**
  * 类名称：KhCycleController
- * 类描述：    
- * 创建人：张虎成   
- * 创建时间：2017/11/28 14:43:44 
- * 修改人：张虎成    
- * 修改时间：2017/11/28 14:43:44    
- * 修改备注：    
- * @version
+ * 类描述：
+ * 创建人：张虎成
+ * 创建时间：2017/11/28 14:43:44
+ * 修改人：张虎成
+ * 修改时间：2017/11/28 14:43:44
+ * 修改备注：
  */
 @RestController
-    @RequestMapping("KhSite")
+@RequestMapping("KhSite")
 public class KhSiteController extends
         CurdController<KhSite, KhSiteService> {
+    /* @Autowired
+     private KhYhHistoryService yhservice;
+     @Autowired
+     private KhTaskService taskService;
+     @Autowired
+     private CheckLiveTaskService checkService;*/
     @Autowired
-    private KhYhHistoryService yhservice;
-    @Autowired
-    private KhTaskService taskService;
-    @Autowired
-    private CheckLiveTaskService checkService;
+    private RedisTemplate<String, Object> redisTemplate;
 
 
     //  数据没有设置完成  稽查任务实体类有部分修改
     @PostMapping("/saveYh.do")
     @ResponseBody
-    public WebApiResponse saveYh(KhYhHistory yh, String fxtime,String startTowerName,String endTowerName) {
-        return this.service.saveYh(yh, fxtime,startTowerName,endTowerName);
+    public WebApiResponse saveYh(KhYhHistory yh, String fxtime, String startTowerName, String endTowerName, String pictureId) {
+        return this.service.saveYh(yh, fxtime, startTowerName, endTowerName, pictureId);
     }
 
 
@@ -73,11 +77,14 @@ public class KhSiteController extends
      */
     @GetMapping("/listAllTaskNotDo.do")
     @ResponseBody
-    public WebApiResponse listAllTaskNotDo(HttpServletResponse response, KhTaskModel task, Pageable pageable, String userName,String deptId,String roleType) {
+    public WebApiResponse listAllTaskNotDo(String yhjb,String yworg,KhTaskModel task, Pageable pageable, String userName) {
         try {
-            //分页参数 page size
-//            Object list = this.service.listAllTaskNotDo(task, pageable, userName,deptId,roleType);
-            return WebApiResponse.success(this.service.listAllTaskNotDo(task, pageable, userName,deptId,roleType));
+            HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
+            Object userInformation = hashOperations.get("UserInformation", task.getUserId());
+            JSONObject jsonObject = JSONObject.parseObject(userInformation.toString());
+            String roleType = jsonObject.get("ROLETYPE").toString();
+            return WebApiResponse.success(this.service.listAllTaskNotDo(task, pageable, userName, roleType,yhjb,yworg));
+//            return WebApiResponse.success(this.service.listAllTaskNotDo(task, pageable, userName,"0",yhjb,yworg));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("数据查询失败" + e.getMessage());
@@ -121,12 +128,15 @@ public class KhSiteController extends
             return WebApiResponse.erro("任务消缺失败" + e.getMessage());
         }
     }
+
+    /**
+     * 周期维护页面查看任务详情
+     */
     @GetMapping("/listKhtaskById.do")
     @ResponseBody
-    public WebApiResponse listKhtaskByid(HttpServletResponse response,String id) {
+    public WebApiResponse listKhtaskById(HttpServletResponse response, String id) {
         try {
-            response.setHeader("Access-Control-Allow-Origin","*");
-            List list = this.service.listKhtaskByid(Long.parseLong(id));
+            List list = this.service.listKhtaskById(Long.parseLong(id));
             return WebApiResponse.success(list);
         } catch (Exception e) {
             e.printStackTrace();
@@ -148,9 +158,11 @@ public class KhSiteController extends
     @PostMapping("/paifaTask.do")
     @ResponseBody
     @Transactional
-    public WebApiResponse paifaTask(String id, String tasks, KhTaskModel model) {
-        return this.service.paifaTask(id,tasks,model);
+    public WebApiResponse paifaTask(String id, String tasks) {
+        return this.service.paifaTask(id, tasks);
     }
+
+    //  PC查看任务详情
     @PostMapping("/listJpgById.do")
     @ResponseBody
     public WebApiResponse listJpgById(String taskId) {
@@ -159,169 +171,36 @@ public class KhSiteController extends
 
     @GetMapping("/listOverdueKh.do")
     @ResponseBody
-    public WebApiResponse listOverdueKh(){
+    public WebApiResponse listOverdueKh() {
         return this.service.listOverdueKh();
     }
 
     /**
-    *
-    */
-
-    /**
      * 导出文件的接口
+     *
      * @param request
      * @param response
      */
     @GetMapping("/exportNursePlan.do")
-    public void exportNursePlan(HttpServletRequest request, HttpServletResponse response) {
+    public void exportNursePlan(HttpServletRequest request, HttpServletResponse response, String userId) {
+
         try {
-            List<Map<String, Object>> taskList = this.service.findAlls();
-            //this.service.exportExcel(response);
+            HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
+            JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", userId).toString());
 
-			//String ecxcelModelPath = rootpath + "excelModels"+File.separator+"看护任务导出表.xlsx";
-			//InputStream in = new FileInputStream(ecxcelModelPath);
-			//XSSFWorkbook wb = new XSSFWorkbook(in);
-            String rootpath = request.getSession().getServletContext().getRealPath(File.separator);
-			XSSFWorkbook wb = new XSSFWorkbook();
-			XSSFSheet sheet = wb.createSheet("看护周期");
-
-			// 设置列宽
-			sheet.setColumnWidth((short) 0, (short) 6000);
-			sheet.setColumnWidth((short) 1, (short) 6000);
-			sheet.setColumnWidth((short) 2, (short) 6000);
-			sheet.setColumnWidth((short) 3, (short) 6000);
-			sheet.setColumnWidth((short) 4, (short) 6000);
-			sheet.setColumnWidth((short) 5, (short) 6000);// 空列设置小一些
-			sheet.setColumnWidth((short) 6, (short) 6000);// 设置列宽
-			sheet.setColumnWidth((short) 7, (short) 6000);
-			sheet.setColumnWidth((short) 8, (short) 6000);
-			sheet.setColumnWidth((short) 9, (short) 6000);
-
-			XSSFCellStyle cellstyle = wb.createCellStyle();// 设置表头样式
-			cellstyle.setAlignment(XSSFCellStyle.ALIGN_CENTER);// 设置居中
-
-			XSSFCellStyle headerStyle = wb.createCellStyle();// 创建标题样式
-			headerStyle.setVerticalAlignment(XSSFCellStyle.VERTICAL_CENTER);    //设置垂直居中
-			headerStyle.setAlignment(XSSFCellStyle.ALIGN_CENTER);   //设置水平居中
-			XSSFFont headerFont = wb.createFont(); //创建字体样式
-			headerFont.setBoldweight(XSSFFont.BOLDWEIGHT_BOLD); // 字体加粗
-			headerFont.setFontName("Times New Roman");  //设置字体类型
-			headerFont.setFontHeightInPoints((short) 12);    //设置字体大小
-			headerStyle.setFont(headerFont);    //为标题样式设置字体样式
-
-			XSSFRow row = sheet.createRow(0);
-			XSSFCell cell = row.createCell((short) 0);
-			cell.setCellValue("任务名称");
-			cell.setCellStyle(headerStyle);
-			cell = row.createCell((short) 1);
-			cell.setCellValue("电压等级");
-			cell.setCellStyle(headerStyle);
-			cell = row.createCell((short) 2);
-			cell.setCellValue("线路名称");
-			cell.setCellStyle(headerStyle);
-			cell = row.createCell((short) 3);
-			cell.setCellValue("段落");
-			cell.setCellStyle(headerStyle);
-			cell = row.createCell((short) 4);
-			cell.setCellValue("看护人");
-			cell.setCellStyle(headerStyle);
-			cell = row.createCell((short) 5);
-			cell.setCellValue("通道运维单位");
-			cell.setCellStyle(headerStyle);
-			cell = row.createCell((short) 6);
-			cell.setCellValue("外协单位");
-			cell.setCellStyle(headerStyle);
-			cell = row.createCell((short) 7);
-			cell.setCellValue("创建时间");
-			cell.setCellStyle(headerStyle);
-			cell = row.createCell((short) 8);
-			cell.setCellValue("几班倒");
-			cell.setCellStyle(headerStyle);
-			cell = row.createCell((short) 9);
-			cell.setCellValue("任务状态");
-			cell.setCellStyle(headerStyle);
-			//Sheet sheet = wb.getSheetAt(0);
-			for (int i = 0; i < taskList.size(); i++) {
-				row = sheet.createRow(i + 1);
-				//Row row = sheet.getRow(i+1);
-				Map<String, Object> task = taskList.get(i);
-				if (task.get("TASK_NAME") != null) {
-					row.createCell(0).setCellValue(task.get("TASK_NAME").toString());//任务名称
-				}
-				if (task.get("VTYPE") != null) {
-					row.createCell(1).setCellValue(task.get("VTYPE").toString());//派发时间
-				}
-				if (task.get("LINE_NAME") != null) {
-					row.createCell(2).setCellValue(task.get("LINE_NAME").toString());//计划开始时间
-				}
-				if (task.get("SECTION") != null) {
-					row.createCell(3).setCellValue(task.get("SECTION").toString());//计划结束时间
-				}
-
-				if (task.get("USER_ID") != null) {
-				    String sql = "select realname from rztsysuser where id=?";
-                    List<Map<String, Object>> list = this.service.execSql(sql, task.get("USER_ID").toString());
-                    if (!list.isEmpty()){
-                        row.createCell(4).setCellValue(list.get(0).get("REALNAME").toString());//通道单位
-                    }
-				}
-				if (task.get("TDYW_ORG") != null) {
-					row.createCell(5).setCellValue(task.get("TDYW_ORG").toString());//班组
-				}
-				if (task.get("WX_ORG") != null) {
-					row.createCell(6).setCellValue(task.get("WX_ORG").toString());//巡视人员
-				}
-				if (task.get("CREATE_TIME") != null) {
-					row.createCell(7).setCellValue(task.get("CREATE_TIME").toString());
-				}
-				if (task.get("JBD") != null) {
-					row.createCell(8).setCellValue(task.get("JBD").toString());
-				}
-				int status = Integer.parseInt(task.get("STATUS").toString());
-				//该次执行状态(0待办,1进行中,2完成)
-
-				if (status == 0) {
-					row.createCell(9).setCellValue("未派发");
-				} else if (status == 1) {
-					row.createCell(9).setCellValue("已派发");
-				} else if (status == 2) {
-					row.createCell(9).setCellValue("已消缺");
-				}
-
-			}
-
-			OutputStream output = response.getOutputStream();
-			response.reset();
-			response.setHeader("Content-disposition", "attachment; filename=" + new String("看护任务导出表.xlsx".getBytes("utf-8"), "iso8859-1"));
-			response.setContentType("Content-Type:application/vnd.ms-excel ");
-			wb.write(output);
-			output.close();
+            // Object jsonObject = new Object();
+            this.service.exportNursePlan(request, response, jsonObject, userId);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
+	 /* */
+
     /**
-     * 查看图片记录的接口
-     */
-	/*
-	<select id="getRecordAndPic" resultType="java.util.HashMap" parameterType="java.lang.String">
-		select av.mokuai,av.PROCESS_ID step,tn.STEPNAME,av.file_path,av.file_name,av.create_time from CM_UPLOAD_AV av
-		<if test="taskType == 2">
-			left join SUBTOURNOTE tn on av.task_id=tn.taskid and av.process_id=tn.step
-			where av.mokuai=#{taskType} and av.file_type=1 and av.task_id=#{id}
-		</if>
-		<if test="taskType == 1">
-			left join SDTD_TDKH_STEP tn on av.TASK_DETAILS_ID=tn.TASKDETAILSID and av.process_id=tn.STEPNUM
-			where av.mokuai=#{taskType} and av.file_type=1 and av.TASK_DETAILS_ID=#{id}
-		</if>
-		order by to_number(av.process_id)
-	</select>
-
-	 */
-
-	 /* *//**
      * 审批隐患后
-     * @param id
+     *
+     * @param
      * @return
      *//*
     @GetMapping("/shenpiYh")

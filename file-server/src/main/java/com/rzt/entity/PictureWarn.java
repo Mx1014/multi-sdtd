@@ -1,0 +1,156 @@
+/**    
+ * 文件名：PictureWarn           
+ * 版本信息：    
+ * 日期：2018/01/21 03:31:41    
+ * Copyright 融智通科技(北京)股份有限公司 版权所有    
+ */
+package com.rzt.entity;
+
+import com.rzt.utils.SnowflakeIdWorker;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import java.io.Serializable;
+import java.util.Date;
+
+/**
+ * 类名称：PictureWarn    
+ * 类描述：${table.comment}    
+ * 创建人：张虎成   
+ * 创建时间：2018/01/21 03:31:41 
+ * 修改人：张虎成    
+ * 修改时间：2018/01/21 03:31:41    
+ * 修改备注：    
+ * @version        
+ */
+@Entity
+@Table(name="PICTURE_WARN")
+public class PictureWarn implements Serializable{
+	//字段描述: 
+   	 @Id
+     private Long id;
+    	//字段描述: 
+   	 @Column(name = "CREATE_TIME")
+     private Date createTime;
+    	//字段描述: 
+   	 @Column(name = "FILE_NAME")
+     private String fileName;
+    	//字段描述: 
+   	 @Column(name = "FILE_PATH")
+     private String filePath;
+    	//字段描述: 
+   	 @Column(name = "FILE_SMALL_PATH")
+     private String fileSmallPath;
+    	//字段描述: 
+   	 @Column(name = "FILE_TYPE")
+     private Integer fileType;
+    	//字段描述: 
+   	 @Column(name = "LAT")
+     private String lat;
+    	//字段描述: 
+   	 @Column(name = "LON")
+     private String lon;
+    	//字段描述: 
+   	 @Column(name = "TASK_ID")
+     private Long taskId;
+    	//字段描述: 
+   	 @Column(name = "USER_ID")
+     private String userId;
+    	//字段描述: 
+   	 @Column(name = "JSON_STR")
+     private String jsonStr;
+    	//字段描述: 
+   	 @Column(name = "PROCESS_TYPE")
+     private Integer processType;
+
+	public void setId(Long id){
+		if(id==null||id==0){
+			this.id = new SnowflakeIdWorker(5,6).nextId();
+		}else{
+			this.id = id;
+		}
+	}
+	public Long getId(){
+		return this.id;
+	}
+
+	public void setCreateTime(Date createTime){
+		this.createTime = createTime;
+	}
+	public Date getCreateTime(){
+		return this.createTime;
+	}
+
+	public void setFileName(String fileName){
+		this.fileName = fileName;
+	}
+	public String getFileName(){
+		return this.fileName;
+	}
+
+	public void setFilePath(String filePath){
+		this.filePath = filePath;
+	}
+	public String getFilePath(){
+		return this.filePath;
+	}
+
+	public void setFileSmallPath(String fileSmallPath){
+		this.fileSmallPath = fileSmallPath;
+	}
+	public String getFileSmallPath(){
+		return this.fileSmallPath;
+	}
+
+	public void setFileType(Integer fileType){
+		this.fileType = fileType;
+	}
+	public Integer getFileType(){
+		return this.fileType;
+	}
+
+	public void setLat(String lat){
+		this.lat = lat;
+	}
+	public String getLat(){
+		return this.lat;
+	}
+
+	public void setLon(String lon){
+		this.lon = lon;
+	}
+	public String getLon(){
+		return this.lon;
+	}
+
+	public void setTaskId(Long taskId){
+		this.taskId = taskId;
+	}
+	public Long getTaskId(){
+		return this.taskId;
+	}
+
+	public void setUserId(String userId){
+		this.userId = userId;
+	}
+	public String getUserId(){
+		return this.userId;
+	}
+
+	public void setJsonStr(String jsonStr){
+		this.jsonStr = jsonStr;
+	}
+	public String getJsonStr(){
+		return this.jsonStr;
+	}
+
+	public void setProcessType(Integer processType){
+		this.processType = processType;
+	}
+	public Integer getProcessType(){
+		return this.processType;
+	}
+
+}

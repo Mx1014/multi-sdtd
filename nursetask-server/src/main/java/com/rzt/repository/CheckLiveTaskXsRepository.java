@@ -7,6 +7,8 @@
 package com.rzt.repository;
 import com.rzt.entity.CheckLiveTaskXs;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -22,4 +24,13 @@ import org.springframework.stereotype.Repository;
  @Repository
 public interface CheckLiveTaskXsRepository extends JpaRepository<CheckLiveTaskXs,String> {
 
+    CheckLiveTaskXs findById(Long id);
+
+    @Modifying
+    @Query(value = "update CHECK_LIVE_TASKXS set status=2 where id = ?1 ",nativeQuery = true)
+    void taskComplete(Long id);
+
+    @Modifying
+    @Query(value = "update xs_zc_task set JC_STATUS=?1 where id = ?2 ",nativeQuery = true)
+    void updateTaskStatus(int i, Long id);
 }

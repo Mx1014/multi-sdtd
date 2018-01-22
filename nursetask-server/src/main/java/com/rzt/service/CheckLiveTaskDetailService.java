@@ -7,9 +7,12 @@
 package com.rzt.service;
 import com.rzt.entity.CheckLiveTaskDetail;
 import com.rzt.repository.CheckLiveTaskDetailRepository;
+import com.rzt.repository.CheckLiveTaskDetailXsRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +30,8 @@ import java.util.List;
 @Service
 public class CheckLiveTaskDetailService extends CurdService<CheckLiveTaskDetail,CheckLiveTaskDetailRepository> {
 
+    @Autowired
+    private CheckLiveTaskDetailXsRepository checkLiveTaskDetailXsRepository;
 
     public List listCheckDoingById(String id) {
         String result = " c.task_name as taskName,u.user_name as userName,u.phone_num as phoneNum,c.check_type as checkType ";
@@ -62,4 +67,41 @@ public class CheckLiveTaskDetailService extends CurdService<CheckLiveTaskDetail,
         String sql = "select * from (select a.*,rownum rn from (select "+result+" from check_live_task_detail c left join user u on c.user_id = u.id " + buffer.toString();
         return this.execSql(sql,params.toArray());
     }
+
+    @Transactional
+    public Object checkQuestionUpdate(String detailId, String dydj, String yhxx, String czfa, String qtwt, String taskType) {
+        Object obj = new Object();
+        //0看护 1巡视 0待稽查 1已稽查
+        if("0,0".equals(taskType)){
+            reposiotry.checkQuestionUpdate( detailId, dydj, yhxx, czfa, qtwt);
+        }else if ("1,0".equals(taskType)){
+            reposiotry.checkQuestionUpdateXs( detailId, dydj, yhxx, czfa, qtwt);
+        }
+        return obj;
+    }
+
+    public Object checkQuestionInfo(String id, String taskType) {
+        Object obj = new Object();
+        //0看护 1巡视 0待稽查 1已稽查
+        if("0,0".equals(taskType)){
+            obj = reposiotry.findById(Long.valueOf(id));
+        }else if ("1,0".equals(taskType)){
+            obj = checkLiveTaskDetailXsRepository.findById(Long.valueOf(id));
+        }
+        return obj;
+    }
+
+    @Transactional
+    public void checkDgdwUpdate(String id, String sfzg, String ryyz, String dzwl,String yhId, String lon, String lat, String radius, String taskType) {
+        //0看护 1巡视 0待稽查 1已稽查
+        if("0,0".equals(taskType)){
+            reposiotry.checkDgdwUpdate(Long.valueOf(id),sfzg,ryyz,dzwl);
+            if(!StringUtils.isEmpty(radius)&& !StringUtils.isEmpty(lon)){
+                reposiotry.updateDzwl(yhId,lon,lat,radius);
+            }
+        }else if ("1,0".equals(taskType)){
+            reposiotry.checkDgdwUpdateXs(Long.valueOf(id),sfzg,ryyz,dzwl);
+        }
+    }
+
 }

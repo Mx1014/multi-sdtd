@@ -105,7 +105,7 @@ public class KhYhHistory implements Serializable {
     //字段描述: 管控措施
     @Column(name = "GKCS")
     private String gkcs;
-        //字段描述: 维护单位（通道单位）
+    //字段描述: 维护单位（通道单位）
     @Column(name = "TDYW_ORG")
     private String tdywOrg;
     //字段描述: 通道外协单位
@@ -132,13 +132,13 @@ public class KhYhHistory implements Serializable {
     //字段描述: 更新时间
     @Column(name = "UPDATE_TIME")
     private Date updateTime;
-    //字段描述: 导线对隐患净空距离
+    //字段描述: 导线对隐患水平距离
     @Column(name = "DXDYHSPJL")
     private String dxdyhspjl;
-    //字段描述: 导线对隐患水平距离
+    //字段描述: 导线对隐患垂直距离
     @Column(name = "DXXYHCZJL")
     private String dxxyhczjl;
-    //字段描述: 导线对隐患垂直距离
+    //字段描述: 导线对隐患净空距离
     @Column(name = "XDXYHJKJL")
     private String xdxyhjkjl;
     //字段描述: 树木管控措施
@@ -203,7 +203,7 @@ public class KhYhHistory implements Serializable {
     private int sgqk;
     //字段描述：通道单位id
     @Column(name = "YWORG_ID")
-    private String yworgId;
+    private String tdorgId;
     //字段描述: 外协单位id
     @Column(name = "WXORG_ID")
     private String wxorgId;
@@ -213,6 +213,45 @@ public class KhYhHistory implements Serializable {
     //字段描述: 隐患点半径
     @Column(name="XSTASK_ID")
     private long xstaskId;
+    //字段描述: 所属队伍
+    @Column(name="CLASSNAME")
+    private String className;
+    //字段描述: 树木数
+    @Column(name="SMS")
+    private String sms;
+    //字段描述: 是否悬挂警示牌
+    @Column(name="JSP")
+    private String jsp;
+    //字段描述: 是否悬挂警示牌
+    @Column(name="SJXL")
+    private String sjxl;
+    //字段描述: 是否悬挂警示牌
+    @Column(name="CLASS_ID")
+    private String classId;
+
+    public String getClassId() {
+        return classId;
+    }
+
+    public void setClassId(String classId) {
+        this.classId = classId;
+    }
+
+    public String getSms() {
+        return sms;
+    }
+
+    public void setSms(String sms) {
+        this.sms = sms;
+    }
+
+    public String getJsp() {
+        return jsp;
+    }
+
+    public void setJsp(String jsp) {
+        this.jsp = jsp;
+    }
 
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
@@ -613,7 +652,7 @@ public class KhYhHistory implements Serializable {
         return this.yhjb;
     }
 
-    public void setTdywOrg(String tdywOrg) {
+    public void setTdywOrg (String tdywOrg) {
         this.tdywOrg = tdywOrg;
     }
 
@@ -631,9 +670,9 @@ public class KhYhHistory implements Serializable {
         return this.tdwxOrg;
     }
 
-    public void setId(Long id) {
+    public void setId(Long id)  {
         if (id == null || id == 0) {
-            this.id = new SnowflakeIdWorker(0, 0).nextId();
+            this.id = new SnowflakeIdWorker(1, 4).nextId();
         } else {
             this.id = id;
         }
@@ -692,11 +731,11 @@ public class KhYhHistory implements Serializable {
     }
 
     public String getTdorgId() {
-        return yworgId;
+        return tdorgId;
     }
 
     public void setTdorgId(String tdorgId) {
-        this.yworgId = tdorgId;
+        this.tdorgId = tdorgId;
     }
 
     public String getWxorgId() {
@@ -721,5 +760,21 @@ public class KhYhHistory implements Serializable {
 
     public long getXstaskId() {
         return xstaskId;
+    }
+
+    public void setClassName(String className) {
+        this.className = className;
+    }
+
+    public String getClassName() {
+        return className;
+    }
+
+    public void setSjxl(String sjxl) {
+        this.sjxl = sjxl;
+    }
+
+    public String getSjxl() {
+        return sjxl;
     }
 }

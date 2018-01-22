@@ -24,8 +24,12 @@ import org.springframework.transaction.annotation.Transactional;
  */
  @Repository
 public interface CMLINERepository extends JpaRepository<CMLINE,String> {
-    @Query(value = "update SDTD27.CM_LINE set line_name=?2 where id=?1 ",nativeQuery = true)
+    @Query(value = "update CM_LINE_SECTION set line_name=?2 where id=?1 ",nativeQuery = true)
     @Modifying
     @Transactional
     void updateLineName(Long id, String linename);
+
+    @Modifying
+    @Query(value = "update cm_line set SECTION=?2 where id=?1 ",nativeQuery = true)
+    void updateLineSection(Long lineId, String section);
 }

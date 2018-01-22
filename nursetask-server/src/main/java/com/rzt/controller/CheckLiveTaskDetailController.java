@@ -6,60 +6,65 @@
  * Copyright 融智通科技(北京)股份有限公司 版权所有
  */
 package com.rzt.controller;
+
 import com.rzt.entity.CheckLiveTaskDetail;
 import com.rzt.service.CheckLiveTaskDetailService;
 import com.rzt.util.WebApiResponse;
-import org.springframework.data.domain.Pageable;
+import io.swagger.annotations.ApiOperation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletResponse;
-import java.util.List;
 
 /**
  * 类名称：CHECKLIVETASKDETAILController
- * 类描述：
- * 创建人：张虎成
+ * 类描述：看护任务详情
+ * 创建人：李泽州
  * 创建时间：2017/12/05 10:24:09
- * 修改人：张虎成
- * 修改时间：2017/12/05 10:24:09
- * 修改备注：
- * @version
  */
 @RestController
 @RequestMapping("CheckLiveTaskDetail")
 public class CheckLiveTaskDetailController extends
         CurdController<CheckLiveTaskDetail,CheckLiveTaskDetailService> {
 
-    //删除已经稽查的任务   /CheckLiveTasks/{id}  请求方式Delete
+    protected static Logger LOGGER = LoggerFactory.getLogger(CheckLiveTaskDetailController.class);
 
-    //查看已稽查的任务详情  详细查询的内容未完成
-    @GetMapping("/listCheckDoingById.do")
-    public WebApiResponse listCheckNotDoById(String id){
-        try {
-            List list = this.service.listCheckDoingById(id);
-            return WebApiResponse.success(list);
+    @ApiOperation(value = "到岗到位检查",notes = "到岗到位检查")
+    @GetMapping("/checkDgdwUpdate")
+    public WebApiResponse checkDgdwUpdate(String detailId,String sfzg,String ryyz,String dzwl,String yhId,String lon,String lat,String radius , String taskType){
+        try{
+            service.checkDgdwUpdate( detailId, sfzg, ryyz, dzwl,yhId, lon, lat, radius , taskType);
+            return WebApiResponse.success("成功");
         }catch (Exception e){
-            return WebApiResponse.erro("数据查询失败"+e.getMessage());
+            LOGGER.error("更新失败",e);
+            return WebApiResponse.erro("更新失败");
         }
     }
-    @GetMapping("/listAllCheckDoing.do")
-    public WebApiResponse listAllCheckDoing(CheckLiveTaskDetail task, Pageable pageable){
+
+    @ApiOperation(value = "现场稽查问卷",notes = "现场稽查问卷")
+    @GetMapping("/checkQuestionUpdate")
+    public WebApiResponse checkQuestionUpdate(String detailId, String dydj,String yhxx ,String czfa,String qtwt, String taskType){
         try{
-            List list = this.service.listAllCheckDoing(task, pageable);
-            return WebApiResponse.success(list);
-        }catch (Exception e) {
-            return WebApiResponse.erro("数据获取失败"+e.getMessage());
+            Object obj = service.checkQuestionUpdate( detailId,  dydj, yhxx , czfa, qtwt, taskType);
+            return WebApiResponse.success(obj);
+        }catch (Exception e){
+            LOGGER.error("稽查问卷更新失败",e);
+            return WebApiResponse.erro("稽查问卷更新失败");
         }
     }
-    @GetMapping("/exportCheckTask.do")
-    public WebApiResponse ExportCheckTask(HttpServletResponse response){
+
+    @ApiOperation(value = "稽查问卷回显",notes = "稽查问卷回显")
+    @GetMapping("/checkQuestionInfo")
+    public WebApiResponse checkQuestionInfo(String detailId, String taskType){
         try{
-            this.service.exportExcel(response);
-            return WebApiResponse.success("数据导出成功");
-        }catch (Exception e) {
-            return WebApiResponse.erro("数据导出失败"+e.getMessage());
+            Object obj = service.checkQuestionInfo(detailId,taskType);
+            return WebApiResponse.success(obj);
+        }catch (Exception e){
+            LOGGER.error("稽查问卷更新失败",e);
+            return WebApiResponse.erro("稽查问卷更新失败");
         }
     }
+
 }

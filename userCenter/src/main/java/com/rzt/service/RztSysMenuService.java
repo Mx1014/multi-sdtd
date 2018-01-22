@@ -6,6 +6,7 @@
  */
 package com.rzt.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.RztSysMenu;
 import com.rzt.repository.RztSysMenuRepository;
 import com.rzt.util.WebApiResponse;
@@ -186,6 +187,27 @@ public class RztSysMenuService extends CurdService<RztSysMenu, RztSysMenuReposit
 
     }
 
+    public List<Map<String, Object>> treeQuerys(String userId) {
+        HashOperations hashOperations = redisTemplate.opsForHash();
+        JSONObject userInformation = JSONObject.parseObject(hashOperations.get("UserInformation", userId).toString());
+        Integer roletype = Integer.valueOf(userInformation.get("ROLETYPE").toString());
+        String orgId = null;
+        if (roletype == 0) {
+            orgId = "402881e6603a31e701603a48b5240000";
+        } else {
+            orgId = String.valueOf(userInformation.get("DEPTID").toString());
+        }
+        String sql = " select id as \"value\",DEPTNAME as \"label\",DEPTPID,ID,ORGTYPE,LASTNODE from RZTSYSDEPARTMENT start with id= ?1 CONNECT by prior id =  DEPTPID ";
+        List<Map<String, Object>> list2 = this.execSql(sql, orgId);
+        if (roletype == 0) {
+            List list1 = treeOrgList(list2, list2.get(0).get("ID").toString());
+            return list1;
+        }
+        List list1 = treeOrgList(list2, list2.get(0).get("DEPTPID").toString());
+        return list1;
+
+    }
+
     public List treeOrgList(List<Map<String, Object>> orgList, String parentId) {
         List childOrg = new ArrayList<>();
         for (Map<String, Object> map : orgList) {
@@ -259,8 +281,10 @@ public class RztSysMenuService extends CurdService<RztSysMenu, RztSysMenuReposit
         if (!StringUtils.isEmpty(roleid) && !StringUtils.isEmpty(menuid)) {
             String sql = "SELECT id FROM RZTMENUPRIVILEGE WHERE MENUID=?1 AND ROLEID=?2";
             try {
-                Map map = this.execSqlSingleResult(sql, menuid, roleid);
-                this.reposiotry.deleteRztsysbuttonz(map.get("ID").toString());
+                List<Map<String, Object>> list = this.execSql(sql, menuid, roleid);
+                for (int i = 0; i < list.size(); i++) {
+                    this.reposiotry.deleteRztsysbuttonz(list.get(0).get("ID").toString());
+                }
                 this.reposiotry.deleteRztmenuprivilege(roleid, menuid);
                 return WebApiResponse.success("删除成功");
             } catch (Exception e) {
@@ -309,7 +333,8 @@ public class RztSysMenuService extends CurdService<RztSysMenu, RztSysMenuReposit
     public WebApiResponse insertApp(String menuid, String roleid) {
         if (!StringUtils.isEmpty(menuid) && !StringUtils.isEmpty(roleid)) {
             String sql = "SELECT count(*) AS ID FROM RZTMENUPRIVILEGE WHERE MENUID = ?1 AND ROLEID = ?2";
-            if (this.execSql(sql, menuid, roleid).size() == 1) {
+            List<Map<String, Object>> list = this.execSql(sql, menuid, roleid);
+            if (Integer.valueOf(list.get(0).get("ID").toString()) == 0) {
                 try {
                     this.reposiotry.insertApp(menuid, roleid);
                     return WebApiResponse.success("添加成功");
@@ -382,7 +407,7 @@ public class RztSysMenuService extends CurdService<RztSysMenu, RztSysMenuReposit
             String sql = " SELECT * FROM RZTSYSDATA ";
             List<Map<String, Object>> maps = this.execSql(sql);
             HashOperations hashOperations = redisTemplate.opsForHash();
-            hashOperations.delete("RZTSYSDATA");
+
             for (Map map : maps) {
                 hashOperations.put("RZTSYSDATA", map.get("ROLEID"), map);
             }

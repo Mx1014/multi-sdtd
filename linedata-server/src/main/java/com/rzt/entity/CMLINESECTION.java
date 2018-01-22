@@ -32,7 +32,7 @@ public class CMLINESECTION implements Serializable{
     	//字段描述: 线路名称拼音
    	 @Column(name = "LINE_NAME")
      private String lineName;
-	//字段描述: 线路名称汉子
+	//字段描述: 线路名称汉字
 	@Column(name = "LINE_NAME1")
 	private String lineName1;
     	//字段描述: 线路id
@@ -70,7 +70,7 @@ public class CMLINESECTION implements Serializable{
      private String wxOrg;
     	//字段描述: 是否删除 0未删除 1已删除
    	 @Column(name = "IS_DEL")
-     private String isDel;
+     private Integer isDel;
     	//字段描述: 
    	 @Column(name = "TD_ORG_NAME")
      private String tdOrgName;
@@ -214,10 +214,10 @@ public class CMLINESECTION implements Serializable{
 	
 	
 
-	public void setIsDel(String isDel){
+	public void setIsDel(Integer isDel){
 		this.isDel = isDel;
 	}
-    public String getIsDel(){
+    public Integer getIsDel(){
 		return this.isDel;
 	}
 	

@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -36,26 +35,18 @@ public class CMLINEController extends
 
 	@ApiOperation(value = "获取线路名称列表",notes = "获取线路名称列表")
 	@GetMapping("getLineInfo")
-	public WebApiResponse getLineInfo(String kv){
-		ArrayList<String> params = new ArrayList<>();
-		String sql = "select * from cm_line where is_del=0 " ;
-		if(kv!=null&&!"".equals(kv)){
-			params.add(kv);
-			sql += " and v_level = ?" + params.size();
-		}
-		sql += " ORDER BY NLSSORT(line_name,'NLS_SORT = SCHINESE_PINYIN_M')";
-		List<Map<String, Object>> maps = service.execSql(sql,params.toArray());
-		return WebApiResponse.success(maps);
+	public WebApiResponse getLineInfo(String kv,String currentUserId){
+		return service.getLineInfo(kv,currentUserId);
 	}
 
 	@ApiOperation(tags = "线路名转拼音",value = "")
 	@GetMapping("test")
 	public void test(){
 
-		List<Map<String, Object>> list = service.execSql("select id,line_name from cm_line");
+		List<Map<String, Object>> list = service.execSql("select id,line_name1 from cm_line_section");
 		for (Map map:list) {
 			Long id = Long.valueOf(map.get("ID").toString());
-			String linename = HanyuPinyinHelper.getPinyinString(String.valueOf(map.get("LINE_NAME")));
+			String linename = HanyuPinyinHelper.getPinyinString(String.valueOf(map.get("LINE_NAME1")));
 			service.reposiotry.updateLineName(id,linename);
 		}
 	}

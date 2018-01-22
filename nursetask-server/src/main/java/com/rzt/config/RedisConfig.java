@@ -13,6 +13,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
 import java.lang.reflect.Method;
@@ -21,7 +22,8 @@ import java.lang.reflect.Method;
  * Created by Administrator on 2017/12/12.
  */
 @Configuration
-public class RedisConfig {
+public class
+RedisConfig {
 
     @Value("${spring.redis.host}")
     private String host;
@@ -101,18 +103,28 @@ public class RedisConfig {
     }
 
 
-	@Bean
-	public RedisTemplate<String, Object> redisHashTemplate(RedisConnectionFactory connectionFactory){
-		FastJsonRedisSerializer fastJsonRedisSerializer = new FastJsonRedisSerializer(Object.class);
-		FastJsonConfig jsonConfig = new FastJsonConfig();
-		jsonConfig.setSerializerFeatures(SerializerFeature.WriteMapNullValue);
-		fastJsonRedisSerializer.setFastJsonConfig(jsonConfig);
-		RedisTemplate<String,Object> template = new RedisTemplate<>();
-		template.setConnectionFactory(connectionFactory);
-		template.setKeySerializer(new StringRedisSerializer());
-		template.setHashKeySerializer(new StringRedisSerializer());
-		template.setHashValueSerializer(fastJsonRedisSerializer);
-		template.setValueSerializer(fastJsonRedisSerializer);
-		return template;
-	}
+    @Bean
+    public RedisTemplate<String, Object> redisHashTemplate(RedisConnectionFactory connectionFactory){
+        FastJsonRedisSerializer fastJsonRedisSerializer = new FastJsonRedisSerializer(Object.class);
+        FastJsonConfig jsonConfig = new FastJsonConfig();
+        jsonConfig.setSerializerFeatures(SerializerFeature.WriteMapNullValue);
+        fastJsonRedisSerializer.setFastJsonConfig(jsonConfig);
+        RedisTemplate<String,Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setHashKeySerializer(new StringRedisSerializer());
+        template.setHashValueSerializer(fastJsonRedisSerializer);
+        template.setValueSerializer(fastJsonRedisSerializer);
+        return template;
+    }
+    @Bean
+    public JedisPool redisPoolFactory() {
+
+        JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
+        jedisPoolConfig.setMaxIdle(maxIdle);
+        jedisPoolConfig.setMaxWaitMillis(maxWait);
+
+        JedisPool jedisPool = new JedisPool(jedisPoolConfig, host, port, timeout,password);
+        return jedisPool;
+    }
 }

@@ -2,14 +2,13 @@ package com.rzt.controller.app;
 
 import com.rzt.controller.CurdController;
 import com.rzt.entity.app.XsZcTaskwpqr;
+import com.rzt.eureka.UserCenterService;
 import com.rzt.service.app.XsZcTaskwpqrService;
 import com.rzt.util.WebApiResponse;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 
@@ -23,6 +22,8 @@ import java.util.Date;
 @RequestMapping("xsAppChange")
 @Api(value = "巡视任务app修改接口")
 public class XsZcTaskwpqrController extends CurdController<XsZcTaskwpqr, XsZcTaskwpqrService> {
+    @Autowired
+    UserCenterService userCenterService;
 
     /**
      * xslx 巡视类型 1 正常巡视 2 保电巡视 ID 任务id
@@ -34,9 +35,9 @@ public class XsZcTaskwpqrController extends CurdController<XsZcTaskwpqr, XsZcTas
      */
     @ApiOperation(value = "接单修改时间", notes = "接单修改时间")
     @PatchMapping("updateJdTime")
-    public Object updateJdTime(Integer xslx, Long id) {
+    public Object updateJdTime(Integer xslx, Long id,String userId) {
         try {
-            this.service.updateJdTime(id, xslx);
+            this.service.updateJdTime(id, xslx,userId);
             return WebApiResponse.success("数据保存成功!");
         } catch (Exception var3) {
             return WebApiResponse.erro("数据保存失败" + var3.getMessage());
@@ -178,9 +179,9 @@ public class XsZcTaskwpqrController extends CurdController<XsZcTaskwpqr, XsZcTas
      */
     @ApiOperation(value = "更新轮详情数据", notes = "更新轮详情数据 ")
     @PatchMapping("updateExecDetail")
-    public Object updateExecDetail(Integer xslx,Integer sfdw,String reason,Long execDetailId,String longtitude,String latitude) {
+    public Object updateExecDetail(Integer xslx,Integer sfdw,String reason,Long execDetailId,String longtitude,String latitude,Long taskId,String userId) {
         try {
-            this.service.updateExecDetail(xslx,sfdw, reason,execDetailId,longtitude,latitude);
+            this.service.updateExecDetail(xslx,sfdw, reason,execDetailId,longtitude,latitude,taskId,userId);
             return WebApiResponse.success("数据更新成功");
         } catch (Exception var3) {
             return WebApiResponse.erro("数据更新失败" + var3.getMessage());
@@ -198,9 +199,9 @@ public class XsZcTaskwpqrController extends CurdController<XsZcTaskwpqr, XsZcTas
      */
     @ApiOperation(value = "更新任务状态", notes = "更新任务状态 ")
     @PatchMapping("finishTask")
-    public Object updateTaskStatus(Integer xslx,Long id) {
+    public Object updateTaskStatus(Integer xslx,Long id,String userId) {
         try {
-            this.service.updateTaskStatus(xslx,id);
+            this.service.updateTaskStatus(xslx,id,userId);
             return WebApiResponse.success("数据更新成功");
         } catch (Exception var3) {
             return WebApiResponse.erro("数据更新失败" + var3.getMessage());
@@ -226,5 +227,47 @@ public class XsZcTaskwpqrController extends CurdController<XsZcTaskwpqr, XsZcTas
             return WebApiResponse.erro("数据更新失败" + var3.getMessage());
         }
     }
+
+    /**
+     * xslx 巡视类型
+     * 插入异常状态
+     *
+     * @param xslx  巡视类型
+     * @param id 任务id
+     * @return
+     */
+    @ApiOperation(value = "插入异常状态", notes = "插入异常状态 ")
+    @PostMapping("insertException")
+    public Object insertException(Long taskId,String ycms,String ycdata,String userId) {
+        try {
+            this.service.insertException(taskId,ycms,ycdata,userId);
+            return WebApiResponse.success("数据更新成功");
+        } catch (Exception var3) {
+            return WebApiResponse.erro("数据更新失败" + var3.getMessage());
+        }
+    }
+
+
+    /**
+     * xslx 巡视类型
+     * 插入异常状态
+     *
+     * @param userId 用户id
+     * @return
+     */
+    @ApiOperation(value = "插入异常状态", notes = "插入异常状态 ")
+    @GetMapping("updateXsMenInfoInRedis")
+    public Object updateXsMenInfoInRedis(String userId) {
+        try {
+//            userCenterService.updateKhInfoStatusInredis(userId);
+            this.service.updateXsMenInfoInRedis(userId);
+            return WebApiResponse.success("数据更新成功");
+
+        } catch (Exception var3) {
+            return WebApiResponse.erro("数据更新失败" + var3.getMessage());
+        }
+    }
+
+
 
 }

@@ -1,9 +1,6 @@
 package com.rzt.websocket.serverendpoint;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.rzt.util.WebApiResponse;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.websocket.*;
@@ -23,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * 任务人员统计
  */
 @RestController
-@ServerEndpoint("/serverendpoint/PersonnelTasks/{username}")
+@ServerEndpoint("/serverendpoint/PersonnelTasks/{userId}")
 public class PersonnelTasksServerEndpoint {
     /**
      * WebSocket服务器端通过一个线程安全的队列来保持所有客户端的Session
@@ -33,17 +30,15 @@ public class PersonnelTasksServerEndpoint {
     /**
      * 建立连接
      *
-     * @param usernamee
-     * @param orgid
+     * @param userId
      * @param session
      */
     @OnOpen
-    public void openSession(@PathParam("username") String usernamee, Session session) {
+    public void openSession(@PathParam("userId") String userId, Session session) {
         HashMap h = new HashMap();
         String sessionId = session.getId();
         h.put("session", session);
-        h.put("username", usernamee);
-//        h.put("orgid", orgid);
+        h.put("userId", userId);
         livingSessions.put(sessionId, h);
     }
 

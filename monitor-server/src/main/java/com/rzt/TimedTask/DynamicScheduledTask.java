@@ -3,9 +3,15 @@ package com.rzt.TimedTask;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import com.rzt.controller.CurdController;
+import com.rzt.entity.CheckResult;
+import com.rzt.entity.TimedTask;
+import com.rzt.service.CheckResultService;
+import com.rzt.service.TimedService;
 import com.rzt.service.XSZCTASKService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.Trigger;
 import org.springframework.scheduling.TriggerContext;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
@@ -19,12 +25,13 @@ import org.springframework.stereotype.Component;
  *      周期逻辑由副定时器负责
  */
 @Component
-public class DynamicScheduledTask implements SchedulingConfigurer {
+public class DynamicScheduledTask extends CurdController<TimedTask,TimedService> implements SchedulingConfigurer {
   private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
   protected static Logger LOGGER = LoggerFactory.getLogger(XSZCTASKService.class);
   //默认两小时一次
   private String cron = "0 0 0/2 * * ?";
-
+  //private String cron = "0 0/2 * * * ?";
+  @Autowired
   private XSZCTASKService service;
 
 
@@ -33,16 +40,10 @@ public class DynamicScheduledTask implements SchedulingConfigurer {
     taskRegistrar.addTriggerTask(new Runnable() {
       @Override
       public void run() {
-        /**
-         * 序号	抽查时间	通道公司	外协单位	任务详情	责任人	联系方式	抽查类型
-         * 获取当前巡查对象   故障多发线路  隐患集中地区   评分较低人员
-         */
+        //定时器启动时抓取任务信息
+        // 二级单位数据抓取
         service.xsTaskAddAndFind();
         LOGGER.info("主定时器查询数据");
-        /*System.out.println("主定时器时间：" + dateFormat.format(new Date()));
-        System.out.println("表达式"+cron);*/
-
-
       }
     }, new Trigger() {
       @Override

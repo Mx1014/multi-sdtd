@@ -21,10 +21,11 @@ import java.util.Date;
  * @author nwz
  */
 public class DateUtil {
-    public static final String                FORTER_DATE        = "yyyy-MM-dd";                  //默认日期格式
+    public static final String FORTER_DATE = "yyyy-MM-dd";   //默认日期格式
     private static Logger log = Logger.getLogger(DateUtil.class);
     private static final FastDateFormat SDF = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss");
     private static final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static final SimpleDateFormat formatter1 = new SimpleDateFormat("yyyy-MM-dd");
     private static String partterns[] = new String[5];
 
     static {
@@ -71,6 +72,14 @@ public class DateUtil {
         DateTime dt = new DateTime();
         String date = dt.toString(FORTER_DATE);
         return date;
+    }
+
+    /**
+     * 获取到天
+     * @return
+     */
+    public static String dateFormatToDay(Date date) {
+        return formatter1.format(date);
     }
 
 }

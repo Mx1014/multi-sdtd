@@ -20,7 +20,7 @@ public class DayDynamicScheduledTask implements SchedulingConfigurer {
   private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
   //默认早8点开始
   private String cron = "0 0 8 * * ?";
-  private Integer time = 2;
+  private String time = "2";
   //注入主定时器
   @Autowired
   private DynamicScheduledTask dyn;
@@ -36,6 +36,7 @@ public class DayDynamicScheduledTask implements SchedulingConfigurer {
          *  结束时段由夜晚起始时间控制
          */
         dyn.setCron("0 0 0/"+time+" * * ?");
+        //dyn.setCron("0 0/"+time+" * * * ?");
         System.out.println("白天时间：" + dateFormat.format(new Date()));
         System.out.println("表达式"+cron);
 
@@ -52,11 +53,11 @@ public class DayDynamicScheduledTask implements SchedulingConfigurer {
     });
   }
 
-  public void setCron(String cron,Integer time) {
+  public void setCron(String cron,String time) {
     if(null != cron && !"".equals(cron)){
       this.cron = cron;
     }
-    if(null != time && time>0){
+    if(null != time && !"".equals(time)){
       this.time=time;
     }
 

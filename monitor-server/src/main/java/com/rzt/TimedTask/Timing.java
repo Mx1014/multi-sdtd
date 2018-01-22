@@ -1,11 +1,15 @@
 package com.rzt.TimedTask;
 
+import com.rzt.controller.CurdController;
+import com.rzt.service.TimedService;
+import com.rzt.service.XSZCTASKService;
 import com.rzt.util.WebApiResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -16,65 +20,79 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("timing")
-public class Timing  {
+public class Timing  extends
+        CurdController<Timing,TimedService> {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
     @Autowired
     private NightDynamicScheduledTask night;
     @Autowired
     private DayDynamicScheduledTask day;
+    @Autowired
+    private XSZCTASKService xszctaskService;
 
     /**
      * 动态修改定时器内变量
-     * @param
+     * @param nightTime  夜间时间
+     * @param daytime      白天时间
+     * @param startTime    开始时间  代表白天刷新时间
+     * @param endTime      结束时间 代表夜间刷新时间
+     * @return
      */
-    @GetMapping("setCron")
-    public WebApiResponse setCron(Integer nightTime, Integer daytime, Integer startTime, Integer endTime){
-
+    @PostMapping("setCron")
+    public WebApiResponse setCron(String nightTime, String daytime, String startTime, String endTime){
+        WebApiResponse timedConfig =null;
         try{
             //夜晚
-            if((null != nightTime && nightTime>0) || (null != endTime && endTime>0)){//当更改某时段定时周期时  更改当前定时周期时间和当前时段中的定时周期
+            if((null != nightTime && !"".equals(nightTime)) || (null != endTime && !"".equals(endTime))){//当更改某时段定时周期时  更改当前定时周期时间和当前时段中的定时周期
                 //更改夜晚定时起始时间
-                //night.setCron("0 0 "+endTime+" * * ?",nightTime);
                 String cron = null;
-                if(null != endTime && endTime>0){
+                if(null != endTime && !"".equals(endTime)){
                     cron = "0 0 "+endTime+" * * ?";
+                    //cron = "0 "+endTime+" * * * ?";
                 }
                 night.setCron(cron,nightTime);
-                System.out.println("夜晚");
-                System.out.println(nightTime);
-                System.out.println(cron);
+
             }
             //白天
-            if((null != daytime && daytime>0) || (null != startTime && startTime>0)){//当更改某时段定时周期时  更改当前定时周期时间和当前时段中的定时周期
+            if((null != daytime && !"".equals(daytime)) || (null != startTime && !"".equals(startTime))){//当更改某时段定时周期时  更改当前定时周期时间和当前时段中的定时周期
                 //更改白天定时起始时间
                 //day.setCron("0 0 "+startTime+" * * ?",daytime);
                 String cron = null;
-                if(null != startTime && startTime>0){
+                if(null != startTime && !"".equals(startTime)){
                     cron = "0 0 "+startTime+" * * ?";
+                    //cron = "0 "+startTime+" * * * ?";
                 }
                 day.setCron(cron,daytime);
-                System.out.println("白天");
-                System.out.println(cron);
-                System.out.println(daytime);
+
             }
-            return WebApiResponse.success("success");
+             timedConfig = service.updateTimedConfig(nightTime, daytime, startTime, endTime);
+
+
         }catch (Exception e){
             return WebApiResponse.erro("发生错误"+e.getStackTrace());
         }
 
-
+        return timedConfig;
     }
+
+    @GetMapping("/getTimeConfig")
+    public WebApiResponse getTimeConfig(String userId){
+        return service.getTimedConfig(userId);
+    }
+
+
+
 
     /**
-     * 每三天刷新一次
-     * 0点刷新
+     * 一级单位数据抓取
+     * 每1天刷新一次
+     * 3点刷新
      */
-    @Scheduled(cron="0 0 0 0/2  * ? ")
+    @Scheduled(cron="0 0 0 0/3 * ? ")
     private void threeDayScheduledTask(){
-        System.out.println("0点刷新");
-
+        xszctaskService.xsTaskAddAndFindThree();
     }
+
 
 
 }

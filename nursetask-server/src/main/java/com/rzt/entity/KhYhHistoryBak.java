@@ -186,7 +186,7 @@ public class KhYhHistoryBak implements Serializable{
     private String yhId;
 
     public void setId(Long id){
-        this.id =   Long.valueOf(new SnowflakeIdWorker(0,0).nextId());
+        this.id =   Long.valueOf(new SnowflakeIdWorker(1,6).nextId());
     }
     @ExcelResources(title="",order=1)
     public Long getId(){

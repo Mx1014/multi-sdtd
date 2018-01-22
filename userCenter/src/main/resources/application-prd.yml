@@ -1,12 +1,12 @@
 server:
     port: 8098
-    context-path: /userCenter
+    context-path: /userCenter/
 token:
   expiretime: 300000000
 spring:
     datasource:
       type: com.alibaba.druid.pool.DruidDataSource
-      url: jdbc:oracle:thin:@168.130.1.32:1521:ORCL
+      url: jdbc:oracle:thin:@47.94.131.120:1521:orcl
 #      url: jdbc:oracle:thin:@192.168.1.111:1521:LIUZE
       username: sdtd27
       password: sdtd27
@@ -33,10 +33,10 @@ spring:
       name: userCenter
     redis:
         database: 0
-        host: 168.130.1.31
-        port: 31662
-        password:
-        timeout: 0
+        host: 39.106.206.129
+        port: 6379
+        password: Rzt82890758-Rzt82890758
+        timeout: 5000
         pool:
           max-active: 100
           max-idle: 8
@@ -45,6 +45,6 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:7002/eureka/
+      defaultZone: http://127.0.0.1:7002/eureka/
 logging:
   config: classpath:logback-spring.xml

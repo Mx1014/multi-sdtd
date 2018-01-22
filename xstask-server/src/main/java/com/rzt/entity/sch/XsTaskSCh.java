@@ -13,6 +13,15 @@ public class XsTaskSCh implements Serializable {
     private Integer ispf;
     private String tdOrg;
     private String userId;
+    private String taskName;
+
+    public String getTaskName() {
+        return taskName;
+    }
+
+    public void setTaskName(String taskName) {
+        this.taskName = taskName;
+    }
 
     public String getUserId() {
         return userId;

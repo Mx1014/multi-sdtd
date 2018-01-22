@@ -8,6 +8,7 @@ package com.rzt.entity;
 
 import com.rzt.util.excelUtil.ExcelResources;
 import com.rzt.utils.SnowflakeIdWorker;
+import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.Column;
@@ -28,6 +29,7 @@ import java.util.Date;
  * @version
  */
 @Entity
+@DynamicUpdate
 @Table(name="CHECK_LIVE_TASK_DETAILXS")
 public class CheckLiveTaskDetailXs  implements Serializable{
     //字段描述:
@@ -63,8 +65,8 @@ public class CheckLiveTaskDetailXs  implements Serializable{
     @Column(name = "DDXC_TIME")
     private Date ddxcTime;
     //字段描述: 周期内第多少次任务
-    @Column(name = "COUNT")
-    private Integer count;
+    @Column(name = "DZWL")
+    private Integer dzwl;
     //字段描述: 是否在岗(0是 1否)
     @Column(name = "SFZG")
     private Integer sfzg;
@@ -87,8 +89,13 @@ public class CheckLiveTaskDetailXs  implements Serializable{
     @Column(name = "CREATE_TIME")
     private Date createTime;
 
-    public void setId(){
-        this.id =   new SnowflakeIdWorker(3,0).nextId();
+    public void setId(Long id){
+        if(id==null){
+            this.id = new SnowflakeIdWorker(3,3).nextId();
+        }else{
+            this.id = id;
+
+        }
     }
     @ExcelResources(title="",order=1)
     public Long getId(){
@@ -167,12 +174,11 @@ public class CheckLiveTaskDetailXs  implements Serializable{
         return this.ddxcTime;
     }
 
-    public void setCount(Integer count){
-        this.count = count;
+    public void setDzwl(Integer dzwl){
+        this.dzwl = dzwl;
     }
-    @ExcelResources(title="周期内第多少次任务",order=12)
-    public Integer getCount(){
-        return this.count;
+    public Integer getDzwl(){
+        return this.dzwl;
     }
 
     public void setSfzg(Integer sfzg){

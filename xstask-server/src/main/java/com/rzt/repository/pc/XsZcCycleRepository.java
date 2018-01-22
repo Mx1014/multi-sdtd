@@ -35,18 +35,39 @@ public interface XsZcCycleRepository extends JpaRepository<XsZcCycle,String> {
 
     @Modifying
     @Transactional
-    @Query(value = "update xs_zc_cycle set cycle = ?2, in_use = ?3,plan_xs_num = ?4,plan_start_time = ?5,plan_end_time = ?6 where id= ?1", nativeQuery = true)
-    void updateCycle(Long id, Integer cycle, Integer inUse, Integer planXsNum, String planStartTime, String planEndTime);
+    @Query(value = "update xs_zc_cycle set cycle = ?2, in_use = ?3,plan_xs_num = ?4,plan_start_time = ?5,plan_end_time = ?6,is_kt = ?7,cm_user_id = ?8,td_org = ?9,wx_org = ?10,group_id = ?11,class_id = ?12 where id= ?1", nativeQuery = true)
+    void updateCycle(Long id, Integer cycle, Integer inUse, Integer planXsNum, String planStartTime, String planEndTime, Integer isKt, String cm_user_id, Object deptid, Object companyid, Object groupid, Object classid);
 
 
     @Modifying
     @Transactional
-    @Query(value = "update xs_zc_cycle set TOTAL_TASK_NUM = 1 where id= ?1", nativeQuery = true)
-    void updateTotalTaskNum(Long xsZcCycleId);
+    @Query(value = "update xs_zc_cycle set TOTAL_TASK_NUM = 1,class_id = ?2,wx_org = ?3,cm_user_id = ?4,td_org = ?5 where id= ?1", nativeQuery = true)
+    void updateTotalTaskNum(Long xsZcCycleId, String classid, String companyid, String userId, String deptid);
 
 
     @Modifying
     @Transactional
     @Query(value = "update xs_zc_task set is_delete = 1 where id in (?1)", nativeQuery = true)
     void logicalDeletePlan(Long[] ids);
+
+    @Modifying
+    @Transactional
+    @Query(value = "update xs_zc_cycle set TOTAL_TASK_NUM = 1 where id in (?1)", nativeQuery = true)
+    void updateCycleTotalBornNum(long id);
+
+    @Modifying
+    @Transactional
+    @Query(value = "update xs_zc_cycle set task_name = ?2 where id = ?1", nativeQuery = true)
+    void updatetaskname(long id, String taskName);
+
+    @Modifying
+    @Transactional
+    @Query(value = "update xs_zc_task set task_name = ?2 where id = ?1", nativeQuery = true)
+    void updatetaskname2(long id, String taskName);
+
+
+    @Modifying
+    @Transactional
+    @Query(value = "update xs_zc_cycle set cycle = ?2, in_use = ?3,plan_xs_num = ?4,plan_start_time = ?5,plan_end_time = ?6,is_kt = ?7 where id= ?1", nativeQuery = true)
+    void updateCycleTwo(Long id, Integer cycle, Integer inUse, Integer planXsNum, String planStartTime, String planEndTime, Integer isKt);
 }

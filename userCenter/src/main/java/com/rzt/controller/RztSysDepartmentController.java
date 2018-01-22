@@ -6,12 +6,16 @@
  */
 package com.rzt.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.RztSysDepartment;
 import com.rzt.service.RztSysDepartmentService;
 import com.rzt.util.WebApiResponse;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.hibernate.annotations.Parameter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,6 +38,8 @@ import java.util.Map;
 @Api(value = "ningweize")
 public class RztSysDepartmentController extends
         CurdController<RztSysDepartment, RztSysDepartmentService> {
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
     //新增子节点
     @ApiOperation(value = "新增子节点", notes = "新增子节点")
@@ -64,10 +70,19 @@ public class RztSysDepartmentController extends
     //根据父节点的id查询子孙节点
     @RequestMapping(value = "findDeptListByPid", method = RequestMethod.GET)
     @ApiOperation(value = "根据父节点的id查询子孙节点", notes = "根据父节点的id查询子孙节点")
-    public List<Map<String, Object>> findDeptListByPid(@RequestParam(required = false) String id) {
-        if (StringUtils.isEmpty(id))
-            id = this.service.getRootId();
-        return this.service.findDeptListByPid(0, 0, id);
+    public List<Map<String, Object>> findDeptListByPid(@RequestParam(required = false) String id, String userId) {
+        HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
+        JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", userId).toString());
+        if (Integer.valueOf(jsonObject.get("ROLETYPE").toString()) == 0) {
+            if (StringUtils.isEmpty(id))
+                id = this.service.getRootId();
+            return this.service.findDeptListByPid(0, 0, id);
+        } else if (Integer.valueOf(jsonObject.get("ROLETYPE").toString()) == 1 || Integer.valueOf(jsonObject.get("ROLETYPE").toString()) == 2) {
+            return this.service.findDeptListByPidZiFu(String.valueOf(jsonObject.get("DEPTID")));
+        } else if (Integer.valueOf(jsonObject.get("ROLETYPE").toString()) == 4) {
+            return this.service.findDeptListByPidZiFu(String.valueOf(jsonObject.get("GROUPID")));
+        }
+        return null;
     }
 
     //根据父节点id查询所有子节点
@@ -107,7 +122,7 @@ public class RztSysDepartmentController extends
     /**
      * 查询通道运维单位
      *
-     * @return
+     * @return String userId
      */
     @GetMapping("queryOrgName")
     @ApiOperation(value = "查询通道运维单位", notes = "查询通道运维单位")
