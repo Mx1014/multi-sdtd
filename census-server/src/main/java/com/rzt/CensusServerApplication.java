@@ -1,9 +1,6 @@
 package com.rzt;
 
-import com.rzt.websocket.serverendpoint.AlarmSituationServerEndpoint;
-import com.rzt.websocket.serverendpoint.MapServerEndpoint;
-import com.rzt.websocket.serverendpoint.PersonnelTasksServerEndpoint;
-import com.rzt.websocket.serverendpoint.historyServerEndpoint;
+import com.rzt.websocket.serverendpoint.*;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -79,5 +76,15 @@ public class CensusServerApplication {
     @Bean
     public historyServerEndpoint History() {
         return new historyServerEndpoint();
+    }
+
+    /**
+     * 第二版
+     *
+     * @return
+     */
+    @Bean
+    public ListDataServerEndpoint ListData() {
+        return new ListDataServerEndpoint();
     }
 }

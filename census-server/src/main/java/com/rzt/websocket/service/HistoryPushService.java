@@ -32,7 +32,7 @@ public class HistoryPushService extends CurdService<websocket, websocketReposito
 //                "(select count(h.id) from KH_YH_HISTORY h) zs from dual ";
         String sql1 = "SELECT " +
                 "  (SELECT count(h.id) " +
-                "   FROM XS_SB_YH h " +
+                "   FROM KH_YH_HISTORY h " +
                 "   WHERE trunc(CREATE_TIME) = trunc(sysdate)) sbyh, " +
                 "  (SELECT count(*) " +
                 "   FROM KH_YH_HISTORY h " +
