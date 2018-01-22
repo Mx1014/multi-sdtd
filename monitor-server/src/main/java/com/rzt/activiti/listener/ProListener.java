@@ -15,6 +15,7 @@ import javax.annotation.Resource;
 /**
  * 李成阳
  * 2018/1/17
+ * 看护取消节点监听类
  */
 @Component
 public class ProListener implements TaskListener {

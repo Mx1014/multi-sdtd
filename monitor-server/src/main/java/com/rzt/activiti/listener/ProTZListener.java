@@ -9,12 +9,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 李成阳
  * 2018/1/21
+ * 添加隐患台账节点监听类
  */
 public class ProTZListener  implements TaskListener {
 
 
     /**
-     * 监听当前看护取消节点   当监听到取消看护任务创建时   写入逻辑取消看护   当前节点继续前进 进入结束节点
+     * 监听当前台账节点     写入逻辑变更看护任务 调用添加隐患台账接口    当前节点继续前进 进入结束节点
      * @param delegateTask
      */
     @Override
