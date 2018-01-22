@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.netflix.discovery.converters.Auto;
 import com.rzt.entity.*;
+import com.rzt.eureka.MonitorService;
 import com.rzt.repository.KhLsCycleRepository;
 import com.rzt.repository.KhTaskRepository;
 import com.rzt.repository.KhYhHistoryRepository;
@@ -32,6 +33,8 @@ public class KhLsCycleService extends CurdService<KhLsCycle, KhLsCycleRepository
     private KhTaskRepository taskRepository;
     @Autowired
     private XsSbYhRepository yhRepository;
+    @Autowired
+    private MonitorService monitorService;
 
     @Transactional
     public WebApiResponse saveLsCycle(String yhId) {
@@ -57,6 +60,7 @@ public class KhLsCycleService extends CurdService<KhLsCycle, KhLsCycleRepository
             cycle.setSection(yh.getSection());
             cycle.setTaskName(taskName);
             this.reposiotry.save(cycle);
+            monitorService.start("wtsh",yh.getTbrid(),yhId,"1","","");
             return WebApiResponse.success(cycle.getId());
         } catch (Exception e) {
             e.printStackTrace();

@@ -3,6 +3,7 @@ package com.rzt.activiti.Eureka;
 import com.rzt.entity.KhYhHistory;
 import com.rzt.util.WebApiResponse;
 import org.springframework.cloud.netflix.feign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -38,4 +39,15 @@ public interface nurseTaskService {
                                       @RequestParam(name = "tdOrgName")String tdOrgName,
                                       @RequestParam(name = "checkType")String checkType,
                                       @RequestParam(name = "checkDept")String checkDept);
+
+    /**
+     * 添加隐患台账的接口
+     * @param yhId
+     * @return
+     */
+    @GetMapping("/nurseTask/kyYhHistory/reviewYh")
+    WebApiResponse reviewYh(@RequestParam(name = "yhId") long yhId);
+
+
+
 }

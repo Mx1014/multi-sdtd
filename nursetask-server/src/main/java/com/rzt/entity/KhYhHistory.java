@@ -225,6 +225,17 @@ public class KhYhHistory implements Serializable {
     //字段描述: 是否悬挂警示牌
     @Column(name="SJXL")
     private String sjxl;
+    //字段描述: 是否悬挂警示牌
+    @Column(name="CLASS_ID")
+    private String classId;
+
+    public String getClassId() {
+        return classId;
+    }
+
+    public void setClassId(String classId) {
+        this.classId = classId;
+    }
 
     public String getSms() {
         return sms;
