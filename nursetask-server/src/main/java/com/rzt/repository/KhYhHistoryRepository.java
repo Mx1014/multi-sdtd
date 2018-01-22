@@ -70,4 +70,10 @@ public interface KhYhHistoryRepository extends JpaRepository<KhYhHistory,String>
     @Transactional
     @Query(value = "update KH_YH_HISTORY SET YHMS=?2,yhzrdw=?3,yhzrdwlxr=?4,yhzrdwdh=?5 WHERE ID=?1",nativeQuery = true)
     void updateYhHistory2(Long id, String yhms, String yhzrdw, String yhzrdwlxr, String yhzrdwdh);
+
+
+    @Modifying
+    @Transactional
+    @Query(value = "update KH_YH_HISTORY SET class_id=?2 WHERE ID=?1",nativeQuery = true)
+    void updatess(String id, Long id1);
 }

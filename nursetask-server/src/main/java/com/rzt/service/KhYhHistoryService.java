@@ -6,32 +6,26 @@
  */
 package com.rzt.service;
 
+import com.alibaba.fastjson.JSON;
 import com.rzt.entity.KhCycle;
-import com.rzt.entity.XsSbYh;
 import com.rzt.repository.KhYhHistoryRepository;
 import com.rzt.entity.KhYhHistory;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DateUtil;
 import com.rzt.utils.ExcelUtil;
 import com.rzt.utils.HanyuPinyinHelper;
-import com.rzt.utils.MapUtil;
-import com.sun.xml.internal.bind.v2.model.core.ID;
-import org.apache.commons.lang.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.util.StringUtil;
 import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.OutputStream;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -370,8 +364,27 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         }
     }
 
-    public WebApiResponse exportYhHistory(HttpServletResponse response) {
-        String sql1 = "select y.* from kh_yh_history y,kh_site c where c.yh_id =y.id and c.status=1";
+    public WebApiResponse exportYhHistory(HttpServletResponse response, Object josn, String userId) {
+        String sql1 = "select y.* from kh_yh_history y left join kh_site c on y.id=c.yh_id where y.yhzt=0 ";
+        Map jsonObject = JSON.parseObject(josn.toString(), Map.class);
+        Integer roleType = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
+        Object tdId = jsonObject.get("DEPTID");
+        Object classid = jsonObject.get("CLASSID");
+        Object companyid = jsonObject.get("COMPANYID");
+        List params = new ArrayList<>();
+        if (roleType == 1 || roleType == 2) {
+            sql1 += " and y.yworg_id=" + tdId;
+        }
+        if (roleType == 3) {
+            sql1 += " and c.wxorg_Id=" + companyid;
+        }
+        if (roleType == 4) {
+            sql1 += " and y.class_id=" + classid;
+        }
+        if (roleType == 5) {
+            sql1 += " and c.user_id=" + userId;
+        }
+
         List<Map<String, Object>> yhList = this.execSql(sql1);
         try {
             XSSFWorkbook wb = new XSSFWorkbook();
@@ -521,8 +534,8 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                     row.createCell(5).setCellValue(task.get("VTYPE").toString());//通道单位
                 }
                 String[] sections = task.get("SECTION").toString().split("-");
-                row.createCell(6).setCellValue(sections[0]);//班组
-                row.createCell(7).setCellValue(sections[1]);//巡视人员
+                row.createCell(6).setCellValue(sections[0]);//起始杆塔
+                row.createCell(7).setCellValue(sections[1]);//终止杆塔
                 if (task.get("SJXL") != null) {
                     row.createCell(8).setCellValue(task.get("SJXL").toString());
                 }
@@ -638,7 +651,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
     public WebApiResponse lineArea(Integer id) {
         try {
             String sql = "select id as \"value\",NAME as \"label\",PID, ID,NAME from LINE_AREA start with pid= ?1 CONNECT by prior id =  PID";
-            List<Map<String, Object>> list = this.execSql(sql,id);
+            List<Map<String, Object>> list = this.execSql(sql, id);
             List list1 = treeOrgList(list, list.get(0).get("PID").toString());
             return WebApiResponse.success(list1);
         } catch (Exception e) {
@@ -660,4 +673,36 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         }
         return childOrg;
     }
+
+    public void find() {
+        try {
+            List<KhYhHistory> all = this.reposiotry.findAll();
+            for (KhYhHistory yh : all) {
+                String className = yh.getClassName();
+                String tdorgId = yh.getTdorgId();
+                if (className != null && tdorgId != null) {
+                    try {
+                        String sql = "select * from rztsysdepartment where deptpid=? and deptname like ?";
+                        Map<String, Object> map = this.execSqlSingleResult(sql, tdorgId, className);
+                        this.reposiotry.updatess(map.get("ID").toString(), yh.getId());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public WebApiResponse reviewYh(long yhId) {
+        try {
+            return WebApiResponse.success("");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("保存失败");
+        }
+    }
+
 }

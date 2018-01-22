@@ -225,7 +225,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                         double jd = (Double.parseDouble(map.get("LONGITUDE").toString()) + Double.parseDouble(map1.get("LONGITUDE").toString())) / 2;
                         double wd = (Double.parseDouble(map.get("LATITUDE").toString()) + Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
                         double radius = MapUtil.GetDistance(Double.parseDouble(map.get("LONGITUDE").toString()), Double.parseDouble(map.get("LATITUDE").toString()), Double.parseDouble(map1.get("LONGITUDE").toString()), Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
-                        yh.setRadius("100.0");
+                        yh.setRadius("150.0");
                         yh.setJd(map.get("LONGITUDE").toString());
                         yh.setWd(map.get("LATITUDE").toString());
                     }
@@ -359,6 +359,20 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                 taskService.add(task);
             }
             this.reposiotry.updateCycleById(id);  // 重新生成多个周期
+            try {
+                String userId = list.get(0).get("userId").toString();
+                String sql = "SELECT d.id DID,d.DEPTNAME DNAME,c.id CID,c.COMPANYNAME CNAME\n" +
+                        "FROM RZTSYSUSER u LEFT JOIN RZTSYSDEPARTMENT d on u.CLASSNAME = d.ID LEFT JOIN RZTSYSCOMPANY c on c.id = u.COMPANYID WHERE U.ID=? ";
+                Map<String, Object> map = this.execSqlSingleResult(sql, userId);
+                if (map.get("DID") != null) {
+                    this.reposiotry.updateYH2(cycle.getYhId(), map.get("DID").toString(), map.get("DNAME").toString());
+                }
+                if (map.get("CID") != null) {
+                    this.reposiotry.updateYH3(cycle.getYhId(), map.get("CID").toString(), map.get("CNAME").toString());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             return WebApiResponse.success("任务派发成功");
         } catch (Exception e) {
             e.printStackTrace();
