@@ -34,7 +34,7 @@ public class CreateTask extends CurdController<KhTask, KhTaskService> implements
             @Override
             public void run() {
                 //定时器启动时抓取任务信息
-                service.createTask();
+               // service.createTask();
                 System.out.println("定时任务"+dateFormat.format(DateUtil.getCurrentDate()));
             }
         }, new Trigger() {
