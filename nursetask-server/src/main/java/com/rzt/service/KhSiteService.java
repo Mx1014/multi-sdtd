@@ -212,39 +212,39 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
         try {
             KhCycle task = new KhCycle();
             String kv = "";
-            if (null == yh.getId()) {
-                yh.setYhfxsj(DateUtil.parseDate(fxtime));
-                yh.setSfdj(0);
-                try {
-                    if (!yh.getStartTower().isEmpty()) {
-                        String startTower = "select longitude,latitude from cm_tower where id = ?";
-                        String endTower = "select longitude,latitude from cm_tower where id = ?";
-                        Map<String, Object> map = execSqlSingleResult(startTower, Long.parseLong(yh.getStartTower()));
-                        Map<String, Object> map1 = execSqlSingleResult(endTower, Long.parseLong(yh.getEndTower()));
-                        //经度
-                        double jd = (Double.parseDouble(map.get("LONGITUDE").toString()) + Double.parseDouble(map1.get("LONGITUDE").toString())) / 2;
-                        double wd = (Double.parseDouble(map.get("LATITUDE").toString()) + Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
-                        double radius = MapUtil.GetDistance(Double.parseDouble(map.get("LONGITUDE").toString()), Double.parseDouble(map.get("LATITUDE").toString()), Double.parseDouble(map1.get("LONGITUDE").toString()), Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
-                        yh.setRadius("150.0");
-                        yh.setJd(map.get("LONGITUDE").toString());
-                        yh.setWd(map.get("LATITUDE").toString());
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
+            yh.setYhfxsj(DateUtil.parseDate(fxtime));
+            yh.setSfdj(1);
+            try {
+                if (!yh.getStartTower().isEmpty()) {
+                    String startTower = "select longitude,latitude from cm_tower where id = ?";
+                    String endTower = "select longitude,latitude from cm_tower where id = ?";
+                    Map<String, Object> map = execSqlSingleResult(startTower, Long.parseLong(yh.getStartTower()));
+                    Map<String, Object> map1 = execSqlSingleResult(endTower, Long.parseLong(yh.getEndTower()));
+                    //经度
+                    double jd = (Double.parseDouble(map.get("LONGITUDE").toString()) + Double.parseDouble(map1.get("LONGITUDE").toString())) / 2;
+                    double wd = (Double.parseDouble(map.get("LATITUDE").toString()) + Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
+                    double radius = MapUtil.GetDistance(Double.parseDouble(map.get("LONGITUDE").toString()), Double.parseDouble(map.get("LATITUDE").toString()), Double.parseDouble(map1.get("LONGITUDE").toString()), Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
+                    yh.setRadius("150.0");
+                    yh.setJd(map.get("LONGITUDE").toString());
+                    yh.setWd(map.get("LATITUDE").toString());
                 }
-
-                task.setId();
-                kv = yh.getVtype();
-                if (yh.getVtype().contains("kV")) {
-                    kv = kv.substring(0, kv.indexOf("k"));
-                }
-                yh.setTaskId(task.getId());
-                yh.setYhzt(0);//隐患未消除
-                yh.setId(0L);
-                yh.setCreateTime(DateUtil.dateNow());
-                yh.setSection(startTowerName + "-" + endTowerName);
-                yhservice.add(yh);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
+
+            task.setId();
+            kv = yh.getVtype();
+            if (yh.getVtype().contains("kV")) {
+                kv = kv.substring(0, kv.indexOf("k"));
+            }
+            yh.setTaskId(task.getId());
+            yh.setYhzt(0);//隐患未消除
+            if (yh.getId() != 0) {
+                yh.setId(0L);
+            }
+            yh.setCreateTime(DateUtil.dateNow());
+            yh.setSection(startTowerName + "-" + endTowerName);
+            yhservice.add(yh);
             String taskName = kv + "-" + yh.getLineName() + " " + yh.getSection() + " 号杆塔看护任务";
             task.setVtype(yh.getVtype());
             task.setLineName(yh.getLineName());
@@ -261,13 +261,13 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             this.cycleService.add(task);
             long id = new SnowflakeIdWorker(2, 4).nextId();
             this.reposiotry.addCheckSite(id, task.getId(), 0, task.getTaskName(), 0, task.getLineId(), task.getTdywOrgId(), task.getWxOrgId(), task.getYhId());
-            if (null != pictureId && !pictureId.equals("")) {
+            /*if (null != pictureId && !pictureId.equals("")) {
                 String[] split = pictureId.split(",");
                 for (int i = 0; i < split.length; i++) {
                     yhRepository.updatePicture(Long.parseLong(split[i]), yh.getId());
                     //审批完成后   为图片添加taskId
                 }
-            }
+            }*/
             return WebApiResponse.success("保存成功");
         } catch (Exception e) {
             e.printStackTrace();

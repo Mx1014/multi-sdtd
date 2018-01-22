@@ -8,8 +8,11 @@ package com.rzt.service;
 
 import com.alibaba.fastjson.JSON;
 import com.rzt.entity.KhCycle;
+import com.rzt.entity.KhSite;
+import com.rzt.entity.XsSbYh;
 import com.rzt.repository.KhYhHistoryRepository;
 import com.rzt.entity.KhYhHistory;
+import com.rzt.repository.XsSbYhRepository;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DateUtil;
 import com.rzt.utils.ExcelUtil;
@@ -44,6 +47,10 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
     private KhCycleService cycleService;
     @Autowired
     private XsSbYhService xsService;
+    @Autowired
+    private XsSbYhRepository xsRepository;
+    @Autowired
+    private KhSiteService siteService;
 
     public WebApiResponse list() {
         try {
@@ -533,9 +540,11 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 if (task.get("VTYPE") != null) {
                     row.createCell(5).setCellValue(task.get("VTYPE").toString());//通道单位
                 }
-                String[] sections = task.get("SECTION").toString().split("-");
-                row.createCell(6).setCellValue(sections[0]);//起始杆塔
-                row.createCell(7).setCellValue(sections[1]);//终止杆塔
+                if (task.get("SECTION") != null) {
+                    String[] sections = task.get("SECTION").toString().split("-");
+                    row.createCell(6).setCellValue(sections[0]);//起始杆塔
+                    row.createCell(7).setCellValue(sections[1]);//终止杆塔
+                }
                 if (task.get("SJXL") != null) {
                     row.createCell(8).setCellValue(task.get("SJXL").toString());
                 }
@@ -698,11 +707,67 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
 
     public WebApiResponse reviewYh(long yhId) {
         try {
-            return WebApiResponse.success("");
+            //先查出这条数据
+            XsSbYh sbYh = xsRepository.findYh(yhId);
+            //根据yhid将原lscycle停用
+            this.reposiotry.updateLsCycle(sbYh.getId());
+            //保存隐患、生成周期、
+            KhYhHistory yh = new KhYhHistory();
+            yh.setId(sbYh.getId());
+//            yh.setCreateTime();
+            yh.setYhzrdwlxr(sbYh.getYhzrdwlxr());
+            yh.setYhzrdw(sbYh.getYhzrdw());
+            yh.setYhzrdwdh(sbYh.getYhzrdwdh());
+            yh.setTbrid(sbYh.getTbrid());
+            yh.setTdywOrg(sbYh.getTdywOrg());
+            yh.setTdorgId(sbYh.getTdorgId());
+            yh.setWxorgId(sbYh.getWxorgId());
+            yh.setTdwxOrg(sbYh.getTdwxOrg());
+            yh.setYhxcyy(sbYh.getYhxcyy());
+            yh.setYhtdqx(sbYh.getYhtdqx());
+            yh.setYhtdxzjd(sbYh.getYhtdxzjd());
+            yh.setYhtdc(sbYh.getYhtdc());
+            yh.setYhms(sbYh.getYhms());
+            yh.setYhjb(sbYh.getYhjb());
+            yh.setYhlb(sbYh.getYhlb());
+            yh.setYhjb1(sbYh.getYhjb1());
+            yh.setXstaskId(sbYh.getXstaskId());
+            yh.setVtype(sbYh.getVtype());
+            yh.setGkcs(sbYh.getGkcs());
+            yh.setSms(sbYh.getSms());
+            yh.setJsp(sbYh.getJsp());
+            yh.setSjxl(sbYh.getSjxl());
+            yh.setSdgs(0);
+            yh.setLineId(sbYh.getLineId());
+            yh.setLineName(sbYh.getLineName());
+            yh.setTbsj(sbYh.getCreateTime());
+//            yh.setClassName(sbYh.getLineName());
+//            yh.setClassId(sbYh.getclass);
+            String[] split = sbYh.getSection().split("-");
+            siteService.saveYh(yh, DateUtil.getStringDate(), split[0].toString(), split[1].toString(), "");
+            //将原上报隐患的图片关联
+//            String sql = "";
+            //
+            return WebApiResponse.success("保存成功");
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("保存失败");
         }
     }
 
+    public WebApiResponse deleteYhById(long yhId) {
+        try {
+            String sql = "SELECT * FROM KH_CYCLE WHERE YH_ID=? and STATUS IN (1,0)";
+            List<Map<String, Object>> maps = this.execSql(sql, yhId);
+            if (maps.size() > 0) {
+                throw new Exception();
+            } else {
+                this.reposiotry.deleteYhById(yhId);
+            }
+            return WebApiResponse.success("删除成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("删除失败" + e.getMessage());
+        }
+    }
 }
