@@ -88,25 +88,30 @@ public class ProController {
      * @return
      */
     @GetMapping("/proClick")
-    public WebApiResponse chuLi(String taskId,String YHID,String flag,String isKH,String info,String proId,String userName){
-      try {
+    public WebApiResponse chuLi(String taskId,String YHID,String flag,String isKH,String info,String proId,String userName
+    ,String LINE_NAME,String TDYW_ORG,String YWORG_ID){
+        String dept = "";
+        if(null == userName || "".equals(userName)){
+            return WebApiResponse.erro("当前用户权限获取失败 ");
+        }
 
-          userName = redisUtil.findRoleIdByUserId(userName);
+      try {
+          if(null != userName && !"".equals(userName)){
+               dept = redisUtil.findTDByUserId(userName);
+              userName = redisUtil.findRoleIdByUserId(userName);
+          }
+
           //将稽查和看护任务派发     完成后拿到看护任务的id  进入下一个节点 稽查节点
           String khid = "";
-          //需要派发稽查任务
           Map<String, Object> map = new HashMap<>();
           if (null != isKH && "1".equals(isKH)){
               //需要派发看护任务
-
               String sql = "";
               if(null != YHID && !"".equals(YHID)){
-                  //Object data = nurseTaskService.saveLsCycle(YHID).getData();
-                  //System.out.println("++++++++++++++++"+data);
                   //生成看护任务成功  添加看护id到流程
-                  map.put("khid",khid);
+                  Object data = nurseTaskService.saveLsCycle(YHID).getData();
+                  map.put("khid",data.toString());
               }
-              System.out.println("看护任务派发---------------------------------------");
           }
 
 
@@ -117,21 +122,23 @@ public class ProController {
 
           //获取节点前进后的id   用流程实例id做条件
           String id = proService.findIdByProId(proId);
-          //测试稽查
+          //测试稽查  sdid 代表属地监控中心   jkid 代表公司监控中心
           if("sdid".equals(userName) || "jkid".equals(userName)){
-              proService.complete(id,map);
+            // 当dept.equals(TDYW_ORG)?"2":"1"   等于时代表是第二次派出稽查   不等于是派出第一次稽查
+              nurseTaskService.addCheckLiveTasksb(id,
+                      "0",LINE_NAME+"隐患点",YHID,YWORG_ID,
+                      TDYW_ORG,dept.equals(TDYW_ORG)?"2":"1",dept);
+              //proService.complete(id,map);
           }
 
           if(null == id || "".equals(id)){
               return WebApiResponse.erro("当前节点任务不存在");
           }
-         /* String tdByUserId = redisUtil.findTDByUserId(userName);
-          System.out.println(tdByUserId+"============================登录人通道单位======");*/
-          System.out.println("节点任务id"+id+"-------------------------------------------");
+
+
           //调用稽查接口   派发稽查任务
       }catch (Exception e){
-          System.out.println("------------");
-          System.out.println(e.getMessage());
+            return WebApiResponse.erro("进入节点失败"+e.getMessage());
       }
         return WebApiResponse.success("进入下一节点");
 
@@ -149,18 +156,17 @@ public class ProController {
      * @return
      */
     @GetMapping("/jchd")
-    public WebApiResponse jicha(String taskId,String YHID,String flag,String isKH){
-        //稽查任务回调   回调时需要传递当前任务id  和flag  隐患id
-
-
-
-
-
-     /*   Map<String, Object> map = new HashMap<>();
-        map.put("YHID",YHID);
-        map.put("flag",flag);
-        proService.complete(taskId,map);*/
-        return null;
+    public WebApiResponse jicha(String taskId,String YHID,String flag){
+        try {
+            //稽查任务回调   回调时需要传递当前任务id  和flag  隐患id
+            Map<String, Object> map = new HashMap<>();
+            map.put("YHID",YHID);
+            map.put("flag",flag);
+            proService.complete(taskId,map);
+            return WebApiResponse.success("稽查回调成功");
+        }catch (Exception e){
+            return WebApiResponse.erro("稽查任务回调失败"+e.getMessage());
+        }
     }
     /**
      * 查看所有待办任务
