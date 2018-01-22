@@ -68,9 +68,9 @@ public class PICTURETOURService extends CurdService<PICTURETOUR,PICTURETOURRepos
                 result.put("id",String.valueOf(picturetour.getId()));
                 result.put("thumPath",thumPath);
                 result.put("picPath",targetPath);
-                System.out.println(targetPath);
-                System.out.println(thumPath);
-                System.out.println(picName);
+//                System.out.println(targetPath);
+//                System.out.println(thumPath);
+//                System.out.println(picName);
             }
 
         } catch (IOException e) {
