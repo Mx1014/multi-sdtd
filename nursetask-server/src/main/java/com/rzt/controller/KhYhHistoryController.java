@@ -114,5 +114,9 @@ public class KhYhHistoryController extends
 		return this.service.reviewYh(yhId);
 	}
 
-
+	@ApiOperation(value = "隐患审核通过",notes = "隐患审核通过")
+	@DeleteMapping("deleteYhById")
+	public WebApiResponse deleteYhById(long yhId){
+		return this.service.deleteYhById(yhId);
+	}
 }

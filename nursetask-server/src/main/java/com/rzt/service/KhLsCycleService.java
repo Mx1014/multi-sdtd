@@ -60,7 +60,7 @@ public class KhLsCycleService extends CurdService<KhLsCycle, KhLsCycleRepository
             cycle.setSection(yh.getSection());
             cycle.setTaskName(taskName);
             this.reposiotry.save(cycle);
-            monitorService.start("wtsh",yh.getTbrid(),yhId,"1","","");
+            monitorService.start("wtsh", yh.getTbrid(), yhId, "1", "", "");
             return WebApiResponse.success(cycle.getId());
         } catch (Exception e) {
             e.printStackTrace();
@@ -102,13 +102,13 @@ public class KhLsCycleService extends CurdService<KhLsCycle, KhLsCycleRepository
 
             //权限
             if (roleType != null) {
-                if (roleType.equals("1") || roleType.equals("2")) {
+                if (roleType == 1 || roleType == 2) {
                     buffer.append(" and k.TDYW_ORGID = " + tdId);
                 }
-                if (roleType.equals("3")) {
+                if (roleType == 3) {
                     buffer.append(" and k.WX_ORGID = " + companyid);
                 }
-                if (roleType.equals("0")) {
+                if (roleType == 0) {
 
                 } else {
                     buffer.append(" and y.id=0 ");
@@ -116,7 +116,7 @@ public class KhLsCycleService extends CurdService<KhLsCycle, KhLsCycleRepository
             }
 
 
-            String sql = "select " + result + " from kh_ls_cycle k left join xs_sb_yh y on k.yh_id=y.id where status=0 ";
+            String sql = "select " + result + " from kh_ls_cycle k left join xs_sb_yh y on k.yh_id=y.id where status=0 " + buffer.toString();
             Page<Map<String, Object>> maps = this.execSqlPage(pageable, sql, params.toArray());
             List<Map<String, Object>> content1 = maps.getContent();
             for (Map map : content1) {
@@ -145,7 +145,7 @@ public class KhLsCycleService extends CurdService<KhLsCycle, KhLsCycleRepository
                     String wxname = map1.get("NAME").toString();
                     String wxid = map1.get("ID").toString();
                     task.setWxOrg(wxname);
-                    this.reposiotry.updateCycle(wxname,wxid,cycle.getId());
+                    this.reposiotry.updateCycle(wxname, wxid, cycle.getId());
                 } catch (Exception e) {
 
                 }
