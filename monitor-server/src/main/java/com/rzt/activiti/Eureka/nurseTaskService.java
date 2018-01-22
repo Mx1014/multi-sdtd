@@ -29,7 +29,7 @@ public interface nurseTaskService {
      * @param checkDept
      * @return
      */
-    @PostMapping("/nurseTask/KhLsCycle/saveLsCycle")
+    @PostMapping("/nurseTask/CheckLiveTasksb/addCheckLiveTasksb")
     WebApiResponse addCheckLiveTasksb(@RequestParam(name = "taskId")String taskId,
                                       @RequestParam(name = "taskType")String taskType,
                                       @RequestParam(name = "taskName")String taskName,
