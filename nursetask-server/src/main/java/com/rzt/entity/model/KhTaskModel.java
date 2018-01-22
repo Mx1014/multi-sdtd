@@ -20,6 +20,16 @@ public class KhTaskModel {
 
     private String userName;
 
+    private String taskType;
+
+    public String getTaskType() {
+        return taskType;
+    }
+
+    public void setTaskType(String taskType) {
+        this.taskType = taskType;
+    }
+
     public void setUserName(String userName) {
         this.userName = userName;
     }

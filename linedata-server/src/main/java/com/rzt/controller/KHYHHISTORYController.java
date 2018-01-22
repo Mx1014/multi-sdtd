@@ -40,10 +40,5 @@ public class KHYHHISTORYController extends
 	}
 
 
-	@ApiOperation(value = "隐患导入接口",notes = "隐患导入接口")
-	@PostMapping("ImportYh")
-	public WebApiResponse ImportYh(){
-//		MultipartFile file
-		return service.ImportYh();
-	}
+
 }

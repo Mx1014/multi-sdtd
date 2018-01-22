@@ -1,5 +1,6 @@
 package com.rzt.redisListener;
 
+import com.rzt.eureka.StaffLine;
 import com.rzt.service.Monitorcheckejservice;
 import com.rzt.service.Monitorcheckyjservice;
 import com.rzt.service.RedisService;
@@ -24,6 +25,9 @@ public class Subscriber extends JedisPubSub {
     @Autowired
     private RedisService redisService;
 
+    @Autowired
+    private StaffLine staffLine;
+
     @Override
     // 初始化按表达式的方式订阅时候的处理
     public void onPSubscribe(String pattern, int subscribedChannels) {
@@ -44,10 +48,9 @@ public class Subscriber extends JedisPubSub {
                      monitorcheckej.saveCheckEj(messages);
                      String key = "ONE+"+messages[1]+"+"+messages[2]+"+"+messages[3]+"+"+messages[4]+"+"+messages[5]+"+"+messages[6];
                      redisService.setex(key);
-                    //}
+
                 }catch (Exception e){
                     LOGGER.error("插入数据失败："+e.getMessage());
-                   // System.out.println("插入数据失败："+e.getMessage());
                 }
             }else if("ONE".equals(messages[0])){  //表示告警任务过期 插入到一级单位表中
                 /*if("8".equals(messages[3])||"2".equals(messages[3])){
@@ -64,6 +67,7 @@ public class Subscriber extends JedisPubSub {
         }catch (Exception e){
             //System.out.println(e.getMessage());
         }
+
     }
 
 

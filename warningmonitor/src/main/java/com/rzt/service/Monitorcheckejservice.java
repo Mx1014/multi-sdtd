@@ -346,9 +346,9 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
         //0表示是一级单位
         try {
             if ("0".equals(deptId)) {
-                return WebApiResponse.success(resp.updateYJ(taskId, type, warningType, checkInfo, checkAppInfo, createTime));
+                return WebApiResponse.success(resp.updateYJ(taskId, type, warningType, checkInfo, checkAppInfo));
             } else {
-                return WebApiResponse.success(resp.updateEJ(taskId, type, warningType, checkInfo, checkAppInfo, createTime));
+                return WebApiResponse.success(resp.updateEJ(taskId, type, warningType, checkInfo, checkAppInfo));
             }
         } catch (Exception e) {
             return WebApiResponse.erro("添加失败" + e.getMessage());
@@ -366,9 +366,9 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
         //0表示是一级单位
         try {
             if ("0".equals(deptId)) {
-                return WebApiResponse.success(resp.updateYJC(taskId, type, warningType, checkInfo, userId, createTime));
+                return WebApiResponse.success(resp.updateYJC(taskId, type, warningType, checkInfo, userId));
             } else {
-                return WebApiResponse.success(resp.updateEJC(taskId, type, warningType, checkInfo, userId, createTime));
+                return WebApiResponse.success(resp.updateEJC(taskId, type, warningType, checkInfo, userId));
             }
         } catch (Exception e) {
             return WebApiResponse.erro("添加失败" + e.getMessage());

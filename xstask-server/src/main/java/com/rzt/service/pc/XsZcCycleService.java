@@ -16,9 +16,9 @@ import com.rzt.service.CurdService;
 import com.rzt.service.app.XSZCTASKService;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DateUtil;
+import com.rzt.utils.SnowflakeIdWorker;
 import org.apache.poi.hssf.usermodel.HSSFDataFormatter;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.util.StringUtil;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -492,10 +492,15 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
         return maps;
     }
 
-    public Object listExecByTaskid(Long taskId) {
+    public Object listExecByTaskid(Long taskId) throws Exception {
         String sql = "select id,XS_CREATE_TIME,XS_END_TIME,XS_STATUS,XS_REPEAT_NUM from XS_ZC_TASK_EXEC where XS_ZC_TASK_ID = ? order by ID";
+        String vLevel = "select t.V_LEVEL from xs_zc_cycle t join XS_ZC_TASK tt on t.id = tt.XS_ZC_CYCLE_ID and tt.id = ?";
+        Map<String, Object> map = this.execSqlSingleResult(vLevel,taskId);
         List<Map<String, Object>> maps = this.execSql(sql, taskId);
-        return maps;
+        Map<String,Object> wodemap = new HashMap<String,Object>();
+        wodemap.put("gantas",maps);
+        wodemap.put("vLevel",map.get("V_LEVEL"));
+        return wodemap;
     }
 
     public Object listExecDetail(Long execId) {

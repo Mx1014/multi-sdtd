@@ -40,7 +40,7 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 	@ApiOperation(value = "看护稽查任务未派发看护任务列表接口",notes = "看护稽查任务未派发看护任务列表分页查询，条件搜索")
 	@GetMapping("/listKhCheckPage")
 	public WebApiResponse listKhCheckPage(@RequestParam(value = "page",defaultValue = "0") Integer page,
-										  @RequestParam(value = "size",defaultValue = "15") Integer size,
+										  @RequestParam(value = "size",defaultValue = "8") Integer size,
 										 String lineId,String tddwId,String currentUserId){
 		try{
 			Pageable pageable = new PageRequest(page, size);
@@ -78,7 +78,7 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 	@ApiOperation(value = "看护稽查任务已派发看护任务列表接口",notes = "看护稽查任务已派发看护任务列表分页查询，条件搜索")
 	@GetMapping("/listKhCheckTaskPage")
 	public WebApiResponse listKhCheckTaskPage(@RequestParam(value = "page",defaultValue = "0") Integer page,
-											  @RequestParam(value = "size",defaultValue = "15") Integer size,
+											  @RequestParam(value = "size",defaultValue = "8") Integer size,
 											  String userId,String tddwId,String currentUserId,String startTime, String endTime,String status){
 		try{
 			Pageable pageable = new PageRequest(page, size);
@@ -109,7 +109,7 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 	@ApiOperation(value = "app任务列表",notes = "app任务列表")
 	@GetMapping("/appCheckList")
 	public WebApiResponse appCheckList(@RequestParam(value = "page",defaultValue = "0") Integer page,
-										  @RequestParam(value = "size",defaultValue = "15") Integer size,
+										  @RequestParam(value = "size",defaultValue = "8") Integer size,
 										  String userId,String taskType){
 		try{
 			Pageable pageable = new PageRequest(page, size);

@@ -84,9 +84,8 @@ public class KhLsCycleService extends CurdService<KhLsCycle, KhLsCycleRepository
                 params.add(endTime);
             }
             if (taskName != null && !taskName.equals("")) {  //线路名查询
-                taskName = "%" + taskName + "%";
                 buffer.append(" and k.task_name like ? ");
-                params.add(taskName);
+                params.add("%" + taskName + "%");
             }
             if (yhjb != null && !yhjb.equals("")) {
                 buffer.append(" and y.yhjb like ? ");

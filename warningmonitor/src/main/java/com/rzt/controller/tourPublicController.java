@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("GJKH")
 public class tourPublicController extends CurdController<Monitorcheckej, tourPublicService> {
 
-    //未到杆塔半径5米内
+    //未到杆塔半径5米内(无法到位)
     @GetMapping("xsTourScope")
     public WebApiResponse xsTourScope(Long taskid, String userid) {
         return this.service.xsTourScope(taskid, userid);
@@ -27,6 +27,13 @@ public class tourPublicController extends CurdController<Monitorcheckej, tourPub
             return WebApiResponse.erro("巡视未按标准拍照添加失败");
         }
     }
+
+    //看护不到位
+   /* @GetMapping("khWFDW")
+    public void khWFDW(Long taskid, String userid){
+        this.service.khWFDW(taskid,userid);
+
+    }*/
 
     /**
      * 看护脱岗

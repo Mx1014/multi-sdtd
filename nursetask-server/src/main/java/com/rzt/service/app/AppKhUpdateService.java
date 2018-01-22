@@ -3,26 +3,20 @@ package com.rzt.service.app;
 import com.rzt.entity.KhTask;
 import com.rzt.entity.KhTaskWpqr;
 import com.rzt.eureka.UserCenterService;
-import com.rzt.repository.AppKhTaskRepository;
+import com.rzt.eureka.WarningMonitorServer;
 import com.rzt.repository.AppKhUpdateRepository;
 import com.rzt.service.CurdService;
 import com.rzt.service.KhTaskWpqrService;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DateUtil;
-import com.rzt.utils.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
 
-import java.util.Date;
 import java.util.Map;
 import java.util.Set;
-
-import static java.lang.Integer.*;
 
 /**
  * Created by admin on 2017/12/22.
@@ -36,6 +30,8 @@ public class AppKhUpdateService extends CurdService<KhTask, AppKhUpdateRepositor
     private KhTaskWpqrService wpqrService;
     @Autowired
     private UserCenterService userService;
+    @Autowired
+    private WarningMonitorServer warningServer;
 
     //修改实际开始时间
     public WebApiResponse updateRealTime(long taskId, String userId) {
@@ -45,8 +41,12 @@ public class AppKhUpdateService extends CurdService<KhTask, AppKhUpdateRepositor
                 //if (isdw != null && reason != null) {
                 this.reposiotry.updateRealStartTime(taskId, DateUtil.dateNow());
                 this.reposiotry.updateZxnum(1, taskId);//修改执行页数
-                if (userId != null) {
-                    userService.updateKhInfoStatusInredis(userId);
+                try {
+                    if (userId != null) {
+                        userService.updateKhInfoStatusInredis(userId);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
             removeSomeKey(taskId);
@@ -101,7 +101,7 @@ public class AppKhUpdateService extends CurdService<KhTask, AppKhUpdateRepositor
         }
     }
 
-    public WebApiResponse updateDdxcTime(Long taskId, String isdw, String reason) {
+    public WebApiResponse updateDdxcTime(Long taskId, String isdw, String reason, String userId) {
         try {
             int num = this.reposiotry.findNum(taskId);
             if (num < 5) {
@@ -110,11 +110,22 @@ public class AppKhUpdateService extends CurdService<KhTask, AppKhUpdateRepositor
             } else {
                 this.reposiotry.updateIsDz(taskId, Integer.parseInt(isdw), reason);
             }
+            try {
+                if (isdw.equals("1") && userId != null) {
+                    warningServer.khWFDW(taskId, userId);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             return WebApiResponse.success("修改成功");
-        } catch (Exception e) {
+        } catch (
+                Exception e)
+
+        {
             e.printStackTrace();
             return WebApiResponse.erro("修改失败");
         }
+
     }
 
     public WebApiResponse updateClzt(String clzt, long taskId) {
@@ -132,8 +143,12 @@ public class AppKhUpdateService extends CurdService<KhTask, AppKhUpdateRepositor
     public WebApiResponse updateEndTime(long taskId, String userId) {
         try {
             this.reposiotry.updateEndTime(DateUtil.dateNow(), taskId);
-            if (userId != null) {
-                userService.updateKhInfoStatusInredis(userId);
+            try {
+                if (userId != null) {
+                    userService.updateKhInfoStatusInredis(userId);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
             return WebApiResponse.success("修改成功");
         } catch (Exception e) {
