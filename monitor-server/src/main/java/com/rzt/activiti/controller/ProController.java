@@ -1,10 +1,12 @@
 package com.rzt.activiti.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.rzt.activiti.Eureka.nurseTaskService;
 import com.rzt.entity.KhYhHistory;
 import com.rzt.repository.YHrepository;
 import com.rzt.activiti.service.impl.ProServiceImpl;
 import com.rzt.util.WebApiResponse;
+import com.rzt.utils.RedisUtil;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,6 +35,9 @@ public class ProController {
     private RedisTemplate redisTemplate;
     @Autowired
     private YHrepository yHrepository;
+    @Autowired
+    private RedisUtil redisUtil;
+
 
     /**
      * 开启流程
@@ -85,7 +91,7 @@ public class ProController {
     public WebApiResponse chuLi(String taskId,String YHID,String flag,String isKH,String info,String proId,String userName){
       try {
 
-
+          userName = redisUtil.findRoleIdByUserId(userName);
           //将稽查和看护任务派发     完成后拿到看护任务的id  进入下一个节点 稽查节点
           String khid = "";
           //需要派发稽查任务
@@ -95,8 +101,8 @@ public class ProController {
 
               String sql = "";
               if(null != YHID && !"".equals(YHID)){
-                  Object data = nurseTaskService.saveLsCycle(YHID).getData();
-                  System.out.println("++++++++++++++++"+data);
+                  //Object data = nurseTaskService.saveLsCycle(YHID).getData();
+                  //System.out.println("++++++++++++++++"+data);
                   //生成看护任务成功  添加看护id到流程
                   map.put("khid",khid);
               }
@@ -119,6 +125,8 @@ public class ProController {
           if(null == id || "".equals(id)){
               return WebApiResponse.erro("当前节点任务不存在");
           }
+         /* String tdByUserId = redisUtil.findTDByUserId(userName);
+          System.out.println(tdByUserId+"============================登录人通道单位======");*/
           System.out.println("节点任务id"+id+"-------------------------------------------");
           //调用稽查接口   派发稽查任务
       }catch (Exception e){
@@ -161,7 +169,8 @@ public class ProController {
      */
     @GetMapping("/findTaskByUserName")
     public WebApiResponse toTask(String userId,Integer page,Integer size){
-        return proService.checkTask(userId,page,size);
+        String roleIdByUserId = redisUtil.findRoleIdByUserId(userId);
+        return proService.checkTask(roleIdByUserId,page,size);
 
     }
 
@@ -182,18 +191,49 @@ public class ProController {
      * 部署流程
      * @return
      */
-    @GetMapping("/deploy")
-    private WebApiResponse deploy(){
+    @GetMapping("/dep")
+    public WebApiResponse dep(){
         proService.deploy();
         return WebApiResponse.success("");
-
     }
+
+
 
     @GetMapping("/history")
     public WebApiResponse gethi(String assignee,Integer page,Integer size){
-       return proService.historyActInstanceList(assignee, page, size);
+        String roleIdByUserId = redisUtil.findRoleIdByUserId(assignee);
+        System.out.println(roleIdByUserId+"====================用户id换 节点名");
+        return proService.historyActInstanceList(assignee, page, size);
     }
 
+
+
+    /**
+     * 完善隐患信息
+     * @param YHID 隐患id
+     * @param YHMS 隐患描述
+     * @param YHTDQX 区县
+     * @param YHTDXZJD 乡镇
+     * @param YHTDC 村
+     * @param GKCS  管控措施
+     * @param XCP   宣传牌
+     * @return
+     */
+    @GetMapping("/perfectYH")
+    @Transactional
+    public WebApiResponse perfectYH(String YHID,String YHMS,String YHTDQX,String YHTDXZJD,String YHTDC,String GKCS,String XCP){
+        System.out.println(GKCS);
+        try {
+            yHrepository.perfectYH(YHID,YHMS,YHTDQX,YHTDXZJD,YHTDC,GKCS,XCP);
+            return WebApiResponse.success("");
+        }catch (Exception e){
+            return WebApiResponse.erro("更新隐患信息失败"+e.getMessage());
+        }
+    }
+    @GetMapping("/tree")
+    public WebApiResponse tree(){
+        return proService.tree();
+    }
 
 
 

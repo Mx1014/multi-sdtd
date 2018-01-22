@@ -20,10 +20,9 @@ public class ProTZListener  implements TaskListener {
     @Override
     public void notify(DelegateTask delegateTask) {
         ProServiceImpl proService = (ProServiceImpl) SpringUtil.getObject("proServiceImpl");
-        String idByProId = proService.findIdByProId(delegateTask.getProcessInstanceId());
         //查询当前流程是否由看护任务
-        String YHID = (String) proService.checkTask(idByProId, "YHID");
-        String khid = (String) proService.checkTask(idByProId, "khid");
+        String YHID = (String) proService.checkTask(delegateTask.getId(), "YHID");
+        String khid = (String) proService.checkTask(delegateTask.getId(), "khid");
         //变更看护任务
         if(null != khid && !"".equals(khid)){
             System.out.println("变更看护任务"+khid);
@@ -34,7 +33,6 @@ public class ProTZListener  implements TaskListener {
         }
         System.out.println("进入节点监听  隐患台账节点"+YHID);
         //结束流程
-        proService.complete(idByProId,null);
-        System.out.println(delegateTask);
+        proService.complete(delegateTask.getId(),null);
     }
 }
