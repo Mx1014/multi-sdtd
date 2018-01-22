@@ -49,20 +49,29 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         buffer.append(" where k.plan_start_time between to_date(?,'YYYY-MM-DD hh24:mi') and to_date(?,'YYYY-MM-DD hh24:mi') ");
         params.add(task.getPlanStartTime());
         params.add(task.getPlanEndTime());
+
+        //查询框
         if (task.getTaskName() != null && !task.getTaskName().equals("")) {
             task.setTaskName("%" + task.getTaskName() + "%");
             buffer.append(" and k.task_name like ? ");
             params.add(task.getTaskName());
         }
-        //此处的状态要改
         if (status != null && !status.equals("")) {
             buffer.append(" and k.status = ? ");
             params.add(Integer.parseInt(status));
         }
         if (task.getUserName() != null && !task.getUserName().equals("")) {
             task.setUserName("%" + task.getUserName() + "%");
-            buffer.append(" and u.realname like ?");
+            buffer.append(" and u.realname like ? ");
             params.add(task.getUserName());
+        }
+        if (task.getTaskType() != null && !task.getTaskType().equals("")){
+            buffer.append(" and k.task_type =? ");
+            params.add(Integer.parseInt(task.getTaskType()));
+        }
+        if (yworg!=null && !yworg.equals("")){
+            buffer.append(" and k.tdyw_org like ? ");
+            params.add("%"+yworg+"%");
         }
         String sql = "";
 
@@ -414,7 +423,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         task.setYhId(site.getYhId());
         task.setStatus(0);
         this.reposiotry.addTask(task.getId(), task.getSiteId(), task.getUserId(), task.getTaskName(), task.getYhId(),
-                task.getPlanStartTime(), task.getPlanEndTime(), task.getWxOrg(), task.getCount(), task.getTdywOrg());
+                task.getPlanStartTime(), task.getPlanEndTime(), task.getWxOrg(), task.getCount(), task.getTdywOrg(),0);
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     }
 

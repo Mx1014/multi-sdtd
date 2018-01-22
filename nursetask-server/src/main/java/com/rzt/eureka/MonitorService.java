@@ -13,4 +13,6 @@ public interface MonitorService {
                          @RequestParam("flag")String flag,
                          @RequestParam("info")String info,
                          @RequestParam("khid")String khid);
+    @GetMapping("warningmonitorServer/GJKH/khWFDW")
+    void  khWFDW(Long taskid, String userid);
 }

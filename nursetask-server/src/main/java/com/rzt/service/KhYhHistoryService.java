@@ -15,6 +15,7 @@ import com.rzt.utils.DateUtil;
 import com.rzt.utils.ExcelUtil;
 import com.rzt.utils.HanyuPinyinHelper;
 import com.rzt.utils.MapUtil;
+import com.sun.xml.internal.bind.v2.model.core.ID;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
@@ -126,7 +127,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             if (!radius.contains(".")) {
                 radius = radius + ".0";
             }
-           // this.reposiotry.updateYh(Long.parseLong(yhId), lat, lon, radius);
+            // this.reposiotry.updateYh(Long.parseLong(yhId), lat, lon, radius);
             this.reposiotry.updateCycle(Long.parseLong(yhId), lat, lon, radius);
             return WebApiResponse.success("保存成功");
         } catch (Exception e) {
@@ -190,18 +191,18 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             List<Map<String, Object>> list = this.execSql(sql);
             while (row != null && !"".equals(row.toString().trim())) {
 
-              KhYhHistory yh = new KhYhHistory();
+                KhYhHistory yh = new KhYhHistory();
                 HSSFCell cell = row.getCell(1);
                 if (cell == null || "".equals(ExcelUtil.getCellValue(cell))) {
                     break;
                 }
-                for (Map map:list){
-                    if (map.get("TASK_NAME").toString().equals(ExcelUtil.getCellValue(row.getCell(1)))){
+                for (Map map : list) {
+                    if (map.get("TASK_NAME").toString().equals(ExcelUtil.getCellValue(row.getCell(1)))) {
                         String username = ExcelUtil.getCellValue(row.getCell(0));
-                        String sql1="select id,realname from rztsysuser where realname like ? and deptid='402881e6603a69b801603a70c9920007'";
-                        Map<String, Object> map1 = this.execSqlSingleResult(sql1, "%"+username+"%");
+                        String sql1 = "select id,realname from rztsysuser where realname like ? and deptid='402881e6603a69b801603a70c9920007'";
+                        Map<String, Object> map1 = this.execSqlSingleResult(sql1, "%" + username + "%");
                         System.out.println(map1.get("REALNAME").toString());
-                        this.reposiotry.updates(Long.parseLong(map.get("ID").toString()),map1.get("ID").toString());
+                        this.reposiotry.updates(Long.parseLong(map.get("ID").toString()), map1.get("ID").toString());
                     }
                 }
 
@@ -520,8 +521,8 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                     row.createCell(5).setCellValue(task.get("VTYPE").toString());//通道单位
                 }
                 String[] sections = task.get("SECTION").toString().split("-");
-                    row.createCell(6).setCellValue(sections[0]);//班组
-                    row.createCell(7).setCellValue(sections[1]);//巡视人员
+                row.createCell(6).setCellValue(sections[0]);//班组
+                row.createCell(7).setCellValue(sections[1]);//巡视人员
                 if (task.get("SJXL") != null) {
                     row.createCell(8).setCellValue(task.get("SJXL").toString());
                 }
@@ -609,13 +610,54 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         return WebApiResponse.success("");
     }
 
-    public WebApiResponse updateYhHistory(KhYhHistory yh) {
+    public WebApiResponse updateYhHistory(KhYhHistory yh, String startTowerName, String endTowerName) {
         try {
-            this.reposiotry.updateYhHistory(yh);
+            if (startTowerName != null && !startTowerName.equals("")) {
+                String section = startTowerName + "-" + endTowerName;
+                this.reposiotry.updateYhHistory(yh.getId(), yh.getYhms(), yh.getStartTower(), yh.getEndTower(), yh.getYhzrdw(), yh.getYhzrdwlxr(), yh.getYhzrdwdh(), section);
+            } else {
+                this.reposiotry.updateYhHistory2(yh.getId(), yh.getYhms(), yh.getYhzrdw(), yh.getYhzrdwlxr(), yh.getYhzrdwdh());
+            }
             return WebApiResponse.success("");
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
-            return WebApiResponse.erro("保存失败"+e.getMessage());
+            return WebApiResponse.erro("修改失败" + e.getMessage());
         }
+    }
+
+    public WebApiResponse updateYhjb(String yhjb) {
+        try {
+//            if (yhjb)
+            return WebApiResponse.success("");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("修改失败" + e.getMessage());
+        }
+    }
+
+    public WebApiResponse lineArea(Integer id) {
+        try {
+            String sql = "select id as \"value\",NAME as \"label\",PID, ID,NAME from LINE_AREA start with pid= ?1 CONNECT by prior id =  PID";
+            List<Map<String, Object>> list = this.execSql(sql,id);
+            List list1 = treeOrgList(list, list.get(0).get("PID").toString());
+            return WebApiResponse.success(list1);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("获取失败" + e.getMessage());
+        }
+    }
+
+    public List treeOrgList(List<Map<String, Object>> orgList, String parentId) {
+        List childOrg = new ArrayList<>();
+        for (Map<String, Object> map : orgList) {
+            String menuId = String.valueOf(map.get("ID"));
+            String pid = String.valueOf(map.get("PID"));
+            if (parentId.equals(pid)) {
+                List c_node = treeOrgList(orgList, menuId);
+                map.put("children", c_node);
+                childOrg.add(map);
+            }
+        }
+        return childOrg;
     }
 }
