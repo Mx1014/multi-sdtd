@@ -171,7 +171,7 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
                         key = "TWO+"+map.get("ID")+"+1+2+"+map.get("CM_USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
                     }
                     jedis.del(key);
-                    resp.updateOnlineTime(userId,map.get("ID").toString());
+                   // resp.updateOnlineTime(userId,map.get("ID").toString());
                 }
             } catch (Exception e) {
                 //System.out.println(e.getMessage());
