@@ -13,7 +13,7 @@ import com.rzt.repository.CheckLiveTaskDetailRepository;
 import com.rzt.repository.CheckLiveTaskRepository;
 import com.rzt.repository.CheckLiveTaskXsRepository;
 import com.rzt.repository.KhYhHistoryRepository;
-import com.rzt.utils.DateUtil;
+import com.rzt.utils.DateTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -191,7 +191,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
         task.setCheckType(0); //0 看护  1巡视
         //task.setTaskType(0);//（0 正常 1保电 2 特殊）
         task.setCheckCycle(1);
-        task.setTaskName(username+DateUtil.getCurrentDate()+"稽查任务");
+        task.setTaskName(username+ DateTool.format(task.getPlanStartTime(),"yyyy-MM-dd")+"稽查任务");
         CheckLiveTask save = reposiotry.save(task);
         String[] split = save.getTaskId().split(",");//隐患ids
         for (int i = 0; i < split.length; i++) {
@@ -266,7 +266,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
     public Page<Map<String,Object>> checkChildrenList(Pageable pageable,String id, String taskId,String taskType) {
         String sql = "";
         //0看护 1巡视 0待稽查 1已稽查
-        if("0,0".equals(taskType)){
+        if("0,0".equals(taskType)||"0,1".equals(taskType)){
             sql = "select d.id detail_id,c.yh_id,c.task_name,c.tdyw_org,wx_org,d.status from CHECK_LIVE_TASK_DETAIL d " +
                     " left join KH_CYCLE c on d.kh_task_id=c.YH_ID " +
                     " where 1=1 ";
@@ -276,7 +276,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
             if (!StringUtils.isEmpty(taskId)) {
                 sql += " and c.YH_ID in ("+taskId+")";
             }
-        }else if("1,0".equals(taskType)){
+        }else if("1,0".equals(taskType)||"1,1".equals(taskType)){
             sql = "select d.id detail_id,t.id xs_zc_task_id,t.task_name,d.status,t.PLAN_START_TIME,u.realname from CHECK_LIVE_TASK_DETAILXS d left join XS_ZC_TASK t on d.xs_task_id=t.id " +
                     "left join rztsysuser u on u.id = t.cm_user_id " +
                     "where 1=1 ";
@@ -303,9 +303,9 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
     public Object getById(Long id,String taskType) {
         Object obj = new Object();
         //0看护 1巡视 0待稽查 1已稽查
-        if("0,0".equals(taskType)){
+        if("0,0".equals(taskType)||"0,1".equals(taskType)){
             obj = reposiotry.findById(id);
-        }else if("1,0".equals(taskType)){
+        }else if("1,0".equals(taskType)||"1,1".equals(taskType)){
             obj = checkLiveTaskXsRepository.findById(id);
         }
         return obj;
@@ -315,10 +315,10 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
     public Object checkChildrenDetail(String id, String taskType) throws Exception {
         Object obj = new Object();
         //0看护 1巡视 0待稽查 1已稽查
-        if("0,0".equals(taskType)){
+        if("0,0".equals(taskType)||"0,1".equals(taskType)){
             //此处id是隐患id
             obj = khYhHistoryRepository.findById(Long.valueOf(id));
-        }else if("1,0".equals(taskType)){
+        }else if("1,0".equals(taskType)||"1,1".equals(taskType)){
             //此处id是xs_zc_taskk的id
             String sql = "select TASK_NAME,PLAN_START_TIME,PLAN_END_TIME,CM_USER_ID from xs_zc_task where id= "+id;
             Map<String, Object> map = execSqlSingleResult(sql);
@@ -380,14 +380,17 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
         return execSqlSingleResult(sql);
     }
 
+    //无用TODO
     public Object checkDetailDone(String id, String taskId, String taskType) {
-        Object obj = new Object();
+        List<Map<String, Object>> list = new ArrayList<>();
         //0看护 1巡视 0待稽查 1已稽查
         if("0,1".equals(taskType)){
-
+            String sql = "select p.id,p.FILE_PATH,p.FILE_SMALL_PATH,p.PROCESS_NAME,p.CREATE_TIME from check_live_task t,CHECK_LIVE_TASK_DETAIL d,PICTURE_JC p where t.id=d.TASK_ID AND (p.TASK_ID=t.ID OR p.TASK_ID=d.id) and t.id="+id;
+            list = execSql(sql);
         }else if("1,1".equals(taskType)){
-
+            String sql = "select p.id,p.FILE_PATH,p.FILE_SMALL_PATH,p.PROCESS_NAME,p.CREATE_TIME from check_live_taskxs t,CHECK_LIVE_TASK_DETAILxs d,PICTURE_JC p where t.id=d.TASK_ID AND (p.TASK_ID=t.ID OR p.TASK_ID=d.id) and t.id="+id;
+            list = execSql(sql);
         }
-        return obj;
+        return list;
     }
 }

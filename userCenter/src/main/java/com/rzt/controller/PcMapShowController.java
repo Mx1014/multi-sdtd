@@ -356,7 +356,7 @@ public class PcMapShowController {
                 list.add(map.get("DEPTID"));
 
             }
-            StringBuffer menInLineSql = new StringBuffer("select t.userid,tt.REALNAME from (" + tempTable + ") t join RZTSYSUSER tt on t.userid = tt.ID");
+            StringBuffer menInLineSql = new StringBuffer("select t.USERID,tt.REALNAME,tt.LOGINSTATUS from (" + tempTable + ") t join RZTSYSUSER tt on t.userid = tt.ID");
             List<Map<String, Object>> userMaps = cmcoordinateService.execSql(menInLineSql.toString(),list.toArray());
             return WebApiResponse.success(userMaps);
         } catch (Exception e) {
