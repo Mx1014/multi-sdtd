@@ -2,6 +2,7 @@ package com.rzt.service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.TimedTask;
+import com.rzt.repository.TimedConfigRepository;
 import com.rzt.repository.XSZCTASKRepository;
 import com.rzt.util.WebApiResponse;
 import org.slf4j.Logger;
@@ -30,7 +31,8 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
     private XSZCTASKRepository repository;
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
-
+    @Autowired
+    private TimedConfigRepository timedConfigRepository;
     /**
      *查询所有为抽查任务列表
      * @param page
@@ -267,6 +269,10 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
             }
                 LOGGER.info("巡视稽查任务抽查完毕");*/
 
+
+          // 此处更改定时器配置表中的上次刷新时间
+
+            timedConfigRepository.updateTimedConfigLastTime(new Date(),"TIME_CONFIG");
 
         }catch (Exception e){
             LOGGER.error("（二级单位，周期可变，小时为单位 ）定时任务数据抽取失败"+e.getMessage());

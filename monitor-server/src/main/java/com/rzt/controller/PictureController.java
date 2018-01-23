@@ -76,13 +76,25 @@ public class PictureController extends
      * 获取当前隐患的图片
      * @param id
      * @param taskType
-
      * @return
      */
     @GetMapping("/findPicByTaskId")
     public WebApiResponse findPicByTaskId(Long id,String taskType){
         return service.findPicByTaskId(id,taskType);
     }
+
+    /**
+     * 查看当前任务所有有问题的照片   页面回显提示使用
+     * @param taskId
+     * @return
+     */
+    @GetMapping("/findPicByPro")
+    public WebApiResponse findPicByPro(String taskId){
+        return service.findPicByPro(taskId);
+
+    }
+
+
 
 
 }

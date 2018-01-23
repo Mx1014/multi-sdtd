@@ -76,6 +76,11 @@ public class RedisUtil  extends CurdService<CheckResult, CheckResultRepository> 
         return null;
     }
 
+    /**
+     * 根据用户id  获取当前通道公司汉字名
+     * @param userId
+     * @return
+     */
    public  String findTDByUserId(String userId) {
        Jedis resource = null;
         try {
@@ -97,4 +102,5 @@ public class RedisUtil  extends CurdService<CheckResult, CheckResultRepository> 
         return null;
 
     }
+    
 }

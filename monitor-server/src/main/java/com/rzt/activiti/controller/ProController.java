@@ -174,9 +174,9 @@ public class ProController {
      * @return
      */
     @GetMapping("/findTaskByUserName")
-    public WebApiResponse toTask(String userId,Integer page,Integer size){
-        String roleIdByUserId = redisUtil.findRoleIdByUserId(userId);
-        return proService.checkTask(roleIdByUserId,page,size);
+    public WebApiResponse toTask(String userId,Integer page,Integer size,String YHLB,String YHJB,String start,String end,String deptId){
+
+        return proService.checkTasks(userId,page,size,YHLB,YHJB,start,end,deptId);
 
     }
 
@@ -240,6 +240,33 @@ public class ProController {
     @GetMapping("/tree")
     public WebApiResponse tree(){
         return proService.tree();
+    }
+
+    @GetMapping("/findLB")
+    public WebApiResponse findLB(){
+        return proService.findLB();
+    }
+
+    /**
+     * 页面 通道单位框权限接口
+     * @param userId
+     * @return
+     */
+    @GetMapping("/auth")
+    public String auth(String userId){
+        try{
+            String roleIdByUserId = redisUtil.findRoleIdByUserId(userId);
+            if("sdid".equals(roleIdByUserId) || "sdyjid".equals(roleIdByUserId)){
+                return "0";
+            }else if("jkid".equals(roleIdByUserId) || "yjid".equals(roleIdByUserId)){
+                return "1";
+            }else {
+                return "";
+            }
+        }catch (Exception e){
+
+            return "权限查询失败"+e.getMessage();
+        }
     }
 
 

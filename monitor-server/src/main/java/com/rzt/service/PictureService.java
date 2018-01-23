@@ -106,16 +106,38 @@ public class PictureService extends CurdService<CheckResult, CheckResultReposito
                                  "    LEFT JOIN XS_ZC_TASK_EXEC_DETAIL l ON x.ID = l.XS_ZC_TASK_EXEC_ID RIGHT JOIN PICTURE_TOUR p ON l.ID = p.PROCESS_ID"
                                  +   "   WHERE p.TASK_ID = ?1  AND P.FILE_TYPE = 1 AND START_TOWER_ID = ?2 ORDER BY  p.CREATE_TIME DESC ";
                          List<Map<String, Object>> maps2 = this.execSql(sql ,objects);
+
                          //所有的巡视图片组   AND END_TOWER_ID = 0
                          group.add(maps2);
                      }
                  }
+                 //当任务还没开启时的人员照片
+                 String sql1 = "SELECT p.ID,FILE_PATH,p.CREATE_TIME,p.PROCESS_NAME as OPERATE_NAME" +
+                         "   FROM xs_zc_task k LEFT JOIN XS_ZC_TASK_EXEC x ON k.ID = x.XS_ZC_TASK_ID" +
+                         "    LEFT JOIN XS_ZC_TASK_EXEC_DETAIL l ON x.ID = l.XS_ZC_TASK_EXEC_ID RIGHT JOIN PICTURE_TOUR p ON l.ID = p.PROCESS_ID" +
+                         "   WHERE p.TASK_ID = "+taskId+" AND FILE_TYPE = 1 AND p.PROCESS_ID =1";
+
+                 String sql2 = "SELECT p.ID,FILE_PATH,p.CREATE_TIME,p.PROCESS_NAME as OPERATE_NAME" +
+                         "   FROM xs_zc_task k LEFT JOIN XS_ZC_TASK_EXEC x ON k.ID = x.XS_ZC_TASK_ID" +
+                         "    LEFT JOIN XS_ZC_TASK_EXEC_DETAIL l ON x.ID = l.XS_ZC_TASK_EXEC_ID RIGHT JOIN PICTURE_TOUR p ON l.ID = p.PROCESS_ID" +
+                         "   WHERE p.TASK_ID = "+taskId+" AND FILE_TYPE = 1 AND p.PROCESS_ID =2";
+
+                 String sql3 = "SELECT p.ID,FILE_PATH,p.CREATE_TIME,p.PROCESS_NAME as OPERATE_NAME" +
+                         "   FROM xs_zc_task k LEFT JOIN XS_ZC_TASK_EXEC x ON k.ID = x.XS_ZC_TASK_ID" +
+                         "    LEFT JOIN XS_ZC_TASK_EXEC_DETAIL l ON x.ID = l.XS_ZC_TASK_EXEC_ID RIGHT JOIN PICTURE_TOUR p ON l.ID = p.PROCESS_ID" +
+                         "   WHERE p.TASK_ID = "+taskId+" AND FILE_TYPE = 1 AND p.PROCESS_ID =3";
+                 List<Map<String, Object>> mapsa = this.execSql(sql1 ,null);
+                 List<Map<String, Object>> mapsb = this.execSql(sql2 ,null);
+                 List<Map<String, Object>> mapsc = this.execSql(sql3 ,null);
+                 group.add(mapsa);
+                 group.add(mapsb);
+                 group.add(mapsc);
                  LOGGER.info("任务图片查询成功");
                  return  WebApiResponse.success(group);
              }
              if("2".equals(taskType)){//看护
 
-                 String sql = "SELECT p.ID,FILE_PATH,p.CREATE_TIME,p.PROCESS_NAME,y.LINE_NAME as OPERATE_NAME,k.TASK_NAME  " +
+                 String sql = "SELECT p.ID,FILE_PATH,p.CREATE_TIME,p.PROCESS_NAME,y.LINE_NAME,k.TASK_NAME as OPERATE_NAME " +
                          " FROM KH_TASK k LEFT JOIN PICTURE_KH p ON k.ID = p.TASK_ID LEFT JOIN  KH_YH_HISTORY y ON  k.ID = y.TASK_ID" +
                          "  WHERE k.ID = ?"+list.size()+" AND FILE_TYPE = 1" +
                          "   ORDER BY p.CREATE_TIME DESC";
@@ -385,5 +407,36 @@ public class PictureService extends CurdService<CheckResult, CheckResultReposito
     }
 
 
+    public WebApiResponse findPicByPro(String taskId) {
+        if(null == taskId || "".equals(taskId)){
+            return WebApiResponse.erro("参数错误，taskid="+taskId);
+        }
+       try {
+           ArrayList<String> strings = new ArrayList<>();
+           strings.add(taskId);
+           String sql = "SELECT r.PHOTO_IDS" +
+                   "       FROM CHECK_DETAIL d LEFT JOIN  CHECK_RESULT r ON d.ID = r.CHECK_DETAIL_ID" +
+                   "    WHERE d.QUESTION_TASK_ID = ?"+strings.size();
+           List<Map<String, Object>> maps = this.execSql(sql, strings);
+           String ids = "";
+           for (Map<String, Object> map : maps) {
+               ids += map.get("PHOTO_IDS") == null ? "": ","+map.get("PHOTO_IDS");
+           }
+           if(ids.length()>0){
+               HashSet<String> set = new HashSet<>();
+               String[] split = ids.split(",");
+               for (String s : split) {
+                   if(null != s && !"".equals(s)){
+                       set.add(s);
+                   }
+               }
+               return WebApiResponse.success(set);
+           }
+       }catch (Exception e){
+            LOGGER.error("问题图片回显失败"+e.getMessage());
+            return WebApiResponse.erro("问题图片回显失败"+e.getMessage());
+       }
 
+        return WebApiResponse.success("");
+    }
 }
