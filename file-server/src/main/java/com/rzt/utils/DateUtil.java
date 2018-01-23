@@ -534,6 +534,9 @@ public class DateUtil {
 //        System.out.println(format(dateTime1.toDate()));
 
 		System.out.println(format(new Date(),"MM/dd"));
+		StringBuilder sb = new StringBuilder();
+		sb.append("1").append("123");
+		System.out.println(sb);
 	}
 
 }

@@ -39,10 +39,11 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
         List<Map<String, Object>> list = this.execSql(sql);
         for (int i = 0; i < list.size(); i++) {
             Map<String, Object> map = list.get(i);
-            if(resp!=null)
-                resp.saveCheckEj(new SnowflakeIdWorker(0,0).nextId(),Long.valueOf(map.get("ID").toString()),1,1,map.get("CM_USER_ID").toString(),map.get("TD_ORG").toString(),map.get("TASK_NAME").toString());
+            //if(resp!=null)
+            resp.saveCheckEj(SnowflakeIdWorker.getInstance(0,0).nextId(),Long.valueOf(map.get("ID").toString()),1,1,map.get("CM_USER_ID").toString(),map.get("TD_ORG").toString(),map.get("TASK_NAME").toString());
             String key = "ONE+"+map.get("ID").toString()+"+1+1+"+map.get("CM_USER_ID")+"+"+map.get("TD_ORG")+"+"+map.get("TASK_NAME");
             redisService.setex(key);
+
         }
     }
 
@@ -58,6 +59,9 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
             Date plan_start_time = (Date) map.get("PLAN_START_TIME");
             try {
                 Long time = plan_start_time.getTime() - new Date().getTime();
+                if(time<0){
+                    continue;
+                }
                 jedis.psetex(key,time,"看护未上线");
             } catch (Exception e) {
                 //System.out.println(e.getMessage());
@@ -79,7 +83,9 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
             Date plan_start_time = (Date) map.get("PLAN_START_TIME");
             try {
                 Long time = plan_start_time.getTime() - new Date().getTime();
-                jedis.psetex(key,time,"巡视未上线");
+                if(time>0){
+                    jedis.psetex(key,time,"巡视未上线");
+                }
             } catch (Exception e) {
                 //System.out.println(e.getMessage());
                 //throw new RuntimeException(e.getMessage()+"巡视未上线");
@@ -124,7 +130,7 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
                 List<Map<String, Object>> maps1 = execSql(sql1, obj);
                 if(maps1.size()>0){
                     Map<String, Object> map = maps1.get(0);
-                    resp.saveCheckEj(new SnowflakeIdWorker(0,0).nextId(),Long.valueOf(map.get("ID").toString()),2,10,map.get("USER_ID").toString(),map.get("TDYW_ORG").toString(),map.get("TASK_NAME").toString());
+                    resp.saveCheckEj(SnowflakeIdWorker.getInstance(0,0).nextId(),Long.valueOf(map.get("ID").toString()),2,10,map.get("USER_ID").toString(),map.get("TDYW_ORG").toString(),map.get("TASK_NAME").toString());
                     String key = "ONE+"+map.get("ID").toString()+"+2+10+"+map.get("USER_ID")+"+"+map.get("TDYW_ORG")+"+"+map.get("TASK_NAME");
                     redisService.setex(key);
                 }
@@ -164,7 +170,7 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
                 List<Map<String, Object>> maps1 = execSql(sql1, obj);
                 if (maps1.size() > 0) {
                     Map<String, Object> map = maps1.get(0);
-                    resp.saveCheckEj(new SnowflakeIdWorker(0, 0).nextId(), Long.valueOf(map.get("ID").toString()), 1, 4, map.get("CM_USER_ID").toString(), map.get("TD_ORG").toString(), map.get("TASK_NAME").toString());
+                    resp.saveCheckEj(SnowflakeIdWorker.getInstance(0, 0).nextId(), Long.valueOf(map.get("ID").toString()), 1, 4, map.get("CM_USER_ID").toString(), map.get("TD_ORG").toString(), map.get("TASK_NAME").toString());
                     String key = "ONE+"+map.get("ID").toString()+"+1+4+"+map.get("CM_USER_ID")+"+"+map.get("TD_ORG")+"+"+map.get("TASK_NAME");
                     redisService.setex(key);
                     /*String[] message = new String[7];

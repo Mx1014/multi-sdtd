@@ -187,8 +187,6 @@ public class KhSiteController extends
         try {
             HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
             JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", userId).toString());
-
-            // Object jsonObject = new Object();
             this.service.exportNursePlan(request, response, jsonObject, userId);
         } catch (Exception e) {
             e.printStackTrace();

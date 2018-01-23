@@ -10,6 +10,9 @@ import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 
+/**
+ * 工作流 操作方法基类
+ */
 public interface ActivitiService {
 
 	List<ProcessDefinition> checkDeploy();

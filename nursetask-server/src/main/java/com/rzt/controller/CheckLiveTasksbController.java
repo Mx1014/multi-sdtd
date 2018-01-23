@@ -57,7 +57,7 @@ public class CheckLiveTasksbController extends
 		}
 	}
 	@ApiOperation(value = "隐患稽查任务派发",notes = "隐患稽查任务派发")
-	@PostMapping("sendCheckLiveTasksb")
+	@GetMapping("sendCheckLiveTasksb")
 	public WebApiResponse sendCheckLiveTasksb(String planStartTime ,String planEndTime,String userId,String id) {
 		try {
 			this.service.sendCheckLiveTasksb(id,userId,planStartTime,planEndTime);

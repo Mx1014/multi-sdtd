@@ -96,13 +96,14 @@ public class CheckLiveTaskDetail implements Serializable{
     private String tdwxOrgid;
 
     public void setId(Long id){
-        if(id==null){
-            this.id =   new SnowflakeIdWorker(3,0).nextId();
+        if(id==null||id==0){
+            SnowflakeIdWorker instance = SnowflakeIdWorker.getInstance(8, 3);
+            this.id = instance.nextId();
         }else{
             this.id = id;
         }
-
     }
+
     @ExcelResources(title="",order=1)
     public Long getId(){
         return this.id;

@@ -129,10 +129,10 @@ public class PICTURETOUR implements Serializable{
 	}
 
 
-
 	public void setId(Long id){
 		if(id==null||id==0){
-			this.id = new SnowflakeIdWorker(0,0).nextId();
+			SnowflakeIdWorker instance = SnowflakeIdWorker.getInstance(5, 4);
+			this.id = instance.nextId();
 		}else{
 			this.id = id;
 		}

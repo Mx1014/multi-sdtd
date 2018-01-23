@@ -5,8 +5,8 @@ import com.rzt.entity.CheckResult;
 import com.rzt.repository.CheckResultRepository;
 import com.rzt.service.CurdService;
 import com.rzt.util.WebApiResponse;
+import com.rzt.utils.RedisUtil;
 import org.activiti.engine.*;
-import org.activiti.engine.history.HistoricActivityInstance;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.repository.ProcessDefinitionQuery;
 import org.activiti.engine.runtime.ProcessInstance;
@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -40,6 +41,8 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
     private RuntimeService runtimeService;
     @Autowired
     private RepositoryService repositoryService;
+    @Autowired
+    private RedisUtil redisUtil;
     protected static Logger LOGGER = LoggerFactory.getLogger(ProServiceImpl.class);
 
     /**
@@ -62,100 +65,40 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
         return runtimeService.createProcessInstanceQuery().list();
     }
 
+    @Override
+    public WebApiResponse checkTask(String userName, Integer page, Integer size) {
+        return null;
+    }
+
     /**
      * 查看任务
-     * @param userName
+     * @param userId  用户id
+     * @param page
+     * @param size
+     * @param YHLB   隐患类别
+     * @param YHJB   隐患级别
+     * @param start  开始时间
+     * @param end    结束时间
+     * @param deptId  部门
      * @return
      */
-    @Override
-    public WebApiResponse checkTask(String userName,Integer page,Integer size) {
-
-
-
-        //分页数据容错
-      /*  if(null == page || 0 == page){
-            page = 1;
-        }
-        if(null == size || 0 == size){
-            size = 10;
-        }*/
+    public WebApiResponse checkTasks(String userId, Integer page, Integer size,String YHLB, String YHJB,String start,String end,String deptId) {
         Page<Map<String, Object>> maps = null;
-        //List<Object> result = new ArrayList<>();
-/*
-        //流程定义key（流程定义的标识）
-        String processDefinitionKey = "wtsh";
-        //创建查询对象
-        TaskQuery taskQuery = taskService.createTaskQuery();
-        //设置查询条件
-        taskQuery.taskAssignee(userName);
-        //指定流程定义key，只查询某个流程的任务
-        taskQuery.processDefinitionKey(processDefinitionKey);
-        //获取查询列表
-        List<Task> list = taskQuery.list();
-
-        list.stream().forEach(a-> System.out.println(a));*/
-
-
-   /*     TaskQuery taskQuery = taskService.createTaskQuery();
-        //分页查询当前待办任务
-        List<Task> list = taskQuery.taskAssignee(userName).orderByTaskCreateTime().desc().listPage(page,size);*/
-    /*    if(null == list  || list.size()==0){
-            return WebApiResponse.success("");
-        }*/
        try{
-           //这个sql可以用工作流提供的id查询到启动流程时传递的参数
-          /* for (Task task : list) {
-               String realname = "";
-               System.out.println("当前任务  "+task);
-               System.out.println(task.getId());
-
-               Object yhid =  taskService.getVariable(task.getId(), "YHID");
-               Object info =  taskService.getVariable(task.getId(), "info");
-               Object khid =  taskService.getVariable(task.getId(), "khid");
-               Object isKH =  taskService.getVariable(task.getId(), "isKH");
-               System.out.println("########################################################");
-               System.out.println("任务ID:"+task.getId());
-               System.out.println("任务名称:"+task.getName());
-               System.out.println("任务的创建时间:"+task.getCreateTime());
-               System.out.println("任务的办理人:"+task.getAssignee());
-               System.out.println("流程实例ID："+task.getProcessInstanceId());
-               System.out.println("########################################################");
-               if(null == yhid || "".equals(yhid)){
-                   //拿不到隐患id的跳过
-                    continue;
-               }
-               ArrayList<Object> strings = new ArrayList<>();
-               strings.add(yhid);
-
-               String sql = "SELECT ID as YHID, TBRID,YHJB1,WXORG_ID,XSTASK_ID,LINE_ID,CREATE_TIME,DXDYHSPJL," +
-                       "    YHJB,LINE_NAME,TDWX_ORG,YHMS,YHLB,YWORG_ID,TDYW_ORG,SECTION,VTYPE " +
-                       "   FROM XS_SB_YH WHERE ID = ?"+strings.size();
-               Map<String, Object> map = this.execSqlSingleResult(sql, strings);
-               String tbrid = (String) map.get("TBRID");
-               if(null != tbrid  && !"".equals(tbrid)){
-                   ArrayList<String> strings1 = new ArrayList<>();
-                   strings1.add(tbrid);
-                   String tbrsql = "SELECT REALNAME from RZTSYSUSER WHERE ID  = ?"+strings1.size();
-                   Map<String, Object> map1 = this.execSqlSingleResult(tbrsql, strings1);
-                    realname = (String) map1.get("REALNAME");
-               }
-               map.put("acTaskId",task.getId());
-               map.put("createTime",task.getCreateTime());
-               map.put("assignee",task.getAssignee());
-               map.put("name",task.getName());
-               map.put("isKH",isKH);
-               map.put("realname",realname);
-               map.put("info",info);
-               map.put("proId",task.getProcessInstanceId());
-               result.add(map);
-
+           String td = redisUtil.findTDByUserId(userId);
+           userId = redisUtil.findRoleIdByUserId(userId);
+           if(null == userId || "".equals(userId)){
+                return WebApiResponse.erro("问题审核待办查询失败");
            }
-*/
+           if(null == td || "".equals(td)){
+               return WebApiResponse.erro("问题审核待办查询失败");
+           }
            Pageable pageable = new PageRequest(page, size, null);
            ArrayList<String> strings = new ArrayList<>();
-           strings.add(userName);
+           strings.add(userId);
            String sql = "SELECT y.ID,y.SECTION,y.CREATE_TIME,y.TDYW_ORG,y.TDWX_ORG,y.YHLB,y.YHMS,y.YHJB,y.YHJB1,h.TEXT_,t.ID_ as actaskid,t.PROC_INST_ID_,t.ASSIGNEE_," +
-                   "    (SELECT DISTINCT l.LINE_NAME1 FROM CM_LINE_SECTION l WHERE l.LINE_ID = y.LINE_ID) as linename1,"+
+                   "   y.YHTDQX,y.YHTDXZJD,y.YHTDC,y.GKCS,y.LINE_NAME,y.YWORG_ID,  " +
+                   " (SELECT DISTINCT l.LINE_NAME1 FROM CM_LINE_SECTION l WHERE l.LINE_ID = y.LINE_ID) as linename1,"+
                   "  (SELECT DISTINCT v.TEXT_ FROM ACT_HI_VARINST v WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'info') as info," +
                    "    (SELECT DISTINCT v.TEXT_ FROM ACT_HI_VARINST v WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'khid') as khid,"+
                   "  (SELECT DISTINCT u.REALNAME FROM ACT_HI_VARINST v LEFT JOIN RZTSYSUSER u ON u.ID = v.TEXT_ WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'userName' ) as squsername," +
@@ -163,7 +106,30 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
                   "  (SELECT DISTINCT u.PHONE FROM RZTSYSUSER u WHERE u.ID = y.TBRID) as phone" +
                   "   FROM ACT_RU_TASK t LEFT JOIN ACT_RU_VARIABLE h ON t.PROC_INST_ID_ = h.PROC_INST_ID_" +
                   "  LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_" +
-                  "   WHERE h.NAME_ = 'YHID' AND t.PROC_DEF_ID_ LIKE 'wtsh%' AND ASSIGNEE_ = ?"+strings.size();
+                  "   WHERE h.NAME_ = 'YHID' AND t.PROC_DEF_ID_ LIKE 'wtsh%'  AND ASSIGNEE_ = ?"+strings.size();
+                    if(null != YHLB && !"".equals(YHLB)){
+                        strings.add(YHLB);
+                        sql += "  AND y.YHLB = ?"+strings.size();
+                    }
+                   if(null != YHJB && !"".equals(YHJB)){
+                       strings.add(YHJB);
+                       sql += "  AND y.YHJB1 = ?"+strings.size();
+                   }
+                   if((null != start && !"".equals(start)) && (null != end && !"".equals(end)) ){
+                       sql += "  AND y.CREATE_TIME BETWEEN " +
+                               "       (to_date('"+start+"','YYYY-MM-dd HH24:mi:ss'),to_date('"+end+"','YYYY-MM-dd HH24:mi:ss'))";
+                   }
+                   //判断当前用户所属节点    书否显示所有信息
+                   if("sdid".equals(userId) || "sdyjid".equals(userId)){
+                        sql += "  AND y.TDYW_ORG = '"+td+"'  ";
+                   }else{
+                       if(null != deptId && !"".equals(deptId)){
+                           strings.add(deptId);
+                           sql += "  AND y.YWORG_ID = ?"+strings.size();
+                       }
+                   }
+
+
 
             maps = this.execSqlPage(pageable, sql, strings);
             LOGGER.info("当前节点待办任务查询成功"+strings);
@@ -200,6 +166,7 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
      */
     @Override
     public ProcessInstance start(String key, Map map) {
+        LOGGER.info(key+"--流程开始了，携带参数："+map);
         ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(key, map);
         return processInstance;
 
@@ -224,11 +191,8 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
      */
     @Override
     public void complete(String taskId, Map<String, Object> map) {
-        System.out.println(taskId);
-        System.out.println(map);
-
+        LOGGER.info(taskId+"节点进入了下一个节点，携带参数："+map);
         taskService.complete(taskId,map);
-
     }
 
     /**
@@ -277,16 +241,17 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
         ArrayList<String> strings = new ArrayList<>();
         Page<Map<String, Object>> maps = null;
         strings.add(assignee);
+
         String sql = "SELECT y.ID,y.SECTION,y.CREATE_TIME,y.TDYW_ORG,y.TDWX_ORG,y.YHLB,y.YHMS,y.YHJB,y.YHJB1,h.TEXT_,t.ID_ as actaskid,t.PROC_INST_ID_,t.ASSIGNEE_," +
               "  (SELECT DISTINCT l.LINE_NAME1 FROM CM_LINE_SECTION l WHERE l.LINE_ID = y.LINE_ID) as linename1,t.END_TIME_,t.START_TIME_," +
               "  (SELECT DISTINCT  v.TEXT_ FROM ACT_HI_VARINST v WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'info') as info," +
               "  (SELECT DISTINCT  v.TEXT_ FROM ACT_HI_VARINST v WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'khid') as khid," +
-              "  (SELECT DISTINCT  u.REALNAME FROM ACT_HI_VARINST v LEFT JOIN RZTSYSUSER u ON u.ID = v.TEXT_ WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'userName' ) as squsername," +
               "  (SELECT DISTINCT  u.REALNAME FROM RZTSYSUSER u WHERE u.ID = y.TBRID) as tbrName," +
               "  (SELECT DISTINCT  u.PHONE FROM RZTSYSUSER u WHERE u.ID = y.TBRID) as phone" +
               "  FROM ACT_HI_ACTINST t LEFT JOIN ACT_RU_VARIABLE h ON t.PROC_INST_ID_ = h.PROC_INST_ID_" +
               "  LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_" +
-              "  WHERE h.NAME_ = 'YHID' AND t.PROC_DEF_ID_ LIKE 'wtsh%' AND ASSIGNEE_ = ?"+strings.size()+" AND t.END_TIME_ IS NOT NULL ";
+              "  WHERE h.NAME_ = 'YHID' AND t.PROC_DEF_ID_ LIKE 'wtsh%' AND ASSIGNEE_ = ?"+strings.size()+" AND y.ID IS NOT NULL";
+         //sql += "  AND t.END_TIME_ IS NOT NULL ";    // 有结束时间代表已经经过当前节点     没有代表还停留在当前节点
         try {
             Pageable pageable = new PageRequest(page, size, null);
              maps = this.execSqlPage(pageable, sql, strings);
@@ -298,4 +263,68 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
         return WebApiResponse.success(maps);
     }
 
+    public WebApiResponse tree(){
+        List<Map<String, Object>> list2 = null;
+        List list1 =  null;
+        ArrayList<Object> objects = new ArrayList<>();
+        try {
+             LOGGER.info("省市查询成功");
+            String sql = "SELECT ID,NAME as \"label\",PID , NAME as \"value\" FROM  SD_YX_LINEAREA ";
+            list2 = this.execSql(sql, null);
+            for (Map<String, Object> map : list2) {
+                String pid =  map.get("PID").toString();
+                if(null != pid && "0".equals(pid)){
+                    Map<String, Object> stringObjectHashMap = new HashMap<>();
+                     list1 = treeOrgList(list2, pid);
+
+                }
+            }
+
+
+
+        }catch (Exception e){
+            LOGGER.error("省市查询失败"+e.getMessage());
+            return WebApiResponse.erro("省市查询失败"+e.getMessage());
+        }
+        return WebApiResponse.success(list1);
+    }
+
+    public List treeOrgList(List<Map<String, Object>> orgList, String parentId) {
+        List childOrg = new ArrayList<>();
+        for (Map<String, Object> map : orgList) {
+            String menuId = map.get("ID").toString();
+            String pid = map.get("PID").toString();
+            if (parentId.equals(pid)) {
+                List c_node = treeOrgList(orgList, menuId);
+                map.put("children", c_node);
+                childOrg.add(map);
+            }
+        }
+        return childOrg;
+    }
+
+    public WebApiResponse findLB() {
+        try{
+            HashMap<String, Object> map = new HashMap<>();
+            String sql  = "SELECT YHJB1" +
+                    "  FROM XS_SB_YH GROUP BY YHJB1" ;
+
+            String sql2 = "SELECT YHLB" +
+                    "  FROM XS_SB_YH GROUP BY YHLB";
+
+            String sql3  = "SELECT t.ID,t.DEPTNAME FROM RZTSYSDEPARTMENT t WHERE t.DEPTSORT IS NOT NULL ORDER BY t.DEPTSORT";
+
+            List<Map<String, Object>> maps1 = this.execSql(sql, null);
+            List<Map<String, Object>> maps2 = this.execSql(sql2, null);
+            List<Map<String, Object>> maps3 = this.execSql(sql3, null);
+            map.put("JB",maps1);
+            map.put("LB",maps2);
+            map.put("TD",maps3);
+            return WebApiResponse.success(map);
+        }catch (Exception e){
+            LOGGER.error("类别查询失败"+e.getMessage());
+            return WebApiResponse.erro("类别查询失败"+e.getMessage());
+        }
+
+    }
 }

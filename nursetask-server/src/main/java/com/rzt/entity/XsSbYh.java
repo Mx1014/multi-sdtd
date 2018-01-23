@@ -8,13 +8,10 @@ package com.rzt.entity;
 
 import com.rzt.util.excelUtil.ExcelResources;
 import com.rzt.utils.SnowflakeIdWorker;
-import org.hibernate.annotations.GenericGenerator;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
-import java.util.UUID;
 
 /**
  * 类名称：KhYhHistory
@@ -132,21 +129,15 @@ public class XsSbYh implements Serializable {
     //字段描述: 更新时间
     @Column(name = "UPDATE_TIME")
     private Date updateTime;
-    //字段描述: 导线对隐患净空距离
+    //字段描述: 导线对隐患水平距离
     @Column(name = "DXDYHSPJL")
     private String dxdyhspjl;
-    //字段描述: 导线对隐患水平距离
+    //字段描述: 导线对隐患垂直距离
     @Column(name = "DXXYHCZJL")
     private String dxxyhczjl;
-    //字段描述: 导线对隐患垂直距离
+    //字段描述: 导线对隐患净空距离
     @Column(name = "XDXYHJKJL")
     private String xdxyhjkjl;
-    //字段描述: 树木管控措施
-    @Column(name = "SMGKCS")
-    private String smgkcs;
-    //字段描述: 停电处理完成时间
-    @Column(name = "TDCLWCSJ")
-    private String tdclwcsj;
     //字段描述: 纬度
     @Column(name = "WD")
     private String wd;
@@ -159,45 +150,12 @@ public class XsSbYh implements Serializable {
     //字段描述: 填报人ID
     @Column(name = "TBRID")
     private String tbrid;
-    //字段描述: 护线信息员
-    @Column(name = "HXXXY")
-    private String hxxxy;
-    //字段描述: 护线信息员ID
-    @Column(name = "HXXXYID")
-    private String hxxxyid;
-    //字段描述: 隐患点外力情况
-    @Column(name = "YHDWLQK")
-    private String yhdwlqk;
-    //字段描述: 宣传牌
-    @Column(name = "XCP")
-    private String xcp;
-    //字段描述: 技防措施
-    @Column(name = "JFCS")
-    private String jfcs;
-    //字段描述: 派出所电话
-    @Column(name = "PCSDH")
-    private String pcsdh;
-    //字段描述: 所属派出所
-    @Column(name = "SSPCS")
-    private String sspcs;
     //字段描述: 隐患消除时间
     @Column(name = "YHXQ_TIME")
     private String yhxqTime;
-    //字段描述: 定级人
-    @Column(name = "DJY")
-    private String djy;
     //字段描述: 定级人ID
     @Column(name = "DJYID")
     private String djyid;
-    //字段描述: 定级时间
-    @Column(name = "DJSJ")
-    private String djsj;
-    //字段描述: 隐患责任单位上级主管部门(空闲)
-    @Column(name = "YHZRDWSJZRBM")
-    private String yhzrdwsjzrbm;
-    //字段描述: 照片修改时间
-    @Column(name = "ZPXGSJ")
-    private String zpxgsj;
     //字段描述: 施工情况
     @Column(name = "SGQK")
     private int sgqk;
@@ -208,20 +166,34 @@ public class XsSbYh implements Serializable {
     @Column(name = "WXORG_ID")
     private String wxorgId;
     //字段描述: 隐患点半径
-    @Column(name="radius")
+    @Column(name = "radius")
     private String radius;
     //字段描述: 隐患点半径
-    @Column(name="XSTASK_ID")
+    @Column(name = "XSTASK_ID")
     private long xstaskId;
     //字段描述: 所属队伍
-    @Column(name="CLASSNAME")
+    @Column(name = "CLASSNAME")
     private String className;
     //字段描述: 树木数
-    @Column(name="SMS")
+    @Column(name = "SMS")
     private String sms;
     //字段描述: 是否悬挂警示牌
-    @Column(name="JSP")
+    @Column(name = "JSP")
     private String jsp;
+    //字段描述: 涉及线路
+    @Column(name = "SJXL")
+    private String sjxl;
+    //字段描述: 班组id
+    @Column(name = "CLASS_ID")
+    private String classId;
+
+    public String getClassId() {
+        return classId;
+    }
+
+    public void setClassId(String classId) {
+        this.classId = classId;
+    }
 
     public String getSms() {
         return sms;
@@ -248,14 +220,6 @@ public class XsSbYh implements Serializable {
         return this.createTime;
     }
 
-    public void setZpxgsj(String zpxgsj) {
-        this.zpxgsj = zpxgsj;
-    }
-
-    @ExcelResources(title = "照片修改时间", order = 2)
-    public String getZpxgsj() {
-        return this.zpxgsj;
-    }
 
     public void setVtype(String vtype) {
         this.vtype = vtype;
@@ -365,24 +329,6 @@ public class XsSbYh implements Serializable {
         return this.yhxcyy;
     }
 
-    public void setSmgkcs(String smgkcs) {
-        this.smgkcs = smgkcs;
-    }
-
-    @ExcelResources(title = "树木管控措施", order = 15)
-    public String getSmgkcs() {
-        return this.smgkcs;
-    }
-
-    public void setTdclwcsj(String tdclwcsj) {
-        this.tdclwcsj = tdclwcsj;
-    }
-
-    @ExcelResources(title = "停电处理完成时间", order = 16)
-    public String getTdclwcsj() {
-        return this.tdclwcsj;
-    }
-
     public void setWd(String wd) {
         this.wd = wd;
     }
@@ -429,50 +375,6 @@ public class XsSbYh implements Serializable {
         return this.tbrid;
     }
 
-    public void setHxxxy(String hxxxy) {
-        this.hxxxy = hxxxy;
-    }
-
-    @ExcelResources(title = "护线信息员", order = 25)
-    public String getHxxxy() {
-        return this.hxxxy;
-    }
-
-    public void setHxxxyid(String hxxxyid) {
-        this.hxxxyid = hxxxyid;
-    }
-
-    @ExcelResources(title = "护线信息员ID ", order = 26)
-    public String getHxxxyid() {
-        return this.hxxxyid;
-    }
-
-    public void setYhdwlqk(String yhdwlqk) {
-        this.yhdwlqk = yhdwlqk;
-    }
-
-    @ExcelResources(title = "隐患点外力情况", order = 27)
-    public String getYhdwlqk() {
-        return this.yhdwlqk;
-    }
-
-    public void setXcp(String xcp) {
-        this.xcp = xcp;
-    }
-
-    @ExcelResources(title = "宣传牌", order = 28)
-    public String getXcp() {
-        return this.xcp;
-    }
-
-    public void setJfcs(String jfcs) {
-        this.jfcs = jfcs;
-    }
-
-    @ExcelResources(title = "技防措施", order = 29)
-    public String getJfcs() {
-        return this.jfcs;
-    }
 
     public void setGkcs(String gkcs) {
         this.gkcs = gkcs;
@@ -483,23 +385,6 @@ public class XsSbYh implements Serializable {
         return this.gkcs;
     }
 
-    public void setPcsdh(String pcsdh) {
-        this.pcsdh = pcsdh;
-    }
-
-    @ExcelResources(title = "派出所电话", order = 31)
-    public String getPcsdh() {
-        return this.pcsdh;
-    }
-
-    public void setSspcs(String sspcs) {
-        this.sspcs = sspcs;
-    }
-
-    @ExcelResources(title = "所属派出所", order = 32)
-    public String getSspcs() {
-        return this.sspcs;
-    }
 
     public void setYhxqTime(String yhxqTime) {
         this.yhxqTime = yhxqTime;
@@ -510,14 +395,6 @@ public class XsSbYh implements Serializable {
         return this.yhxqTime;
     }
 
-    public void setDjy(String djy) {
-        this.djy = djy;
-    }
-
-    @ExcelResources(title = "定级人", order = 34)
-    public String getDjy() {
-        return this.djy;
-    }
 
     public void setDjyid(String djyid) {
         this.djyid = djyid;
@@ -526,15 +403,6 @@ public class XsSbYh implements Serializable {
     @ExcelResources(title = "定级人ID", order = 35)
     public String getDjyid() {
         return this.djyid;
-    }
-
-    public void setDjsj(String djsj) {
-        this.djsj = djsj;
-    }
-
-    @ExcelResources(title = "定级时间", order = 36)
-    public String getDjsj() {
-        return this.djsj;
     }
 
     public void setYhfxsj(Date yhfxsj) {
@@ -553,15 +421,6 @@ public class XsSbYh implements Serializable {
     @ExcelResources(title = "看护任务id", order = 38)
     public Long getTaskId() {
         return this.taskId;
-    }
-
-    public void setYhzrdwsjzrbm(String yhzrdwsjzrbm) {
-        this.yhzrdwsjzrbm = yhzrdwsjzrbm;
-    }
-
-    @ExcelResources(title = "隐患责任单位上级主管部门(空闲)", order = 39)
-    public String getYhzrdwsjzrbm() {
-        return this.yhzrdwsjzrbm;
     }
 
     public void setYhzrdwdh(String yhzrdwdh) {
@@ -614,7 +473,6 @@ public class XsSbYh implements Serializable {
     }
 
 
-
     @ExcelResources(title = "隐患地点(区县)", order = 45)
     public String getYhtdqx() {
         return this.yhtdqx;
@@ -638,7 +496,7 @@ public class XsSbYh implements Serializable {
         return this.yhjb;
     }
 
-    public void setTdywOrg (String tdywOrg) {
+    public void setTdywOrg(String tdywOrg) {
         this.tdywOrg = tdywOrg;
     }
 
@@ -656,13 +514,15 @@ public class XsSbYh implements Serializable {
         return this.tdwxOrg;
     }
 
-    public void setId(Long id)  {
-        if (id == null || id == 0) {
-            this.id = new SnowflakeIdWorker(1, 4).nextId();
-        } else {
+    public void setId(Long id){
+        if(id==null||id==0){
+            SnowflakeIdWorker instance = SnowflakeIdWorker.getInstance(8, 21);
+            this.id = instance.nextId();
+        }else{
             this.id = id;
         }
     }
+
 
     @ExcelResources(title = "输电平台id", order = 51)
     public Long getId() {
@@ -692,6 +552,7 @@ public class XsSbYh implements Serializable {
     public void setSection(String section) {
         this.section = section;
     }
+
     public String getYhjb1() {
         return yhjb1;
     }
@@ -756,4 +617,11 @@ public class XsSbYh implements Serializable {
         return className;
     }
 
+    public void setSjxl(String sjxl) {
+        this.sjxl = sjxl;
+    }
+
+    public String getSjxl() {
+        return sjxl;
+    }
 }

@@ -8,7 +8,6 @@ package com.rzt.service;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.netflix.discovery.converters.Auto;
 import com.rzt.entity.*;
 import com.rzt.entity.model.KhTaskModel;
 import com.rzt.repository.KhCycleRepository;
@@ -18,28 +17,19 @@ import com.rzt.repository.KhYhHistoryRepository;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DateUtil;
 import com.rzt.utils.MapUtil;
-import com.rzt.utils.RedisUtil;
 import com.rzt.utils.SnowflakeIdWorker;
-import com.sun.tools.internal.ws.wsdl.document.soap.SOAPUse;
 import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.geo.Distance;
-import org.springframework.data.geo.Metrics;
-import org.springframework.data.geo.Point;
-import org.springframework.data.redis.core.GeoOperations;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import redis.clients.jedis.Jedis;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.OutputStream;
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -212,39 +202,39 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
         try {
             KhCycle task = new KhCycle();
             String kv = "";
-            if (null == yh.getId()) {
-                yh.setYhfxsj(DateUtil.parseDate(fxtime));
-                yh.setSfdj(0);
-                try {
-                    if (!yh.getStartTower().isEmpty()) {
-                        String startTower = "select longitude,latitude from cm_tower where id = ?";
-                        String endTower = "select longitude,latitude from cm_tower where id = ?";
-                        Map<String, Object> map = execSqlSingleResult(startTower, Long.parseLong(yh.getStartTower()));
-                        Map<String, Object> map1 = execSqlSingleResult(endTower, Long.parseLong(yh.getEndTower()));
-                        //经度
-                        double jd = (Double.parseDouble(map.get("LONGITUDE").toString()) + Double.parseDouble(map1.get("LONGITUDE").toString())) / 2;
-                        double wd = (Double.parseDouble(map.get("LATITUDE").toString()) + Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
-                        double radius = MapUtil.GetDistance(Double.parseDouble(map.get("LONGITUDE").toString()), Double.parseDouble(map.get("LATITUDE").toString()), Double.parseDouble(map1.get("LONGITUDE").toString()), Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
-                        yh.setRadius("100.0");
-                        yh.setJd(map.get("LONGITUDE").toString());
-                        yh.setWd(map.get("LATITUDE").toString());
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
+            yh.setYhfxsj(DateUtil.parseDate(fxtime));
+            yh.setSfdj(1);
+            try {
+                if (!yh.getStartTower().isEmpty()) {
+                    String startTower = "select longitude,latitude from cm_tower where id = ?";
+                    String endTower = "select longitude,latitude from cm_tower where id = ?";
+                    Map<String, Object> map = execSqlSingleResult(startTower, Long.parseLong(yh.getStartTower()));
+                    Map<String, Object> map1 = execSqlSingleResult(endTower, Long.parseLong(yh.getEndTower()));
+                    //经度
+                    double jd = (Double.parseDouble(map.get("LONGITUDE").toString()) + Double.parseDouble(map1.get("LONGITUDE").toString())) / 2;
+                    double wd = (Double.parseDouble(map.get("LATITUDE").toString()) + Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
+                    double radius = MapUtil.GetDistance(Double.parseDouble(map.get("LONGITUDE").toString()), Double.parseDouble(map.get("LATITUDE").toString()), Double.parseDouble(map1.get("LONGITUDE").toString()), Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
+                    yh.setRadius("150.0");
+                    yh.setJd(map.get("LONGITUDE").toString());
+                    yh.setWd(map.get("LATITUDE").toString());
                 }
-
-                task.setId();
-                kv = yh.getVtype();
-                if (yh.getVtype().contains("kV")) {
-                    kv = kv.substring(0, kv.indexOf("k"));
-                }
-                yh.setTaskId(task.getId());
-                yh.setYhzt(0);//隐患未消除
-                yh.setId(0L);
-                yh.setCreateTime(DateUtil.dateNow());
-                yh.setSection(startTowerName + "-" + endTowerName);
-                yhservice.add(yh);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
+
+            task.setId(0L);
+            kv = yh.getVtype();
+            if (yh.getVtype().contains("kV")) {
+                kv = kv.substring(0, kv.indexOf("k"));
+            }
+            yh.setTaskId(task.getId());
+            yh.setYhzt(0);//隐患未消除
+            if (yh.getId() == null) {
+                yh.setId(0L);
+            }
+            yh.setCreateTime(DateUtil.dateNow());
+            yh.setSection(startTowerName + "-" + endTowerName);
+            yhservice.add(yh);
             String taskName = kv + "-" + yh.getLineName() + " " + yh.getSection() + " 号杆塔看护任务";
             task.setVtype(yh.getVtype());
             task.setLineName(yh.getLineName());
@@ -259,15 +249,15 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             task.setYhId(yh.getId());
             task.setCreateTime(DateUtil.dateNow());
             this.cycleService.add(task);
-            long id = new SnowflakeIdWorker(2, 4).nextId();
+            long id = new SnowflakeIdWorker(8, 24).nextId();
             this.reposiotry.addCheckSite(id, task.getId(), 0, task.getTaskName(), 0, task.getLineId(), task.getTdywOrgId(), task.getWxOrgId(), task.getYhId());
-            if (null != pictureId && !pictureId.equals("")) {
+            /*if (null != pictureId && !pictureId.equals("")) {
                 String[] split = pictureId.split(",");
                 for (int i = 0; i < split.length; i++) {
                     yhRepository.updatePicture(Long.parseLong(split[i]), yh.getId());
                     //审批完成后   为图片添加taskId
                 }
-            }
+            }*/
             return WebApiResponse.success("保存成功");
         } catch (Exception e) {
             e.printStackTrace();
@@ -310,7 +300,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                 String userId = map.get("userId").toString();
                 String startTime = map.get("planStartTime").toString();
                 String endTime = map.get("planEndTime").toString();
-                site.setId();
+                site.setId(0L);
                 try {
                     String sql = "select c.COMPANYNAME name,c.id id FROM RZTSYSCOMPANY C LEFT JOIN RZTSYSUSER U ON C.ID=U.COMPANYID where U.ID=?";
                     Map<String, Object> map1 = this.execSqlSingleResult(sql, userId);
@@ -359,6 +349,20 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                 taskService.add(task);
             }
             this.reposiotry.updateCycleById(id);  // 重新生成多个周期
+            try {
+                String userId = list.get(0).get("userId").toString();
+                String sql = "SELECT d.id DID,d.DEPTNAME DNAME,c.id CID,c.COMPANYNAME CNAME\n" +
+                        "FROM RZTSYSUSER u LEFT JOIN RZTSYSDEPARTMENT d on u.CLASSNAME = d.ID LEFT JOIN RZTSYSCOMPANY c on c.id = u.COMPANYID WHERE U.ID=? ";
+                Map<String, Object> map = this.execSqlSingleResult(sql, userId);
+                if (map.get("DID") != null) {
+                    this.reposiotry.updateYH2(cycle.getYhId(), map.get("DID").toString(), map.get("DNAME").toString());
+                }
+                if (map.get("CID") != null) {
+                    this.reposiotry.updateYH3(cycle.getYhId(), map.get("CID").toString(), map.get("CNAME").toString());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             return WebApiResponse.success("任务派发成功");
         } catch (Exception e) {
             e.printStackTrace();
@@ -526,5 +530,11 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static void main(String[] args) {
+        KhYhHistory yh = new KhYhHistory();
+        yh.setId(0l);
+        System.out.println(yh.getId() != null);
     }
 }

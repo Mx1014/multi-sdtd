@@ -51,8 +51,14 @@ public class CheckLiveTaskCycle  implements Serializable{
     private Integer checkCycle;
 
     public void setId(){
-        this.id =   new SnowflakeIdWorker(0,0).nextId();
+        if(id==null||id==0){
+            SnowflakeIdWorker instance = SnowflakeIdWorker.getInstance(8, 2);
+            this.id = instance.nextId();
+        }else{
+            this.id = id;
+        }
     }
+
     @ExcelResources(title="稽查周期id",order=1)
     public Long getId(){
         return this.id;

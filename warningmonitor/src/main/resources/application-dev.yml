@@ -50,7 +50,7 @@ eureka:
     prefer-ip-address: true
   client:
         service-url:
-          defaultZone: http://192.168.21.32:7002/eureka/
+          defaultZone: http://localhost:7002/eureka/
           #防止心跳启动报错
         #register-with-eureka: false
         #fetch-registry: false

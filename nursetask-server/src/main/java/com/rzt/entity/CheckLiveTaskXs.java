@@ -74,9 +74,15 @@ public class CheckLiveTaskXs implements Serializable{
 
 
 
-	public void setId( ){
-		this.id =   new SnowflakeIdWorker(3,0).nextId();
+	public void setId(Long id){
+		if(id==null||id==0){
+			SnowflakeIdWorker instance = SnowflakeIdWorker.getInstance(8, 8);
+			this.id = instance.nextId();
+		}else{
+			this.id = id;
+		}
 	}
+
 	@ExcelResources(title="",order=1)
 	public Long getId(){
 		return this.id;

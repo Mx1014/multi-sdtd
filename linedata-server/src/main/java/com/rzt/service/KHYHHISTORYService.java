@@ -52,7 +52,7 @@ public class KHYHHISTORYService extends CurdService<KHYHHISTORY, KHYHHISTORYRepo
 
     public Page<Map<String, Object>> getYHInfo(Pageable pageable, String tdOrg, String wxOrg, String kv, String lineId, String yhjb, String startTime, String endTime,String currentUserId) {
         List<Object> list = new ArrayList<>();
-        String sql = "select * from KH_YH_HISTORY WHERE 1=1 ";
+        String sql = "select * from KH_YH_HISTORY WHERE yhzt=0 ";
         if(StringUtils.isNotEmpty(currentUserId)){
             Map<String, Object> map = userInfoFromRedis(currentUserId);
             Integer roletype = Integer.parseInt(map.get("ROLETYPE").toString());
