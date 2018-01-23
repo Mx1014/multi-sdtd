@@ -90,13 +90,14 @@ public class CheckLiveTaskDetailXs  implements Serializable{
     private Date createTime;
 
     public void setId(Long id){
-        if(id==null){
-            this.id = new SnowflakeIdWorker(3,3).nextId();
+        if(id==null||id==0){
+            SnowflakeIdWorker instance = SnowflakeIdWorker.getInstance(8, 4);
+            this.id = instance.nextId();
         }else{
             this.id = id;
-
         }
     }
+
     @ExcelResources(title="",order=1)
     public Long getId(){
         return this.id;

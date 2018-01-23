@@ -24,7 +24,7 @@ import java.util.Date;
  * @version
  */
 @Entity
-@Table(name="MONITOR_CHECK_EJ")
+@Table(name="MONITOR_WARNING_EJ")
 public class Monitorcheckej implements Serializable{
 	//字段描述: 主键
    	 @Id
@@ -76,6 +76,17 @@ public class Monitorcheckej implements Serializable{
 	private String checkUserId;
 	@Column(name = "CHECK_DEPTID")
 	private String checkDeptId;
+
+	@Column(name = "ONLINE_TIME")
+	private Date onLineTime;
+
+	public Date getOnLineTime() {
+		return onLineTime;
+	}
+
+	public void setOnLineTime(Date onLineTime) {
+		this.onLineTime = onLineTime;
+	}
 
 	public String getCheckUserId() {
 		return checkUserId;

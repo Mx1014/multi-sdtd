@@ -1,6 +1,7 @@
 package com.rzt.TimedTask;
 
 import com.rzt.controller.CurdController;
+import com.rzt.repository.TimedConfigRepository;
 import com.rzt.service.TimedService;
 import com.rzt.service.XSZCTASKService;
 import com.rzt.util.WebApiResponse;
@@ -12,6 +13,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.transaction.Transactional;
+import java.util.Date;
 
 /**
  * 李成阳
@@ -88,7 +92,7 @@ public class Timing  extends
      * 每1天刷新一次
      * 3点刷新
      */
-    @Scheduled(cron="0 0 0 0/1 * ? ")
+    @Scheduled(cron="0 0 0 0/3 * ? ")
     private void threeDayScheduledTask(){
         xszctaskService.xsTaskAddAndFindThree();
     }

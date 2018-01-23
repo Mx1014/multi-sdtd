@@ -45,7 +45,7 @@ public class CheckLiveTasksbService extends CurdService<CheckLiveTasksb,CheckLiv
 
     public Page<Map<String,Object>> pageCheckLiveTasksb(Pageable pageable, String lineId, String tddwId, String currentUserId) {
 
-        String sql = "SELECT t.task_name,t.create_time,t.td_org_name,t.td_org_id,t.check_type,t.check_dept,h.TDYW_ORG,h.TDWX_ORG,h.yhjb,h.yhjb1,h.yhlb,h.yhfxsj from check_live_tasksb t " +
+        String sql = "SELECT t.id,t.task_name,t.create_time,t.td_org_name,t.td_org_id,t.check_type,t.check_dept,h.TDYW_ORG,h.TDWX_ORG,h.yhjb,h.yhjb1,h.yhlb,h.yhfxsj from check_live_tasksb t " +
                 "LEFT JOIN XS_SB_YH h on h.id=t.yhsb_id where t.status=0 ";
 
         List params = new ArrayList<>();

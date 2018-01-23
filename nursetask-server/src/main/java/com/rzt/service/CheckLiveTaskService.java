@@ -59,7 +59,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
 
         String sql = "select s.id,s.task_id,s.TASK_NAME,h.yhms,h.yhjb,h.XLZYCD,d.DEPTNAME,s.yh_id from CHECK_LIVE_site s " +
                 " left JOIN KH_YH_HISTORY h on s.YH_ID=h.id " +
-                " LEFT JOIN  RZTSYSDEPARTMENT d on d.ID = s.TDYW_ORGID where s.status=0 ";
+                " LEFT JOIN  RZTSYSDEPARTMENT d on d.ID = s.TDYW_ORGID where s.status=0 and trunc(s.CREATE_TIME)=trunc(sysdate) ";
 
         List params = new ArrayList<>();
         //线路查询
@@ -208,7 +208,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
             taskDetail.setKhTaskId(Long.valueOf(split[i]));
             taskDetail.setTaskId(save.getId());
             checkLiveTaskDetailRepository.save(taskDetail);
-            reposiotry.updateLiveTaskStatus(1,Long.valueOf(split[i]));
+            reposiotry.updateLiveSiteStatus(1,Long.valueOf(split[i]));
         }
 
     }
@@ -368,7 +368,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
     @Scheduled(cron = "0 5 0 ? * *")
     @Transactional
     public void generalKhSite(){
-        //更新check_live_task的状态
+        //更新check_live_task没完成的状态为超期
         reposiotry.updateLiveTaskYesterday(3);
         //生成新一轮待派发看护稽查
         reposiotry.generalKhSite();

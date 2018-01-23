@@ -96,12 +96,14 @@ public class CheckLiveTaskExec implements Serializable{
 
 	public void setId(Long id){
 		if(id==null||id==0){
-			this.id = new SnowflakeIdWorker(0,0).nextId();
+			SnowflakeIdWorker instance = SnowflakeIdWorker.getInstance(8, 5);
+			this.id = instance.nextId();
 		}else{
 			this.id = id;
 		}
 	}
-    public Long getId(){
+
+	public Long getId(){
 		return this.id;
 	}
 	

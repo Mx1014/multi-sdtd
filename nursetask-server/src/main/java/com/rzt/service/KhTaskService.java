@@ -41,7 +41,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
     @Autowired
     private KhSiteRepository siteRepository;
 
-    public Object listAllKhTask(KhTaskModel task, String status, Pageable pageable, int roleType,String yworg) {
+    public Object listAllKhTask(KhTaskModel task, String status, Pageable pageable, int roleType, String yworg) {
         task = timeUtil(task);
         String result = "k.id as id, k.task_name as taskName,k.tdyw_org as yworg,k.CREATE_TIME as createTime,k.plan_start_time as startTime,k.plan_end_time as endTime,k.status as status,u.realname as userName,d.DEPTNAME as class,k.task_type as type";
         List params = new ArrayList<>();
@@ -65,13 +65,13 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
             buffer.append(" and u.realname like ? ");
             params.add(task.getUserName());
         }
-        if (task.getTaskType() != null && !task.getTaskType().equals("")){
+        if (task.getTaskType() != null && !task.getTaskType().equals("")) {
             buffer.append(" and k.task_type =? ");
             params.add(Integer.parseInt(task.getTaskType()));
         }
-        if (yworg!=null && !yworg.equals("")){
+        if (yworg != null && !yworg.equals("")) {
             buffer.append(" and k.tdyw_org like ? ");
-            params.add("%"+yworg+"%");
+            params.add("%" + yworg + "%");
         }
         String sql = "";
 
@@ -361,10 +361,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
             response.setContentType("Content-Type:application/vnd.ms-excel ");
             wb.write(output);
             output.close();
-        } catch (
-                Exception e)
-
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -423,7 +420,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         task.setYhId(site.getYhId());
         task.setStatus(0);
         this.reposiotry.addTask(task.getId(), task.getSiteId(), task.getUserId(), task.getTaskName(), task.getYhId(),
-                task.getPlanStartTime(), task.getPlanEndTime(), task.getWxOrg(), task.getCount(), task.getTdywOrg(),0);
+                task.getPlanStartTime(), task.getPlanEndTime(), task.getWxOrg(), task.getCount(), task.getTdywOrg(), 0);
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     }
 
@@ -437,8 +434,15 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         }
     }
 
-    public void deleteSiteById(long id) {
-        this.reposiotry.deleteSiteById(id);
+    public void deleteSiteById(long id) throws Exception {
+        String sql = "SELECT *\n" +
+                "FROM KH_TASK where PLAN_START_TIME<=sysdate and PLAN_END_TIME>=sysdate and status = 1 and SITE_ID=?";
+        List<Map<String, Object>> maps = this.execSql(sql, id);
+        if (maps.size() > 0) {
+            throw new Exception();
+        } else {
+            this.reposiotry.deleteSiteById(id);
+        }
     }
 
     public void deleteTaskById(long id) {

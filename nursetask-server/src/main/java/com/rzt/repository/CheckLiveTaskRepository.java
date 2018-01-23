@@ -51,9 +51,9 @@ public interface CheckLiveTaskRepository extends JpaRepository<CheckLiveTask,Str
 
     @Modifying
     @Query(value = "update check_live_site set status=?1 where trunc(CREATE_TIME)=trunc(sysdate) and YH_ID= ?2 ",nativeQuery = true)
-    void updateLiveTaskStatus(int status, Long id);
+    void updateLiveSiteStatus(int status, Long id);
 
     @Modifying
-    @Query(value = "update check_live_task set status=?1 where trunc(CREATE_TIME)=trunc(sysdate-1) ",nativeQuery = true)
+    @Query(value = "update check_live_task set status=?1 where trunc(PLAN_END_TIME)=trunc(sysdate-1) AND status!=2 ",nativeQuery = true)
     void updateLiveTaskYesterday(int status);
 }

@@ -35,6 +35,7 @@ public class TimedService  extends CurdService<TimedTask,XSZCTASKRepository>{
      * 配置定时器时需要的回显数据
      * @return
      */
+    @Transactional
     public WebApiResponse getTimedConfig(String userId){
         List<Map<String, Object>> maps = null;
         String time  = "";

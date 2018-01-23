@@ -2,6 +2,7 @@ package com.rzt.service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.TimedTask;
+import com.rzt.repository.TimedConfigRepository;
 import com.rzt.repository.XSZCTASKRepository;
 import com.rzt.util.WebApiResponse;
 import org.slf4j.Logger;
@@ -30,7 +31,8 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
     private XSZCTASKRepository repository;
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
-
+    @Autowired
+    private TimedConfigRepository timedConfigRepository;
     /**
      *查询所有为抽查任务列表
      * @param page
@@ -67,14 +69,15 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                 int i = Integer.parseInt(roletype);
                 switch (i){
                     case 0 :{//一级单位   显示三天周期抽查的任务
-                         sql = " SELECT   DISTINCT TASKID," +
+                         sql = " SELECT    TASKID," +
                                  "  ID," +
                                  "  CREATETIME," +
                                  "  USER_ID," +
                                  "  TASKNAME," +
                                  "  TASKTYPE,CHECKSTATUS ,TARGETSTATUS" +
                                  "   FROM TIMED_TASK" +
-                                 "   WHERE CREATETIME > ( select   sysdate - (3 * 24 * 60 * 60 + 60 * 60) / (1 * 24 * 60 * 60)   from  dual)   AND STATUS = 0 AND THREEDAY = 1 ";
+                                 "   WHERE CREATETIME > ( select sysdate - (3 * 24 * 60 * 60 + 60 * 60) / (1 * 24 * 60 * 60)   from  dual)" +
+                                 "         AND STATUS = 0 AND THREEDAY = 1 AND ID IN (SELECT MAX(ID) FROM TIMED_TASK GROUP BY TASKID)";
                         break;
                     }case 1 :{//二级单位   显示全部周期为两小时的任务
                         if(null != deptid && !"".equals(deptid)){//当前用户单位信息获取成功，进入流程
@@ -119,7 +122,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                 }
             }
         }
-        if(taskType!=null && !"".equals(taskType.trim())){// 判断当前任务类型  巡视1   看护2  稽查3
+        if(taskType!=null && !"".equals(taskType.trim())){// 判断当前任务类型  巡视1   看护2  看护稽查3  巡视稽查4
             list.add(taskType);
             sql+= "  AND TASKTYPE =?"+list.size();
         }
@@ -141,15 +144,22 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                 if(tasktype!=null && tasktype.equals("1")){
                     String sqll = "SELECT  c.LINE_ID FROM XS_ZC_TASK x LEFT JOIN XS_ZC_CYCLE c ON c.ID = x.XS_ZC_CYCLE_ID WHERE x.ID =?1";
                     List<Map<String, Object>> maps = execSql(sqll,taskid);
-                    if(list.size()>0)
+                    if(list.size()>0){
                         next.put("LINE_ID",maps.get(0).get("LINE_ID"));
+                    }
                 }else if (tasktype!=null && tasktype.equals("2")){ //看护
                     String sqlll = "SELECT LINE_ID FROM KH_YH_HISTORY WHERE TASK_ID =?1";
                     List<Map<String, Object>> maps = execSql(sqlll, taskid);
-                    if(maps.size()>0)
+                    if(maps.size()>0){
                         next.put("LINE_ID",maps.get(0).get("LINE_ID"));
-                }else if (tasktype!=null && tasktype.equals("3")){ //稽查
+                    }
+                }else if (tasktype!=null && tasktype.equals("3")){ //看护稽查
 
+                }else if (tasktype!=null && tasktype.equals("4")){ //巡视稽查
+
+                }else {
+                    LOGGER.error("查询类型不明确");
+                    return WebApiResponse.erro("类型不明确");
                 }
                 Object userInformation = null;
                         String userID =(String)next.get("USER_ID");
@@ -203,12 +213,8 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                         null!= a.get("ID")?a.get("ID").toString():"",UUID.randomUUID().toString(),
                         null!=a.get("CM_USER_ID")?a.get("CM_USER_ID").toString():"","1" ,
                         null!=a.get("TASK_NAME")?a.get("TASK_NAME").toString():"",CheckStatus,"0");
-
-
-
-
             }
-
+            LOGGER.info("巡视稽查任务抽查完毕");
             Iterator<Map<String, Object>> iterator1 = maps2.iterator();
             while (iterator1.hasNext()){
                 Map<String, Object> b = iterator1.next();
@@ -220,8 +226,53 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                         null!=b.get("STATUS")?b.get("STATUS").toString():"4",
                         new SimpleDateFormat("YYYY-MM-dd HH:mm:ss").format(new Date()),null != b.get("ID")?b.get("ID").toString():"",UUID.randomUUID().toString(),
                         null != b.get("USER_ID")? b.get("USER_ID").toString():"","2" ,null != b.get("TASK_NAME")?b.get("TASK_NAME").toString():"",CheckStatus,"0");
-
             }
+            LOGGER.info("看护任务抽查完毕");
+            //看护稽查
+          /*  String khjcsql = "SELECT ID,STATUS,USER_ID,TASK_NAME  " +
+                    "         FROM CHECK_LIVE_TASK  WHERE STATUS != 0 AND ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 3 )";
+            List<Map<String, Object>> khjcmaps = this.execSql(khjcsql, null);
+            Iterator<Map<String, Object>> khjciterator = maps.iterator();
+            while (khjciterator.hasNext()){
+                Map<String, Object> a = khjciterator.next();
+                Integer CheckStatus = 0;
+                //任务状态  0 未开始   1 进行中  2 已完成  3 未知或值为空
+                if("2".equals( a.get("STATUS").toString())){
+                    CheckStatus = 1;
+                }
+                // 看护稽查任务添加
+                repository.xsTaskAdd(null!= a.get("STATUS")?a.get("STATUS").toString():"4"
+                        ,new SimpleDateFormat("YYYY-MM-dd HH:mm:ss").format(new Date()),
+                        null!= a.get("ID")?a.get("ID").toString():"",UUID.randomUUID().toString(),
+                        null!=a.get("USER_ID")?a.get("USER_ID").toString():"","3" ,
+                        null!=a.get("TASK_NAME")?a.get("TASK_NAME").toString():"",CheckStatus,"0");
+            }
+            LOGGER.info("看护稽查任务抽查完毕");
+            //巡视稽查
+            String xsjcsql = "SELECT ID,STATUS,USER_ID,TASK_NAME" +
+                    "    FROM CHECK_LIVE_TASKXS  WHERE STATUS != 0   AND ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 4 )";
+            List<Map<String, Object>> xsjcmaps = this.execSql(xsjcsql, null);
+            Iterator<Map<String, Object>> xsjciterator = maps.iterator();
+            while (xsjciterator.hasNext()){
+                Map<String, Object> a = xsjciterator.next();
+                Integer CheckStatus = 0;
+                //任务状态  0 未开始   1 进行中  2 已完成  3 未知或值为空
+                if("2".equals( a.get("STATUS").toString())){
+                    CheckStatus = 1;
+                }
+                // 巡视稽查任务添加
+                repository.xsTaskAdd(null!= a.get("STATUS")?a.get("STATUS").toString():"4"
+                        ,new SimpleDateFormat("YYYY-MM-dd HH:mm:ss").format(new Date()),
+                        null!= a.get("ID")?a.get("ID").toString():"",UUID.randomUUID().toString(),
+                        null!=a.get("USER_ID")?a.get("USER_ID").toString():"","4" ,
+                        null!=a.get("TASK_NAME")?a.get("TASK_NAME").toString():"",CheckStatus,"0");
+            }
+                LOGGER.info("巡视稽查任务抽查完毕");*/
+
+
+          // 此处更改定时器配置表中的上次刷新时间
+
+            timedConfigRepository.updateTimedConfigLastTime(new Date(),"TIME_CONFIG");
 
         }catch (Exception e){
             LOGGER.error("（二级单位，周期可变，小时为单位 ）定时任务数据抽取失败"+e.getMessage());
@@ -239,11 +290,27 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
     public void xsTaskAddAndFindThree()  {
 
         try {
+
+
+
+
             //巡视sql
-            String findSql1 = "select x.TASK_NAME,x.STAUTS,x.ID,x.CM_USER_ID from XS_ZC_TASK x" +
-                    "  WHERE x.ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 1 ) AND  x.STAUTS != 0 ";
+            String findSql1 = "SELECT k.TASK_NAME,k.STAUTS,k.ID,k.CM_USER_ID" +
+                    "  FROM RZTSYSUSER u" +
+                    "  LEFT JOIN XS_ZC_TASK k ON k.CM_USER_ID = u.ID" +
+                    "  WHERE WORKTYPE = 2 AND k.ID IS NOT  NULL AND k.REAL_START_TIME =" +
+                    "   (SELECT max(h.REAL_START_TIME)" +
+                    "   FROM XS_ZC_TASK h WHERE h.CM_USER_ID = u.ID) AND k.STAUTS != 0 AND" +
+                    "   k.ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 1 AND THREEDAY = 1) AND  k.STAUTS != 0";
             //看护sql
-            String findSql2 = "SELECT kht.TASK_NAME,kht.ID,kht.STATUS,USER_ID FROM KH_TASK kht WHERE kht.ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 2 )  AND kht.STATUS != 0 ";
+            String findSql2 = "SELECT k.TASK_NAME,k.ID,k.STATUS,k.USER_ID" +
+                    "  FROM RZTSYSUSER u" +
+                    "  LEFT JOIN KH_TASK k ON k.USER_ID = u.ID" +
+                    "  WHERE WORKTYPE = 1 AND k.ID IS NOT  NULL AND k.CREATE_TIME =" +
+                    "  (SELECT max(h.CREATE_TIME)" +
+                    "   FROM KH_TASK h WHERE h.USER_ID = u.ID) AND k.STATUS != 0" +
+                    "   AND k.ID NOT IN" +
+                    "       (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 2 AND THREEDAY =1)  AND k.STATUS != 0";
             List<Map<String, Object>> maps = this.execSql(findSql1, null);
             List<Map<String, Object>> maps2 = this.execSql(findSql2, null);
             Iterator<Map<String, Object>> iterator = maps.iterator();
@@ -259,12 +326,8 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                         null!= a.get("ID")?a.get("ID").toString():"",UUID.randomUUID().toString(),
                         null!=a.get("CM_USER_ID")?a.get("CM_USER_ID").toString():"","1" ,
                         null!=a.get("TASK_NAME")?a.get("TASK_NAME").toString():"",CheckStatus,"1");
-
-
-
-
             }
-
+            LOGGER.info("巡视任务抽查完毕");
             Iterator<Map<String, Object>> iterator1 = maps2.iterator();
             while (iterator1.hasNext()){
                 Map<String, Object> b = iterator1.next();
@@ -278,14 +341,54 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                         null != b.get("USER_ID")? b.get("USER_ID").toString():"","2" ,null != b.get("TASK_NAME")?b.get("TASK_NAME").toString():"",CheckStatus,"1");
 
             }
+            LOGGER.info("看护任务抽查完毕");
+            //看护稽查
+            /*String khjcsql = "SELECT ID,STATUS,USER_ID,TASK_NAME  " +
+                    "         FROM CHECK_LIVE_TASK  WHERE STATUS != 0 AND ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 3 )";
+            List<Map<String, Object>> khjcmaps = this.execSql(khjcsql, null);
+            Iterator<Map<String, Object>> khjciterator = maps.iterator();
+            while (khjciterator.hasNext()){
+                Map<String, Object> a = khjciterator.next();
+                Integer CheckStatus = 0;
+                //任务状态  0 未开始   1 进行中  2 已完成  3 未知或值为空
+                if("2".equals( a.get("STATUS").toString())){
+                    CheckStatus = 1;
+                }
+                // 看护稽查任务添加
+                repository.xsTaskAdd(null!= a.get("STATUS")?a.get("STATUS").toString():"4"
+                        ,new SimpleDateFormat("YYYY-MM-dd HH:mm:ss").format(new Date()),
+                        null!= a.get("ID")?a.get("ID").toString():"",UUID.randomUUID().toString(),
+                        null!=a.get("USER_ID")?a.get("USER_ID").toString():"","3" ,
+                        null!=a.get("TASK_NAME")?a.get("TASK_NAME").toString():"",CheckStatus,"1");
+            }
+            LOGGER.info("看护稽查任务抽查完毕");
+            //巡视稽查
+            String xsjcsql = "SELECT ID,STATUS,USER_ID,TASK_NAME" +
+                    "    FROM CHECK_LIVE_TASKXS  WHERE STATUS != 0   AND ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 4 )";
+            List<Map<String, Object>> xsjcmaps = this.execSql(xsjcsql, null);
+            Iterator<Map<String, Object>> xsjciterator = maps.iterator();
+            while (xsjciterator.hasNext()){
+                Map<String, Object> a = xsjciterator.next();
+                Integer CheckStatus = 0;
+                //任务状态  0 未开始   1 进行中  2 已完成  3 未知或值为空
+                if("2".equals( a.get("STATUS").toString())){
+                    CheckStatus = 1;
+                }
+                // 巡视稽查任务添加
+                repository.xsTaskAdd(null!= a.get("STATUS")?a.get("STATUS").toString():"4"
+                        ,new SimpleDateFormat("YYYY-MM-dd HH:mm:ss").format(new Date()),
+                        null!= a.get("ID")?a.get("ID").toString():"",UUID.randomUUID().toString(),
+                        null!=a.get("USER_ID")?a.get("USER_ID").toString():"","4" ,
+                        null!=a.get("TASK_NAME")?a.get("TASK_NAME").toString():"",CheckStatus,"1");
+            }
+            LOGGER.info("巡视稽查任务抽查完毕");
+
+*/
 
         }catch (Exception e){
             LOGGER.error("（一级单位，三天周期）定时任务数据抽取失败"+e.getMessage());
         }
         LOGGER.info("（一级单位，三天周期）定时任务数据抽取成功");
-
-
-
     }
     /**
      * 根据taskId 查询当前任务详情 包含每轮的巡视任务
@@ -309,6 +412,19 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                             sql = "SELECT PLAN_START_TIME as START_TIME,PLAN_END_TIME as END_TIME,TASK_NAME as OPERATE_NAME,ID" +
                                     "   FROM KH_TASK WHERE ID = ?"+strings.size();
                             break;
+                        }case 3 :{//看护稽查
+                            String khsql = "SELECT c.ID,c.PLAN_START_TIME as START_TIME ,c.PLAN_END_TIME as END_TIME,(SELECT TASK_NAME" +
+                                    "         FROM KH_TASK k WHERE k.ID = c.KH_TASK_ID ) as OPERATE_NAME,c.KH_TASK_ID" +
+                                    "           FROM CHECK_LIVE_TASK_DETAIL c WHERE TASK_ID = ?"+strings.size();
+                            break;
+                        }case 4 :{//巡视稽查
+                            String xsjcsql = "SELECT c.ID,c.PLAN_START_TIME as START_TIME ,c.PLAN_END_TIME as END_TIME,(SELECT x.TASK_NAME" +
+                                    "   FROM XS_ZC_TASK x WHERE x.ID = c.XS_TASK_ID ) as OPERATE_NAME" +
+                                    "    FROM CHECK_LIVE_TASK_DETAILXS c WHERE TASK_ID = ?"+strings.size();
+                            break;
+                        }default:{
+                            LOGGER.error("任务详情查询失败--任务类型错误");
+                                return WebApiResponse.erro("任务详情查询失败--任务类型错误");
                         }
                     }
                 }
@@ -332,35 +448,16 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
      */
     public WebApiResponse findYHByTaskId(Long taskId,String TASKTYPE) {
         ArrayList<Object> strings = new ArrayList<>();
-        List<Map<String, Object>> maps = null;
-        List<Map<String, Object>> maps2 = null;
-        List<Map<String, Object>> maps3 = null;
+        List<Map<String, Object>> maps = new ArrayList<>();
+        List<Map<String, Object>> maps2 = new ArrayList<>();
+        List<Map<String, Object>> maps3 = new ArrayList<>();
 
        try {
            if(null != taskId && !"".equals(taskId)){
                if (null != TASKTYPE && !"".equals(TASKTYPE)){//判断当前任务类型   1 巡视 2 看护 其他待定
                 if("1".equals(TASKTYPE)){
                     strings.add(taskId);
-                   /* String sql = "SELECT yh.YHMS,li.LINE_NAME,li.SECTION" +
-                            "       from KH_YH_HISTORY yh" +
-                            "          LEFT JOIN" +
-                            "            CM_LINE li on li.ID = yh.LINE_ID ";
-                    //取到当前隐患的详细信息
-                    sql += "             WHERE yh.LINE_ID = (SELECT  xc.LINE_ID" +
-                            "                FROM XS_ZC_TASK xt" +
-                            "                   LEFT JOIN XS_ZC_CYCLE xc" +
-                            "                       on xc.ID = xt.XS_ZC_CYCLE_ID" +
-                            "                           WHERE xt.ID = ?"+strings.size()+")";
-                    //取当前隐患的位置  去重
-                    String sql3 = "SELECT distinct li.LINE_NAME,li.SECTION" +
-                            "       from KH_YH_HISTORY yh" +
-                            "          LEFT JOIN" +
-                            "            CM_LINE li on li.ID = yh.LINE_ID" +
-                            "             WHERE yh.LINE_ID = (SELECT  xc.LINE_ID" +
-                            "                FROM XS_ZC_TASK xt" +
-                            "                   LEFT JOIN XS_ZC_CYCLE xc" +
-                            "                       on xc.ID = xt.XS_ZC_CYCLE_ID" +
-                            "                           WHERE xt.ID = ?"+strings.size()+")";*/
+
 
                     String sql = "SELECT *" +
                             "      FROM XS_SB_YH WHERE XSTASK_ID = ?"+strings.size();
@@ -389,13 +486,33 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                                "            CM_LINE li on li.ID = yh.LINE_ID" +
                                "             WHERE yh.ID = (SELECT k.YH_ID FROM KH_SITE k LEFT JOIN KH_TASK kh ON kh.SITE_ID = k.ID" +
                                "             WHERE kh.ID = ?"+strings.size()+")";
-                       //获取任务详情  OPERATE_NAME
-                       String sql4 = "SELECT FILE_PATH,PROCESS_NAME as OPERATE_NAME,CREATE_TIME as START_TIME " +
-                               "  FROM PICTURE_KH WHERE TASK_ID = ?"+strings.size()+" AND FILE_TYPE = 1 ORDER BY CREATE_TIME";
+                       //获取任务详情  OPERATE_NAME   三种情况
+                       String khsql1 = "SELECT DISTINCT PROCESS_NAME as OPERATE_NAME,TASK_ID,(SELECT min(CREATE_TIME) FROM PICTURE_KH " +
+                               "    WHERE TASK_ID = ?"+strings.size()+" AND FILE_TYPE = 1 and PROCESS_ID = 1) AS START_TIME,1 AS PROID" +
+                               "    FROM PICTURE_KH WHERE TASK_ID = ?"+strings.size()+" AND FILE_TYPE = 1 and PROCESS_ID = 1";
+
+                       String khsql2 = "SELECT DISTINCT PROCESS_NAME as OPERATE_NAME,TASK_ID,(SELECT min(CREATE_TIME) FROM PICTURE_KH " +
+                               "    WHERE TASK_ID = ?"+strings.size()+" AND FILE_TYPE = 1 and PROCESS_ID = 2) AS START_TIME,2 AS PROID" +
+                               "    FROM PICTURE_KH WHERE TASK_ID = ?"+strings.size()+" AND FILE_TYPE = 1 and PROCESS_ID = 2";
+                       String khsql3 = "SELECT DISTINCT PROCESS_NAME as OPERATE_NAME,TASK_ID,(SELECT min(CREATE_TIME) FROM PICTURE_KH " +
+                               "    WHERE TASK_ID = ?"+strings.size()+" AND FILE_TYPE = 1 and PROCESS_ID = 3) AS START_TIME,3 AS PROID" +
+                               "    FROM PICTURE_KH WHERE TASK_ID = ?"+strings.size()+" AND FILE_TYPE = 1 and PROCESS_ID = 3";
+
+                       List<Map<String, Object>> m1 = this.execSql(khsql1, strings);
+                       if(null != m1 && m1.size()>0){
+                           maps2.add(m1.get(0));
+                       }
+                       List<Map<String, Object>> m2 = this.execSql(khsql2, strings);
+                       if(null != m2 && m2.size()>0){
+                           maps2.add(m2.get(0));
+                       }
+                       List<Map<String, Object>> m3 = this.execSql(khsql3, strings);
+                       if(null != m3 && m3.size()>0){
+                           maps2.add(m3.get(0));
+                       }
 
                        maps = this.execSql(sql, strings.toArray());
                        maps3 = this.execSql(sql3, strings.toArray());
-                       maps2 = this.execSql(sql4,strings.toArray());
                        LOGGER.info("看护任务详情查询");
                    }
                }

@@ -72,6 +72,10 @@ public class DateUtil {
         String date = dt.toString(FORTER_DATE);
         return date;
     }
+
+    public static String getStringDate() {
+        return formatter.format(new Date());
+    }
     public static Date getPlanStartTime(String startTime){
         try{
             Date planStartTime =  parseDate(startTime);
@@ -133,6 +137,7 @@ public class DateUtil {
     }
 
     public static void main(String[] args) {
+
     }
 
     /**
@@ -146,17 +151,10 @@ public class DateUtil {
         long nd = 1000 * 24 * 60 * 60;
         double nh = 1000 * 60 * 60;
         long nm = 1000 * 60;
-        // long ns = 1000;
         // 获得两个时间的毫秒时间差异
         double diff = endDate.getTime() - nowDate.getTime();
-        // 计算差多少天
-      //  long day = diff / nd;
         // 计算差多少小时
         double hour = diff / nh;
-        // 计算差多少分钟
-        //long min = diff % nd % nh / nm;
-        // 计算差多少秒//输出结果
-        // long sec = diff % nd % nh % nm / ns;
         return  hour;
     }
 }
