@@ -119,6 +119,19 @@ public class RedisConfig {
         return template;
     }
 
+    /**
+     * 得到连接池  在redis模板出现bug查询不到值的时候使用
+     * @return
+     */
+    @Bean
+    public JedisPool redisPoolFactory() {
 
+        JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
+        jedisPoolConfig.setMaxIdle(maxIdle);
+        jedisPoolConfig.setMaxWaitMillis(maxWait);
+
+        JedisPool jedisPool = new JedisPool(jedisPoolConfig, host, port, timeout,password);
+        return jedisPool;
+    }
 
 }
