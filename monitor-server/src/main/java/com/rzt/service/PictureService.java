@@ -10,6 +10,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 @Service
@@ -428,6 +430,10 @@ public class PictureService extends CurdService<CheckResult, CheckResultReposito
                for (String s : split) {
                    if(null != s && !"".equals(s)){
                        set.add(s);
+                       /*if(strOfLong(s)){
+                           set.add(new Long(s));
+                       }*/
+
                    }
                }
                return WebApiResponse.success(set);
@@ -439,4 +445,11 @@ public class PictureService extends CurdService<CheckResult, CheckResultReposito
 
         return WebApiResponse.success("");
     }
+
+    /*public  Boolean strOfLong(String s){
+        Pattern pattern = Pattern.compile("^[0-9]*$");
+        Matcher matcher = pattern.matcher(s);
+        return matcher.matches();
+    }
+*/
 }
