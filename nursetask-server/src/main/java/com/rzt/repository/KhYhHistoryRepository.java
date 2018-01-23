@@ -28,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 public interface KhYhHistoryRepository extends JpaRepository<KhYhHistory, String> {
 
     @Modifying
-    @Query(value = "UPDATE PICTURE_YH SET YH_ID = ?2,TASK_ID=?3,YH_ORIGIN = 0 WHERE ID =?1", nativeQuery = true)
+    @Query(value = "UPDATE PICTURE_YH SET YH_ID = ?2,TASK_ID=?3,YH_ORIGIN = 0,PROCESS_TYPE=0 WHERE ID =?1", nativeQuery = true)
     void updateYhPicture(long id, Long yhId, long xstaskId);
 
     @Modifying
