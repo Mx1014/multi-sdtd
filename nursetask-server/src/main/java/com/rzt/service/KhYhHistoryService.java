@@ -7,6 +7,7 @@
 package com.rzt.service;
 
 import com.alibaba.fastjson.JSON;
+import com.netflix.ribbon.proxy.annotation.Http;
 import com.rzt.entity.KhCycle;
 import com.rzt.entity.KhSite;
 import com.rzt.entity.XsSbYh;
@@ -25,9 +26,11 @@ import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.*;
 
@@ -176,20 +179,15 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
     }
 
     @Transactional
-    public WebApiResponse ImportYh() {
+    public WebApiResponse ImportYh(MultipartFile file) {
         int i = 2;
         try {
-
-            FileInputStream file = new FileInputStream("E:\\win10\\新建文件夹\\WeChat Files\\yawang-\\Files\\检分安云云台看护任务.xls ");
+            // FileInputStream file = new FileInputStream("E:\\win10\\新建文件夹\\WeChat Files\\yawang-\\Files\\检分安云云台看护任务.xls ");
 //            FileInputStream file = new FileInputStream("E:\\826708743\\FileRecv\\隐患列表_20180111-程焕竹.xls");
             //HSSFWorkbook wb = new HSSFWorkbook(file.getInputStream());
-            HSSFWorkbook wb = new HSSFWorkbook(file);
+            HSSFWorkbook wb = new HSSFWorkbook(file.getInputStream());
             HSSFSheet sheet = wb.getSheetAt(0);
             HSSFRow row = sheet.getRow(i);
-            String sql = "SELECT *\n" +
-                    "FROM KH_SITE\n" +
-                    "WHERE JBD LIKE '一班倒'";
-            List<Map<String, Object>> list = this.execSql(sql);
             while (row != null && !"".equals(row.toString().trim())) {
 
                 KhYhHistory yh = new KhYhHistory();
@@ -197,17 +195,8 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 if (cell == null || "".equals(ExcelUtil.getCellValue(cell))) {
                     break;
                 }
-                for (Map map : list) {
-                    if (map.get("TASK_NAME").toString().equals(ExcelUtil.getCellValue(row.getCell(1)))) {
-                        String username = ExcelUtil.getCellValue(row.getCell(0));
-                        String sql1 = "select id,realname from rztsysuser where realname like ? and deptid='402881e6603a69b801603a70c9920007'";
-                        Map<String, Object> map1 = this.execSqlSingleResult(sql1, "%" + username + "%");
-                        System.out.println(map1.get("REALNAME").toString());
-                        this.reposiotry.updates(Long.parseLong(map.get("ID").toString()), map1.get("ID").toString());
-                    }
-                }
 
-                /*  yh.setId(null);
+                yh.setId(null);
                 String yworg = ExcelUtil.getCellValue(row.getCell(1));
                 String sborg = ExcelUtil.getCellValue(row.getCell(2));
                 if (yworg.contains("供电")) {
@@ -248,10 +237,10 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 yh.setLineName(linename1);//线路名称
                 yh.setClassName(ExcelUtil.getCellValue(row.getCell(4)));//所属班组
                 yh.setVtype(ExcelUtil.getCellValue(row.getCell(5)));//电压等级
-                String startTower = ExcelUtil.getCellValue(row.getCell(6));
-                String endTower = ExcelUtil.getCellValue(row.getCell(7));
+                String startTower = ExcelUtil.getCellValue(row.getCell(6));//起始杆塔
+                String endTower = ExcelUtil.getCellValue(row.getCell(7));//终止杆塔
                 yh.setSection(startTower + "-" + endTower);//段落
-                // 8涉及线路
+                yh.setSjxl(ExcelUtil.getCellValue(row.getCell(8)));//涉及线路
                 yh.setYhjb1(ExcelUtil.getCellValue(row.getCell(9)));//隐患级别
                 yh.setYhlb(ExcelUtil.getCellValue(row.getCell(10)));//隐患类别
                 yh.setYhms(ExcelUtil.getCellValue(row.getCell(11)));//隐患描述
@@ -302,11 +291,11 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 String cellValue = ExcelUtil.getCellValue(row.getCell(9));
                 //if (ExcelUtil.getCellValue(row.getCell(9)).equals("施工隐患")){
                 KhCycle cycle = new KhCycle();
-                cycle.setId();
+                cycle.setId(0l);
                 yh.setTaskId(cycle.getId());
                 addKhCycle(yh, cycle);
                 //}
-                this.add(yh);*/
+                this.add(yh);
                 row = sheet.getRow(++i);
                 /*
                 yh.setStartTower();
@@ -351,7 +340,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             if (kv.contains("kV")) {
                 kv = kv.substring(0, kv.indexOf("k"));
             }
-            cycle.setId();
+            cycle.setId(0L);
             cycle.setTdywOrg(yh.getTdywOrg());
             cycle.setTdywOrgId(yh.getTdorgId());
             cycle.setWxOrg(yh.getTdwxOrg());
@@ -741,6 +730,17 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             yh.setLineId(sbYh.getLineId());
             yh.setLineName(sbYh.getLineName());
             yh.setTbsj(sbYh.getCreateTime());
+            yh.setStartTower(sbYh.getStartTower());
+            yh.setEndTower(sbYh.getEndTower());
+            yh.setXlzycd(sbYh.getXlzycd());
+            yh.setSbywOrg(sbYh.getSbywOrg());
+            yh.setDjyid(sbYh.getDjyid());
+            yh.setDxdyhspjl(sbYh.getDxdyhspjl());
+            yh.setDxxyhczjl(sbYh.getDxxyhczjl());
+            yh.setXdxyhjkjl(sbYh.getXdxyhjkjl());
+            yh.setJd(sbYh.getJd());
+            yh.setWd(sbYh.getWd());
+            yh.setRadius("200.0");
 //            yh.setClassName(sbYh.getLineName());
 //            yh.setClassId(sbYh.getclass);
             String[] split = sbYh.getSection().split("-");
@@ -768,6 +768,143 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("删除失败" + e.getMessage());
+        }
+    }
+
+    public void ImportYhExam(HttpServletResponse response) {
+        try {
+            XSSFWorkbook wb = new XSSFWorkbook();
+            XSSFSheet sheet = wb.createSheet("隐患列表");
+
+            // 设置列宽
+            sheet.setColumnWidth((short) 0, (short) 6000);
+            sheet.setColumnWidth((short) 1, (short) 6000);
+            sheet.setColumnWidth((short) 2, (short) 6000);
+            sheet.setColumnWidth((short) 3, (short) 6000);
+            sheet.setColumnWidth((short) 4, (short) 6000);
+            sheet.setColumnWidth((short) 5, (short) 6000);// 空列设置小一些
+            sheet.setColumnWidth((short) 6, (short) 6000);// 设置列宽
+            sheet.setColumnWidth((short) 7, (short) 6000);
+            sheet.setColumnWidth((short) 8, (short) 6000);
+            sheet.setColumnWidth((short) 9, (short) 6000);
+            sheet.setColumnWidth((short) 10, (short) 6000);
+            sheet.setColumnWidth((short) 11, (short) 6000);
+            sheet.setColumnWidth((short) 12, (short) 6000);
+            sheet.setColumnWidth((short) 13, (short) 9000);
+            sheet.setColumnWidth((short) 14, (short) 6000);
+            sheet.setColumnWidth((short) 15, (short) 6000);// 空列设置小一些
+            sheet.setColumnWidth((short) 16, (short) 6000);// 设置列宽
+            sheet.setColumnWidth((short) 17, (short) 6000);
+            sheet.setColumnWidth((short) 18, (short) 6000);
+            sheet.setColumnWidth((short) 19, (short) 6000);
+            sheet.setColumnWidth((short) 20, (short) 6000);
+            sheet.setColumnWidth((short) 21, (short) 6000);
+            sheet.setColumnWidth((short) 22, (short) 6000);
+            sheet.setColumnWidth((short) 23, (short) 9000);
+            sheet.setColumnWidth((short) 24, (short) 6000);
+            sheet.setColumnWidth((short) 25, (short) 6000);
+            sheet.setColumnWidth((short) 26, (short) 6000);
+            XSSFCellStyle cellstyle = wb.createCellStyle();// 设置表头样式
+            cellstyle.setAlignment(XSSFCellStyle.ALIGN_CENTER);// 设置居中
+
+            XSSFCellStyle headerStyle = wb.createCellStyle();// 创建标题样式
+            headerStyle.setVerticalAlignment(XSSFCellStyle.VERTICAL_CENTER);    //设置垂直居中
+            headerStyle.setAlignment(XSSFCellStyle.ALIGN_CENTER);   //设置水平居中
+            XSSFFont headerFont = wb.createFont(); //创建字体样式
+            headerFont.setBoldweight(XSSFFont.BOLDWEIGHT_BOLD); // 字体加粗
+            headerFont.setFontName("Times New Roman");  //设置字体类型
+            headerFont.setFontHeightInPoints((short) 12);    //设置字体大小
+            headerStyle.setFont(headerFont);    //为标题样式设置字体样式
+            XSSFRow row = sheet.createRow(0);
+            XSSFCell cell = row.createCell((short) 0);
+            cell.setCellValue("隐患编号");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 1);
+            cell.setCellValue("通道维护单位");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 2);
+            cell.setCellValue("设备维护单位");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 3);
+            cell.setCellValue("主要线路");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 4);
+            cell.setCellValue("所属班组");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 5);
+            cell.setCellValue("电压等级");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 6);
+            cell.setCellValue("起始杆号");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 7);
+            cell.setCellValue("终止杆号");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 8);
+            cell.setCellValue("涉及线路");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 9);
+            cell.setCellValue("隐患级别");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 10);
+            cell.setCellValue("隐患类别");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 11);
+            cell.setCellValue("隐患描述");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 12);
+            cell.setCellValue("隐患发现时间");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 13);
+            cell.setCellValue("隐患地点(区、县)");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 14);
+            cell.setCellValue("隐患地点(乡镇、街道)");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 15);
+            cell.setCellValue("隐患地点(村)");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 16);
+            cell.setCellValue("隐患责任单位");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 17);
+            cell.setCellValue("隐患责任单位联系人");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 18);
+            cell.setCellValue("隐患责任单位电话");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 19);
+            cell.setCellValue("树木数");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 20);
+            cell.setCellValue("导线对隐患垂直距离");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 21);
+            cell.setCellValue("导线对隐患水平距离");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 22);
+            cell.setCellValue("导线对隐患净空距离");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 23);
+            cell.setCellValue("隐患形成原因");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 24);
+            cell.setCellValue("是否栽装警示牌");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 25);
+            cell.setCellValue("危急程度");
+            cell.setCellStyle(headerStyle);
+            cell = row.createCell((short) 26);
+            cell.setCellValue("管控措施");
+            cell.setCellStyle(headerStyle);
+            OutputStream output = response.getOutputStream();
+            response.reset();
+            response.setHeader("Content-disposition", "attachment; filename=" + new String("隐患列表.xlsx".getBytes("utf-8"), "iso8859-1"));
+            response.setContentType("Content-Type:application/vnd.ms-excel ");
+            wb.write(output);
+            output.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

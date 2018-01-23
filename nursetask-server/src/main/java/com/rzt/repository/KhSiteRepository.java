@@ -97,9 +97,8 @@ public interface KhSiteRepository extends JpaRepository<KhSite, String> {
             "values(?1,?2,?3,sysdate,?4,?5,?6,?7,?8,?9)",nativeQuery = true)
     void addCheckSite(long l, Long taskId, int i1, String taskName, int i, Long lineId, String tdywOrgId, String wxOrgId, Long id);
 
-
     @Modifying
-    @Query(value = "update kh_yh_history set classname=?2,class_id=?3 where id=?1", nativeQuery = true)
+    @Query(value = "update kh_yh_history set classname=?3,class_id=?2 where id=?1", nativeQuery = true)
     @Transactional
     void updateYH2(Long yhId, String did, String dname);
     @Modifying

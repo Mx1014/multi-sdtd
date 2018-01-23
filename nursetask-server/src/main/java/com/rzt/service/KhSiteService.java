@@ -8,7 +8,6 @@ package com.rzt.service;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.netflix.discovery.converters.Auto;
 import com.rzt.entity.*;
 import com.rzt.entity.model.KhTaskModel;
 import com.rzt.repository.KhCycleRepository;
@@ -18,28 +17,19 @@ import com.rzt.repository.KhYhHistoryRepository;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DateUtil;
 import com.rzt.utils.MapUtil;
-import com.rzt.utils.RedisUtil;
 import com.rzt.utils.SnowflakeIdWorker;
-import com.sun.tools.internal.ws.wsdl.document.soap.SOAPUse;
 import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.geo.Distance;
-import org.springframework.data.geo.Metrics;
-import org.springframework.data.geo.Point;
-import org.springframework.data.redis.core.GeoOperations;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import redis.clients.jedis.Jedis;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.OutputStream;
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -232,14 +222,14 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                 e.printStackTrace();
             }
 
-            task.setId();
+            task.setId(0L);
             kv = yh.getVtype();
             if (yh.getVtype().contains("kV")) {
                 kv = kv.substring(0, kv.indexOf("k"));
             }
             yh.setTaskId(task.getId());
             yh.setYhzt(0);//隐患未消除
-            if (yh.getId() != null) {
+            if (yh.getId() == null) {
                 yh.setId(0L);
             }
             yh.setCreateTime(DateUtil.dateNow());
@@ -259,7 +249,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             task.setYhId(yh.getId());
             task.setCreateTime(DateUtil.dateNow());
             this.cycleService.add(task);
-            long id = new SnowflakeIdWorker(2, 4).nextId();
+            long id = new SnowflakeIdWorker(8, 24).nextId();
             this.reposiotry.addCheckSite(id, task.getId(), 0, task.getTaskName(), 0, task.getLineId(), task.getTdywOrgId(), task.getWxOrgId(), task.getYhId());
             /*if (null != pictureId && !pictureId.equals("")) {
                 String[] split = pictureId.split(",");
@@ -310,7 +300,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                 String userId = map.get("userId").toString();
                 String startTime = map.get("planStartTime").toString();
                 String endTime = map.get("planEndTime").toString();
-                site.setId();
+                site.setId(0L);
                 try {
                     String sql = "select c.COMPANYNAME name,c.id id FROM RZTSYSCOMPANY C LEFT JOIN RZTSYSUSER U ON C.ID=U.COMPANYID where U.ID=?";
                     Map<String, Object> map1 = this.execSqlSingleResult(sql, userId);

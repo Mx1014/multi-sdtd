@@ -117,7 +117,7 @@ public class CheckLiveTaskXsService extends CurdService<CheckLiveTaskXs, CheckLi
     public void paifaXsCheckTask(CheckLiveTaskXs task , String planStartTime, String planEndTime, String username) throws Exception {
 
         Map<String, Object> map = execSqlSingleResult("SELECT ID,TD_ORG,WX_ORG FROM XS_ZC_TASK WHERE ID = ?1", task.getTaskId());
-        task.setId();
+        task.setId(0L);
         task.setTdwhOrg(String.valueOf(map.get("TD_ORG")).replace("null",""));
         task.setTdwxOrgid(String.valueOf(map.get("WX_ORG")).replace("null",""));
         task.setCreateTime(new Date());

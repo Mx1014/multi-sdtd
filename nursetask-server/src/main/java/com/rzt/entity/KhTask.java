@@ -5,15 +5,12 @@
  * Copyright 融智通科技(北京)股份有限公司 版权所有    
  */
 package com.rzt.entity;
-import com.rzt.entity.BaseEntity;
 import com.rzt.util.excelUtil.ExcelResources;
 import com.rzt.utils.SnowflakeIdWorker;
-import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
-import java.util.UUID;
 
 /**      
  * 类名称：KhTask    
@@ -116,8 +113,14 @@ public class KhTask implements Serializable{
                 this.isDelete = isDelete;
             }*/
 	public void setId(){
-		this.id =   Long.valueOf(new SnowflakeIdWorker(1,2).nextId());
+		if(id==null||id==0){
+			SnowflakeIdWorker instance = SnowflakeIdWorker.getInstance(8, 13);
+			this.id = instance.nextId();
+		}else{
+			this.id = id;
+		}
 	}
+
 	@ExcelResources(title="",order=1)
 	public Long getId(){
 		return this.id;

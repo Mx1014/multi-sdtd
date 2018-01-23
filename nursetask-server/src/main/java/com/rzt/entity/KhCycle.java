@@ -84,9 +84,15 @@ public class KhCycle implements Serializable{
 
 
     @ExcelResources(title="被稽查的任务id",order=1)
-    public void setId(){
-            this.id = new SnowflakeIdWorker(1,0).nextId();
+    public void setId(Long id){
+        if(id==null||id==0){
+            SnowflakeIdWorker instance = SnowflakeIdWorker.getInstance(8, 10);
+            this.id = instance.nextId();
+        }else{
+            this.id = id;
+        }
     }
+
     public Long getId(){
         return this.id;
     }
