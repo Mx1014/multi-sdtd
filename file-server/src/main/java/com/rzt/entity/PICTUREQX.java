@@ -130,7 +130,8 @@ public class PICTUREQX implements Serializable{
 
 	public void setId(Long id){
 		if(id==null||id==0){
-			this.id = new SnowflakeIdWorker(5,3).nextId();
+			SnowflakeIdWorker instance = SnowflakeIdWorker.getInstance(5, 3);
+			this.id = instance.nextId();
 		}else{
 			this.id = id;
 		}

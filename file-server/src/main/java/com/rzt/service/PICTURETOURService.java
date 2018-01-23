@@ -185,6 +185,10 @@ public class PICTURETOURService extends CurdService<PICTURETOUR,PICTURETOURRepos
         if(!StringUtils.isEmpty(execId)){
             params.add(execId);
             sql += " and process_id in (select ID from XS_ZC_TASK_EXEC_DETAIL where xs_zc_task_exec_id = ?)";
+        }else{
+            result.put("success",false);
+            result.put("msg","execId没有传值");
+            return result;
         }
         List<Map<String, Object>> maps = execSql(sql, params.toArray());
         result.put("success",true);
