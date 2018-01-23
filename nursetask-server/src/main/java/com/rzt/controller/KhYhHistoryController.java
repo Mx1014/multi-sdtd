@@ -72,7 +72,11 @@ public class KhYhHistoryController extends
 	@ApiOperation(value = "隐患导入接口", notes = "隐患导入接口")
 	@PostMapping("ImportYh")
 	public WebApiResponse ImportYh(MultipartFile file) {
-		return service.ImportYh(file);
+		if (file.getName().contains("xls")){
+			return service.ImportYh(file);
+		}else{
+			return service.ImportYh2(file);
+		}
 	}
 
 	@ApiOperation(value = "隐患导入模板",notes = "隐患导入模板")

@@ -22,7 +22,7 @@ public class WarningOneKeyService extends CurdService<WarningOneKey, WarningOneK
             warn.setId(0L);
             if (ids != null && !ids.equals("")) {
                 String[] split = ids.split(",");
-                for (int i = 0; i <= split.length; i++) {
+                for (int i = 0; i < split.length; i++) {
                     this.reposiotry.updateWaring(warn.getId(), Long.parseLong(split[i]));
                 }
             }
