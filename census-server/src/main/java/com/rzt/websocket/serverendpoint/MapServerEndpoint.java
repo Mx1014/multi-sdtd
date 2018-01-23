@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-@ServerEndpoint("/serverendpoint/Map/{type}/{userId}")
+@ServerEndpoint("/serverendpoint/Map/{type}")
 public class MapServerEndpoint {
     /**
      * WebSocket服务器端通过一个线程安全的队列来保持所有客户端的Session
@@ -21,18 +21,18 @@ public class MapServerEndpoint {
     /**
      * 建立连接
      *
-     * @param userId
+     * @param usernamee
      * @param orgid
      * @param session
      */
     @OnOpen
-    public void openSession(@PathParam("type") String type, @PathParam("userId") String userId, @PathParam("orgid") String orgid, Session session) {
+    public void openSession(@PathParam("type") String type, @PathParam("username") String usernamee, @PathParam("orgid") String orgid, Session session) {
 
         HashMap h = new HashMap();
         String sessionId = session.getId();
         h.put("session", session);
         h.put("type", type);
-        h.put("userId", userId);
+//        h.put("username", usernamee);
 //        h.put("orgid", orgid);
         livingSessions.put(sessionId, h);
     }
