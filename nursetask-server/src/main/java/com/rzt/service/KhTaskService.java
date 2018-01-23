@@ -361,10 +361,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
             response.setContentType("Content-Type:application/vnd.ms-excel ");
             wb.write(output);
             output.close();
-        } catch (
-                Exception e)
-
-        {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

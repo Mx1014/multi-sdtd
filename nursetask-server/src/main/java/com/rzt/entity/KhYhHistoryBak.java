@@ -7,14 +7,11 @@
 package com.rzt.entity;
 import com.rzt.util.excelUtil.ExcelResources;
 import com.rzt.utils.SnowflakeIdWorker;
-import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import java.io.Serializable;
-import java.util.UUID;
 
 /**
  * 类名称：KHYHHISTORYBAK
@@ -186,7 +183,7 @@ public class KhYhHistoryBak implements Serializable{
     private String yhId;
 
     public void setId(Long id){
-        this.id =   Long.valueOf(new SnowflakeIdWorker(1,6).nextId());
+        this.id =   Long.valueOf(new SnowflakeIdWorker(8,23).nextId());
     }
     @ExcelResources(title="",order=1)
     public Long getId(){

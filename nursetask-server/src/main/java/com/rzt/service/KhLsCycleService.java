@@ -54,7 +54,7 @@ public class KhLsCycleService extends CurdService<KhLsCycle, KhLsCycleRepository
             cycle.setTdywOrgId(yh.getTdorgId());
 //            cycle.setWxOrg(yh.getTdwxOrg());
 //            cycle.setWxOrgId(yh.getWxorgId());
-            cycle.setId();
+            cycle.setId(0L);
             cycle.setLineId(yh.getLineId());
             cycle.setStatus(0);
             cycle.setSection(yh.getSection());

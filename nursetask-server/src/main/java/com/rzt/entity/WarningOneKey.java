@@ -43,13 +43,15 @@ public class WarningOneKey implements Serializable {
     @Column(name = "GJMS")
     private String gjms;
 
-    public void setId() {
-        if (id == null || id == 0) {
-            this.id = new SnowflakeIdWorker(1, 5).nextId();
-        } else {
+    public void setId(Long id){
+        if(id==null||id==0){
+            SnowflakeIdWorker instance = SnowflakeIdWorker.getInstance(8, 20);
+            this.id = instance.nextId();
+        }else{
             this.id = id;
         }
     }
+
 
     public Long getId() {
         return this.id;

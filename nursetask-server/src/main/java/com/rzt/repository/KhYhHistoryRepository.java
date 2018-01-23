@@ -7,7 +7,6 @@
 package com.rzt.repository;
 
 import com.rzt.entity.KhYhHistory;
-import com.rzt.utils.SnowflakeIdWorker;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

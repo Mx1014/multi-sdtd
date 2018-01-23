@@ -8,13 +8,10 @@ package com.rzt.entity;
 
 import com.rzt.util.excelUtil.ExcelResources;
 import com.rzt.utils.SnowflakeIdWorker;
-import org.hibernate.annotations.GenericGenerator;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
-import java.util.UUID;
 
 /**
  * 类名称：KhYhHistory
@@ -158,9 +155,6 @@ public class KhYhHistory implements Serializable {
     //字段描述: 定级人ID
     @Column(name = "DJYID")
     private String djyid;
-    //字段描述: 隐患责任单位上级主管部门(空闲)
-    @Column(name = "YHZRDWSJZRBM")
-    private String yhzrdwsjzrbm;
     //字段描述: 施工情况
     @Column(name = "SGQK")
     private int sgqk;
@@ -428,14 +422,6 @@ public class KhYhHistory implements Serializable {
         return this.taskId;
     }
 
-    public void setYhzrdwsjzrbm(String yhzrdwsjzrbm) {
-        this.yhzrdwsjzrbm = yhzrdwsjzrbm;
-    }
-
-    @ExcelResources(title = "隐患责任单位上级主管部门(空闲)", order = 39)
-    public String getYhzrdwsjzrbm() {
-        return this.yhzrdwsjzrbm;
-    }
 
     public void setYhzrdwdh(String yhzrdwdh) {
         this.yhzrdwdh = yhzrdwdh;
@@ -528,13 +514,15 @@ public class KhYhHistory implements Serializable {
         return this.tdwxOrg;
     }
 
-    public void setId(Long id) {
-        if (id == null || id == 0) {
-            this.id = new SnowflakeIdWorker(1, 4).nextId();
-        } else {
+    public void setId(Long id){
+        if(id==null||id==0){
+            SnowflakeIdWorker instance = SnowflakeIdWorker.getInstance(8, 15);
+            this.id = instance.nextId();
+        }else{
             this.id = id;
         }
     }
+
 
     @ExcelResources(title = "输电平台id", order = 51)
     public Long getId() {

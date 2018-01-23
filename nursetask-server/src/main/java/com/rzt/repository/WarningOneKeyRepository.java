@@ -11,6 +11,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public interface WarningOneKeyRepository extends JpaRepository<WarningOneKey, String> {
 
     @Modifying
-    @Query(value = "UPDATE     SET          =?1 where id =?2 ",nativeQuery = true)
+    @Query(value = "UPDATE  PICTURE_WARN  SET TASK_ID =?1 where id =?2 ",nativeQuery = true)
     void updateWaring(Long waringId,long id);
 }

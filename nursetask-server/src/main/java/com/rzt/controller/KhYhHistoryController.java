@@ -12,13 +12,13 @@ import com.rzt.entity.KhYhHistory;
 import com.rzt.entity.XsSbYh;
 import com.rzt.service.KhYhHistoryService;
 import com.rzt.util.WebApiResponse;
-import com.sun.xml.internal.bind.v2.model.core.ID;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -69,12 +69,18 @@ public class KhYhHistoryController extends
 		return this.service.listYhById(yhId);
 	}
 
-	@ApiOperation(value = "隐患导入接口",notes = "隐患导入接口")
+	@ApiOperation(value = "隐患导入接口", notes = "隐患导入接口")
 	@PostMapping("ImportYh")
-	public WebApiResponse ImportYh(){
-/* MultipartFile file */
-		return service.ImportYh();
+	public WebApiResponse ImportYh(MultipartFile file) {
+		return service.ImportYh(file);
 	}
+
+	@ApiOperation(value = "隐患导入模板",notes = "隐患导入模板")
+	@GetMapping("ImportYhExam")
+	public void ImportYhExam(HttpServletResponse response){
+		 service.ImportYhExam(response);
+	}
+
 	@ApiOperation(value = "隐患导出接口",notes = "隐患导出接口")
 	@GetMapping("exportYhHistory")
 	public WebApiResponse exportYhHistory(HttpServletResponse response,String userId){
@@ -114,9 +120,9 @@ public class KhYhHistoryController extends
 		return this.service.reviewYh(yhId);
 	}
 
-	@ApiOperation(value = "隐患审核通过",notes = "隐患审核通过")
+	@ApiOperation(value = "隐患台账删除",notes = "隐患台账删除")
 	@DeleteMapping("deleteYhById")
 	public WebApiResponse deleteYhById(long yhId){
-		return this.service.deleteYhById(yhId);
+		return this.service.deleteYhById(yhId);//403122272615272421
 	}
 }
