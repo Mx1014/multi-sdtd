@@ -24,7 +24,7 @@ import java.util.Date;
  * @version
  */
 @Entity
-@Table(name="MONITOR_CHECK_EJ")
+@Table(name="MONITOR_WARNING_EJ")
 public class Monitorcheckej implements Serializable{
 	//字段描述: 主键
    	 @Id

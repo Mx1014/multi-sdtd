@@ -59,9 +59,9 @@ public interface Monitorcheckejrepository extends JpaRepository<Monitorcheckej,S
          "  WHERE TASK_ID=?1 AND TASK_TYPE=?2 AND WARNING_TYPE=?3  AND CREATE_TIME_Z=to_date( ?6,'yyyy-MM-dd hh24:mi:ss')",nativeQuery = true)
  int updateEJC(Long taskId, Integer taskType, Integer warningType, String checkInfo,String userId, String createTime);
 
- /*@Transactional
+ @Transactional
  @Modifying
  @Query(value = "UPDATE MONITOR_CHECK_EJ SET ONLINE_TIME = sysdate" +
-         "  WHERE TASK_ID=?2 AND USER_ID=?1")
-    int updateOnlineTime(String userId, String id);*/
+         "  WHERE TASK_ID=?2 AND USER_ID=?1 ",nativeQuery = true)
+    int updateOnlineTime(String userId, Long id);
 }

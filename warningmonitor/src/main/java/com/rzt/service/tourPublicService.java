@@ -34,7 +34,7 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
             String sql = "   SELECT TASK_NAME AS TASKNAME,TD_ORG FROM XS_ZC_TASK WHERE ID=? ";
             Map<String, Object> map = this.execSqlSingleResult(sql, taskid);
             //往二级单位插数据
-            resp.saveCheckEj(new SnowflakeIdWorker(10, 12).nextId(),taskid,1,3,userid,map.get("TD_ORG").toString(),map.get("TASKNAME").toString());
+            resp.saveCheckEj(SnowflakeIdWorker.getInstance(10, 12).nextId(),taskid,1,3,userid,map.get("TD_ORG").toString(),map.get("TASKNAME").toString());
             String key = "ONE+" + taskid + "+1+3+" + userid + "+" + map.get("TD_ORG").toString() + "+" + map.get("TASKNAME").toString();
 
             redisService.setex(key);
@@ -54,7 +54,7 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
         try {
             Map<String, Object> map = execSqlSingleResult(sql, userId, taskId);
             //直接存到二级单位
-            resp.saveCheckEj(new SnowflakeIdWorker(0,0).nextId(),taskId,2,7,userId,map.get("TDYW_ORG").toString(),map.get("TASK_NAME").toString());
+            resp.saveCheckEj(SnowflakeIdWorker.getInstance(0,0).nextId(),taskId,2,7,userId,map.get("TDYW_ORG").toString(),map.get("TASK_NAME").toString());
             String key = "ONE+"+taskId+"+2+7+"+userId+"+"+map.get("TDYW_ORG").toString()+"+"+map.get("TASK_NAME").toString();
             redisService.setex(key);
         } catch (Exception e) {
@@ -70,7 +70,7 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
                     "WHERE kh.ID=? ";
             Map<String, Object> map = this.execSqlSingleResult(sql, taskid);
             //往二级单位插数据
-            resp.saveCheckEj(new SnowflakeIdWorker(10, 12).nextId(),taskid,2,11,userid,map.get("TDYW_ORG").toString(),map.get("TASKNAME").toString());
+            resp.saveCheckEj(SnowflakeIdWorker.getInstance(10, 12).nextId(),taskid,2,11,userid,map.get("TDYW_ORG").toString(),map.get("TASKNAME").toString());
             String key = "ONE+" + taskid + "+2+11+" + userid + "+" + map.get("TDYW_ORG").toString() + "+" + map.get("TASKNAME").toString();
 
             redisService.setex(key);
@@ -109,10 +109,10 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
                     String key = "";
                     if (taskType==2){
                         key = "ONE+"+map.get("ID")+"+2+8+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
-                        resp.saveCheckEj(new SnowflakeIdWorker(0,0).nextId(),Long.valueOf(map.get("ID").toString()),2,8,map.get("USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString());
+                        resp.saveCheckEj(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(map.get("ID").toString()),2,8,map.get("USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString());
                     }else if (taskType==1){
                         key = "ONE+"+map.get("ID")+"+1+2+"+map.get("CM_USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
-                        resp.saveCheckEj(new SnowflakeIdWorker(0,0).nextId(),Long.valueOf(map.get("ID").toString()),1,2,map.get("CM_USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString());
+                        resp.saveCheckEj(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(map.get("ID").toString()),1,2,map.get("CM_USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString());
                     }
                     redisService.setex(key);
                 }else if(new Date().getTime()<startDate){
@@ -171,7 +171,7 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
                         key = "TWO+"+map.get("ID")+"+1+2+"+map.get("CM_USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
                     }
                     jedis.del(key);
-                   // resp.updateOnlineTime(userId,map.get("ID").toString());
+                   resp.updateOnlineTime(userId,Long.parseLong(map.get("ID").toString()));
                 }
             } catch (Exception e) {
                 //System.out.println(e.getMessage());
@@ -190,7 +190,7 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
             String sql = "   SELECT TASK_NAME AS TASKNAME,TD_ORG FROM XS_ZC_TASK WHERE ID=? ";
             map = this.execSqlSingleResult(sql, taskid);
             //往二级单位插数据
-            resp.saveCheckEj(new SnowflakeIdWorker(10, 12).nextId(),taskid,1,5,userid,map.get("TD_ORG").toString(),map.get("TASKNAME").toString());
+            resp.saveCheckEj(SnowflakeIdWorker.getInstance(10, 12).nextId(),taskid,1,5,userid,map.get("TD_ORG").toString(),map.get("TASKNAME").toString());
             String key = "ONE+" + taskid + "+1+5+" + userid + "+" + map.get("TD_ORG").toString() + "+" + map.get("TASKNAME").toString();
             redisService.setex(key);
         } catch (Exception e) {
