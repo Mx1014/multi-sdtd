@@ -239,7 +239,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             }
             yh.setTaskId(task.getId());
             yh.setYhzt(0);//隐患未消除
-            if (yh.getId() != 0) {
+            if (yh.getId() != null) {
                 yh.setId(0L);
             }
             yh.setCreateTime(DateUtil.dateNow());
@@ -540,5 +540,11 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static void main(String[] args) {
+        KhYhHistory yh = new KhYhHistory();
+        yh.setId(0l);
+        System.out.println(yh.getId() != null);
     }
 }
