@@ -430,12 +430,9 @@ public class PictureService extends CurdService<CheckResult, CheckResultReposito
                for (String s : split) {
                    if(null != s && !"".equals(s)){
                        set.add(s);
-                       /*if(strOfLong(s)){
-                           set.add(new Long(s));
-                       }*/
-
                    }
                }
+
                return WebApiResponse.success(set);
            }
        }catch (Exception e){
@@ -446,10 +443,4 @@ public class PictureService extends CurdService<CheckResult, CheckResultReposito
         return WebApiResponse.success("");
     }
 
-    /*public  Boolean strOfLong(String s){
-        Pattern pattern = Pattern.compile("^[0-9]*$");
-        Matcher matcher = pattern.matcher(s);
-        return matcher.matches();
-    }
-*/
 }

@@ -63,9 +63,9 @@ public class MonitorCheckeJController extends
      * @return
      */
 	@GetMapping("GJW")
-	public WebApiResponse GJW( Integer page, Integer size, String startDate,String userId,Integer warningType,String deptID,Integer type,String endDate){
+	public WebApiResponse GJW( Integer page, Integer size, String startDate,String userId,Integer warningType,String deptID,Integer type,String endDate,String userName){
 		try {
-			return WebApiResponse.success(ejService.XSGJW(page,size,startDate,userId,warningType,deptID,type,endDate));
+			return WebApiResponse.success(ejService.XSGJW(page,size,startDate,userId,warningType,deptID,type,endDate,userName));
 		}catch (Exception e){
 			return WebApiResponse.erro("巡视告警未处理查询失败"+e.getMessage());
 		}
@@ -83,9 +83,9 @@ public class MonitorCheckeJController extends
 	 * @return
 	 */
 	@GetMapping("GJZ")
-	public WebApiResponse GJZ( Integer page, Integer size, String startDate,String userId,Integer warningType,String deptID,Integer type,String endDate){
+	public WebApiResponse GJZ( Integer page, Integer size, String startDate,String userId,Integer warningType,String deptID,Integer type,String endDate,String userName){
 		try {
-			return WebApiResponse.success(ejService.XSGJZ(page,size,startDate,userId,warningType,deptID,type,endDate));
+			return WebApiResponse.success(ejService.XSGJZ(page,size,startDate,userId,warningType,deptID,type,endDate,userName));
 		}catch (Exception e){
 			return WebApiResponse.erro("巡视告警未处理查询失败"+e.getMessage());
 		}
@@ -102,9 +102,9 @@ public class MonitorCheckeJController extends
 	 * @return
 	 */
 	@GetMapping("GJY")
-	public WebApiResponse GJY( Integer page, Integer size, String startDate,String userId,Integer warningType,String deptID,Integer type,String endDate){
+	public WebApiResponse GJY( Integer page, Integer size, String startDate,String userId,Integer warningType,String deptID,Integer type,String endDate,String userName){
 		try {
-			return WebApiResponse.success(ejService.XSGJY(page,size,startDate,userId,warningType,deptID,type,endDate));
+			return WebApiResponse.success(ejService.XSGJY(page,size,startDate,userId,warningType,deptID,type,endDate,userName));
 		}catch (Exception e){
 			return WebApiResponse.erro("巡视告警已处理查询失败"+e.getMessage());
 		}

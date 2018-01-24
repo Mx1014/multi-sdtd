@@ -29,11 +29,11 @@ public class tourPublicController extends CurdController<Monitorcheckej, tourPub
     }
 
     //看护不到位
-   /* @GetMapping("khWFDW")
+    @GetMapping("khWFDW")
     public void khWFDW(Long taskid, String userid){
         this.service.khWFDW(taskid,userid);
 
-    }*/
+    }
 
     /**
      * 看护脱岗
@@ -82,11 +82,5 @@ public class tourPublicController extends CurdController<Monitorcheckej, tourPub
         }
     }
 
-   /* @Autowired
-    private RedisService redisService;
-    @GetMapping("del")
-    public String del(String key){
-        redisService.delKey(key);
-        return "success";
-    }*/
+
 }

@@ -44,7 +44,7 @@ public class KhYhHistoryController extends
 	@ApiOperation(notes = "施工情况",value = "施工情况")
 	@PostMapping("/saveYh")
 	@ResponseBody
-	public WebApiResponse saveYh(KhYhHistory yh,String startTowerName, String endTowerName, String pictureId){
+	public WebApiResponse saveYh(XsSbYh yh,String startTowerName, String endTowerName, String pictureId){
 		return this.service.saveYh(yh,startTowerName,endTowerName,pictureId);
 	}
 
@@ -127,6 +127,18 @@ public class KhYhHistoryController extends
 	@ApiOperation(value = "隐患台账删除",notes = "隐患台账删除")
 	@DeleteMapping("deleteYhById")
 	public WebApiResponse deleteYhById(long yhId){
-		return this.service.deleteYhById(yhId);//403122272615272421
+		return this.service.deleteYhById(yhId);
 	}
+
+    @ApiOperation(value = "杆塔坐标采集",notes = "杆塔坐标采集")
+    @GetMapping("updateTowerById")
+    public WebApiResponse updateTowerById(long id,String lon,String lat){
+        return this.service.updateTowerById(id,lon,lat);
+    }
+
+    @ApiOperation(value = "判断线路是否属于通州公司、门头沟公司",notes = "隐患台账删除")
+    @GetMapping("findLineOrg")
+    public WebApiResponse findLineOrg(long lineId){
+        return this.service.findLineOrg(lineId);
+    }
 }

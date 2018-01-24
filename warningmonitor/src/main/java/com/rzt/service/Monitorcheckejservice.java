@@ -89,7 +89,7 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
     }
 
     //告警未处理 列表查询
-    public Object XSGJW(Integer page, Integer size, String startDate, String userId, Integer warningType, String deptID, Integer type, String endDate) {
+    public Object XSGJW(Integer page, Integer size, String startDate, String userId, Integer warningType, String deptID, Integer type, String endDate,String userName) {
         String deptId = getDeptID(userId);
         if (deptId == null) {
             return "该用户状态为null";
@@ -116,7 +116,21 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
             list.add(deptID);
             s += " AND DEPTID = ?" + list.size();
         }
-
+        if(!StringUtils.isEmpty(userName)){
+            String sql=" SELECT ID FROM RZTSYSUSER WHERE REALNAME LIKE '%"+userName+"%' ";
+            List<Map<String, Object>> maps = execSql(sql, userName);
+            String ids="";
+            int count=1;
+            for (Map<String,Object> map:maps){
+                ids += "'"+map.get("ID").toString()+"'";
+                if(count!=maps.size()){
+                    ids+=",";
+                }
+            }
+            if(!StringUtils.isEmpty(ids)){
+                s+= " AND USER_ID in ("+ids+") ";
+            }
+        }
         Page<Map<String, Object>> pageResult = null;
 
         if ("0".equals(deptId)) {
@@ -178,7 +192,7 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
     }
 
     //告警处理中列表查询
-    public Object XSGJZ(Integer page, Integer size, String startDate, String userId, Integer warningType, String deptID, Integer type, String endDate) {
+    public Object XSGJZ(Integer page, Integer size, String startDate, String userId, Integer warningType, String deptID, Integer type, String endDate,String userName) {
         String deptId = getDeptID(userId);
         if (deptId == null) {
             return "该用户状态为null";
@@ -204,6 +218,21 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
         if (!StringUtils.isEmpty(deptID)) {
             list.add(deptID);
             s += " AND DEPTID = ?" + list.size();
+        }
+        if(!StringUtils.isEmpty(userName)){
+            String sql=" SELECT ID FROM RZTSYSUSER WHERE REALNAME LIKE '%"+userName+"%' ";
+            List<Map<String, Object>> maps = execSql(sql, userName);
+            String ids="";
+            int count=1;
+            for (Map<String,Object> map:maps){
+                ids += "'"+map.get("ID").toString()+"'";
+                if(count!=maps.size()){
+                    ids+=",";
+                }
+            }
+            if(!StringUtils.isEmpty(ids)){
+                s+= " AND USER_ID in ("+ids+") ";
+            }
         }
         Page<Map<String, Object>> pageResult=null;
 
@@ -294,7 +323,7 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
     }
 
     //告警已处理查询列表
-    public Object XSGJY(Integer page, Integer size, String startDate, String userId, Integer warningType, String deptID, Integer type, String endDate) {
+    public Object XSGJY(Integer page, Integer size, String startDate, String userId, Integer warningType, String deptID, Integer type, String endDate,String userName) {
         String deptId = getDeptID(userId);
         if (deptId == null) {
             return "该用户状态为null";
@@ -321,7 +350,21 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
             list.add(deptID);
             s += " AND DEPTID = ?" + list.size();
         }
-
+        if(!StringUtils.isEmpty(userName)){
+            String sql=" SELECT ID FROM RZTSYSUSER WHERE REALNAME LIKE '%"+userName+"%' ";
+            List<Map<String, Object>> maps = execSql(sql, userName);
+            String ids="";
+            int count=1;
+            for (Map<String,Object> map:maps){
+                ids += "'"+map.get("ID").toString()+"'";
+                if(count!=maps.size()){
+                    ids+=",";
+                }
+            }
+            if(!StringUtils.isEmpty(ids)){
+                s+= " AND USER_ID in ("+ids+") ";
+            }
+        }
         Page<Map<String, Object>> pageResult = null;
 
         if ("0".equals(deptId)) {

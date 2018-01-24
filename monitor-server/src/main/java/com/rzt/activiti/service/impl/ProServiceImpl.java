@@ -115,11 +115,16 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
                        strings.add(YHJB);
                        sql += "  AND y.YHJB1 = ?"+strings.size();
                    }
-                   if((null != start && !"".equals(start)) && (null != end && !"".equals(end)) ){
-                       sql += "  AND y.CREATE_TIME BETWEEN " +
-                               "       (to_date('"+start+"','YYYY-MM-dd HH24:mi:ss'),to_date('"+end+"','YYYY-MM-dd HH24:mi:ss'))";
-                   }
-                   //判断当前用户所属节点    书否显示所有信息
+
+           if(null != start && !"".equals(start)){
+               sql += "   AND  y.CREATE_TIME >=  to_date('"+start+":00','YYYY-MM-dd HH24:mi:ss')  ";
+           }
+           if(null != end && !"".equals(end)){
+               sql += "   AND  y.CREATE_TIME <=  to_date('"+end+":00','YYYY-MM-dd HH24:mi:ss')  ";
+           }
+
+
+           //判断当前用户所属节点    书否显示所有信息
                    if("sdid".equals(userId) || "sdyjid".equals(userId)){
                         sql += "  AND y.TDYW_ORG = '"+td+"'  ";
                    }else{
@@ -237,12 +242,94 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
     }
 
 
+
+
+    /**
+     * 查看当前节点历史任务
+     * @param userId  用户id
+     * @param page
+     * @param size
+     * @param YHLB   隐患类别
+     * @param YHJB   隐患级别
+     * @param start  开始时间
+     * @param end    结束时间
+     * @param deptId  部门
+     * @return
+     */
+    public WebApiResponse historyActInstanceList(String userId, Integer page, Integer size,String YHLB, String YHJB,String start,String end,String deptId) {
+        Page<Map<String, Object>> maps = null;
+        try{
+            String td = redisUtil.findTDByUserId(userId);
+            userId = redisUtil.findRoleIdByUserId(userId);
+            if(null == userId || "".equals(userId)){
+                return WebApiResponse.erro("问题审核待办查询失败");
+            }
+            if(null == td || "".equals(td)){
+                return WebApiResponse.erro("问题审核待办查询失败");
+            }
+            Pageable pageable = new PageRequest(page, size, null);
+            ArrayList<String> strings = new ArrayList<>();
+            strings.add(userId);
+            String sql = "SELECT y.ID,y.LINE_NAME,y.SECTION,y.CREATE_TIME,y.TDYW_ORG,y.TDWX_ORG,y.YHLB,y.YHMS,y.YHJB,y.YHJB1,h.TEXT_,t.ID_ as actaskid,t.PROC_INST_ID_,t.ASSIGNEE_," +
+                    "  (SELECT DISTINCT l.LINE_NAME1 FROM CM_LINE_SECTION l WHERE l.LINE_ID = y.LINE_ID) as linename1,t.END_TIME_,t.START_TIME_," +
+                    "  (SELECT DISTINCT  v.TEXT_ FROM ACT_HI_VARINST v WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'info') as info," +
+                    "  (SELECT DISTINCT  v.TEXT_ FROM ACT_HI_VARINST v WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'khid') as khid," +
+                    "  (SELECT DISTINCT  u.REALNAME FROM RZTSYSUSER u WHERE u.ID = y.TBRID) as tbrName," +
+                    "  (SELECT DISTINCT  u.PHONE FROM RZTSYSUSER u WHERE u.ID = y.TBRID) as phone" +
+                    "   FROM ACT_HI_ACTINST t LEFT JOIN ACT_RU_VARIABLE h ON t.PROC_INST_ID_ = h.PROC_INST_ID_" +
+                    "  LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_" +
+                    "   WHERE h.NAME_ = 'YHID' AND t.PROC_DEF_ID_ LIKE 'wtsh%'  AND ASSIGNEE_ = ?"+strings.size();
+            sql += "  AND t.END_TIME_ IS NOT NULL ";
+            if(null != YHLB && !"".equals(YHLB)){
+                strings.add(YHLB);
+                sql += "  AND y.YHLB = ?"+strings.size();
+            }
+            if(null != YHJB && !"".equals(YHJB)){
+                strings.add(YHJB);
+                sql += "  AND y.YHJB1 = ?"+strings.size();
+            }
+
+            //判断当前用户所属节点    书否显示所有信息
+            if("sdid".equals(userId) || "sdyjid".equals(userId)){
+                strings.add(td);
+                sql += "  AND y.TDYW_ORG = ?"+strings.size();
+            }else{
+                if(null != deptId && !"".equals(deptId)){
+                    strings.add(deptId);
+                    sql += "  AND y.YWORG_ID = ?"+strings.size();
+                }
+            }
+            if(null != start && !"".equals(start)){
+                sql += "   AND  y.CREATE_TIME >=  to_date('"+start+":00','YYYY-MM-dd HH24:mi:ss')  ";
+            }
+            if(null != end && !"".equals(end)){
+                sql += "   AND  y.CREATE_TIME <=  to_date('"+end+":00','YYYY-MM-dd HH24:mi:ss')  ";
+            }
+
+
+                maps = this.execSqlPage(pageable, sql, strings.toArray());
+                LOGGER.info("历史记录查询成功");
+            }catch (Exception e){
+                LOGGER.error("查询历史记录失败"+e.getMessage());
+                return WebApiResponse.erro("查询历史记录失败"+e.getMessage());
+            }
+
+        return WebApiResponse.success(maps);
+    }
+
+
+
+
+
+
+
+/*
     public WebApiResponse historyActInstanceList(String assignee,Integer page,Integer size){
         ArrayList<String> strings = new ArrayList<>();
         Page<Map<String, Object>> maps = null;
         strings.add(assignee);
 
-        String sql = "SELECT y.ID,y.SECTION,y.CREATE_TIME,y.TDYW_ORG,y.TDWX_ORG,y.YHLB,y.YHMS,y.YHJB,y.YHJB1,h.TEXT_,t.ID_ as actaskid,t.PROC_INST_ID_,t.ASSIGNEE_," +
+        String sql = "SELECT y.ID,y.LINE_NAME,y.SECTION,y.CREATE_TIME,y.TDYW_ORG,y.TDWX_ORG,y.YHLB,y.YHMS,y.YHJB,y.YHJB1,h.TEXT_,t.ID_ as actaskid,t.PROC_INST_ID_,t.ASSIGNEE_," +
               "  (SELECT DISTINCT l.LINE_NAME1 FROM CM_LINE_SECTION l WHERE l.LINE_ID = y.LINE_ID) as linename1,t.END_TIME_,t.START_TIME_," +
               "  (SELECT DISTINCT  v.TEXT_ FROM ACT_HI_VARINST v WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'info') as info," +
               "  (SELECT DISTINCT  v.TEXT_ FROM ACT_HI_VARINST v WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'khid') as khid," +
@@ -251,7 +338,8 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
               "  FROM ACT_HI_ACTINST t LEFT JOIN ACT_RU_VARIABLE h ON t.PROC_INST_ID_ = h.PROC_INST_ID_" +
               "  LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_" +
               "  WHERE h.NAME_ = 'YHID' AND t.PROC_DEF_ID_ LIKE 'wtsh%' AND ASSIGNEE_ = ?"+strings.size()+" AND y.ID IS NOT NULL";
-         //sql += "  AND t.END_TIME_ IS NOT NULL ";    // 有结束时间代表已经经过当前节点     没有代表还停留在当前节点
+         sql += "  AND t.END_TIME_ IS NOT NULL ";
+         // 有结束时间代表已经经过当前节点     没有代表还停留在当前节点
         try {
             Pageable pageable = new PageRequest(page, size, null);
              maps = this.execSqlPage(pageable, sql, strings);
@@ -261,7 +349,7 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
             return WebApiResponse.erro("查询历史记录失败"+e.getMessage());
         }
         return WebApiResponse.success(maps);
-    }
+    }*/
 
     public WebApiResponse tree(){
         List<Map<String, Object>> list2 = null;
