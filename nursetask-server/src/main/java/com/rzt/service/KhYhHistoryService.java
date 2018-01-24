@@ -1049,11 +1049,11 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         }
     }
 
-    public WebApiResponse findLineOrg(long lineId) {
+    public WebApiResponse findLineOrg(long towerId) {
         try {
-            String sql = "SELECT TD_ORG_NAME\n" +
-                    "FROM CM_LINE_SECTION where line_id=? and TD_ORG_NAME in ('门头沟公司','通州公司') ";
-            List<Map<String, Object>> maps = this.execSql(sql, lineId);
+            String sql = "SELECT S.TD_ORG_NAME,S.LINE_NAME,S.LINE_ID\n" +
+                    "FROM CM_LINE_SECTION S LEFT JOIN CM_TOWER T ON T.LINE_ID = S.LINE_ID where T.ID = ?  and S.TD_ORG_NAME in ('门头沟公司','通州公司') ";
+            List<Map<String, Object>> maps = this.execSql(sql, towerId);
             if (maps.size()>0){
                 return  WebApiResponse.success("可以采集");
             }else {
