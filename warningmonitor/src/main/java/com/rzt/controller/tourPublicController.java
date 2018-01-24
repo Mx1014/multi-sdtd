@@ -82,11 +82,5 @@ public class tourPublicController extends CurdController<Monitorcheckej, tourPub
         }
     }
 
-   /* @Autowired
-    private RedisService redisService;
-    @GetMapping("del")
-    public String del(String key){
-        redisService.delKey(key);
-        return "success";
-    }*/
+
 }
