@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient("CENSUSSERVER")
 public interface CensusServer {
 
-    @PostMapping("censusServer/WarningOneKey/warningKey\n")
+    @PostMapping("censusServer/WarningOneKey/warningKey")
     void warningKey(@RequestParam("id") Long  id);
 
 }
