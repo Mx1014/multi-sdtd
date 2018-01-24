@@ -65,7 +65,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
     }
 
     @Transactional
-    public WebApiResponse saveYh(KhYhHistory yh, String startTowerName, String endTowerName, String pictureId) {
+    public WebApiResponse saveYh(XsSbYh yh, String startTowerName, String endTowerName, String pictureId) {
         try {
             yh.setYhfxsj(DateUtil.dateNow());
             yh.setId(0l);
@@ -117,7 +117,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                     this.reposiotry.updateYhPicture(Long.parseLong(split[i]), yh.getId(), yh.getXstaskId());
                 }
             }
-            this.add(yh);
+            this.xsService.add(yh);
 
             return WebApiResponse.success("数据保存成功");
         } catch (Exception e) {
@@ -1037,5 +1037,6 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         }
         return linename1;
     }
+
 
 }
