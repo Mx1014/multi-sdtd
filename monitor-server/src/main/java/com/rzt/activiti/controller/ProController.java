@@ -206,12 +206,11 @@ public class ProController {
 
 
     @GetMapping("/history")
-    public WebApiResponse gethi(String userId,Integer page,Integer size){
-        userId = redisUtil.findRoleIdByUserId(userId);
+    public WebApiResponse gethi(String userId,Integer page,Integer size,String YHLB,String YHJB,String start,String end,String deptId){
         if(null == userId || "".equals(userId)){
             return WebApiResponse.erro("当前用户没有权限查看记录");
         }
-        return proService.historyActInstanceList(userId, page, size);
+        return proService.historyActInstanceList(userId, page, size,YHLB,YHJB,start,end,deptId);
     }
 
 
