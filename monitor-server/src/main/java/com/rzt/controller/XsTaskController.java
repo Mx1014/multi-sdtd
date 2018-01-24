@@ -41,11 +41,13 @@ public class XsTaskController extends
      * @return
      */
     @GetMapping("/getXsTaskAll")
-    public WebApiResponse getXsTaskAll(Integer page,Integer size, String taskType,String userId){
-        return service.getXsTaskAll(page,size,taskType,userId);
+    public WebApiResponse getXsTaskAll(Integer page,Integer size, String taskType,String userId,String userName,String TD,String targetType){
+        return service.getXsTaskAll(page,size,taskType,userId,userName,TD,targetType);
     }
-
-
+    @GetMapping("/findDeptAuth")
+    public String findDeptAuth(String userId){
+        return service.findDeptAuth(userId);
+    }
 
 
     /**

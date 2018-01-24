@@ -65,7 +65,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
     }
 
     @Transactional
-    public WebApiResponse saveYh(KhYhHistory yh, String startTowerName, String endTowerName, String pictureId) {
+    public WebApiResponse saveYh(XsSbYh yh, String startTowerName, String endTowerName, String pictureId) {
         try {
             yh.setYhfxsj(DateUtil.dateNow());
             yh.setId(0l);
@@ -117,7 +117,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                     this.reposiotry.updateYhPicture(Long.parseLong(split[i]), yh.getId(), yh.getXstaskId());
                 }
             }
-            this.add(yh);
+            this.xsService.add(yh);
 
             return WebApiResponse.success("数据保存成功");
         } catch (Exception e) {
@@ -1038,4 +1038,30 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         return linename1;
     }
 
+
+    public WebApiResponse updateTowerById(long id, String lon, String lat) {
+        try {
+            this.reposiotry.updateTowerById(id,lon,lat);
+            return  WebApiResponse.success("修改成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return  WebApiResponse.erro("修改失败");
+        }
+    }
+
+    public WebApiResponse findLineOrg(long lineId) {
+        try {
+            String sql = "SELECT TD_ORG_NAME\n" +
+                    "FROM CM_LINE_SECTION where line_id=? and TD_ORG_NAME in ('门头沟公司','通州公司') ";
+            List<Map<String, Object>> maps = this.execSql(sql, lineId);
+            if (maps.size()>0){
+                return  WebApiResponse.success("可以采集");
+            }else {
+                return  WebApiResponse.erro("不可以采集");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return  WebApiResponse.erro("不可以采集");
+        }
+    }
 }
