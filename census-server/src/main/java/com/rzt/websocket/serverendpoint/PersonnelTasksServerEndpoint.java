@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * 任务人员统计
  */
 @RestController
-@ServerEndpoint("/serverendpoint/PersonnelTasks/{userId}")
+@ServerEndpoint("/serverendpoint/PersonnelTasks/{username}")
 public class PersonnelTasksServerEndpoint {
     /**
      * WebSocket服务器端通过一个线程安全的队列来保持所有客户端的Session
@@ -30,15 +30,17 @@ public class PersonnelTasksServerEndpoint {
     /**
      * 建立连接
      *
-     * @param userId
+     * @param usernamee
+     * @param orgid
      * @param session
      */
     @OnOpen
-    public void openSession(@PathParam("userId") String userId, Session session) {
+    public void openSession(@PathParam("username") String usernamee, Session session) {
         HashMap h = new HashMap();
         String sessionId = session.getId();
         h.put("session", session);
-        h.put("userId", userId);
+        h.put("username", usernamee);
+//        h.put("orgid", orgid);
         livingSessions.put(sessionId, h);
     }
 

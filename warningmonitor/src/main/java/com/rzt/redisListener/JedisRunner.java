@@ -13,36 +13,40 @@ import redis.clients.jedis.JedisPool;
  * Created by huyuening on 2018/1/5.
  */
 @Component
-public class JedisRunner implements ApplicationListener<ContextRefreshedEvent>/* implements CommandLineRunner*/ {
+public class JedisRunner implements ApplicationListener<ContextRefreshedEvent> {
 
     @Autowired
     JedisPool jedisPool;
 
     @Autowired
-    RedisTemplate<String,String> redisTemplate;
-
-    @Autowired
     private Subscriber subscriber;
+
+    private static Integer count=1;
+
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
-        System.out.println("-----------------");
-        //监听所有reids通道中的过期事件
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Jedis jedis= jedisPool.getResource();
-                try {
-                    System.out.println("============");
-                    jedis.psubscribe(subscriber , "__keyevent@1__:expired");
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }finally {
-                    jedis.close();
-                }
+            count++;
+            if (count==3){
+                System.out.println("-----------------");
+                //监听所有reids通道中的过期事件
+                Thread t = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Jedis jedis= jedisPool.getResource();
+                        try {
+                            System.out.println("============");
+                            jedis.psubscribe(subscriber , "__keyevent@1__:expired");
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }finally {
+                            jedis.close();
+                        }
+                    }
+                });
+                t.start();
             }
-        });
-        t.start();
+
     }
 
 

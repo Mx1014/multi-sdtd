@@ -39,7 +39,7 @@ public class Monitorcheckyjservice extends CurdService<Monitorcheckyj, Monitorch
 
     public void saveCheckYj(String[] messages) {
         //保存到一级
-        repo.saveCheckYj(new SnowflakeIdWorker(0,0).nextId(),Long.valueOf(messages[1]),Integer.valueOf(messages[2]),Integer.valueOf(messages[3]),messages[4],messages[5],messages[6]);
+        repo.saveCheckYj(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(messages[1]),Integer.valueOf(messages[2]),Integer.valueOf(messages[3]),messages[4],messages[5],messages[6]);
     }
 
     /**
@@ -120,11 +120,11 @@ public class Monitorcheckyjservice extends CurdService<Monitorcheckyj, Monitorch
         if("0".equals(deptID)){
 
                 //查询未出理
-                String sql1 = "SELECT count(DISTINCT TASK_ID) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE TASK_TYPE=?1 AND trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =0 GROUP BY DEPTID ";
+                String sql1 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE TASK_TYPE=?1 AND trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =0 GROUP BY DEPTID ";
                 //查询处理中
-                String sql2 = "SELECT count(DISTINCT TASK_ID) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE TASK_TYPE=?1 AND trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =1 GROUP BY DEPTID  ";
+                String sql2 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE TASK_TYPE=?1 AND trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =1 GROUP BY DEPTID  ";
                 //查询已处理
-                String sql3 = "SELECT count(DISTINCT TASK_ID) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE TASK_TYPE=?1 AND trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =2 GROUP BY DEPTID  ";
+                String sql3 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE TASK_TYPE=?1 AND trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =2 GROUP BY DEPTID  ";
                 List<Map<String, Object>> maps = execSql(sql1,type);
                 List<Map<String, Object>> maps1 = execSql(sql2,type);
                 List<Map<String, Object>> maps2 = execSql(sql3,type);
@@ -162,13 +162,13 @@ public class Monitorcheckyjservice extends CurdService<Monitorcheckyj, Monitorch
 
 
         }else{
-            String sql = "SELECT count(DISTINCT TASK_ID) AS sum,u.CLASSNAME FROM MONITOR_CHECK_EJ ej LEFT JOIN RZTSYSUSER u ON ej.USER_ID=u.ID  " +
+            String sql = "SELECT count(1) AS sum,u.CLASSNAME FROM MONITOR_CHECK_EJ ej LEFT JOIN RZTSYSUSER u ON ej.USER_ID=u.ID  " +
                     "WHERE ej.TASK_TYPE=?2  AND trunc(ej.CREATE_TIME)=trunc(sysdate) AND ej.STATUS =0 AND ej.DEPTID=?1  " +
                     "GROUP BY u.CLASSNAME";
-            String sql2 = "SELECT count(DISTINCT TASK_ID) AS sum,u.CLASSNAME FROM MONITOR_CHECK_EJ ej LEFT JOIN RZTSYSUSER u ON ej.USER_ID=u.ID  " +
+            String sql2 = "SELECT count(1) AS sum,u.CLASSNAME FROM MONITOR_CHECK_EJ ej LEFT JOIN RZTSYSUSER u ON ej.USER_ID=u.ID  " +
                     "  WHERE ej.TASK_TYPE=?2  AND trunc(ej.CREATE_TIME)=trunc(sysdate) AND ej.STATUS =1 AND ej.DEPTID=?1 " +
                     " GROUP BY u.CLASSNAME";
-            String sql3 = "SELECT count(DISTINCT TASK_ID) AS sum,u.CLASSNAME FROM MONITOR_CHECK_EJ ej LEFT JOIN RZTSYSUSER u ON ej.USER_ID=u.ID  " +
+            String sql3 = "SELECT count(1) AS sum,u.CLASSNAME FROM MONITOR_CHECK_EJ ej LEFT JOIN RZTSYSUSER u ON ej.USER_ID=u.ID  " +
                     "  WHERE ej.TASK_TYPE=?2  AND trunc(ej.CREATE_TIME)=trunc(sysdate) AND ej.STATUS =2 AND ej.DEPTID=?1 " +
                     " GROUP BY u.CLASSNAME";
 
@@ -228,11 +228,11 @@ public class Monitorcheckyjservice extends CurdService<Monitorcheckyj, Monitorch
         List<Map<String, Object>> result = new ArrayList<>();
         if("0".equals(deptID)){
             //查询未出理
-            String sql1 = "SELECT count(DISTINCT TASK_ID) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =0 GROUP BY DEPTID ";
+            String sql1 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =0 GROUP BY DEPTID ";
             //查询处理中
-            String sql2 = "SELECT count(DISTINCT TASK_ID) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =1 GROUP BY DEPTID  ";
+            String sql2 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =1 GROUP BY DEPTID  ";
             //查询已处理
-            String sql3 = "SELECT count(DISTINCT TASK_ID) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =2 GROUP BY DEPTID  ";
+            String sql3 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =2 GROUP BY DEPTID  ";
             List<Map<String, Object>> maps = execSql(sql1);
             List<Map<String, Object>> maps1 = execSql(sql2);
             List<Map<String, Object>> maps2 = execSql(sql3);
@@ -271,13 +271,13 @@ public class Monitorcheckyjservice extends CurdService<Monitorcheckyj, Monitorch
             }
 
         }else{
-            String sql = "SELECT count(DISTINCT TASK_ID) AS sum,u.CLASSNAME FROM MONITOR_CHECK_EJ ej LEFT JOIN RZTSYSUSER u ON ej.USER_ID=u.ID  " +
+            String sql = "SELECT count(1) AS sum,u.CLASSNAME FROM MONITOR_CHECK_EJ ej LEFT JOIN RZTSYSUSER u ON ej.USER_ID=u.ID  " +
                     "WHERE trunc(ej.CREATE_TIME)=trunc(sysdate) AND ej.STATUS =0 AND ej.DEPTID=?1  " +
                     "GROUP BY u.CLASSNAME";
-            String sql2 = "SELECT count(DISTINCT TASK_ID) AS sum,u.CLASSNAME FROM MONITOR_CHECK_EJ ej LEFT JOIN RZTSYSUSER u ON ej.USER_ID=u.ID  " +
+            String sql2 = "SELECT count(1) AS sum,u.CLASSNAME FROM MONITOR_CHECK_EJ ej LEFT JOIN RZTSYSUSER u ON ej.USER_ID=u.ID  " +
                     "  WHERE  trunc(ej.CREATE_TIME)=trunc(sysdate) AND ej.STATUS =1 AND ej.DEPTID=?1 " +
                     " GROUP BY u.CLASSNAME";
-            String sql3 = "SELECT count(DISTINCT TASK_ID) AS sum,u.CLASSNAME FROM MONITOR_CHECK_EJ ej LEFT JOIN RZTSYSUSER u ON ej.USER_ID=u.ID  " +
+            String sql3 = "SELECT count(1) AS sum,u.CLASSNAME FROM MONITOR_CHECK_EJ ej LEFT JOIN RZTSYSUSER u ON ej.USER_ID=u.ID  " +
                     "  WHERE trunc(ej.CREATE_TIME)=trunc(sysdate) AND ej.STATUS =2 AND ej.DEPTID=?1 " +
                     " GROUP BY u.CLASSNAME";
 

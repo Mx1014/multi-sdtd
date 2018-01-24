@@ -178,161 +178,6 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         }
     }
 
-    @Transactional
-    public WebApiResponse ImportYh(MultipartFile file) {
-        int i = 2;
-        try {
-            // FileInputStream file = new FileInputStream("E:\\win10\\新建文件夹\\WeChat Files\\yawang-\\Files\\检分安云云台看护任务.xls ");
-//            FileInputStream file = new FileInputStream("E:\\826708743\\FileRecv\\隐患列表_20180111-程焕竹.xls");
-            //HSSFWorkbook wb = new HSSFWorkbook(file.getInputStream());
-            HSSFWorkbook wb = new HSSFWorkbook(file.getInputStream());
-            HSSFSheet sheet = wb.getSheetAt(0);
-            HSSFRow row = sheet.getRow(i);
-            while (row != null && !"".equals(row.toString().trim())) {
-
-                KhYhHistory yh = new KhYhHistory();
-                HSSFCell cell = row.getCell(1);
-                if (cell == null || "".equals(ExcelUtil.getCellValue(cell))) {
-                    break;
-                }
-
-                yh.setId(null);
-                String yworg = ExcelUtil.getCellValue(row.getCell(1));
-                String sborg = ExcelUtil.getCellValue(row.getCell(2));
-                if (yworg.contains("供电")) {
-                    yworg = yworg.replace("供电", "");
-                } else if (yworg.contains("分")) {
-                    yworg = yworg.replace("分", "");
-                } else if (yworg.contains("工程")) {
-                    yworg = "工程公司";
-                }
-                if (sborg.contains("供电")) {
-                    sborg = sborg.replace("供电", "");
-                } else if (sborg.contains("分")) {
-                    sborg = sborg.replace("分", "");
-                } else if (yworg.contains("工程")) {
-                    sborg = "工程公司";
-                }
-                yh.setTdywOrg(yworg); //通道维护单位
-                yh.setSbywOrg(sborg);//设备维护单位
-                try {
-                    System.out.println(yh.getTdywOrg().substring(0, 2));
-                    List<Map<String, Object>> list = execSql("select id from rztsysdepartment where deptpid=(select id from rztsysdepartment where deptname='通道运维单位')  and deptname like ?1", "%" + yh.getTdywOrg().substring(0, 2) + "%");
-                    yh.setTdorgId(String.valueOf(list.get(0).get("ID")));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    //LOGGER.error("通道单位匹配失败！",e);
-                }
-                //长青一
-                String lineName = ExcelUtil.getCellValue(row.getCell(3));
-                String linename1 = lineNamePY(lineName);
-                try {
-                    List<Map<String, Object>> list = execSql("select a.id,b.line_jb as jb from cm_line a left join CM_LINE_SECTION b on a.id = b.LINE_ID where b.line_name1  like ?1 ", "%" + lineName + "%");
-                    yh.setLineId(Long.valueOf(String.valueOf(list.get(0).get("ID"))));
-                    yh.setXlzycd(String.valueOf(list.get(0).get("JB")));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    //LOGGER.error("线路匹配失败！",e);
-                }
-                yh.setLineName(linename1);//线路名称
-                yh.setClassName(ExcelUtil.getCellValue(row.getCell(4)));//所属班组
-                yh.setVtype(ExcelUtil.getCellValue(row.getCell(5)));//电压等级
-                String startTower = ExcelUtil.getCellValue(row.getCell(6));//起始杆塔
-                String endTower = ExcelUtil.getCellValue(row.getCell(7));//终止杆塔
-                yh.setSection(startTower + "-" + endTower);//段落
-                yh.setSjxl(ExcelUtil.getCellValue(row.getCell(8)));//涉及线路
-                yh.setYhjb1(ExcelUtil.getCellValue(row.getCell(9)));//隐患级别
-                yh.setYhlb(ExcelUtil.getCellValue(row.getCell(10)));//隐患类别
-                yh.setYhms(ExcelUtil.getCellValue(row.getCell(11)));//隐患描述
-                yh.setYhfxsj(DateUtil.parseDate(ExcelUtil.getCellValue(row.getCell(12))));//隐患发现时间
-                yh.setYhtdqx(ExcelUtil.getCellValue(row.getCell(13)));//字段描述: 隐患地点(区县)
-                yh.setYhtdxzjd(ExcelUtil.getCellValue(row.getCell(14)));//字段描述: 隐患地点(乡镇街道)
-                yh.setYhtdc(ExcelUtil.getCellValue(row.getCell(15)));//字段描述: 隐患地点(村)
-                yh.setYhzrdw(ExcelUtil.getCellValue(row.getCell(16)));//隐患责任单位
-                yh.setYhzrdwlxr(ExcelUtil.getCellValue(row.getCell(17)));//隐患责任单位联系人
-                yh.setYhzrdwdh(ExcelUtil.getCellValue(row.getCell(18)));//隐患责任单位电话
-                yh.setSms(ExcelUtil.getCellValue(row.getCell(19)));//树木数
-                yh.setDxxyhczjl(ExcelUtil.getCellValue(row.getCell(20)));//导线对隐患垂直距离
-                yh.setDxdyhspjl(ExcelUtil.getCellValue(row.getCell(21)));//导线对隐患水平距离
-                yh.setXdxyhjkjl(ExcelUtil.getCellValue(row.getCell(22)));//导线对隐患净空距离
-                yh.setYhxcyy(ExcelUtil.getCellValue(row.getCell(23)));//隐患形成原因
-                yh.setJsp(ExcelUtil.getCellValue(row.getCell(24)));//是否栽装警示牌
-                String wjcd = ExcelUtil.getCellValue(row.getCell(25));//危急程度
-                if (wjcd != null && !wjcd.equals("")) {
-                    yh.setYhjb(wjcd);
-                } else {
-                    yh.setYhjb("一般");
-                }
-                yh.setGkcs(ExcelUtil.getCellValue(row.getCell(26)));//管控措施
-                //yh.setZpxgsj(DateUtil.parse(ExcelUtil.getCellValue(row.getCell(27))));//照片修改时间
-                yh.setYhzt(0);//隐患状态
-                yh.setRadius("100.0");
-                yh.setSdgs(2);//execl导入
-                yh.setSfdj(1);//已定级
-                yh.setCreateTime(DateUtil.parseDate(ExcelUtil.getCellValue(row.getCell(12))));
-
-                String sql = "select t.tower_Id id from cm_line_tower t where t.line_name like ? and t.tower_name like ?";
-                try {
-                    System.out.println(i + ":" + lineName + ",杆塔号:" + linename1 + ":" + startTower + ",终止杆塔：" + endTower);
-                    if (startTower.startsWith("0")) {
-                        startTower = startTower.substring(1, startTower.length() - 1);
-                    }
-                    List<Map<String, Object>> start = this.execSql(sql, "%" + linename1 + "%", "%" + startTower + "%");
-                    List<Map<String, Object>> end = this.execSql(sql, "%" + linename1 + "%", "%" + endTower + "%");
-                    yh.setStartTower(start.get(0).get("ID").toString());
-                    yh.setEndTower(end.get(0).get("ID").toString());
-                    String sql2 = "select longitude lon,latitude lat from cm_tower where id=?";
-                    List<Map<String, Object>> zuobiao = this.execSql(sql2, Long.parseLong(yh.getStartTower()));
-                    yh.setJd(zuobiao.get(0).get("LON").toString());
-                    yh.setWd(zuobiao.get(0).get("LAT").toString());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                String cellValue = ExcelUtil.getCellValue(row.getCell(9));
-                //if (ExcelUtil.getCellValue(row.getCell(9)).equals("施工隐患")){
-                KhCycle cycle = new KhCycle();
-                cycle.setId(0l);
-                yh.setTaskId(cycle.getId());
-                addKhCycle(yh, cycle);
-                //}
-                this.add(yh);
-                row = sheet.getRow(++i);
-                /*
-                yh.setStartTower();
-                yh.setEndTower();*/
-            }
-            return WebApiResponse.success("导入成功");
-        } catch (Exception e) {
-            e.printStackTrace();
-            return WebApiResponse.erro("导入失败" + e.getMessage());
-        }
-    }
-
-    //转换线路名的方法
-    public String lineNamePY(String lineName) {
-        HanyuPinyinHelper helper = new HanyuPinyinHelper();
-        String linename1 = "";
-        if (lineName != null) {
-            if (lineName.contains("一")) {
-                lineName = lineName.replace("一", "1");
-            }
-            if (lineName.contains("二")) {
-                lineName = lineName.replace("二", "2");
-            }
-            linename1 = helper.toHanyuPinyin(lineName);//changqing1
-            if (linename1.contains("1")) {
-                linename1 = linename1.replace("1", "一");
-            }
-            if (linename1.contains("2")) {
-                linename1 = linename1.replace("2", "二");
-            }
-        }
-        if (linename1.contains("dou")) {
-            linename1 = linename1.replace("dou", "du");
-        }
-        return linename1;
-    }
-
     //导入隐患生成看护点的方法
     public void addKhCycle(KhYhHistory yh, KhCycle cycle) {
         try {
@@ -899,7 +744,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             cell.setCellStyle(headerStyle);
             OutputStream output = response.getOutputStream();
             response.reset();
-            response.setHeader("Content-disposition", "attachment; filename=" + new String("隐患列表.xlsx".getBytes("utf-8"), "iso8859-1"));
+            response.setHeader("Content-disposition", "attachment; filename=" + new String("隐患列表模板.xlsx".getBytes("utf-8"), "iso8859-1"));
             response.setContentType("Content-Type:application/vnd.ms-excel ");
             wb.write(output);
             output.close();
@@ -907,4 +752,290 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             e.printStackTrace();
         }
     }
+
+    @Transactional
+    public WebApiResponse ImportYh(MultipartFile file) {
+        int i = 2;
+        try {
+            // FileInputStream file = new FileInputStream("E:\\win10\\新建文件夹\\WeChat Files\\yawang-\\Files\\检分安云云台看护任务.xls ");
+//            FileInputStream file = new FileInputStream("E:\\826708743\\FileRecv\\隐患列表_20180111-程焕竹.xls");
+            //HSSFWorkbook wb = new HSSFWorkbook(file.getInputStream());
+            HSSFWorkbook wb = new HSSFWorkbook(file.getInputStream());
+            HSSFSheet sheet = wb.getSheetAt(0);
+            HSSFRow row = sheet.getRow(i);
+            while (row != null && !"".equals(row.toString().trim())) {
+
+                KhYhHistory yh = new KhYhHistory();
+                HSSFCell cell = row.getCell(1);
+                if (cell == null || "".equals(ExcelUtil.getCellValue(cell))) {
+                    break;
+                }
+
+                yh.setId(null);
+                String yworg = ExcelUtil.getCellValue(row.getCell(1));
+                String sborg = ExcelUtil.getCellValue(row.getCell(2));
+                if (yworg.contains("供电")) {
+                    yworg = yworg.replace("供电", "");
+                } else if (yworg.contains("分")) {
+                    yworg = yworg.replace("分", "");
+                } else if (yworg.contains("工程")) {
+                    yworg = "工程公司";
+                }
+                if (sborg.contains("供电")) {
+                    sborg = sborg.replace("供电", "");
+                } else if (sborg.contains("分")) {
+                    sborg = sborg.replace("分", "");
+                } else if (yworg.contains("工程")) {
+                    sborg = "工程公司";
+                }
+                yh.setTdywOrg(yworg); //通道维护单位
+                yh.setSbywOrg(sborg);//设备维护单位
+                try {
+                    System.out.println(yh.getTdywOrg().substring(0, 2));
+                    List<Map<String, Object>> list = execSql("select id from rztsysdepartment where deptpid=(select id from rztsysdepartment where deptname='通道运维单位')  and deptname like ?1", "%" + yh.getTdywOrg().substring(0, 2) + "%");
+                    yh.setTdorgId(String.valueOf(list.get(0).get("ID")));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    //LOGGER.error("通道单位匹配失败！",e);
+                }
+                //长青一
+                String lineName = ExcelUtil.getCellValue(row.getCell(3));
+                String linename1 = lineNamePY(lineName);
+                try {
+                    List<Map<String, Object>> list = execSql("select a.id,b.line_jb as jb from cm_line a left join CM_LINE_SECTION b on a.id = b.LINE_ID where b.line_name1  like ?1 ", "%" + lineName + "%");
+                    yh.setLineId(Long.valueOf(String.valueOf(list.get(0).get("ID"))));
+                    yh.setXlzycd(String.valueOf(list.get(0).get("JB")));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    //LOGGER.error("线路匹配失败！",e);
+                }
+                yh.setLineName(linename1);//线路名称
+                yh.setClassName(ExcelUtil.getCellValue(row.getCell(4)));//所属班组
+                yh.setVtype(ExcelUtil.getCellValue(row.getCell(5)));//电压等级
+                String startTower = ExcelUtil.getCellValue(row.getCell(6));//起始杆塔
+                String endTower = ExcelUtil.getCellValue(row.getCell(7));//终止杆塔
+                yh.setSection(startTower + "-" + endTower);//段落
+                yh.setSjxl(ExcelUtil.getCellValue(row.getCell(8)));//涉及线路
+                yh.setYhjb1(ExcelUtil.getCellValue(row.getCell(9)));//隐患级别
+                yh.setYhlb(ExcelUtil.getCellValue(row.getCell(10)));//隐患类别
+                yh.setYhms(ExcelUtil.getCellValue(row.getCell(11)));//隐患描述
+                yh.setYhfxsj(DateUtil.parseDate(ExcelUtil.getCellValue(row.getCell(12))));//隐患发现时间
+                yh.setYhtdqx(ExcelUtil.getCellValue(row.getCell(13)));//字段描述: 隐患地点(区县)
+                yh.setYhtdxzjd(ExcelUtil.getCellValue(row.getCell(14)));//字段描述: 隐患地点(乡镇街道)
+                yh.setYhtdc(ExcelUtil.getCellValue(row.getCell(15)));//字段描述: 隐患地点(村)
+                yh.setYhzrdw(ExcelUtil.getCellValue(row.getCell(16)));//隐患责任单位
+                yh.setYhzrdwlxr(ExcelUtil.getCellValue(row.getCell(17)));//隐患责任单位联系人
+                yh.setYhzrdwdh(ExcelUtil.getCellValue(row.getCell(18)));//隐患责任单位电话
+                yh.setSms(ExcelUtil.getCellValue(row.getCell(19)));//树木数
+                yh.setDxxyhczjl(ExcelUtil.getCellValue(row.getCell(20)));//导线对隐患垂直距离
+                yh.setDxdyhspjl(ExcelUtil.getCellValue(row.getCell(21)));//导线对隐患水平距离
+                yh.setXdxyhjkjl(ExcelUtil.getCellValue(row.getCell(22)));//导线对隐患净空距离
+                yh.setYhxcyy(ExcelUtil.getCellValue(row.getCell(23)));//隐患形成原因
+                yh.setJsp(ExcelUtil.getCellValue(row.getCell(24)));//是否栽装警示牌
+                String wjcd = ExcelUtil.getCellValue(row.getCell(25));//危急程度
+                if (wjcd != null && !wjcd.equals("")) {
+                    yh.setYhjb(wjcd);
+                } else {
+                    yh.setYhjb("一般");
+                }
+                yh.setGkcs(ExcelUtil.getCellValue(row.getCell(26)));//管控措施
+                //yh.setZpxgsj(DateUtil.parse(ExcelUtil.getCellValue(row.getCell(27))));//照片修改时间
+                yh.setYhzt(0);//隐患状态
+                yh.setRadius("100.0");
+                yh.setSdgs(2);//execl导入
+                yh.setSfdj(1);//已定级
+                yh.setCreateTime(DateUtil.parseDate(ExcelUtil.getCellValue(row.getCell(12))));
+
+                String sql = "select t.tower_Id id from cm_line_tower t where t.line_name like ? and t.tower_name like ?";
+                try {
+                    System.out.println(i + ":" + lineName + ",杆塔号:" + linename1 + ":" + startTower + ",终止杆塔：" + endTower);
+                    if (startTower.startsWith("0")) {
+                        startTower = startTower.substring(1, startTower.length() - 1);
+                    }
+                    List<Map<String, Object>> start = this.execSql(sql, "%" + linename1 + "%", "%" + startTower + "%");
+                    List<Map<String, Object>> end = this.execSql(sql, "%" + linename1 + "%", "%" + endTower + "%");
+                    yh.setStartTower(start.get(0).get("ID").toString());
+                    yh.setEndTower(end.get(0).get("ID").toString());
+                    String sql2 = "select longitude lon,latitude lat from cm_tower where id=?";
+                    List<Map<String, Object>> zuobiao = this.execSql(sql2, Long.parseLong(yh.getStartTower()));
+                    yh.setJd(zuobiao.get(0).get("LON").toString());
+                    yh.setWd(zuobiao.get(0).get("LAT").toString());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                String cellValue = ExcelUtil.getCellValue(row.getCell(9));
+                //if (ExcelUtil.getCellValue(row.getCell(9)).equals("施工隐患")){
+                KhCycle cycle = new KhCycle();
+                cycle.setId(0l);
+                yh.setTaskId(cycle.getId());
+                addKhCycle(yh, cycle);
+                //}
+                this.add(yh);
+                row = sheet.getRow(++i);
+                /*
+                yh.setStartTower();
+                yh.setEndTower();*/
+            }
+            return WebApiResponse.success("导入成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("导入失败" + e.getMessage());
+        }
+    }
+
+    @Transactional
+    public WebApiResponse ImportYh2(MultipartFile file) {
+        int i = 2;
+        try {
+            // FileInputStream file = new FileInputStream("E:\\win10\\新建文件夹\\WeChat Files\\yawang-\\Files\\检分安云云台看护任务.xls ");
+//            FileInputStream file = new FileInputStream("E:\\826708743\\FileRecv\\隐患列表_20180111-程焕竹.xls");
+            //HSSFWorkbook wb = new HSSFWorkbook(file.getInputStream());
+            XSSFWorkbook wb = new XSSFWorkbook(file.getInputStream());
+            XSSFSheet sheet = wb.getSheetAt(0);
+            XSSFRow row = sheet.getRow(i);
+            while (row != null && !"".equals(row.toString().trim())) {
+
+                KhYhHistory yh = new KhYhHistory();
+                XSSFCell cell = row.getCell(1);
+                if (cell == null || "".equals(ExcelUtil.getCellValue2(cell))) {
+                    break;
+                }
+
+                yh.setId(null);
+                String yworg = ExcelUtil.getCellValue2(row.getCell(1));
+                String sborg = ExcelUtil.getCellValue2(row.getCell(2));
+                if (yworg.contains("供电")) {
+                    yworg = yworg.replace("供电", "");
+                } else if (yworg.contains("分")) {
+                    yworg = yworg.replace("分", "");
+                } else if (yworg.contains("工程")) {
+                    yworg = "工程公司";
+                }
+                if (sborg.contains("供电")) {
+                    sborg = sborg.replace("供电", "");
+                } else if (sborg.contains("分")) {
+                    sborg = sborg.replace("分", "");
+                } else if (yworg.contains("工程")) {
+                    sborg = "工程公司";
+                }
+                yh.setTdywOrg(yworg); //通道维护单位
+                yh.setSbywOrg(sborg);//设备维护单位
+                try {
+                    System.out.println(yh.getTdywOrg().substring(0, 2));
+                    List<Map<String, Object>> list = execSql("select id from rztsysdepartment where deptpid=(select id from rztsysdepartment where deptname='通道运维单位')  and deptname like ?1", "%" + yh.getTdywOrg().substring(0, 2) + "%");
+                    yh.setTdorgId(String.valueOf(list.get(0).get("ID")));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    //LOGGER.error("通道单位匹配失败！",e);
+                }
+                //长青一
+                String lineName = ExcelUtil.getCellValue2(row.getCell(3));
+                String linename1 = lineNamePY(lineName);
+                try {
+                    List<Map<String, Object>> list = execSql("select a.id,b.line_jb as jb from cm_line a left join CM_LINE_SECTION b on a.id = b.LINE_ID where b.line_name1  like ?1 ", "%" + lineName + "%");
+                    yh.setLineId(Long.valueOf(String.valueOf(list.get(0).get("ID"))));
+                    yh.setXlzycd(String.valueOf(list.get(0).get("JB")));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    //LOGGER.error("线路匹配失败！",e);
+                }
+                yh.setLineName(linename1);//线路名称
+                yh.setClassName(ExcelUtil.getCellValue2(row.getCell(4)));//所属班组
+                yh.setVtype(ExcelUtil.getCellValue2(row.getCell(5)));//电压等级
+                String startTower = ExcelUtil.getCellValue2(row.getCell(6));//起始杆塔
+                String endTower = ExcelUtil.getCellValue2(row.getCell(7));//终止杆塔
+                yh.setSection(startTower + "-" + endTower);//段落
+                yh.setSjxl(ExcelUtil.getCellValue2(row.getCell(8)));//涉及线路
+                yh.setYhjb1(ExcelUtil.getCellValue2(row.getCell(9)));//隐患级别
+                yh.setYhlb(ExcelUtil.getCellValue2(row.getCell(10)));//隐患类别
+                yh.setYhms(ExcelUtil.getCellValue2(row.getCell(11)));//隐患描述
+                yh.setYhfxsj(DateUtil.parseDate(ExcelUtil.getCellValue2(row.getCell(12))));//隐患发现时间
+                yh.setYhtdqx(ExcelUtil.getCellValue2(row.getCell(13)));//字段描述: 隐患地点(区县)
+                yh.setYhtdxzjd(ExcelUtil.getCellValue2(row.getCell(14)));//字段描述: 隐患地点(乡镇街道)
+                yh.setYhtdc(ExcelUtil.getCellValue2(row.getCell(15)));//字段描述: 隐患地点(村)
+                yh.setYhzrdw(ExcelUtil.getCellValue2(row.getCell(16)));//隐患责任单位
+                yh.setYhzrdwlxr(ExcelUtil.getCellValue2(row.getCell(17)));//隐患责任单位联系人
+                yh.setYhzrdwdh(ExcelUtil.getCellValue2(row.getCell(18)));//隐患责任单位电话
+                yh.setSms(ExcelUtil.getCellValue2(row.getCell(19)));//树木数
+                yh.setDxxyhczjl(ExcelUtil.getCellValue2(row.getCell(20)));//导线对隐患垂直距离
+                yh.setDxdyhspjl(ExcelUtil.getCellValue2(row.getCell(21)));//导线对隐患水平距离
+                yh.setXdxyhjkjl(ExcelUtil.getCellValue2(row.getCell(22)));//导线对隐患净空距离
+                yh.setYhxcyy(ExcelUtil.getCellValue2(row.getCell(23)));//隐患形成原因
+                yh.setJsp(ExcelUtil.getCellValue2(row.getCell(24)));//是否栽装警示牌
+                String wjcd = ExcelUtil.getCellValue2(row.getCell(25));//危急程度
+                if (wjcd != null && !wjcd.equals("")) {
+                    yh.setYhjb(wjcd);
+                } else {
+                    yh.setYhjb("一般");
+                }
+                yh.setGkcs(ExcelUtil.getCellValue2(row.getCell(26)));//管控措施
+                //yh.setZpxgsj(DateUtil.parse(ExcelUtil.getCellValue(row.getCell(27))));//照片修改时间
+                yh.setYhzt(0);//隐患状态
+                yh.setRadius("100.0");
+                yh.setSdgs(2);//execl导入
+                yh.setSfdj(1);//已定级
+                yh.setCreateTime(DateUtil.parseDate(ExcelUtil.getCellValue2(row.getCell(12))));
+
+                String sql = "select t.tower_Id id from cm_line_tower t where t.line_name like ? and t.tower_name like ?";
+                try {
+                    System.out.println(i + ":" + lineName + ",杆塔号:" + linename1 + ":" + startTower + ",终止杆塔：" + endTower);
+                    if (startTower.startsWith("0")) {
+                        startTower = startTower.substring(1, startTower.length() - 1);
+                    }
+                    List<Map<String, Object>> start = this.execSql(sql, "%" + linename1 + "%", "%" + startTower + "%");
+                    List<Map<String, Object>> end = this.execSql(sql, "%" + linename1 + "%", "%" + endTower + "%");
+                    yh.setStartTower(start.get(0).get("ID").toString());
+                    yh.setEndTower(end.get(0).get("ID").toString());
+                    String sql2 = "select longitude lon,latitude lat from cm_tower where id=?";
+                    List<Map<String, Object>> zuobiao = this.execSql(sql2, Long.parseLong(yh.getStartTower()));
+                    yh.setJd(zuobiao.get(0).get("LON").toString());
+                    yh.setWd(zuobiao.get(0).get("LAT").toString());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                String cellValue = ExcelUtil.getCellValue2(row.getCell(9));
+                //if (ExcelUtil.getCellValue(row.getCell(9)).equals("施工隐患")){
+                KhCycle cycle = new KhCycle();
+                cycle.setId(0l);
+                yh.setTaskId(cycle.getId());
+                addKhCycle(yh, cycle);
+                //}
+                this.add(yh);
+                row = sheet.getRow(++i);
+                /*
+                yh.setStartTower();
+                yh.setEndTower();*/
+            }
+            return WebApiResponse.success("导入成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("导入失败" + e.getMessage());
+        }
+    }
+
+    //转换线路名的方法
+    public String lineNamePY(String lineName) {
+        HanyuPinyinHelper helper = new HanyuPinyinHelper();
+        String linename1 = "";
+        if (lineName != null) {
+            if (lineName.contains("一")) {
+                lineName = lineName.replace("一", "1");
+            }
+            if (lineName.contains("二")) {
+                lineName = lineName.replace("二", "2");
+            }
+            linename1 = helper.toHanyuPinyin(lineName);//changqing1
+            if (linename1.contains("1")) {
+                linename1 = linename1.replace("1", "一");
+            }
+            if (linename1.contains("2")) {
+                linename1 = linename1.replace("2", "二");
+            }
+        }
+        if (linename1.contains("dou")) {
+            linename1 = linename1.replace("dou", "du");
+        }
+        return linename1;
+    }
+
 }
