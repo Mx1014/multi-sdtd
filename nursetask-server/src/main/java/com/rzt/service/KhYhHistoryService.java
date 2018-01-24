@@ -1039,4 +1039,29 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
     }
 
 
+    public WebApiResponse updateTowerById(long id, String lon, String lat) {
+        try {
+            this.reposiotry.updateTowerById(id,lon,lat);
+            return  WebApiResponse.success("修改成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return  WebApiResponse.erro("修改失败");
+        }
+    }
+
+    public WebApiResponse findLineOrg(long lineId) {
+        try {
+            String sql = "SELECT TD_ORG_NAME\n" +
+                    "FROM CM_LINE_SECTION where line_id=? and TD_ORG_NAME in ('门头沟公司','通州公司') ";
+            List<Map<String, Object>> maps = this.execSql(sql, lineId);
+            if (maps.size()>0){
+                return  WebApiResponse.success("可以采集");
+            }else {
+                return  WebApiResponse.erro("不可以采集");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return  WebApiResponse.erro("不可以采集");
+        }
+    }
 }
