@@ -43,7 +43,6 @@ public class    CheckResultController extends CurdController<CheckResult,CheckRe
                         service.updateByCheckId(checkResult,checkDetail,id);
                     }
                 }catch (Exception e){
-
                     return WebApiResponse.erro("参数错误");
                 }
         }else{

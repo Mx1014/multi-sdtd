@@ -6,7 +6,7 @@ token:
 spring:
     datasource:
       type: com.alibaba.druid.pool.DruidDataSource
-      url: jdbc:oracle:thin:@168.130.1.32:1521:ORCL
+      url: jdbc:oracle:thin:@47.94.131.120:1521:ORCL
 #      url: jdbc:oracle:thin:@168.130.1.32:1521:LIUZE
       username: sdtd27
       password: sdtd27
