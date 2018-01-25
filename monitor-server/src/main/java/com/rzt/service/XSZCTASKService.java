@@ -33,6 +33,23 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
     private RedisTemplate<String, Object> redisTemplate;
     @Autowired
     private TimedConfigRepository timedConfigRepository;
+
+
+    public String findDeptAuth(String userId){
+       try {
+           Object userInformation1 = redisTemplate.opsForHash().get("UserInformation", userId);
+           if(null != userInformation1 && !"".equals(userInformation1)) {
+               JSONObject jsonObject1 = JSONObject.parseObject(userInformation1.toString());
+               String roletype = (String) jsonObject1.get("ROLETYPE");
+               return roletype;
+           }
+       }catch (Exception e){
+           LOGGER.error("通道公司权限查询失败"+e.getMessage());
+        return "-1";
+       }
+       return "1";
+    }
+
     /**
      *查询所有为抽查任务列表
      * @param page
@@ -40,7 +57,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
      * @param taskType 任务类型  条件查询使用0
      * @return
      */
-    public WebApiResponse getXsTaskAll(Integer page,Integer size, String taskType ,String userId){
+    public WebApiResponse getXsTaskAll(Integer page,Integer size, String taskType ,String userId,String userName,String TD,String targetType){
         /**
          *   所有权限	    0
              公司本部权限	1
@@ -69,15 +86,23 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                 int i = Integer.parseInt(roletype);
                 switch (i){
                     case 0 :{//一级单位   显示三天周期抽查的任务
-                         sql = " SELECT    TASKID," +
+                         /*sql = " SELECT    TASKID," +
                                  "  ID," +
                                  "  CREATETIME," +
                                  "  USER_ID," +
                                  "  TASKNAME," +
                                  "  TASKTYPE,CHECKSTATUS ,TARGETSTATUS" +
-                                 "   FROM TIMED_TASK" +
-                                 "   WHERE CREATETIME > ( select sysdate - (3 * 24 * 60 * 60 + 60 * 60) / (1 * 24 * 60 * 60)   from  dual)" +
-                                 "         AND STATUS = 0 AND THREEDAY = 1 AND ID IN (SELECT MAX(ID) FROM TIMED_TASK GROUP BY TASKID)";
+                                 "   FROM TIMED_TASK" +*/
+                          sql = " SELECT  DISTINCT t.TASKID," +
+                                "    t.ID," +
+                                "    t.CREATETIME," +
+                                "    t.USER_ID," +
+                                "    t.TASKNAME," +
+                                "     t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did" +
+                                "     FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
+                                "    LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID" +
+                                 "   WHERE t.CREATETIME > ( select sysdate - (3 * 24 * 60 * 60 + 60 * 60) / (1 * 24 * 60 * 60)   from  dual)" +
+                                 "         AND t.STATUS = 0 AND t.THREEDAY = 1  ";
                         break;
                     }case 1 :{//二级单位   显示全部周期为两小时的任务
                         if(null != deptid && !"".equals(deptid)){//当前用户单位信息获取成功，进入流程
@@ -123,9 +148,21 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
             }
         }
         if(taskType!=null && !"".equals(taskType.trim())){// 判断当前任务类型  巡视1   看护2  看护稽查3  巡视稽查4
-            list.add(taskType);
-            sql+= "  AND TASKTYPE =?"+list.size();
+            sql+= "  AND t.TASKTYPE = "+taskType;
         }
+
+        //查询责任人
+            if(null != userName && !"".equals(userName)){
+            sql += "  AND  t.USER_ID in (SELECT ru.ID from RZTSYSUSER ru WHERE ru.REALNAME LIKE '%"+userName+"%')";
+            }
+            //通道单位
+            if(null != TD && !"".equals(TD)){
+            sql += "  AND  d.ID = '"+TD+"'";
+            }
+            //任务状态
+            if(null != targetType && !"".equals(targetType)){
+                sql += "  AND  t.TARGETSTATUS =  "+targetType;
+            }
 
         if(null != sql && !"".equals(sql)){
             sql +="   ORDER BY CREATETIME DESC     ";
@@ -487,7 +524,8 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                                "             WHERE yh.ID = (SELECT k.YH_ID FROM KH_SITE k LEFT JOIN KH_TASK kh ON kh.SITE_ID = k.ID" +
                                "             WHERE kh.ID = ?"+strings.size()+")";
                        //获取任务详情  OPERATE_NAME   三种情况
-                       String khsql1 = "SELECT DISTINCT PROCESS_NAME as OPERATE_NAME,TASK_ID,(SELECT min(CREATE_TIME) FROM PICTURE_KH " +
+                       //  人员信息上传情况
+                      /* String khsql1 = "SELECT DISTINCT PROCESS_NAME as OPERATE_NAME,TASK_ID,(SELECT min(CREATE_TIME) FROM PICTURE_KH " +
                                "    WHERE TASK_ID = ?"+strings.size()+" AND FILE_TYPE = 1 and PROCESS_ID = 1) AS START_TIME,1 AS PROID" +
                                "    FROM PICTURE_KH WHERE TASK_ID = ?"+strings.size()+" AND FILE_TYPE = 1 and PROCESS_ID = 1";
 
@@ -497,8 +535,8 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                        String khsql3 = "SELECT DISTINCT PROCESS_NAME as OPERATE_NAME,TASK_ID,(SELECT min(CREATE_TIME) FROM PICTURE_KH " +
                                "    WHERE TASK_ID = ?"+strings.size()+" AND FILE_TYPE = 1 and PROCESS_ID = 3) AS START_TIME,3 AS PROID" +
                                "    FROM PICTURE_KH WHERE TASK_ID = ?"+strings.size()+" AND FILE_TYPE = 1 and PROCESS_ID = 3";
-
-                       List<Map<String, Object>> m1 = this.execSql(khsql1, strings);
+*/
+                     /*  List<Map<String, Object>> m1 = this.execSql(khsql1, strings);
                        if(null != m1 && m1.size()>0){
                            maps2.add(m1.get(0));
                        }
@@ -509,7 +547,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                        List<Map<String, Object>> m3 = this.execSql(khsql3, strings);
                        if(null != m3 && m3.size()>0){
                            maps2.add(m3.get(0));
-                       }
+                       }*/
 
                        maps = this.execSql(sql, strings.toArray());
                        maps3 = this.execSql(sql3, strings.toArray());
@@ -550,8 +588,8 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
 
 
     @Transactional
-    public void checkOff(Long questionTaskId) {
-        repository.xsTaskUpdate(questionTaskId);
+    public void checkOff(String id) {
+        repository.xsTaskUpdate(id);
     }
 
 
