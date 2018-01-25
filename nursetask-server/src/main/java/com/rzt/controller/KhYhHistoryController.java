@@ -138,7 +138,7 @@ public class KhYhHistoryController extends
 
     @ApiOperation(value = "判断线路是否属于通州公司、门头沟公司",notes = "隐患台账删除")
     @GetMapping("findLineOrg")
-    public WebApiResponse findLineOrg(long lineId){
-        return this.service.findLineOrg(lineId);
+    public WebApiResponse findLineOrg(long towerId){
+        return this.service.findLineOrg(towerId);
     }
 }

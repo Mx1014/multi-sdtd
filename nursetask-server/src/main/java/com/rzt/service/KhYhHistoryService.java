@@ -11,6 +11,7 @@ import com.netflix.ribbon.proxy.annotation.Http;
 import com.rzt.entity.KhCycle;
 import com.rzt.entity.KhSite;
 import com.rzt.entity.XsSbYh;
+import com.rzt.eureka.MonitorService;
 import com.rzt.repository.KhYhHistoryRepository;
 import com.rzt.entity.KhYhHistory;
 import com.rzt.repository.XsSbYhRepository;
@@ -54,6 +55,8 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
     private XsSbYhRepository xsRepository;
     @Autowired
     private KhSiteService siteService;
+    @Autowired
+    private MonitorService monitorService;
 
     public WebApiResponse list() {
         try {
@@ -118,7 +121,11 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 }
             }
             this.xsService.add(yh);
-
+            try {
+                monitorService.start("wtsh", yh.getTbrid(), yh.getId()+"", "1", "", "");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             return WebApiResponse.success("数据保存成功");
         } catch (Exception e) {
             e.printStackTrace();
@@ -1049,11 +1056,11 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         }
     }
 
-    public WebApiResponse findLineOrg(long lineId) {
+    public WebApiResponse findLineOrg(long towerId) {
         try {
-            String sql = "SELECT TD_ORG_NAME\n" +
-                    "FROM CM_LINE_SECTION where line_id=? and TD_ORG_NAME in ('门头沟公司','通州公司') ";
-            List<Map<String, Object>> maps = this.execSql(sql, lineId);
+            String sql = "SELECT S.TD_ORG_NAME,S.LINE_NAME,S.LINE_ID\n" +
+                    "FROM CM_LINE_SECTION S LEFT JOIN CM_TOWER T ON T.LINE_ID = S.LINE_ID where T.ID = ?  and S.TD_ORG_NAME in ('门头沟公司','通州公司') ";
+            List<Map<String, Object>> maps = this.execSql(sql, towerId);
             if (maps.size()>0){
                 return  WebApiResponse.success("可以采集");
             }else {
