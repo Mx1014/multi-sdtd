@@ -114,7 +114,8 @@ public class PictureService extends CurdService<CheckResult, CheckResultReposito
                      }
                  }
                  //当任务还没开启时的人员照片
-                 String sql1 = "SELECT p.ID,FILE_PATH,p.CREATE_TIME,p.PROCESS_NAME as OPERATE_NAME" +
+                 //人员信息图片展示
+           /*      String sql1 = "SELECT p.ID,FILE_PATH,p.CREATE_TIME,p.PROCESS_NAME as OPERATE_NAME" +
                          "   FROM xs_zc_task k LEFT JOIN XS_ZC_TASK_EXEC x ON k.ID = x.XS_ZC_TASK_ID" +
                          "    LEFT JOIN XS_ZC_TASK_EXEC_DETAIL l ON x.ID = l.XS_ZC_TASK_EXEC_ID RIGHT JOIN PICTURE_TOUR p ON l.ID = p.PROCESS_ID" +
                          "   WHERE p.TASK_ID = "+taskId+" AND FILE_TYPE = 1 AND p.PROCESS_ID =1";
@@ -133,7 +134,7 @@ public class PictureService extends CurdService<CheckResult, CheckResultReposito
                  List<Map<String, Object>> mapsc = this.execSql(sql3 ,null);
                  group.add(mapsa);
                  group.add(mapsb);
-                 group.add(mapsc);
+                 group.add(mapsc);*/
                  LOGGER.info("任务图片查询成功");
                  return  WebApiResponse.success(group);
              }
@@ -141,7 +142,7 @@ public class PictureService extends CurdService<CheckResult, CheckResultReposito
 
                  String sql = "SELECT p.ID,FILE_PATH,p.CREATE_TIME,p.PROCESS_NAME,y.LINE_NAME,k.TASK_NAME as OPERATE_NAME " +
                          " FROM KH_TASK k LEFT JOIN PICTURE_KH p ON k.ID = p.TASK_ID LEFT JOIN  KH_YH_HISTORY y ON  k.ID = y.TASK_ID" +
-                         "  WHERE k.ID = ?"+list.size()+" AND FILE_TYPE = 1" +
+                         "  WHERE k.ID = ?"+list.size()+" AND FILE_TYPE = 1  AND p.PROCESS_ID NOT IN (1,2,3)" +
                          "   ORDER BY p.CREATE_TIME DESC";
 
                  List<Map<String, Object>> maps1 = this.execSql(sql, list.toArray());
