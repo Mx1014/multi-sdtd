@@ -31,7 +31,7 @@ public class XSCycleController {
      * @return
      */
     @GetMapping("/start")
-    public WebApiResponse start(String key , String userName,String userId,String XSID,String flag,String info){
+    public WebApiResponse start(String key , String userName,String currentUserId,String XSID,String flag,String info){
         HashMap<Object, Object> map = new HashMap<>();
         map.put("userName",userName);
         map.put("flag",flag);
@@ -51,13 +51,13 @@ public class XSCycleController {
      * @return
      */
     @GetMapping("/complete")
-    public WebApiResponse complete(String taskId,String XSID,String flag,String info,String userId){
+    public WebApiResponse complete(String taskId,String XSID,String flag,String info,String currentUserId){
         Map<String, Object> map = new HashMap<>();
         map.put("taskId",taskId);
         map.put("XSID",XSID);
         map.put("flag",flag);
         map.put("info",info);
-        xsCycleService.complete1(taskId,map,userId);
+        xsCycleService.complete1(taskId,map,currentUserId);
 
         return WebApiResponse.success("");
     }
