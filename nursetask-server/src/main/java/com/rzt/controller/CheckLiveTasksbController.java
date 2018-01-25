@@ -10,6 +10,8 @@ import com.rzt.entity.CheckLiveTasksb;
 import com.rzt.service.CheckLiveTasksbService;
 import com.rzt.util.WebApiResponse;
 import io.swagger.annotations.ApiOperation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -31,6 +33,8 @@ import java.util.Map;
 @RequestMapping("CheckLiveTasksb")
 public class CheckLiveTasksbController extends
 		CurdController<CheckLiveTasksb,CheckLiveTasksbService> {
+
+	protected static Logger LOGGER = LoggerFactory.getLogger(CheckLiveTasksbController.class);
 
 	@ApiOperation(value = "生成待稽查任务",notes = "生成待稽查任务")
 	@PostMapping("addCheckLiveTasksb")
@@ -81,4 +85,35 @@ public class CheckLiveTasksbController extends
 			return WebApiResponse.erro("数据获取失败" + var3.getMessage());
 		}
 	}
+
+	//以上是隐患稽查pc的接口
+	//以下是隐患稽查app的接口
+	@ApiOperation(value = "app隐患稽查任务列表",notes = "app隐患稽查任务列表")
+	@GetMapping("pageCheckLiveTasksbApp")
+	public WebApiResponse pageCheckLiveTasksbApp(@RequestParam(value = "page",defaultValue = "0") Integer page,
+												 @RequestParam(value = "size",defaultValue = "8") Integer size,
+												 String userId,String taskType){
+		try{
+			Pageable pageable = new PageRequest(page, size);
+			Page<Map<String, Object>> list = this.service.appChecksbList(pageable, userId,taskType);
+			return WebApiResponse.success(list);
+		}catch (Exception e){
+			LOGGER.error("app任务列表获取失败",e);
+			return WebApiResponse.erro("数据获取失败"+e.getMessage());
+		}
+	}
+
+	@ApiOperation(value = "app隐患稽查任务完成按钮",notes = "app隐患稽查任务完成按钮")
+	@GetMapping("checkLiveTasksbComplete")
+	public WebApiResponse checkLiveTasksbComplete(String id){
+		try{
+			service.checkLiveTasksbComplete(Long.valueOf(id));
+			return WebApiResponse.success("");
+		}catch (Exception e){
+			LOGGER.error("app任务列表获取失败",e);
+			return WebApiResponse.erro("数据获取失败"+e.getMessage());
+		}
+	}
+
+
 }

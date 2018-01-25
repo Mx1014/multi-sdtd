@@ -61,10 +61,36 @@ public class CMLINESECTIONService extends CurdService<CMLINESECTION,CMLINESECTIO
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
-    public WebApiResponse getLineInfoByOrg(Pageable pageable, String tdOrg, String kv, String lineId) {
+    public WebApiResponse getLineInfoByOrg(Pageable pageable, String tdOrg, String kv, String lineId,String currentUserId) {
         List<String> list = new ArrayList<>();
         Object[] objects = list.toArray();
         String sql = "select * from cm_line_section where is_del=0 ";
+        if(StringUtils.isNotEmpty(currentUserId)){
+            Map<String, Object> map = userInfoFromRedis(currentUserId);
+            Integer roletype = Integer.parseInt(map.get("ROLETYPE").toString());
+            String deptid  = map.get("DEPTID").toString();
+            switch (roletype) {
+                case 0:
+                    break;
+                case 1:
+                    tdOrg = deptid;
+                    break;
+                case 2:
+                    tdOrg = deptid;
+                    break;
+                case 3:
+                    //外协角色
+                    break;
+                case 4:
+                    //班组角色
+                    break;
+                case 5:
+                    //个人角色
+                    break;
+            }
+
+        }
+
         if(tdOrg!=null&&!"".equals(tdOrg.trim())){
             list.add(tdOrg);
             sql += " and td_org= ?" + list.size();
