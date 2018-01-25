@@ -42,6 +42,12 @@ public class CMLINETOWERController extends
 		return service.getLineTowerPosition(pageable, tdOrg, kv, lineId,currentUserId);
 	}
 
+	@ApiOperation(value = "杆塔坐标修改接口",notes = "杆塔坐标修改接口")
+	@GetMapping("updateTowerPosition")
+	public WebApiResponse updateTowerPosition( String id,String lon,String lat) {
+		return service.updateTowerPosition(id,lon,lat);
+	}
+
 	@ApiOperation(value = "公共接口--下拉框线路杆塔",notes = "根据lineId获取杆塔信息")
 	@GetMapping("getTowerInfoCommOptions")
 	public WebApiResponse getTowerInfoCommOptions(String lineId){

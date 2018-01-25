@@ -19,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +45,7 @@ public class CMLINETOWERService extends CurdService<CMLINETOWER,CMLINETOWERRepos
     public WebApiResponse getLineTowerPosition(Pageable pageable, String tdOrg, String kv, String lineId,String currentUserId) {
         List<String> list = new ArrayList<>();
         Object[] objects = list.toArray();
-        String sql = "select l.v_level,l.line_name,l.section,LT.tower_name,t.longitude,t.latitude from  cm_line_tower lt " +
+        String sql = "select t.id,l.v_level,l.line_name,l.section,LT.tower_name,t.longitude,t.latitude from  cm_line_tower lt " +
                 " left join cm_tower t on LT.tower_id=t.id " +
          " left join cm_line l on l.id=LT.line_id where 1=1 ";
         if(StringUtils.isNotEmpty(currentUserId)){
@@ -92,6 +93,13 @@ public class CMLINETOWERService extends CurdService<CMLINETOWER,CMLINETOWERRepos
     }
 
 
+    @Transactional
+    public WebApiResponse updateTowerPosition(String id, String lon, String lat) {
+        reposiotry.updatetowerPosition(Long.valueOf(id),lon,lat);
+        return WebApiResponse.success("杆塔坐标更新成功!");
+    }
+
+
     public Map<String, Object> userInfoFromRedis(String userId) {
         HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
 
@@ -110,4 +118,6 @@ public class CMLINETOWERService extends CurdService<CMLINETOWER,CMLINETOWERRepos
         }
         return jsonObject;
     }
+
+
 }
