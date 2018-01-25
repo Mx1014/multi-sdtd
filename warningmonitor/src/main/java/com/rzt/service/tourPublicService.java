@@ -219,4 +219,7 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
     }
 
 
+    public Object khtgang(Long taskId) {
+        return "";
+    }
 }

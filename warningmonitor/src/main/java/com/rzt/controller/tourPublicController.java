@@ -82,5 +82,16 @@ public class tourPublicController extends CurdController<Monitorcheckej, tourPub
         }
     }
 
+    @GetMapping("khtgang")
+    public WebApiResponse khtgang(Long taskId){
+        try{
+
+           return WebApiResponse.success(service.khtgang(taskId));
+        }catch (Exception e){
+           return WebApiResponse.erro("fail:"+e.getMessage());
+        }
+
+    }
+
 
 }
