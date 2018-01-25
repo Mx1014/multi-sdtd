@@ -87,4 +87,15 @@ public class CensusServerApplication {
     public ListDataServerEndpoint ListData() {
         return new ListDataServerEndpoint();
     }
+
+    /**
+     * 首页admin一级运检部
+     *
+     * @return
+     */
+    @Bean
+    public FirstLevelCommandServerEndpoint firstlevelcommand() {
+        return new FirstLevelCommandServerEndpoint();
+    }
+
 }
