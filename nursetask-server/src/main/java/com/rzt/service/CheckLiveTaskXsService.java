@@ -217,6 +217,7 @@ public class CheckLiveTaskXsService extends CurdService<CheckLiveTaskXs, CheckLi
         return jsonObject;
     }
 
+    @Transactional
     public void updateXsCheckUser(Long id, String userId, String userName) {
         reposiotry.updateXsCheckUser(id,userId,userName);
     }
