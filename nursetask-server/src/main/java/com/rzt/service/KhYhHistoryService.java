@@ -122,7 +122,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             }
             this.xsService.add(yh);
             try {
-                monitorService.start("wtsh", yh.getTbrid(), yh.getId()+"", "1", "", "");
+                monitorService.start("wtsh", yh.getTbrid(), yh.getId() + "", "1", "", "");
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -609,12 +609,25 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
 
     public WebApiResponse deleteYhById(long yhId) {
         try {
-            String sql = "SELECT * FROM KH_CYCLE WHERE YH_ID=? and STATUS IN (1,0)";
+            String sql = "SELECT * FROM KH_CYCLE WHERE YH_ID=? and STATUS =0";
             List<Map<String, Object>> maps = this.execSql(sql, yhId);
             if (maps.size() > 0) {
                 throw new Exception();
             } else {
-                this.reposiotry.deleteYhById(yhId);
+                sql = "SELECT * FROM KH_SITE WHERE YH_ID=? and STATUS =1";
+                List<Map<String, Object>> maps1 = this.execSql(sql, yhId);
+                if (maps1.size() > 0) {
+                    throw new Exception();
+                } else {
+                    sql = "SELECT * FROM KH_TASK WHERE YH_ID=? and STATUS IN(0,1) AND (trunc(PLAN_START_TIME)=trunc(sysdate) OR trunc(PLAN_END_TIME)=trunc(sysdate))";
+                    List<Map<String, Object>> maps2 = this.execSql(sql, yhId);
+                    if (maps2.size() > 0) {
+                        throw new Exception();
+                    } else {
+                        this.reposiotry.deleteYhById(yhId);
+                        this.reposiotry.updateKhCycle(yhId);
+                    }
+                }
             }
             return WebApiResponse.success("删除成功");
         } catch (Exception e) {
@@ -1048,11 +1061,11 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
 
     public WebApiResponse updateTowerById(long id, String lon, String lat) {
         try {
-            this.reposiotry.updateTowerById(id,lon,lat);
-            return  WebApiResponse.success("修改成功");
+            this.reposiotry.updateTowerById(id, lon, lat);
+            return WebApiResponse.success("修改成功");
         } catch (Exception e) {
             e.printStackTrace();
-            return  WebApiResponse.erro("修改失败");
+            return WebApiResponse.erro("修改失败");
         }
     }
 
@@ -1061,14 +1074,14 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             String sql = "SELECT S.TD_ORG_NAME,S.LINE_NAME,S.LINE_ID\n" +
                     "FROM CM_LINE_SECTION S LEFT JOIN CM_TOWER T ON T.LINE_ID = S.LINE_ID where T.ID = ?  and S.TD_ORG_NAME in ('门头沟公司','通州公司') ";
             List<Map<String, Object>> maps = this.execSql(sql, towerId);
-            if (maps.size()>0){
-                return  WebApiResponse.success("可以采集");
-            }else {
-                return  WebApiResponse.erro("不可以采集");
+            if (maps.size() > 0) {
+                return WebApiResponse.success("可以采集");
+            } else {
+                return WebApiResponse.erro("不可以采集");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            return  WebApiResponse.erro("不可以采集");
+            return WebApiResponse.erro("不可以采集");
         }
     }
 }
