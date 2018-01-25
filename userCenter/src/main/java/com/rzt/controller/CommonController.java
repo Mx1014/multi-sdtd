@@ -16,23 +16,23 @@ public class CommonController extends CurdController<RztSysUser, CommonService> 
     /**
      * 稽查单位查询
      *
-     * @param userId
+     * @param currentUserId
      * @return
      */
     @GetMapping("checkDepartment")
-    public List<Map<String, Object>> checkDepartment(String userId,Integer worktype) {
-        return this.service.checkDepartment(userId,worktype);
+    public List<Map<String, Object>> checkDepartment(String currentUserId, Integer worktype) {
+        return this.service.checkDepartment(currentUserId, worktype);
     }
 
     /**
      * 查询稽查人员
      *
      * @param classId
-     * @param userId
+     * @param currentUserId
      * @return
      */
     @GetMapping("userJcCx")
-    public WebApiResponse userJcCx(String classId, String userId,Integer worktype) {
-        return this.service.userJcCx(classId, userId,worktype);
+    public WebApiResponse userJcCx(String classId, String currentUserId, Integer worktype) {
+        return this.service.userJcCx(classId, currentUserId, worktype);
     }
 }
