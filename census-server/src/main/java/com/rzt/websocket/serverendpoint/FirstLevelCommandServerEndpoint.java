@@ -70,7 +70,7 @@ public class FirstLevelCommandServerEndpoint {
      * @param session
      * @param message
      */
-    public void sendText(Session session, List<Map<String, Object>> message) {
+    public void sendText(Session session, Object message) {
         RemoteEndpoint.Basic basic = session.getBasicRemote();
         try {
             String s = JSONObject.toJSONString(message);
