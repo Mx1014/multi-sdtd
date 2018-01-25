@@ -212,7 +212,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         }
     }
 
-    public WebApiResponse exportYhHistory(HttpServletResponse response, Object josn, String userId) {
+    public WebApiResponse exportYhHistory(HttpServletResponse response, Object josn, String currentUserId) {
         String sql1 = "select y.* from kh_yh_history y left join kh_site c on y.id=c.yh_id where y.yhzt=0 ";
         Map jsonObject = JSON.parseObject(josn.toString(), Map.class);
         Integer roleType = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
@@ -230,7 +230,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             sql1 += " and y.class_id=" + classid;
         }
         if (roleType == 5) {
-            sql1 += " and c.user_id=" + userId;
+            sql1 += " and c.user_id=" + currentUserId;
         }
 
         List<Map<String, Object>> yhList = this.execSql(sql1);

@@ -87,11 +87,11 @@ public class KhYhHistoryController extends
 
 	@ApiOperation(value = "隐患导出接口",notes = "隐患导出接口")
 	@GetMapping("exportYhHistory")
-	public WebApiResponse exportYhHistory(HttpServletResponse response,String userId){
+	public WebApiResponse exportYhHistory(HttpServletResponse response,String currentUserId){
      /* MultipartFile file */
 		HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
-		JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", userId).toString());
-		return service.exportYhHistory(response,jsonObject,userId);
+		JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", currentUserId).toString());
+		return service.exportYhHistory(response,jsonObject,currentUserId);
 	}
 
 	@ApiOperation(value = "修改隐患信息",notes = "修改隐患信息")
