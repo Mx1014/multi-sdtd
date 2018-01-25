@@ -5,6 +5,7 @@ import com.rzt.repository.websocketRepository;
 import com.rzt.service.CurdService;
 import com.rzt.websocket.serverendpoint.FirstLevelCommandServerEndpoint;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.websocket.Session;
@@ -26,11 +27,305 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
         });
     }
 
-    public void adminModule2() {
+    @Scheduled(fixedRate = 3000)
+    public void adminModule8() {
         Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
         sendMsg.forEach((sessionId, session) -> {
+            /**
+             * 离线
+             */
+            String offline = "SELECT count(1) as OFFLINES FROM MONITOR_CHECK_EJ  WHERE (WARNING_TYPE = 8 OR WARNING_TYPE = 2) AND trunc(CREATE_TIME) = trunc(sysdate)";
+            /**
+             *未按时开始任务
+             */
+            String answertime = "SELECT count(1) as ANSWERTIME  FROM MONITOR_CHECK_EJ WHERE (WARNING_TYPE = 4 OR WARNING_TYPE = 10) AND trunc(CREATE_TIME) = trunc(sysdate)";
+            /**
+             * 超期任务
+             */
+            String overdue = " SELECT count(1) as OVERDUE FROM MONITOR_CHECK_EJ WHERE WARNING_TYPE = 1  AND trunc(CREATE_TIME) = trunc(sysdate) ";
+            /**
+             * 看护人员脱岗
+             */
+            String temporarily = " SELECT count(1) AS TEMPORARILY FROM MONITOR_CHECK_EJ WHERE WARNING_TYPE = 7 AND trunc(CREATE_TIME) = trunc(sysdate) ";
+            /**
+             * 巡视不合格
+             */
+            String unqualifiedpatrol = " SELECT count(1) as unqualifiedpatrol FROM MONITOR_CHECK_EJ WHERE WARNING_TYPE = 5 AND trunc(CREATE_TIME) = trunc(sysdate) ";
+            try {
+                Map map1 = new HashMap();
+                Map map = new HashMap();
+                Map<String, Object> offlineMap = this.execSqlSingleResult(offline);
+                Map<String, Object> answertimeMap = this.execSqlSingleResult(answertime);
+                Map<String, Object> overdueMap = this.execSqlSingleResult(overdue);
+                Map<String, Object> temporarilyMap = this.execSqlSingleResult(temporarily);
+                Map<String, Object> unqualifiedpatrolMap = this.execSqlSingleResult(unqualifiedpatrol);
+                map.put("OFFLINEMAP", offlineMap.get("OFFLINES"));
+                map.put("ANSWERTIMEMAP", answertimeMap.get("ANSWERTIME"));
+                map.put("OVERDUEMAP", overdueMap.get("OVERDUE"));
+                map.put("TEMPORARILYMAP", temporarilyMap.get("TEMPORARILY"));
+                map.put("UNQUALIFIEDPATROLMAP", unqualifiedpatrolMap.get("UNQUALIFIEDPATROL"));
+                map1.put("adminModule8", map);
+                firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), map);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
 
-            firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), "1");
+    @Scheduled(fixedRate = 3000)
+    public void adminModule6() {
+        Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
+        sendMsg.forEach((sessionId, session) -> {
+            /**
+             * 正常巡视未开始
+             */
+            String zcXsWks = "SELECT count(1)  " +
+                    "FROM XS_ZC_TASK " +
+                    "WHERE STAUTS = 0 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+            /**
+             * 保电巡视未开始
+             */
+            String bdXsWks = "SELECT count(1)  " +
+                    "FROM XS_TXBD_TASK " +
+                    "WHERE STAUTS = 0 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+            /**
+             * 看护未开始
+             */
+            String khWks = "SELECT count(1)  " +
+                    "FROM KH_TASK " +
+                    "WHERE STATUS = 0 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+            /**
+             * 现场稽查未开始
+             */
+            String xcJcWks = "SELECT count(1)  " +
+                    "FROM CHECK_LIVE_TASK " +
+                    "WHERE STATUS = 0 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+            /**
+             * 正常巡视进行中
+             */
+            String zcXsJxz = "SELECT count(1)  " +
+                    "FROM XS_ZC_TASK " +
+                    "WHERE STAUTS = 1 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+            /**
+             * 保电巡视进行中
+             */
+            String bdXsJxz = "SELECT count(1)  " +
+                    "FROM XS_TXBD_TASK " +
+                    "WHERE STAUTS = 1 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+            /**
+             * 看护进行中
+             */
+            String khJxz = "SELECT count(1)  " +
+                    "FROM KH_TASK " +
+                    "WHERE STATUS = 1 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+            /**
+             * 现场稽查进行中
+             */
+            String xcJcJxz = "SELECT count(1)  " +
+                    "FROM CHECK_LIVE_TASK " +
+                    "WHERE STATUS = 1 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+            /**
+             * 正常巡视已完成
+             */
+            String zcXsYwc = "SELECT count(1)  " +
+                    "FROM XS_ZC_TASK " +
+                    "WHERE STAUTS = 2 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+            /**
+             * 保电巡视已完成
+             */
+            String bdXsYwc = "SELECT count(1)  " +
+                    "FROM XS_TXBD_TASK " +
+                    "WHERE STAUTS = 2 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+            /**
+             * 看护已完成
+             */
+            String khYwc = "SELECT count(1)  " +
+                    "FROM KH_TASK " +
+                    "WHERE STATUS = 2 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+            /**
+             *现场稽查已完成
+             */
+            String xcJcYwc = "SELECT count(1)  " +
+                    "FROM CHECK_LIVE_TASK " +
+                    "WHERE STATUS = 2 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+            String sql = "SELECT " +
+                    "(" + zcXsWks + ")+(" + bdXsWks + ") as XsWks," +
+                    "(" + zcXsJxz + ")+(" + bdXsJxz + ") as XsJxz," +
+                    "(" + zcXsYwc + ")+(" + bdXsYwc + ") as XsYwc," +
+                    "(" + khJxz + ") as khJxz," +
+                    "(" + khWks + ") as khWks, " +
+                    "(" + khYwc + ") as khYwc," +
+                    "(" + xcJcJxz + ") as xcJcJxz," +
+                    "(" + xcJcWks + ") as xcJcWks," +
+                    "(" + xcJcYwc + ") as xcJcYwc " +
+                    "  FROM dual";
+            List<Map<String, Object>> list = this.execSql(sql);
+            Map map = new HashMap();
+            map.put("adminModule6", list);
+            firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), list);
+        });
+    }
+
+    @Scheduled(fixedRate = 3000)
+    public void adminModule7() {
+        Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
+        sendMsg.forEach((sessionId, session) -> {
+            if (Integer.valueOf(session.get("mapType").toString()) == 2) {
+                String wks = " SELECT nvl(xswks,0) + nvl(khwks,0) AS wks, a.TD_ORG FROM (SELECT rr.ID AS TD_ORG, xswks FROM (SELECT count(1) AS xswks, TD_ORG FROM XS_ZC_TASK k WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STAUTS = 0 GROUP BY TD_ORG) cae RIGHT JOIN RZTSYSDEPARTMENT rr ON cae.TD_ORG = rr.ID WHERE rr.DEPTSORT IS NOT NULL ORDER BY rr.DEPTSORT) a LEFT JOIN (SELECT khwks,  ppp.ID as TD_ORG FROM (SELECT count(1)   AS khwks, k.TDYW_ORG AS TD_ORG FROM KH_TASK k WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STATUS = 0 GROUP BY TDYW_ORG) bb RIGHT JOIN RZTSYSDEPARTMENT ppp ON bb.TD_ORG = ppp.DEPTNAME WHERE ppp.DEPTSORT IS NOT NULL) b ON a.TD_ORG = b.TD_ORG";
+                String jxz = "SELECT nvl(xswks,0) + nvl(khwks,0) AS wks, a.TD_ORG FROM (SELECT rr.ID AS TD_ORG, xswks FROM (SELECT count(1) AS xswks, TD_ORG FROM XS_ZC_TASK k WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STAUTS = 1 GROUP BY TD_ORG) cae RIGHT JOIN RZTSYSDEPARTMENT rr ON cae.TD_ORG = rr.ID WHERE rr.DEPTSORT IS NOT NULL ORDER BY rr.DEPTSORT) a LEFT JOIN (SELECT khwks,  ppp.ID as TD_ORG FROM (SELECT count(1)   AS khwks, k.TDYW_ORG AS TD_ORG FROM KH_TASK k WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STATUS = 1 GROUP BY TDYW_ORG) bb RIGHT JOIN RZTSYSDEPARTMENT ppp ON bb.TD_ORG = ppp.DEPTNAME WHERE ppp.DEPTSORT IS NOT NULL) b ON a.TD_ORG = b.TD_ORG ";
+                String ywc = " SELECT nvl(xswks,0) + nvl(khwks,0) AS wks, a.TD_ORG FROM (SELECT rr.ID AS TD_ORG, xswks FROM (SELECT count(1) AS xswks, TD_ORG FROM XS_ZC_TASK k WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STAUTS = 2 GROUP BY TD_ORG) cae RIGHT JOIN RZTSYSDEPARTMENT rr ON cae.TD_ORG = rr.ID WHERE rr.DEPTSORT IS NOT NULL ORDER BY rr.DEPTSORT) a LEFT JOIN (SELECT khwks,  ppp.ID as TD_ORG FROM (SELECT count(1)   AS khwks, k.TDYW_ORG AS TD_ORG FROM KH_TASK k WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STATUS = 2 GROUP BY TDYW_ORG) bb RIGHT JOIN RZTSYSDEPARTMENT ppp ON bb.TD_ORG = ppp.DEPTNAME WHERE ppp.DEPTSORT IS NOT NULL) b ON a.TD_ORG = b.TD_ORG";
+                String deptnameSql = " SELECT t.ID,t.DEPTNAME FROM RZTSYSDEPARTMENT t WHERE t.DEPTSORT IS NOT NULL ORDER BY t.DEPTSORT ";
+                List<Map<String, Object>> deptname = this.execSql(deptnameSql);
+                List<Map<String, Object>> list = null;
+                List<Map<String, Object>> list1 = null;
+                List<Map<String, Object>> list2 = null;
+                if (Integer.valueOf(session.get("type").toString()) == 0) {
+                    list = this.execSql(wks);
+                } else if (Integer.valueOf(session.get("type").toString()) == 9) {
+                    list = this.execSql(wks);
+                }
+                if (Integer.valueOf(session.get("type").toString()) == 1) {
+                    list1 = this.execSql(jxz);
+                } else if (Integer.valueOf(session.get("type").toString()) == 9) {
+                    list1 = this.execSql(jxz);
+                }
+                if (Integer.valueOf(session.get("type").toString()) == 2) {
+                    list2 = this.execSql(ywc);
+                } else if (Integer.valueOf(session.get("type").toString()) == 9) {
+                    list2 = this.execSql(ywc);
+                }
+                Map wks1 = new HashMap();
+                Map jxz1 = new HashMap();
+                Map ywc2 = new HashMap();
+                for (Map<String, Object> singleXs : list) {
+                    wks1.put(singleXs.get("TD_ORG"), singleXs.get("WKS"));
+                }
+                for (Map<String, Object> singleKh : list1) {
+                    jxz1.put(singleKh.get("TD_ORG"), singleKh.get("WKS"));
+                }
+                for (Map<String, Object> singleKh : list2) {
+                    ywc2.put(singleKh.get("TD_ORG"), singleKh.get("WKS"));
+                }
+                if (Integer.valueOf(session.get("type").toString()) == 9) {
+                    for (Map<String, Object> dept : deptname) {
+                        dept.put("wks", wks1.get(dept.get("ID")));
+                        dept.put("jxz", jxz1.get(dept.get("ID")));
+                        dept.put("ywc", ywc2.get(dept.get("ID")));
+                    }
+                } else if (Integer.valueOf(session.get("type").toString()) == 0) {
+                    for (Map<String, Object> dept : deptname) {
+                        dept.put("wks", wks1.get(dept.get("ID")));
+                    }
+
+                } else if (Integer.valueOf(session.get("type").toString()) == 1) {
+                    for (Map<String, Object> dept : deptname) {
+                        dept.put("jxz", jxz1.get(dept.get("ID")));
+                    }
+                } else if (Integer.valueOf(session.get("type").toString()) == 2) {
+                    for (Map<String, Object> dept : deptname) {
+                        dept.put("ywc", ywc2.get(dept.get("ID")));
+                    }
+                }
+                Map map = new HashMap();
+                map.put("adminModule7", deptname);
+                firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), map);
+            } else if (Integer.valueOf(session.get("mapType").toString()) == 0) {
+                String sql = "  ";
+                if (Integer.valueOf(session.get("type").toString()) == 0) {
+                    sql = " SELECT\n" +
+                            "  deptname,\n" +
+                            "(SELECT count(h.id)\n" +
+                            "   FROM KH_YH_HISTORY h\n" +
+                            "   WHERE h.TDYW_ORG = d.deptname)                                           all_count\n" +
+                            "FROM RZTSYSDEPARTMENT d\n" +
+                            "WHERE d.DEPTPID = '402881e6603a69b801603a6ab1d70000'\n" +
+                            "ORDER BY d.DEPTSORT ";
+                } else if (Integer.valueOf(session.get("type").toString()) == 9) {
+                    sql = " SELECT\n" +
+                            "  deptname,\n" +
+                            "  (SELECT count(h.id)\n" +
+                            "   FROM KH_YH_HISTORY h\n" +
+                            "   WHERE h.TDYW_ORG = d.deptname)                                           all_count,\n" +
+                            "  (SELECT count(h.id)\n" +
+                            "   FROM KH_YH_HISTORY h\n" +
+                            "   WHERE h.TDYW_ORG = d.deptname AND trunc(h.CREATE_TIME) = trunc(sysdate)) new_count\n" +
+                            "FROM RZTSYSDEPARTMENT d\n" +
+                            "WHERE d.DEPTPID = '402881e6603a69b801603a6ab1d70000'\n" +
+                            "ORDER BY d.DEPTSORT ";
+                } else if (Integer.valueOf(session.get("type").toString()) == 1) {
+                    sql = " SELECT\n" +
+                            "  deptname,\n" +
+                            "  (SELECT count(h.id)\n" +
+                            "   FROM KH_YH_HISTORY h\n" +
+                            "   WHERE h.TDYW_ORG = d.deptname AND trunc(h.CREATE_TIME) = trunc(sysdate)) new_count\n" +
+                            "FROM RZTSYSDEPARTMENT d\n" +
+                            "WHERE d.DEPTPID = '402881e6603a69b801603a6ab1d70000'\n" +
+                            "ORDER BY d.DEPTSORT ";
+                }
+                List<Map<String, Object>> list = this.execSql(sql);
+                Map map = new HashMap();
+                map.put("adminModule7", list);
+                firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), map);
+            } else if (Integer.valueOf(session.get("mapType").toString()) == 1) {
+                String khzx = " SELECT rr.ID,count(a.ID) as khzx FROM (SELECT u.ID,u.DEPTID FROM RZTSYSUSER u LEFT JOIN KH_TASK k ON u.ID = k.USER_ID WHERE LOGINSTATUS = 1 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= sysdate GROUP BY u.ID,u.DEPTID) a RIGHT JOIN RZTSYSDEPARTMENT rr ON a.DEPTID = rr.ID WHERE rr.DEPTSORT IS NOT NULL GROUP BY rr.ID ";
+                String khlx = " SELECT rr.ID,count(a.ID) as khlx FROM (SELECT u.ID,u.DEPTID FROM RZTSYSUSER u LEFT JOIN KH_TASK k ON u.ID = k.USER_ID WHERE LOGINSTATUS = 0 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= sysdate GROUP BY u.ID,u.DEPTID) a RIGHT JOIN RZTSYSDEPARTMENT rr ON a.DEPTID = rr.ID WHERE rr.DEPTSORT IS NOT NULL GROUP BY rr.ID ";
+                String xszx = " SELECT rr.ID,count(a.ID) as xszx FROM (SELECT r.ID,r.DEPTID FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID WHERE LOGINSTATUS = 1 AND USERDELETE = 1 AND z.PLAN_START_TIME< = sysdate AND z.PLAN_END_TIME >= sysdate GROUP BY r.ID,r.DEPTID) a RIGHT JOIN RZTSYSDEPARTMENT rr ON a.DEPTID = rr.ID WHERE rr.DEPTSORT IS NOT NULL GROUP BY rr.ID ";
+                String xslx = " SELECT rr.ID,count(a.ID) as xslx FROM (SELECT r.ID,r.DEPTID FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID WHERE LOGINSTATUS = 0 AND USERDELETE = 1 AND z.PLAN_START_TIME< = sysdate AND z.PLAN_END_TIME >= sysdate GROUP BY r.ID,r.DEPTID) a RIGHT JOIN RZTSYSDEPARTMENT rr ON a.DEPTID = rr.ID WHERE rr.DEPTSORT IS NOT NULL GROUP BY rr.ID\n ";
+                String deptnameSql = " SELECT t.ID,t.DEPTNAME FROM RZTSYSDEPARTMENT t WHERE t.DEPTSORT IS NOT NULL ORDER BY t.DEPTSORT ";
+                List<Map<String, Object>> deptname = this.execSql(deptnameSql);
+                List<Map<String, Object>> list1 = null;
+                List<Map<String, Object>> list3 = null;
+                List<Map<String, Object>> list2 = null;
+                List<Map<String, Object>> list4 = null;
+                if (Integer.valueOf(session.get("type").toString()) == 0) {
+                    list2 = this.execSql(khlx);
+                    list4 = this.execSql(xslx);
+                } else if (Integer.valueOf(session.get("type").toString()) == 1) {
+                    list1 = this.execSql(khzx);
+                    list3 = this.execSql(xszx);
+                }
+                Map map1 = new HashMap();
+                Map map2 = new HashMap();
+                Map map3 = new HashMap();
+                Map map4 = new HashMap();
+                for (Map<String, Object> singleXs : list1) {
+                    map1.put(singleXs.get("ID"), singleXs.get("KHZX"));
+                }
+                for (Map<String, Object> singleXs : list2) {
+                    map2.put(singleXs.get("ID"), singleXs.get("KHLX"));
+                }
+                for (Map<String, Object> singleXs : list3) {
+                    map3.put(singleXs.get("ID"), singleXs.get("XSZX"));
+                }
+                for (Map<String, Object> singleXs : list4) {
+                    map4.put(singleXs.get("ID"), singleXs.get("XSLX"));
+                }
+                if (Integer.valueOf(session.get("type").toString()) == 9) {
+                    for (Map<String, Object> dept : deptname) {
+                        Integer khzx1 = Integer.valueOf(map1.get(dept.get("ID")).toString());
+                        Integer xszx1 = Integer.valueOf(map3.get(dept.get("ID")).toString());
+                        dept.put("zx", khzx1 + xszx1);
+                        Integer khlx1 = Integer.valueOf(map2.get(dept.get("ID")).toString());
+                        Integer xslx1 = Integer.valueOf(map4.get(dept.get("ID")).toString());
+                        dept.put("lx", khlx1 + xslx1);
+                    }
+                } else if (Integer.valueOf(session.get("type").toString()) == 0) {
+                    for (Map<String, Object> dept : deptname) {
+                        Integer khlx1 = Integer.valueOf(map2.get(dept.get("ID")).toString());
+                        Integer xslx1 = Integer.valueOf(map4.get(dept.get("ID")).toString());
+                        dept.put("lx", khlx1 + xslx1);
+                    }
+                } else if (Integer.valueOf(session.get("type").toString()) == 1) {
+                    for (Map<String, Object> dept : deptname) {
+                        Integer khzx1 = Integer.valueOf(map1.get(dept.get("ID")).toString());
+                        Integer xszx1 = Integer.valueOf(map3.get(dept.get("ID")).toString());
+                        dept.put("zx", khzx1 + xszx1);
+                    }
+                }
+                Map map = new HashMap();
+                map.put("adminModule7", deptname);
+                firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), map);
+            }
         });
     }
 }
