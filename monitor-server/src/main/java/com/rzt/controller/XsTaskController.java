@@ -51,23 +51,23 @@ public class XsTaskController extends
      * @return
      */
     @GetMapping("/getXsTaskAll")
-    public WebApiResponse getXsTaskAll(Integer page,Integer size, String taskType,String userId,String userName,String TD,String targetType){
-        return service.getXsTaskAll(page,size,taskType,userId,userName,TD,targetType);
+    public WebApiResponse getXsTaskAll(Integer page,Integer size, String taskType,String currentUserId,String userName,String TD,String targetType){
+        return service.getXsTaskAll(page,size,taskType,currentUserId,userName,TD,targetType);
     }
     @GetMapping("/findDeptAuth")
-    public String findDeptAuth(String userId){
-        return service.findDeptAuth(userId);
+    public String findDeptAuth(String currentUserId){
+        return service.findDeptAuth(currentUserId);
     }
 
 
     /**
      * 根据当前用户权限获取当前的刷新周期
-     * @param userId
+     * @param currentUserId
      * @return
      */
     @GetMapping("/getTimeConfig")
-    public WebApiResponse getTimeConfig(String userId){
-        return timedService.getTimedConfig(userId);
+    public WebApiResponse getTimeConfig(String currentUserId){
+        return timedService.getTimedConfig(currentUserId);
     }
 
 

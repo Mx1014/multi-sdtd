@@ -32,7 +32,8 @@ public class    CheckResultController extends CurdController<CheckResult,CheckRe
 	 *@date 2017年12月18日
 	 */
 	@PostMapping("/add")
-	public WebApiResponse add(CheckResult checkResult,CheckDetail checkDetail){
+	public WebApiResponse add(CheckResult checkResult,CheckDetail checkDetail,String currentUserId){
+		checkDetail.setCheckUser(currentUserId);
 		String tdOrg = "";
         List<Map<String, Object>> checkResultInfo = service.getCheckResultInfo(checkResult, checkDetail);
         if(null != checkResultInfo && checkResultInfo.size()>0){
