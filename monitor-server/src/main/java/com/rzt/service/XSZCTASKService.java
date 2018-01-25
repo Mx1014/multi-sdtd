@@ -68,7 +68,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
 
          */
         List<Object> list = new ArrayList<>();
-        Pageable pageable = new PageRequest(page, size, null);
+        Pageable pageable = new PageRequest(page, size);
         //sql 中 拉取数据为刷新时间至刷新时间前10分钟
         String sql = "";
         Page<Map<String, Object>> pageResult = null;

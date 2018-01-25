@@ -58,7 +58,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
     private KhCycleRepository cycleRepository;
 
 
-    public Object listAllTaskNotDo(KhTaskModel task, Pageable pageable, String userName, String roleType, String yhjb, String yworg) {
+    public Object listAllTaskNotDo(KhTaskModel task, Pageable pageable, String userName, String roleType, String yhjb, String yworg,String currentUserId) {
         List params = new ArrayList<>();
         StringBuffer buffer = new StringBuffer();
         String result = " k.id as id,k.task_name as taskName,k.tdyw_org as yworg,y.yhms as ms,y.yhjb as jb,k.create_time as createTime,k.COUNT as COUNT,u.realname as username,k.jbd as jbd,k.plan_start_time as starttime,k.plan_end_time as endtime,u.id as userId";
@@ -102,7 +102,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             } else {
                 sql = "select " + result1 + "from kh_cycle k,kh_yh_history y " + buffer.toString() + " and k.yh_id = y.id  and k.tdyw_org = (select d.deptname FROM RZTSYSUSER u,RZTSYSDEPARTMENT d where d.id= u.deptid and u.id =?) ";
             }
-            params.add(task.getUserId());
+            params.add(currentUserId);
 
             //部门权限
         } else if (roleType.equals("3")) {
@@ -111,7 +111,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             } else {
                 sql = "select " + result1 + "from kh_cycle k,kh_yh_history y " + buffer.toString() + " and k.yh_id = y.id and k.WX_ORG = (select d.COMPANYNAME FROM RZTSYSUSER u,RZTSYSCOMPANY d where d.id= u.COMPANYID and u.id =?) ";
             }
-            params.add(task.getUserId());
+            params.add(currentUserId);
 
             //组织权限
         } else if (roleType.equals("4")) {
@@ -121,7 +121,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                 // sql = "select " + result1 + "from kh_cycle k,kh_yh_history y " + buffer.toString()+" and k.yh_id = y.id and k.tdyw_org = d.deptname and k.tdyw_org = (select d.deptname FROM RZTSYSUSER u,RZTSYSDEPARTMENT d where d.id= u.deptid and u.id =?) ";
                 return new ArrayList<>();
             }
-            params.add(task.getUserId());
+            params.add(currentUserId);
 
             //个人权限
         } else if (roleType.equals("5")) {
@@ -131,7 +131,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                 // sql = "select " + result1 + "from kh_cycle k,kh_yh_history y,RZTSYSDEPARTMENT d " + buffer.toString()+" and k.yh_id = y.id and k.tdyw_org = d.deptname and k.tdyw_org = (select d.deptname FROM RZTSYSUSER u,RZTSYSDEPARTMENT d where d.id= u.deptid and u.id =?) ";
                 return new ArrayList<>();
             }
-            params.add(task.getUserId());
+            params.add(currentUserId);
 
             //所有权限
         } else {
@@ -171,7 +171,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
     }
 
     //导出返回List<Map>
-    public List<Map<String, Object>> findAlls(Object josn, String userId) {
+    public List<Map<String, Object>> findAlls(Object josn, String currentUserId) {
         Map jsonObject = JSON.parseObject(josn.toString(), Map.class);
         Integer roleType = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
         Object tdId = jsonObject.get("DEPTID");
@@ -183,9 +183,9 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
         } else if (roleType == 3) {
             sql += " where s.wx_orgId= '" + companyid.toString() + "'";
         } else if (roleType == 4) {
-            sql += ",rztsysuser u where u.id= s.user_id and u.classname = (select classname FROM RZTSYSUSER where id ='" + userId + "')";
+            sql += ",rztsysuser u where u.id= s.user_id and u.classname = (select classname FROM RZTSYSUSER where id ='" + currentUserId + "')";
         } else if (roleType == 5) {
-            sql += " where s.user_id= '" + userId + "'";
+            sql += " where s.user_id= '" + currentUserId + "'";
         }
         List<Map<String, Object>> maps = this.execSql(sql);
         return maps;
@@ -393,9 +393,9 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
         }
     }
 
-    public void exportNursePlan(HttpServletRequest request, HttpServletResponse response, Object json, String userId) {
+    public void exportNursePlan(HttpServletRequest request, HttpServletResponse response, Object json, String currentUserId) {
         try {
-            List<Map<String, Object>> taskList = this.findAlls(json, userId);
+            List<Map<String, Object>> taskList = this.findAlls(json, currentUserId);
             //this.service.exportExcel(response);
             //String ecxcelModelPath = rootpath + "excelModels"+File.separator+"看护任务导出表.xlsx";
             //InputStream in = new FileInputStream(ecxcelModelPath);

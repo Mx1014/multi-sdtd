@@ -41,7 +41,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
     @Autowired
     private KhSiteRepository siteRepository;
 
-    public Object listAllKhTask(KhTaskModel task, String status, Pageable pageable, int roleType, String yworg) {
+    public Object listAllKhTask(KhTaskModel task, String status, Pageable pageable, int roleType, String yworg,String currentUserId) {
         task = timeUtil(task);
         String result = "k.id as id, k.task_name as taskName,k.tdyw_org as yworg,k.CREATE_TIME as createTime,k.plan_start_time as startTime,k.plan_end_time as endTime,k.status as status,u.realname as userName,d.DEPTNAME as class,k.task_type as type";
         List params = new ArrayList<>();
@@ -77,16 +77,16 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
 
         if (roleType == 1 || roleType == 2) {
             sql = "select " + result + " from kh_task k  left join rztsysuser u on u.id = k.user_id left join RZTSYSDEPARTMENT d on u.classname = d.id " + buffer.toString() + " and k.tdyw_org = (select d.deptname from rztsysuser u, RZTSYSDEPARTMENT d where d.id = u.deptid and u.id = ?)";
-            params.add(task.getUserId());
+            params.add(currentUserId);
         } else if (roleType == 3) {
             sql = "select " + result + " from kh_task k  left join rztsysuser u on u.id = k.user_id left join RZTSYSDEPARTMENT d on u.classname = d.id " + buffer.toString() + " and k.wx_org = (select d.COMPANYNAME from rztsysuser u,RZTSYSCOMPANY d where u.companyid = d.id and u.id = ?)";
-            params.add(task.getUserId());
+            params.add(currentUserId);
         } else if (roleType == 4) {
             sql = "select " + result + " from kh_task k  left join rztsysuser u on u.id = k.user_id left join RZTSYSDEPARTMENT d on u.classname = d.id " + buffer.toString() + " and u.classname = (select u.classname from rztsysuser u, RZTSYSDEPARTMENT d where d.id = u.deptid and u.id = ?)";
-            params.add(task.getUserId());
+            params.add(currentUserId);
         } else if (roleType == 5) {
             sql = "select " + result + " from kh_task k  left join rztsysuser u on u.id = k.user_id left join RZTSYSDEPARTMENT d on u.classname = d.id " + buffer.toString() + " and k.user_id = ?";
-            params.add(task.getUserId());
+            params.add(currentUserId);
         } else {
             sql = "select " + result + " from kh_task k  left join rztsysuser u on u.id = k.user_id left join RZTSYSDEPARTMENT d on u.classname = d.id " + buffer.toString();
         }
