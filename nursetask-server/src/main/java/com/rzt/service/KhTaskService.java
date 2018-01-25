@@ -156,7 +156,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
 
     public WebApiResponse listTaskInfoById(String taskId) {
         try {
-            String sql = "SELECT TASK_NAME TASKNAME,CREATE_TIME PDTIME,TDYW_ORG YWORG,WX_ORG WXORG,PLAN_START_TIME STARTTIME,PLAN_END_TIME ENDTIME,STATUS from KH_TASK WHERE ID=?";
+            String sql = "SELECT IS_DW AS ISDW,REASON,TASK_NAME TASKNAME,DDXC_TIME AS DDXCTIME,CREATE_TIME PDTIME,TDYW_ORG YWORG,WX_ORG WXORG,PLAN_START_TIME STARTTIME,PLAN_END_TIME ENDTIME,STATUS,TASK_TYPE TYPE from KH_TASK WHERE ID=?";
             return WebApiResponse.success(this.execSql(sql, taskId));
         } catch (Exception e) {
             e.printStackTrace();

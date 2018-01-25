@@ -525,7 +525,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                                "             WHERE kh.ID = ?"+strings.size()+")";
                        //获取任务详情  OPERATE_NAME   三种情况
                        //  人员信息上传情况
-                      /* String khsql1 = "SELECT DISTINCT PROCESS_NAME as OPERATE_NAME,TASK_ID,(SELECT min(CREATE_TIME) FROM PICTURE_KH " +
+                       String khsql1 = "SELECT DISTINCT PROCESS_NAME as OPERATE_NAME,TASK_ID,(SELECT min(CREATE_TIME) FROM PICTURE_KH " +
                                "    WHERE TASK_ID = ?"+strings.size()+" AND FILE_TYPE = 1 and PROCESS_ID = 1) AS START_TIME,1 AS PROID" +
                                "    FROM PICTURE_KH WHERE TASK_ID = ?"+strings.size()+" AND FILE_TYPE = 1 and PROCESS_ID = 1";
 
@@ -535,8 +535,8 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                        String khsql3 = "SELECT DISTINCT PROCESS_NAME as OPERATE_NAME,TASK_ID,(SELECT min(CREATE_TIME) FROM PICTURE_KH " +
                                "    WHERE TASK_ID = ?"+strings.size()+" AND FILE_TYPE = 1 and PROCESS_ID = 3) AS START_TIME,3 AS PROID" +
                                "    FROM PICTURE_KH WHERE TASK_ID = ?"+strings.size()+" AND FILE_TYPE = 1 and PROCESS_ID = 3";
-*/
-                     /*  List<Map<String, Object>> m1 = this.execSql(khsql1, strings);
+
+                       List<Map<String, Object>> m1 = this.execSql(khsql1, strings);
                        if(null != m1 && m1.size()>0){
                            maps2.add(m1.get(0));
                        }
@@ -547,7 +547,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                        List<Map<String, Object>> m3 = this.execSql(khsql3, strings);
                        if(null != m3 && m3.size()>0){
                            maps2.add(m3.get(0));
-                       }*/
+                       }
 
                        maps = this.execSql(sql, strings.toArray());
                        maps3 = this.execSql(sql3, strings.toArray());

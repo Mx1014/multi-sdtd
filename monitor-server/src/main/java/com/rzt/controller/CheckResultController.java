@@ -32,7 +32,8 @@ public class    CheckResultController extends CurdController<CheckResult,CheckRe
 	 *@date 2017年12月18日
 	 */
 	@PostMapping("/add")
-	public WebApiResponse add(CheckResult checkResult,CheckDetail checkDetail){
+	public WebApiResponse add(CheckResult checkResult,CheckDetail checkDetail,String currentUserId){
+		checkDetail.setCheckUser(currentUserId);
 		String tdOrg = "";
         List<Map<String, Object>> checkResultInfo = service.getCheckResultInfo(checkResult, checkDetail);
         if(null != checkResultInfo && checkResultInfo.size()>0){
@@ -106,9 +107,9 @@ public class    CheckResultController extends CurdController<CheckResult,CheckRe
 	 * 检查记录
 	 */
 	@RequestMapping("/getCheckRecord")
-	public WebApiResponse getCheckRecord(String userId,Integer page, Integer size,String startDate,String endDate,Integer taskType,String vLevel,Integer lineId){
+	public WebApiResponse getCheckRecord(String currentUserId,Integer page, Integer size,String startDate,String endDate,Integer taskType,String vLevel,Integer lineId){
 		try {
-			return WebApiResponse.success(resultservice.getCheckRecord(userId,page,size,startDate,endDate,taskType,vLevel,lineId));
+			return WebApiResponse.success(resultservice.getCheckRecord(currentUserId,page,size,startDate,endDate,taskType,vLevel,lineId));
 		} catch (Exception e) {
 			return WebApiResponse.erro("查询失败！"+e.getMessage());
 		}

@@ -24,10 +24,10 @@ public class AlarmDetailsController extends CurdController<RztSysUser, CommonSer
     private RedisTemplate<String, Object> redisTemplate;
 
     @GetMapping("AlarmList")
-    public WebApiResponse AlarmList(String userId, String startTime, String endTime, String deptId) {
+    public WebApiResponse AlarmList(String currentUserId, String startTime, String endTime, String deptId) {
         List listLike = new ArrayList();
         String s = "";
-        JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", userId).toString());
+        JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", currentUserId).toString());
         int roletype = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
         if (!StringUtils.isEmpty(deptId)) {
             roletype = 1;
@@ -171,9 +171,9 @@ public class AlarmDetailsController extends CurdController<RztSysUser, CommonSer
     }
 
     @RequestMapping("AlarmZhu")
-    public WebApiResponse AlarmZhu(String userId, String startTime, String endTime, String deptId) {
+    public WebApiResponse AlarmZhu(String currentUserId, String startTime, String endTime, String deptId) {
         String s = "";
-        JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", userId).toString());
+        JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", currentUserId).toString());
         int roletype = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
         List list = new ArrayList();
         if (roletype == 1 || roletype == 2) {

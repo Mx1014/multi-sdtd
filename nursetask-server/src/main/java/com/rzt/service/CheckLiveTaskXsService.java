@@ -124,7 +124,7 @@ public class CheckLiveTaskXsService extends CurdService<CheckLiveTaskXs, CheckLi
         task.setStatus(0);//任务派发状态  0未接单 1进行中 2已完成 3超期
         task.setCheckType(1); //0 看护  1巡视
         //task.setTaskType(0);//（0 正常 1保电 2 特殊）
-        task.setTaskName(username+DateUtil.getCurrentDate()+"稽查任务");
+        task.setTaskName(username+ planStartTime.substring(0,10)+"稽查任务");
         CheckLiveTaskXs save = reposiotry.save(task);
 
         reposiotry.updateTaskStatus(1,save.getTaskId());
@@ -217,4 +217,7 @@ public class CheckLiveTaskXsService extends CurdService<CheckLiveTaskXs, CheckLi
         return jsonObject;
     }
 
+    public void updateXsCheckUser(Long id, String userId, String userName) {
+        reposiotry.updateXsCheckUser(id,userId,userName);
+    }
 }

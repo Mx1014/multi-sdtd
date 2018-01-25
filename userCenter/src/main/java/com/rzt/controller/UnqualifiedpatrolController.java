@@ -22,8 +22,8 @@ public class UnqualifiedpatrolController extends CurdController<RztSysUser, Comm
     private RedisTemplate<String, Object> redisTemplate;
 
     @RequestMapping("unqualifiedpatrolList")
-    public WebApiResponse unqualifiedpatrolList(Integer page, Integer size, String userId, String startTime, String endTime, String deptId, String userName) {
-        JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", userId).toString());
+    public WebApiResponse unqualifiedpatrolList(Integer page, Integer size, String currentUserId, String startTime, String endTime, String deptId, String userName) {
+        JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", currentUserId).toString());
         int roletype = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
         Object deptid = jsonObject.get("DEPTID");
         Pageable pageable = new PageRequest(page, size);
