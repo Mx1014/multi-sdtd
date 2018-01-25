@@ -68,7 +68,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
 
          */
         List<Object> list = new ArrayList<>();
-        Pageable pageable = new PageRequest(page, size, null);
+        Pageable pageable = new PageRequest(page, size);
         //sql 中 拉取数据为刷新时间至刷新时间前10分钟
         String sql = "";
         Page<Map<String, Object>> pageResult = null;
@@ -102,7 +102,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                                 "     FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
                                 "    LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID" +
                                  "   WHERE t.CREATETIME > ( select sysdate - (3 * 24 * 60 * 60 + 60 * 60) / (1 * 24 * 60 * 60)   from  dual)" +
-                                 "         AND t.STATUS = 0 AND t.THREEDAY = 1 AND t.ID IN (SELECT MAX(ID) FROM TIMED_TASK GROUP BY TASKID)";
+                                 "         AND t.STATUS = 0 AND t.THREEDAY = 1  ";
                         break;
                     }case 1 :{//二级单位   显示全部周期为两小时的任务
                         if(null != deptid && !"".equals(deptid)){//当前用户单位信息获取成功，进入流程
@@ -148,8 +148,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
             }
         }
         if(taskType!=null && !"".equals(taskType.trim())){// 判断当前任务类型  巡视1   看护2  看护稽查3  巡视稽查4
-            list.add(taskType);
-            sql+= "  AND t.TASKTYPE =?"+list.size();
+            sql+= "  AND t.TASKTYPE = "+taskType;
         }
 
         //查询责任人
@@ -525,7 +524,8 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                                "             WHERE yh.ID = (SELECT k.YH_ID FROM KH_SITE k LEFT JOIN KH_TASK kh ON kh.SITE_ID = k.ID" +
                                "             WHERE kh.ID = ?"+strings.size()+")";
                        //获取任务详情  OPERATE_NAME   三种情况
-                       String khsql1 = "SELECT DISTINCT PROCESS_NAME as OPERATE_NAME,TASK_ID,(SELECT min(CREATE_TIME) FROM PICTURE_KH " +
+                       //  人员信息上传情况
+                      /* String khsql1 = "SELECT DISTINCT PROCESS_NAME as OPERATE_NAME,TASK_ID,(SELECT min(CREATE_TIME) FROM PICTURE_KH " +
                                "    WHERE TASK_ID = ?"+strings.size()+" AND FILE_TYPE = 1 and PROCESS_ID = 1) AS START_TIME,1 AS PROID" +
                                "    FROM PICTURE_KH WHERE TASK_ID = ?"+strings.size()+" AND FILE_TYPE = 1 and PROCESS_ID = 1";
 
@@ -535,8 +535,8 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                        String khsql3 = "SELECT DISTINCT PROCESS_NAME as OPERATE_NAME,TASK_ID,(SELECT min(CREATE_TIME) FROM PICTURE_KH " +
                                "    WHERE TASK_ID = ?"+strings.size()+" AND FILE_TYPE = 1 and PROCESS_ID = 3) AS START_TIME,3 AS PROID" +
                                "    FROM PICTURE_KH WHERE TASK_ID = ?"+strings.size()+" AND FILE_TYPE = 1 and PROCESS_ID = 3";
-
-                       List<Map<String, Object>> m1 = this.execSql(khsql1, strings);
+*/
+                     /*  List<Map<String, Object>> m1 = this.execSql(khsql1, strings);
                        if(null != m1 && m1.size()>0){
                            maps2.add(m1.get(0));
                        }
@@ -547,7 +547,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                        List<Map<String, Object>> m3 = this.execSql(khsql3, strings);
                        if(null != m3 && m3.size()>0){
                            maps2.add(m3.get(0));
-                       }
+                       }*/
 
                        maps = this.execSql(sql, strings.toArray());
                        maps3 = this.execSql(sql3, strings.toArray());
@@ -588,8 +588,8 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
 
 
     @Transactional
-    public void checkOff(Long questionTaskId) {
-        repository.xsTaskUpdate(questionTaskId);
+    public void checkOff(String id) {
+        repository.xsTaskUpdate(id);
     }
 
 

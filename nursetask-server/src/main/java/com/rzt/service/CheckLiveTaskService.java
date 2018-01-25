@@ -185,7 +185,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
     @Transactional
     public void paifaKhCheckTask(CheckLiveTask task , String username) throws Exception {
 
-        task.setId();
+        task.setId(null);
         task.setCreateTime(new Date());
         task.setStatus(0);//任务派发状态  0未接单 1进行中 2已完成 3超期
         task.setCheckType(0); //0 看护  1巡视
