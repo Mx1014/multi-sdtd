@@ -37,9 +37,9 @@ public class CMLINETOWERController extends
 
 	@ApiOperation(value = "杆塔坐标维护接口",notes = "获取杆塔坐标，分页查询")
 	@GetMapping("getLineTowerPosition")
-	public WebApiResponse getLineTowerPosition(@RequestParam(value = "page",defaultValue = "0") Integer page, @RequestParam(value = "size",defaultValue = "15") Integer size, String tdOrg, String kv, String lineId) {
+	public WebApiResponse getLineTowerPosition(@RequestParam(value = "page",defaultValue = "0") Integer page, @RequestParam(value = "size",defaultValue = "15") Integer size, String tdOrg, String kv, String lineId,String currentUserId) {
 		Pageable pageable = new PageRequest(page, size);
-		return service.getLineTowerPosition(pageable, tdOrg, kv, lineId);
+		return service.getLineTowerPosition(pageable, tdOrg, kv, lineId,currentUserId);
 	}
 
 	@ApiOperation(value = "公共接口--下拉框线路杆塔",notes = "根据lineId获取杆塔信息")
