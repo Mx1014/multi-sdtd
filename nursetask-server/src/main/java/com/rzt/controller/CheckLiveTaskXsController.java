@@ -91,6 +91,17 @@ public class CheckLiveTaskXsController extends CurdController<CheckLiveTaskXs, C
 		}
 	}
 
+	@ApiOperation(value = "修改已派发巡视任务稽查人",notes = "修改已派发巡视任务稽查人")
+	@GetMapping("/updateKhCheckUser")
+	public WebApiResponse updateXsCheckUser(String id,String userId,String userName){
+		try{
+			this.service.updateXsCheckUser(Long.valueOf(id),userId,userName);
+			return WebApiResponse.success("数据更新成功");
+		}catch (Exception e){
+			return WebApiResponse.erro("数据更新失败"+e.getMessage());
+		}
+	}
+
 /*	@ApiOperation(value = "巡视稽查任务已派发巡视稽查任务详情",notes = "巡视稽查任务已派发看护任务详情")
 	@GetMapping("/listXsCheckTaskDetail")
 	public WebApiResponse listXsCheckTaskDetail(String id){

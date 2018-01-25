@@ -98,6 +98,26 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 			return WebApiResponse.erro("数据获取失败"+e.getMessage());
 		}
 	}
+	@ApiOperation(value = "看护稽查任务已派发看护任务详情的照片",notes = "看护稽查任务已派发看护任务详情的照片")
+	@GetMapping("/listKhCheckTaskDetailPicture")
+	public WebApiResponse listKhCheckTaskDetailPicture(String id,String detailId){
+		try{
+			List<Map<String, Object>> list = this.service.listKhCheckTaskDetailPicture(id,detailId);
+			return WebApiResponse.success(list);
+		}catch (Exception e){
+			return WebApiResponse.erro("数据获取失败"+e.getMessage());
+		}
+	}
+	@ApiOperation(value = "修改已派发看护任务稽查人",notes = "修改已派发看护任务稽查人")
+	@GetMapping("/updateKhCheckUser")
+	public WebApiResponse updateKhCheckUser(String id,String userId,String userName){
+		try{
+			this.service.updateKhCheckUser(Long.valueOf(id),userId,userName);
+			return WebApiResponse.success("数据更新成功");
+		}catch (Exception e){
+			return WebApiResponse.erro("数据更新失败"+e.getMessage());
+		}
+	}
 
 	/**
 	 * app任务列表
@@ -133,7 +153,7 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 		}
 	}
 
-	@ApiOperation(value = "物品提示",notes = "物品提示")
+	@ApiOperation(value = "app物品提示",notes = "物品提示")
 	@GetMapping("/updateGoodsInfo")
 	public WebApiResponse updateGoodsInfo(Long id,String taskType,String wpts){
 		try{
@@ -145,7 +165,7 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 		}
 	}
 
-	@ApiOperation(value = "根据id获取稽查母任务",notes = "根据id获取稽查母任务")
+	@ApiOperation(value = "app根据id获取稽查母任务",notes = "根据id获取稽查母任务")
 	@GetMapping("/getById")
 	public WebApiResponse getById(Long id,String taskType){
 		try{
@@ -157,7 +177,7 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 		}
 	}
 
-	@ApiOperation(value = "稽查子任务列表",notes = "稽查子任务列表")
+	@ApiOperation(value = "app稽查子任务列表",notes = "稽查子任务列表")
 	@GetMapping("/checkChildrenList")
 	public WebApiResponse checkChildrenList(@RequestParam(value = "page",defaultValue = "0") Integer page,
 											@RequestParam(value = "size",defaultValue = "15") Integer size,String id,String taskId,String taskType){
@@ -171,7 +191,7 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 		}
 	}
 
-	@ApiOperation(value = "稽查子任务详情",notes = "稽查子任务详情")
+	@ApiOperation(value = "app稽查子任务详情",notes = "稽查子任务详情")
 	@GetMapping("/checkChildrenDetail")
 	public WebApiResponse checkChildrenDetail(String id,String taskType){
 		try{
@@ -184,7 +204,7 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 
 	}
 
-	@ApiOperation(value = "稽查完成按钮",notes = "稽查完成按钮")
+	@ApiOperation(value = "app稽查完成按钮",notes = "稽查完成按钮")
 	@GetMapping("/taskComplete")
 	public WebApiResponse taskComplete(String id,String taskType){
 		try{
@@ -196,7 +216,7 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 		}
 	}
 
-	@ApiOperation(value = "获取隐患的电子围栏信息",notes = "获取隐患的电子围栏信息")
+	@ApiOperation(value = "app获取隐患的电子围栏信息",notes = "获取隐患的电子围栏信息")
 	@GetMapping("/getKhRange")
 	public WebApiResponse getKhRange(String yhId){
 		try{
@@ -207,7 +227,8 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 			return WebApiResponse.erro("稽查任务更新失败");
 		}
 	}
-	@ApiOperation(value = "已稽查任务详情",notes = "已稽查任务详情")
+	//这个还没有用
+	@ApiOperation(value = "app已稽查任务详情",notes = "已稽查任务详情")
 	@GetMapping("/checkDetailDone")
 	public WebApiResponse checkDetailDone(String id,String taskId,String taskType){
 		try{

@@ -115,7 +115,7 @@ public class PictureService extends CurdService<CheckResult, CheckResultReposito
                  }
                  //当任务还没开启时的人员照片
                  //人员信息图片展示
-           /*      String sql1 = "SELECT p.ID,FILE_PATH,p.CREATE_TIME,p.PROCESS_NAME as OPERATE_NAME" +
+                /*String sql1 = "SELECT p.ID,FILE_PATH,p.CREATE_TIME,p.PROCESS_NAME as OPERATE_NAME" +
                          "   FROM xs_zc_task k LEFT JOIN XS_ZC_TASK_EXEC x ON k.ID = x.XS_ZC_TASK_ID" +
                          "    LEFT JOIN XS_ZC_TASK_EXEC_DETAIL l ON x.ID = l.XS_ZC_TASK_EXEC_ID RIGHT JOIN PICTURE_TOUR p ON l.ID = p.PROCESS_ID" +
                          "   WHERE p.TASK_ID = "+taskId+" AND FILE_TYPE = 1 AND p.PROCESS_ID =1";
@@ -128,8 +128,8 @@ public class PictureService extends CurdService<CheckResult, CheckResultReposito
                  String sql3 = "SELECT p.ID,FILE_PATH,p.CREATE_TIME,p.PROCESS_NAME as OPERATE_NAME" +
                          "   FROM xs_zc_task k LEFT JOIN XS_ZC_TASK_EXEC x ON k.ID = x.XS_ZC_TASK_ID" +
                          "    LEFT JOIN XS_ZC_TASK_EXEC_DETAIL l ON x.ID = l.XS_ZC_TASK_EXEC_ID RIGHT JOIN PICTURE_TOUR p ON l.ID = p.PROCESS_ID" +
-                         "   WHERE p.TASK_ID = "+taskId+" AND FILE_TYPE = 1 AND p.PROCESS_ID =3";
-                 List<Map<String, Object>> mapsa = this.execSql(sql1 ,null);
+                         "   WHERE p.TASK_ID = "+taskId+" AND FILE_TYPE = 1 AND p.PROCESS_ID =3";*/
+              /*   List<Map<String, Object>> mapsa = this.execSql(sql1 ,null);
                  List<Map<String, Object>> mapsb = this.execSql(sql2 ,null);
                  List<Map<String, Object>> mapsc = this.execSql(sql3 ,null);
                  group.add(mapsa);
@@ -354,14 +354,14 @@ public class PictureService extends CurdService<CheckResult, CheckResultReposito
         if(null == taskType || "".equals(taskType)){
             return WebApiResponse.erro("参数错误");
         }
-        if(null == dtId || "".equals(dtId)){
-            return WebApiResponse.erro("参数错误");
-        }
-
         list.add(id);
         try {
             //巡视
             if("1".equals(taskType)){
+                //巡视流程id
+                if(null == dtId || "".equals(dtId)){
+                    return WebApiResponse.erro("参数错误");
+                }
                  sql  = " SELECT * FROM PICTURE_TOUR p WHERE p.FILE_TYPE = 1 AND p.PROCESS_ID =  "+dtId;
                 List<Map<String, Object>> maps1 = this.execSql(sql, null);
                 return WebApiResponse.success(maps1);
