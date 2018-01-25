@@ -180,9 +180,9 @@ public class RztSysUserController extends
      */
     @GetMapping("findAllUser")
     @ApiOperation(value = "人员分页查询", notes = "人员分页查询")
-    public WebApiResponse findAllUser(String userId, int page, int size, String id, String realname, String companyid, String worktype) {
+    public WebApiResponse findAllUser(String currentUserId, int page, int size, String id, String realname, String companyid, String worktype) {
         try {
-            return WebApiResponse.success(this.service.findUserList(userId, page, size, id, realname, companyid, worktype));
+            return WebApiResponse.success(this.service.findUserList(currentUserId, page, size, id, realname, companyid, worktype));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("数据错误");
@@ -196,8 +196,8 @@ public class RztSysUserController extends
      */
     @GetMapping("userQuertDeptZero")
     @ApiOperation(value = "人员分页查询下拉框", notes = "人员分页查询下拉框")
-    public WebApiResponse userQuertDeptZero(String userId) {
-        return this.service.userQuertDeptZero(userId);
+    public WebApiResponse userQuertDeptZero(String currentUserId) {
+        return this.service.userQuertDeptZero(currentUserId);
     }
 
     /**
@@ -207,8 +207,8 @@ public class RztSysUserController extends
      */
     @GetMapping("companyPage")
     @ApiOperation(value = "下拉框外协单位", notes = "下拉框外协单位")
-    public WebApiResponse companyPage(String userId) {
-        return this.service.companyPage(userId);
+    public WebApiResponse companyPage(String currentUserId) {
+        return this.service.companyPage(currentUserId);
     }
 
     @GetMapping("findUserById/{id}")
