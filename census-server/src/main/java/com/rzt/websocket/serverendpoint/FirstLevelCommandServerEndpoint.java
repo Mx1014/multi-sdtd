@@ -9,11 +9,10 @@ import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-@ServerEndpoint("/serverendpoint/AlarmSituation/{currentUserId}")
+@ServerEndpoint("/serverendpoint/AlarmSituation/{currentUserId}/{mapType}/{type}")
 public class FirstLevelCommandServerEndpoint {
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
@@ -28,12 +27,14 @@ public class FirstLevelCommandServerEndpoint {
      * @param session
      */
     @OnOpen
-    public void openSession(@PathParam("currentUserId") String currentUserId, Session session) {
+    public void openSession(@PathParam("currentUserId") String currentUserId, @PathParam("mapType") String mapType, @PathParam("type") String type, Session session) {
         JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", currentUserId).toString());
         HashMap h = new HashMap();
         String sessionId = session.getId();
         h.put("session", session);
         h.put("jsonObject", jsonObject);
+        h.put("mapType", mapType);
+        h.put("type", type);
         livingSessions.put(sessionId, h);
     }
 

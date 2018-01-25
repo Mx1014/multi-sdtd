@@ -99,7 +99,7 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
      */
     public void KHWKH() {
         String sql = " SELECT kh.ID,d.ID AS TDYW_ORG,kh.PLAN_START_TIME,kh.TASK_NAME,kh.USER_ID FROM  KH_TASK kh LEFT JOIN RZTSYSDEPARTMENT  d" +
-                "    ON kh.TDYW_ORG = d.DEPTNAME WHERE trunc(kh.PLAN_START_TIME) = trunc(sysdate) AND (REAL_START_TIME IS NULL OR PLAN_START_TIME<REAL_START_TIME)";
+                "    ON kh.TDYW_ORG = d.DEPTNAME WHERE trunc(kh.PLAN_START_TIME) = trunc(sysdate) AND (kh.REAL_START_TIME IS NULL OR kh.PLAN_START_TIME<kh.REAL_START_TIME)";
         List<Object> list = new ArrayList<>();
         List<Map<String, Object>> maps = execSql(sql);
         for (Map<String, Object> map : maps) {
@@ -133,6 +133,16 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
                     resp.saveCheckEj(SnowflakeIdWorker.getInstance(0,0).nextId(),Long.valueOf(map.get("ID").toString()),2,10,map.get("USER_ID").toString(),map.get("TDYW_ORG").toString(),map.get("TASK_NAME").toString());
                     String key = "ONE+"+map.get("ID").toString()+"+2+10+"+map.get("USER_ID")+"+"+map.get("TDYW_ORG")+"+"+map.get("TASK_NAME");
                     redisService.setex(key);
+                    /*String[] message = new String[7];
+                    message[0] = "ONE";
+                    message[1] = map.get("ID").toString();
+                    message[2] = "2";
+                    message[3] = "10";
+                    message[4] = map.get("USER_ID").toString();
+                    message[5] = map.get("TDYW_ORG").toString();
+                    message[6] = map.get("TASK_NAME").toString();
+
+                    monitorcheckyj.saveCheckYj(message);*/
                 }
             }
     }
