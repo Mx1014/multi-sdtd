@@ -350,7 +350,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
     }
 
     public List<Map<String,Object>> listKhCheckTaskDetail(Long id) {
-        String sql = " select d.CREATE_TIME,d.PLAN_START_TIME,d.PLAN_END_TIME,t.task_name,t.task_type,d.status,u.REALNAME,h.yhms,h.TDYW_ORG,h.TDWX_ORG,h.yhjb,h.yhjb1,h.YHZRDW,h.YHZRDWLXR,h.YHZRDWDH,h.YHFXSJ,h.gkcs," +
+        String sql = " select d.id detail_id,d.CREATE_TIME,d.PLAN_START_TIME,d.PLAN_END_TIME,replace(h.vtype,'kV')||h.line_name||' '||h.section task_name,t.task_type,d.status,u.REALNAME,h.yhms,h.TDYW_ORG,h.TDWX_ORG,h.yhjb,h.yhjb1,h.YHZRDW,h.YHZRDWLXR,h.YHZRDWDH,h.YHFXSJ,h.gkcs," +
                 " h.YHXCYY , h.XLZYCD,h.classname " +
                 " from CHECK_LIVE_TASK_DETAIL d " +
                 " left join CHECK_LIVE_TASK t on t.id=d.task_id " +
@@ -392,5 +392,29 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
             list = execSql(sql);
         }
         return list;
+    }
+
+    public void updateKhCheckUser(Long id, String userId, String userName) {
+        reposiotry.updateKhCheckUser(id,userId,userName);
+    }
+
+    public List<Map<String,Object>> listKhCheckTaskDetailPicture(String id,String detailId) {
+        String sql = "select process_name,CREATE_TIME,FILE_SMALL_PATH,FILE_PATH from PICTURE_JC " +
+                " where task_id=?  order by CREATE_TIME ASC " ;
+        List<Map<String, Object>> listAll = new ArrayList<>();
+        List<Map<String, Object>> list1 = new ArrayList<>();
+        List<Map<String, Object>> list2 = new ArrayList<>();
+
+        if(!StringUtils.isEmpty(id)){
+            String sql1 = sql.replace("?",id);
+            list1 = execSql(sql1);
+        }
+        if(!StringUtils.isEmpty(detailId)){
+            String sql2 = sql.replace("?",detailId);
+            list2 = execSql(sql2);
+        }
+        listAll.addAll(list1);
+        listAll.addAll(list2);
+        return listAll;
     }
 }
