@@ -11,6 +11,7 @@ import com.netflix.ribbon.proxy.annotation.Http;
 import com.rzt.entity.KhCycle;
 import com.rzt.entity.KhSite;
 import com.rzt.entity.XsSbYh;
+import com.rzt.eureka.MonitorService;
 import com.rzt.repository.KhYhHistoryRepository;
 import com.rzt.entity.KhYhHistory;
 import com.rzt.repository.XsSbYhRepository;
@@ -54,6 +55,8 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
     private XsSbYhRepository xsRepository;
     @Autowired
     private KhSiteService siteService;
+    @Autowired
+    private MonitorService monitorService;
 
     public WebApiResponse list() {
         try {
@@ -118,7 +121,11 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 }
             }
             this.xsService.add(yh);
-
+            try {
+                monitorService.start("wtsh", yh.getTbrid(), yh.getId()+"", "1", "", "");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             return WebApiResponse.success("数据保存成功");
         } catch (Exception e) {
             e.printStackTrace();
