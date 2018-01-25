@@ -6,6 +6,8 @@
  */
 package com.rzt.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import com.rzt.entity.CMLINETOWER;
 /**      
@@ -20,4 +22,8 @@ import com.rzt.entity.CMLINETOWER;
  */
  @Repository
 public interface CMLINETOWERRepository extends JpaRepository<CMLINETOWER,String> {
+
+     @Modifying
+     @Query(value = "update cm_tower set lon=?2 , lat = ?3 where id=?1",nativeQuery = true)
+    void updatetowerPosition(Long aLong, String lon, String lat);
 }

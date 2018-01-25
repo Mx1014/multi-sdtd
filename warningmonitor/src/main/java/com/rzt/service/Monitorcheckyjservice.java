@@ -120,11 +120,11 @@ public class Monitorcheckyjservice extends CurdService<Monitorcheckyj, Monitorch
         if("0".equals(deptID)){
 
                 //查询未出理
-                String sql1 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE TASK_TYPE=?1 AND trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =0 GROUP BY DEPTID ";
+                String sql1 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE TASK_TYPE=?1 AND trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =0 AND USER_ID IS NOT NULL GROUP BY DEPTID ";
                 //查询处理中
-                String sql2 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE TASK_TYPE=?1 AND trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =1 GROUP BY DEPTID  ";
+                String sql2 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE TASK_TYPE=?1 AND trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =1 AND USER_ID IS NOT NULL GROUP BY DEPTID  ";
                 //查询已处理
-                String sql3 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE TASK_TYPE=?1 AND trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =2 GROUP BY DEPTID  ";
+                String sql3 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE TASK_TYPE=?1 AND trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =2  AND USER_ID IS NOT NULL  GROUP BY DEPTID  ";
                 List<Map<String, Object>> maps = execSql(sql1,type);
                 List<Map<String, Object>> maps1 = execSql(sql2,type);
                 List<Map<String, Object>> maps2 = execSql(sql3,type);
@@ -134,6 +134,7 @@ public class Monitorcheckyjservice extends CurdService<Monitorcheckyj, Monitorch
                     Map<String,Object> sumMap = new HashMap<String,Object>();
                     String id = (String) map.get("ID");
                     String deptName = (String) map.get("DEPTNAME");
+                    deptName=deptName.substring(0,deptName.length()-2);
                     sumMap.put("ID",id);
                     sumMap.put("DEPTNAME",deptName);
                     sumMap.put("WCL",0);
@@ -163,13 +164,13 @@ public class Monitorcheckyjservice extends CurdService<Monitorcheckyj, Monitorch
 
         }else{
             String sql = "SELECT count(1) AS sum,u.CLASSNAME FROM MONITOR_CHECK_EJ ej LEFT JOIN RZTSYSUSER u ON ej.USER_ID=u.ID  " +
-                    "WHERE ej.TASK_TYPE=?2  AND trunc(ej.CREATE_TIME)=trunc(sysdate) AND ej.STATUS =0 AND ej.DEPTID=?1  " +
+                    "WHERE ej.TASK_TYPE=?2  AND trunc(ej.CREATE_TIME)=trunc(sysdate) AND ej.STATUS =0 AND ej.DEPTID=?1 AND ej.USER_ID IS NOT NULL " +
                     "GROUP BY u.CLASSNAME";
             String sql2 = "SELECT count(1) AS sum,u.CLASSNAME FROM MONITOR_CHECK_EJ ej LEFT JOIN RZTSYSUSER u ON ej.USER_ID=u.ID  " +
-                    "  WHERE ej.TASK_TYPE=?2  AND trunc(ej.CREATE_TIME)=trunc(sysdate) AND ej.STATUS =1 AND ej.DEPTID=?1 " +
+                    "  WHERE ej.TASK_TYPE=?2  AND trunc(ej.CREATE_TIME)=trunc(sysdate) AND ej.STATUS =1 AND ej.DEPTID=?1  AND ej.USER_ID IS NOT NULL " +
                     " GROUP BY u.CLASSNAME";
             String sql3 = "SELECT count(1) AS sum,u.CLASSNAME FROM MONITOR_CHECK_EJ ej LEFT JOIN RZTSYSUSER u ON ej.USER_ID=u.ID  " +
-                    "  WHERE ej.TASK_TYPE=?2  AND trunc(ej.CREATE_TIME)=trunc(sysdate) AND ej.STATUS =2 AND ej.DEPTID=?1 " +
+                    "  WHERE ej.TASK_TYPE=?2  AND trunc(ej.CREATE_TIME)=trunc(sysdate) AND ej.STATUS =2 AND ej.DEPTID=?1  AND ej.USER_ID IS NOT NULL " +
                     " GROUP BY u.CLASSNAME";
 
             List<Map<String, Object>> maps = execSql(sql, deptID, type);
@@ -183,6 +184,9 @@ public class Monitorcheckyjservice extends CurdService<Monitorcheckyj, Monitorch
                 Map<String,Object> sumMap = new HashMap<String,Object>();
                 String id = (String) map.get("ID");
                 String deptName = (String) map.get("DEPTNAME");
+                if(deptName.length()>6){
+                    deptName = deptName.substring(0,6);
+                }
                 sumMap.put("ID",id);
                 sumMap.put("DEPTNAME",deptName);
                 sumMap.put("WCL",0);
@@ -228,11 +232,11 @@ public class Monitorcheckyjservice extends CurdService<Monitorcheckyj, Monitorch
         List<Map<String, Object>> result = new ArrayList<>();
         if("0".equals(deptID)){
             //查询未出理
-            String sql1 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =0 GROUP BY DEPTID ";
+            String sql1 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =0  AND USER_ID IS NOT NULL GROUP BY DEPTID ";
             //查询处理中
-            String sql2 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =1 GROUP BY DEPTID  ";
+            String sql2 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =1  AND USER_ID IS NOT NULL GROUP BY DEPTID  ";
             //查询已处理
-            String sql3 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =2 GROUP BY DEPTID  ";
+            String sql3 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =2  AND USER_ID IS NOT NULL GROUP BY DEPTID  ";
             List<Map<String, Object>> maps = execSql(sql1);
             List<Map<String, Object>> maps1 = execSql(sql2);
             List<Map<String, Object>> maps2 = execSql(sql3);
@@ -243,6 +247,7 @@ public class Monitorcheckyjservice extends CurdService<Monitorcheckyj, Monitorch
                 Map<String,Object> sumMap = new HashMap<String,Object>();
                 String id = (String) map.get("ID");
                 String deptName = (String) map.get("DEPTNAME");
+                deptName=deptName.substring(0,deptName.length()-2);
                 sumMap.put("ID",id);
                 sumMap.put("DEPTNAME",deptName);
                 sumMap.put("WCL",0);
@@ -272,13 +277,13 @@ public class Monitorcheckyjservice extends CurdService<Monitorcheckyj, Monitorch
 
         }else{
             String sql = "SELECT count(1) AS sum,u.CLASSNAME FROM MONITOR_CHECK_EJ ej LEFT JOIN RZTSYSUSER u ON ej.USER_ID=u.ID  " +
-                    "WHERE trunc(ej.CREATE_TIME)=trunc(sysdate) AND ej.STATUS =0 AND ej.DEPTID=?1  " +
+                    "WHERE trunc(ej.CREATE_TIME)=trunc(sysdate) AND ej.STATUS =0 AND ej.DEPTID=?1  AND ej.USER_ID IS NOT NULL " +
                     "GROUP BY u.CLASSNAME";
             String sql2 = "SELECT count(1) AS sum,u.CLASSNAME FROM MONITOR_CHECK_EJ ej LEFT JOIN RZTSYSUSER u ON ej.USER_ID=u.ID  " +
-                    "  WHERE  trunc(ej.CREATE_TIME)=trunc(sysdate) AND ej.STATUS =1 AND ej.DEPTID=?1 " +
+                    "  WHERE  trunc(ej.CREATE_TIME)=trunc(sysdate) AND ej.STATUS =1 AND ej.DEPTID=?1  AND ej.USER_ID IS NOT NULL " +
                     " GROUP BY u.CLASSNAME";
             String sql3 = "SELECT count(1) AS sum,u.CLASSNAME FROM MONITOR_CHECK_EJ ej LEFT JOIN RZTSYSUSER u ON ej.USER_ID=u.ID  " +
-                    "  WHERE trunc(ej.CREATE_TIME)=trunc(sysdate) AND ej.STATUS =2 AND ej.DEPTID=?1 " +
+                    "  WHERE trunc(ej.CREATE_TIME)=trunc(sysdate) AND ej.STATUS =2 AND ej.DEPTID=?1  AND ej.USER_ID IS NOT NULL " +
                     " GROUP BY u.CLASSNAME";
 
             List<Map<String, Object>> maps = execSql(sql, deptID);
@@ -292,6 +297,9 @@ public class Monitorcheckyjservice extends CurdService<Monitorcheckyj, Monitorch
                 Map<String,Object> sumMap = new HashMap<String,Object>();
                 String id = (String) map.get("ID");
                 String deptName = (String) map.get("DEPTNAME");
+                if(deptName.length()>6){
+                    deptName = deptName.substring(0,5);
+                }
                 sumMap.put("ID",id);
                 sumMap.put("DEPTNAME",deptName);
                 sumMap.put("WCL",0);
@@ -358,11 +366,13 @@ public class Monitorcheckyjservice extends CurdService<Monitorcheckyj, Monitorch
                 maps.forEach(map ->{
                     Object ycdata = map.get("YCDATA");
                     JSONArray objects = JSONObject.parseArray(ycdata.toString());
-                    Map<String,Object> m = (Map<String, Object>) objects.get(0);
-                    String id = (String) m.get("ID");
-                    String sql1 = "select FILE_PATH,PROCESS_NAME from PICTURE_TOUR where PROCESS_ID =?1";
-                    List<Map<String, Object>> maps1 = execSql(sql1, id);
-                    result.addAll(maps1);
+                    for (int i=0;i<objects.size();i++){
+                        Map<String,Object> m = (Map<String, Object>) objects.get(i);
+                        String id = (String) m.get("ID");
+                        String sql1 = "select FILE_PATH,PROCESS_NAME AS OPERATE_NAME ,CREATE_TIME from PICTURE_TOUR where PROCESS_ID =?1";
+                        List<Map<String, Object>> maps1 = execSql(sql1, id);
+                        result.addAll(maps1);
+                    }
                 });
 
             }
