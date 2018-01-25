@@ -22,8 +22,8 @@ public class HistoryController extends CurdController<RztSysUser, CommonService>
     private RedisTemplate<String, Object> redisTemplate;
 
     @RequestMapping("historyList")
-    public WebApiResponse historyList(String userId, String startTime, String endTime, String deptId) {
-        JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", userId).toString());
+    public WebApiResponse historyList(String currentUserId, String startTime, String endTime, String deptId) {
+        JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", currentUserId).toString());
         int roletype = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
         Object deptid = jsonObject.get("DEPTID");
         List listLike = new ArrayList();

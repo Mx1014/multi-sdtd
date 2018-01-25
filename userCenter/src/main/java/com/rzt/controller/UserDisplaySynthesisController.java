@@ -22,8 +22,8 @@ public class UserDisplaySynthesisController extends CurdController<RztSysUser, C
     private RedisTemplate<String, Object> redisTemplate;
 
     @RequestMapping("userdisplaysynthesisList")
-    public WebApiResponse userdisplaysynthesisList(String userId, String startTime, String endTime, String deptId) {
-        JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", userId).toString());
+    public WebApiResponse userdisplaysynthesisList(String currentUserId, String startTime, String endTime, String deptId) {
+        JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", currentUserId).toString());
         int roletype = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
         Object deptid = jsonObject.get("DEPTID");
         List listLike = new ArrayList();
