@@ -27,6 +27,135 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
         });
     }
 
+    public void adminModule3() {
+        Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
+        sendMsg.forEach((sessionId, session) -> {
+            String sql = " select  " +
+                    "(select count(h.id) from KH_YH_HISTORY h where yhjb1='施工隐患') sg, " +
+                    "(select count(h.id) from KH_YH_HISTORY h where yhjb1='建筑隐患') jz, " +
+                    "(select count(h.id) from KH_YH_HISTORY h where yhjb1='异物隐患') yw, " +
+                    "(select count(h.id) from KH_YH_HISTORY h where yhjb1='树木隐患') sm from dual  ";
+            try {
+                Map<Object, Object> map1 = new HashMap<>();
+                Map<String, Object> map = this.execSqlSingleResult(sql);
+                map1.put("adminModule3", map);
+                firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), map1);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    public void adminModule4() {
+        Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
+        sendMsg.forEach((sessionId, session) -> {
+            String sql = "SELECT " +
+                    "  (SELECT count(h.id) " +
+                    "   FROM KH_YH_HISTORY h " +
+                    "   WHERE trunc(CREATE_TIME) = trunc(sysdate)) xzyh, " +
+                    "  (SELECT count(*) " +
+                    "   FROM KH_YH_HISTORY h " +
+                    "   WHERE (yhjb1 = '施工隐患' OR yhjb1 = '建筑隐患' OR yhjb1 = '异物隐患' OR " +
+                    "         yhjb1 = '树木隐患') AND UPDATE_TIME IS NOT NULL AND   YHXQ_TIME IS NULL AND trunc(UPDATE_TIME) = trunc(sysdate) " +
+                    "  )                                           tzyh, " +
+                    "  (SELECT count(*) " +
+                    "   FROM KH_YH_HISTORY h " +
+                    "   WHERE (yhjb1 = '施工隐患' OR yhjb1 = '建筑隐患' OR yhjb1 = '异物隐患' OR " +
+                    "         yhjb1 = '树木隐患') AND YHXQ_TIME IS NOT NULL AND trunc(YHXQ_TIME) = trunc(sysdate) " +
+                    "  )                                           zlyh " +
+                    "FROM dual";
+
+            try {
+                HashMap<Object, Object> map1 = new HashMap<>();
+                Map<String, Object> map = this.execSqlSingleResult(sql);
+                map1.put("adminModule4", map);
+                firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), map1);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    public void adminModule5() {
+        Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
+        sendMsg.forEach((sessionId, session) -> {
+            String xsZxUser = " SELECT count(1) SM " +
+                    "FROM (SELECT z.CM_USER_ID " +
+                    "      FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID " +
+                    "      WHERE LOGINSTATUS = 1 AND USERDELETE = 1 AND z.PLAN_START_TIME< = sysdate AND z.PLAN_END_TIME >= sysdate " +
+                    "      GROUP BY z.CM_USER_ID) ";
+            /**
+             * 巡视离线人员
+             */
+            String xsLxUser = " SELECT count(1) SM  FROM (SELECT z.CM_USER_ID " +
+                    "  FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID " +
+                    "  WHERE LOGINSTATUS = 0 AND USERDELETE = 1  AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= sysdate " +
+                    "  GROUP BY z.CM_USER_ID) ";
+            /**
+             * 看护在线人员
+             */
+            String khZxUser = " SELECT count(1) SM FROM (SELECT count(u.ID) " +
+                    "FROM RZTSYSUSER u LEFT JOIN KH_TASK k ON u.ID = k.USER_ID " +
+                    "WHERE LOGINSTATUS = 1 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= sysdate " +
+                    "GROUP BY k.USER_ID) ";
+            /**
+             * 看护离线人员
+             */
+            String khLxUser = " SELECT count(1) SM FROM (SELECT count(u.ID) " +
+                    "FROM RZTSYSUSER u LEFT JOIN KH_TASK k ON u.ID = k.USER_ID " +
+                    "WHERE LOGINSTATUS = 0 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= sysdate " +
+                    "GROUP BY k.USER_ID) ";
+
+            /**
+             * 前台稽查在线人员
+             */
+            String qjcZxUser = " SELECT count(1) SM FROM (SELECT " +
+                    "    count(1) " +
+                    "  FROM CHECK_LIVE_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID " +
+                    "  WHERE u.LOGINSTATUS = 1 AND u.USERDELETE = 1 AND sysdate BETWEEN PLAN_START_TIME AND PLAN_END_TIME GROUP BY k.USER_ID) ";
+            /**
+             * 前台稽查离线人员
+             */
+            String qjcLxUser = " SELECT count(1) SM FROM (SELECT " +
+                    "    count(1) " +
+                    "  FROM CHECK_LIVE_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID " +
+                    "  WHERE u.LOGINSTATUS = 0 AND u.USERDELETE = 1 AND sysdate BETWEEN PLAN_START_TIME AND PLAN_END_TIME GROUP BY k.USER_ID) ";
+
+            /**
+             * 后台稽查在线人员
+             */
+            String hjcZxUser = " SELECT count(id) SM FROM RZTSYSUSER WHERE LOGINSTATUS = 1 AND WORKTYPE = 4 AND USERDELETE = 1  AND USERTYPE=0 ";
+            /**
+             * 后台稽查离线人员
+             */
+            String hjcLxUser = " SELECT count(id) SM  FROM RZTSYSUSER WHERE LOGINSTATUS = 0 AND WORKTYPE = 4 AND USERDELETE = 1  AND USERTYPE=0 ";
+            try {
+                Map<Object, Object> returnMap = new HashMap<>();
+                Map<Object, Object> iocMap = new HashMap<>();
+                Map<String, Object> xsZxUserMap = this.execSqlSingleResult(xsZxUser);
+                Map<String, Object> xsLxUserMap = this.execSqlSingleResult(xsLxUser);
+                Map<String, Object> khZxUserMap = this.execSqlSingleResult(khZxUser);
+                Map<String, Object> khLxUserMap = this.execSqlSingleResult(khLxUser);
+                Map<String, Object> qjcZxUserMap = this.execSqlSingleResult(qjcZxUser);
+                Map<String, Object> qjcLxUserMap = this.execSqlSingleResult(qjcLxUser);
+                Map<String, Object> hjcZxUserMap = this.execSqlSingleResult(hjcZxUser);
+                Map<String, Object> hjcLxUserMap = this.execSqlSingleResult(hjcLxUser);
+                iocMap.put("XSZX", xsZxUserMap.get("SM").toString());
+                iocMap.put("XSLX", xsLxUserMap.get("SM").toString());
+                iocMap.put("KHZX", khZxUserMap.get("SM").toString());
+                iocMap.put("KHLX", khLxUserMap.get("SM").toString());
+                iocMap.put("QJCZX", qjcZxUserMap.get("SM").toString());
+                iocMap.put("QJCLX", qjcLxUserMap.get("SM").toString());
+                iocMap.put("HJCZX", hjcZxUserMap.get("SM").toString());
+                iocMap.put("HJCLX", hjcLxUserMap.get("SM").toString());
+                returnMap.put("adminModule5", iocMap);
+                firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), returnMap);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
     @Scheduled(fixedRate = 3000)
     public void adminModule8() {
         Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
