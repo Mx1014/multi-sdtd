@@ -5,11 +5,21 @@ import com.rzt.service.CheckDetailService;
 import com.rzt.service.TimedService;
 import com.rzt.service.XSZCTASKService;
 import com.rzt.util.WebApiResponse;
+import io.swagger.annotations.ApiOperation;
+import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.OutputStream;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 
 @RestController
@@ -68,7 +78,7 @@ public class XsTaskController extends
      * @return
      */
     @GetMapping("checkOff")
-    public WebApiResponse checkOff(CheckDetail checkDetail){
+    public WebApiResponse checkOff(CheckDetail checkDetail,String timedTaskId){
         try {
             //根据审核人id和问题任务id查询该条审核记录是否存在
             Long detailID = detailService.findByCheckUserAndQuestionTaskId(checkDetail.getCheckUser(),checkDetail.getQuestionTaskId());
@@ -76,12 +86,15 @@ public class XsTaskController extends
                  detailService.addCheckDetail(checkDetail);
             }
 
-            service.checkOff(checkDetail.getQuestionTaskId());
+            service.checkOff(timedTaskId);
             return WebApiResponse.success("success");
         }catch (Exception e){
             return WebApiResponse.erro("更改状态失败："+e.getMessage());
         }
     }
+
+
+
 
 
 }

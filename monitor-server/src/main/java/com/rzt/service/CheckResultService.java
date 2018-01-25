@@ -102,7 +102,7 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
                 "    LEFT JOIN CM_LINE cm ON tcr.LINE_ID = cm.ID) tas" +
                 "  LEFT JOIN XS_ZC_TASK xs ON tas.TASKID = xs.ID" +
                 "    LEFT JOIN ( SELECT kh.ID,si.TDYW_ORGID FROM KH_TASK kh JOIN KH_SITE si ON kh.SITE_ID = si.ID ) khh" +
-                "      ON khh.ID = tas.TASKID ) ";
+                "      ON khh.ID = tas.TASKID )  ";
 
         List<Object> list = new ArrayList<>();
         String s = "";
@@ -137,6 +137,7 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
             } else {
                 sqll = " select * from ( " + sql + " ) where   TD_ORG='" + deptID + "' OR TDYW_ORGID='" + deptID + "'" + s;
             }
+            sqll +="   ORDER BY  CREATE_TIME DESC";
             pageResult = this.execSqlPage(pageable, sqll, list.toArray());
             Iterator<Map<String, Object>> iterator = pageResult.iterator();
             HashOperations hashOperations = redisTemplate.opsForHash();
