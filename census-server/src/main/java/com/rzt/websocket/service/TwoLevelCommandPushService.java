@@ -3,7 +3,7 @@ package com.rzt.websocket.service;
 import com.rzt.entity.websocket;
 import com.rzt.repository.websocketRepository;
 import com.rzt.service.CurdService;
-import com.rzt.websocket.serverendpoint.FirstLevelCommandServerEndpoint;
+import com.rzt.websocket.serverendpoint.TwoLevelCommandServerEndpoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -15,31 +15,31 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class FirstLevelCommandPushService extends CurdService<websocket, websocketRepository> {
+public class TwoLevelCommandPushService extends CurdService<websocket, websocketRepository> {
     @Autowired
-    FirstLevelCommandServerEndpoint firstLevelCommandServerEndpoint;
+    TwoLevelCommandServerEndpoint twoLevelCommandServerEndpoint;
 
     @Scheduled(fixedRate = 3000)
     public void adminModule1() {
-        Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
+        Map<String, HashMap> sendMsg = twoLevelCommandServerEndpoint.sendMsg();
         sendMsg.forEach((sessionId, session) -> {
             List list = new ArrayList();
-            firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), list);
+            twoLevelCommandServerEndpoint.sendText((Session) session.get("session"), list);
         });
     }
 
     @Scheduled(fixedRate = 3000)
     public void adminModule2() {
-        Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
+        Map<String, HashMap> sendMsg = twoLevelCommandServerEndpoint.sendMsg();
         sendMsg.forEach((sessionId, session) -> {
             List list = new ArrayList();
-            firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), list);
+            twoLevelCommandServerEndpoint.sendText((Session) session.get("session"), list);
         });
     }
 
     @Scheduled(fixedRate = 3000)
     public void adminModule4() {
-        Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
+        Map<String, HashMap> sendMsg = twoLevelCommandServerEndpoint.sendMsg();
         sendMsg.forEach((sessionId, session) -> {
             String sql = " select  " +
                     "(select count(h.id) from KH_YH_HISTORY h where yhjb1='施工隐患') sg, " +
@@ -51,7 +51,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
                 Map<String, Object> map = this.execSqlSingleResult(sql);
                 map1.put("data", map);
                 map1.put("adminModule", 4);
-                firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), map1);
+                twoLevelCommandServerEndpoint.sendText((Session) session.get("session"), map1);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -60,7 +60,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
 
     @Scheduled(fixedRate = 3000)
     public void adminModule3() {
-        Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
+        Map<String, HashMap> sendMsg = twoLevelCommandServerEndpoint.sendMsg();
         sendMsg.forEach((sessionId, session) -> {
             String sql = "SELECT " +
                     "  (SELECT count(h.id) " +
@@ -83,7 +83,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
                 Map<String, Object> map = this.execSqlSingleResult(sql);
                 map1.put("data", map);
                 map1.put("adminModule", 3);
-                firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), map1);
+                twoLevelCommandServerEndpoint.sendText((Session) session.get("session"), map1);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -92,7 +92,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
 
     @Scheduled(fixedRate = 3000)
     public void adminModule5() {
-        Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
+        Map<String, HashMap> sendMsg = twoLevelCommandServerEndpoint.sendMsg();
         sendMsg.forEach((sessionId, session) -> {
             String xsZxUser = " SELECT count(1) SM " +
                     "FROM (SELECT z.CM_USER_ID " +
@@ -165,7 +165,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
                 iocMap.put("HJCLX", hjcLxUserMap.get("SM").toString());
                 returnMap.put("data", iocMap);
                 returnMap.put("adminModule", 5);
-                firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), returnMap);
+                twoLevelCommandServerEndpoint.sendText((Session) session.get("session"), returnMap);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -174,7 +174,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
 
     @Scheduled(fixedRate = 3000)
     public void adminModule8() {
-        Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
+        Map<String, HashMap> sendMsg = twoLevelCommandServerEndpoint.sendMsg();
         sendMsg.forEach((sessionId, session) -> {
             /**
              * 离线
@@ -211,7 +211,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
                 map.put("UNQUALIFIEDPATROLMAP", unqualifiedpatrolMap.get("UNQUALIFIEDPATROL"));
                 map1.put("data", map);
                 map1.put("adminModule", 8);
-                firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), map1);
+                twoLevelCommandServerEndpoint.sendText((Session) session.get("session"), map1);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -220,7 +220,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
 
     @Scheduled(fixedRate = 3000)
     public void adminModule6() {
-        Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
+        Map<String, HashMap> sendMsg = twoLevelCommandServerEndpoint.sendMsg();
         sendMsg.forEach((sessionId, session) -> {
             /**
              * 正常巡视未开始
@@ -309,13 +309,13 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
             Map map = new HashMap();
             map.put("data", list);
             map.put("adminModule", 6);
-            firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), map);
+            twoLevelCommandServerEndpoint.sendText((Session) session.get("session"), map);
         });
     }
 
     @Scheduled(fixedRate = 3000)
     public void adminModule7() {
-        Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
+        Map<String, HashMap> sendMsg = twoLevelCommandServerEndpoint.sendMsg();
         sendMsg.forEach((sessionId, session) -> {
             if (Integer.valueOf(session.get("mapType").toString()) == 2) {
                 String wks = " SELECT nvl(xswks,0) + nvl(khwks,0) AS wks, a.TD_ORG FROM (SELECT rr.ID AS TD_ORG, xswks FROM (SELECT count(1) AS xswks, TD_ORG FROM XS_ZC_TASK k WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STAUTS = 0 GROUP BY TD_ORG) cae RIGHT JOIN RZTSYSDEPARTMENT rr ON cae.TD_ORG = rr.ID WHERE rr.DEPTSORT IS NOT NULL ORDER BY rr.DEPTSORT) a LEFT JOIN (SELECT khwks,  ppp.ID as TD_ORG FROM (SELECT count(1)   AS khwks, k.TDYW_ORG AS TD_ORG FROM KH_TASK k WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STATUS = 0 GROUP BY TDYW_ORG) bb RIGHT JOIN RZTSYSDEPARTMENT ppp ON bb.TD_ORG = ppp.DEPTNAME WHERE ppp.DEPTSORT IS NOT NULL) b ON a.TD_ORG = b.TD_ORG";
@@ -376,7 +376,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
                 Map map = new HashMap();
                 map.put("data", deptname);
                 map.put("adminModule", 7);
-                firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), map);
+                twoLevelCommandServerEndpoint.sendText((Session) session.get("session"), map);
             } else if (Integer.valueOf(session.get("mapType").toString()) == 0) {
                 String sql = "  ";
                 if (Integer.valueOf(session.get("type").toString()) == 0) {
@@ -414,7 +414,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
                 Map map = new HashMap();
                 map.put("data", list);
                 map.put("adminModule", 7);
-                firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), map);
+                twoLevelCommandServerEndpoint.sendText((Session) session.get("session"), map);
             } else if (Integer.valueOf(session.get("mapType").toString()) == 1) {
                 String khzx = " SELECT rr.ID,count(a.ID) as khzx FROM (SELECT u.ID,u.DEPTID FROM RZTSYSUSER u LEFT JOIN KH_TASK k ON u.ID = k.USER_ID WHERE LOGINSTATUS = 1 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= sysdate GROUP BY u.ID,u.DEPTID) a RIGHT JOIN RZTSYSDEPARTMENT rr ON a.DEPTID = rr.ID WHERE rr.DEPTSORT IS NOT NULL GROUP BY rr.ID ";
                 String khlx = " SELECT rr.ID,count(a.ID) as khlx FROM (SELECT u.ID,u.DEPTID FROM RZTSYSUSER u LEFT JOIN KH_TASK k ON u.ID = k.USER_ID WHERE LOGINSTATUS = 0 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= sysdate GROUP BY u.ID,u.DEPTID) a RIGHT JOIN RZTSYSDEPARTMENT rr ON a.DEPTID = rr.ID WHERE rr.DEPTSORT IS NOT NULL GROUP BY rr.ID ";
@@ -474,7 +474,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
                 Map map = new HashMap();
                 map.put("data", deptname);
                 map.put("adminModule", 7);
-                firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), map);
+                twoLevelCommandServerEndpoint.sendText((Session) session.get("session"), map);
             }
         });
     }
