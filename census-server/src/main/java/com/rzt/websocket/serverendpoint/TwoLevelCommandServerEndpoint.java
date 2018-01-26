@@ -12,13 +12,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-@ServerEndpoint("/serverendpoint/firstlevelcommand/{currentUserId}/{mapType}/{type}")
-public class FirstLevelCommandServerEndpoint {
+@ServerEndpoint("/serverendpoint/twolevelcommand/{currentUserId}/{mapType}/{type}")
+public class TwoLevelCommandServerEndpoint {
     static RedisTemplate<String, Object> redisTemplate;
 
     @Autowired
     public void setRedisTemplate(RedisTemplate<String, Object> redisTemplate) {
-        FirstLevelCommandServerEndpoint.redisTemplate = redisTemplate;
+        TwoLevelCommandServerEndpoint.redisTemplate = redisTemplate;
     }
 
     /**
