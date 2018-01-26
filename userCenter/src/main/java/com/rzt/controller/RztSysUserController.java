@@ -113,10 +113,6 @@ public class RztSysUserController extends
             return WebApiResponse.erro(flag);
         }
         this.service.updateUser(id, user);
-        /**
-         * 人员缓存Redis
-         */
-        userRedis(user);
         return WebApiResponse.success("修改成功");
     }
 

@@ -50,7 +50,7 @@ eureka:
     prefer-ip-address: true
   client:
         service-url:
-          defaultZone: http://168.130.1.31:31814/eureka/
+          defaultZone: http://localhost:31814/eureka/
           #防止心跳启动报错
         register-with-eureka: false
         fetch-registry: false

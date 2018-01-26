@@ -38,7 +38,7 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
     public void addResult(CheckResult checkResult) {
 
         //为checkResult设置id
-        checkResult.setId(Long.valueOf(new SnowflakeIdWorker(0, 0).nextId()));
+        checkResult.setId(Long.valueOf(SnowflakeIdWorker.getInstance(0, 0).nextId()));
         //添加创建时间
 
         checkResult.setCreateTime(new Date());
@@ -102,7 +102,7 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
                 "    LEFT JOIN CM_LINE cm ON tcr.LINE_ID = cm.ID) tas" +
                 "  LEFT JOIN XS_ZC_TASK xs ON tas.TASKID = xs.ID" +
                 "    LEFT JOIN ( SELECT kh.ID,si.TDYW_ORGID FROM KH_TASK kh JOIN KH_SITE si ON kh.SITE_ID = si.ID ) khh" +
-                "      ON khh.ID = tas.TASKID )  ";
+                "      ON khh.ID = tas.TASKID )  ORDER BY CREATE_TIME DESC  ";
 
         List<Object> list = new ArrayList<>();
         String s = "";
@@ -116,9 +116,7 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
             s += "  AND CREATE_TIME BETWEEN to_date( ?" + list.size() + ",'yyyy-MM-dd hh24:mi:ss') ";
             list.add(endDate);
             s += "  AND to_date( ?" + list.size() + ",'yyyy-MM-dd hh24:mi:ss')  ";
-        }/*else{
-            s+="  AND  trunc(sysdate)=trunc(CREATE_TIME) ";
-        }*/
+        }
         if (vLevel != null && !"".equals(vLevel)) {
             list.add(vLevel);
             s += " AND V_LEVEL = ?" + list.size();
@@ -137,7 +135,6 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
             } else {
                 sqll = " select * from ( " + sql + " ) where   TD_ORG='" + deptID + "' OR TDYW_ORGID='" + deptID + "'" + s;
             }
-            sqll +="   ORDER BY  CREATE_TIME DESC";
             pageResult = this.execSqlPage(pageable, sqll, list.toArray());
             Iterator<Map<String, Object>> iterator = pageResult.iterator();
             HashOperations hashOperations = redisTemplate.opsForHash();

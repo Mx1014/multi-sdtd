@@ -394,6 +394,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
         return list;
     }
 
+    @Transactional
     public void updateKhCheckUser(Long id, String userId, String userName) {
         reposiotry.updateKhCheckUser(id,userId,userName);
     }

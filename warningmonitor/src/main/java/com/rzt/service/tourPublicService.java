@@ -219,4 +219,10 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
     }
 
 
+    public Object khtgang(Long taskId) {
+        String sql="SELECT * FROM WARNING_OFF_POST_USER_TIME WHERE FK_TASK_ID=?1 AND trunc(START_TIME)=trunc(sysdate)";
+        List<Map<String, Object>> maps = execSql(sql, taskId);
+
+        return maps;
+    }
 }

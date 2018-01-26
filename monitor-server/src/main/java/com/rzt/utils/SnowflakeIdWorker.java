@@ -61,7 +61,16 @@ public class SnowflakeIdWorker {
     /** 上次生成ID的时间截 */
     private long lastTimestamp = -1L;
 
-    //==============================Constructors=====================================
+    private static SnowflakeIdWorker instance = null;
+    //静态工厂方法法
+    public static synchronized SnowflakeIdWorker  getInstance(long workerId, long datacenterId) {
+        if (instance == null) {
+            instance = new SnowflakeIdWorker(workerId,datacenterId);
+        }
+        return instance;
+    }
+
+        //==============================Constructors=====================================
     /**
      * 构造函数
      * @param workerId 工作ID (0~31)
@@ -139,13 +148,7 @@ public class SnowflakeIdWorker {
 
 
     public static void main(String[] args) {
-//        lizezhouCeshi();
-        Long aLong = Long.valueOf(new SnowflakeIdWorker(0, 0).nextId());
-        System.out.println(aLong);
-    }
-
-    private static void lizezhouCeshi() {
-        SnowflakeIdWorker idWorker = new SnowflakeIdWorker(0l, 0l);
+        SnowflakeIdWorker idWorker = new SnowflakeIdWorker(31, 31);
         /*for (int i = 0; i < 1000; i++) {
             long id = idWorker.nextId();
             System.out.println(Long.toBinaryString(id));
@@ -191,5 +194,6 @@ public class SnowflakeIdWorker {
         executor.destroy();
         System.out.println("success count: " + count.get());
         System.out.println("fail count: " + failCount.get());
+
     }
 }
