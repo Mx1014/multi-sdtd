@@ -38,6 +38,7 @@ public class TwoLevelCommandServerEndpoint {
         String sessionId = session.getId();
         h.put("session", session);
         h.put("DEPTID", jsonObject.get("DEPTID"));
+        h.put("DEPT", jsonObject.get("DEPT"));
         h.put("mapType", mapType);
         h.put("type", type);
         livingSessions.put(sessionId, h);
