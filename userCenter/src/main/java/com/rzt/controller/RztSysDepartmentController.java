@@ -70,9 +70,9 @@ public class RztSysDepartmentController extends
     //根据父节点的id查询子孙节点
     @RequestMapping(value = "findDeptListByPid", method = RequestMethod.GET)
     @ApiOperation(value = "根据父节点的id查询子孙节点", notes = "根据父节点的id查询子孙节点")
-    public List<Map<String, Object>> findDeptListByPid(@RequestParam(required = false) String id, String userId) {
+    public List<Map<String, Object>> findDeptListByPid(@RequestParam(required = false) String id, String currentUserId) {
         HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
-        JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", userId).toString());
+        JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", currentUserId).toString());
         if (Integer.valueOf(jsonObject.get("ROLETYPE").toString()) == 0) {
             if (StringUtils.isEmpty(id))
                 id = this.service.getRootId();

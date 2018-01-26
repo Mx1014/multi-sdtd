@@ -84,4 +84,10 @@ public class WarningController extends CurdController<OffPostUser,WarningOffPost
 		}
 	}
 
+
+	@GetMapping("aa")
+	public void aa(){
+		System.out.println("成功——————————————");
+	}
+
 }

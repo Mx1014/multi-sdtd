@@ -164,10 +164,10 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
         while (iterator.hasNext()) {
             Map<String, Object> next = iterator.next();
 
-
             //获取到表中每个任务对应的人员的信息
             String userID = (String) next.get("USER_ID");
-            if(userID==null){
+            if("null".equals(userID) || userID==null){
+                iterator.remove();
                 continue;
             }
             HashOperations<String, Object, Object> hash = redisTemplate.opsForHash();
@@ -270,6 +270,7 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
             //获取到表中每个任务对应的人员的信息
             String userID = (String) next.get("USER_ID");
             if(userID==null){
+                iterator.remove();
                 continue;
             }
             HashOperations<String, Object, Object> hash = redisTemplate.opsForHash();
@@ -372,6 +373,7 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
             //获取到表中每个任务对应的人员的信息
             String userID = (String) next.get("USER_ID");
             if(userID==null){
+                iterator.remove();
                 continue;
             }
             String checkUserId = (String) next.get("CHECK_USER_ID");

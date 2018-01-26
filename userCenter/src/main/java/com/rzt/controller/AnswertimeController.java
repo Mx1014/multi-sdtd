@@ -23,12 +23,12 @@ public class AnswertimeController extends CurdController<RztSysUser, CommonServi
     private RedisTemplate<String, Object> redisTemplate;
 
     @RequestMapping("answertimeList")
-    public WebApiResponse answertimeList(Integer page, Integer size, String userId, String startTime, String endTime, String deptId) {
+    public WebApiResponse answertimeList(Integer page, Integer size, String currentUserId, String startTime, String endTime, String deptId) {
         Pageable pageable = new PageRequest(page, size);
         List listLike = new ArrayList();
         String s = "";
         String s1 = "";
-        JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", userId).toString());
+        JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", currentUserId).toString());
         int roletype = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
         Object deptid = jsonObject.get("DEPTID");
         if (!StringUtils.isEmpty(startTime) && !StringUtils.isEmpty(endTime)) {

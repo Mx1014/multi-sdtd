@@ -25,18 +25,17 @@ public class OfflinesController extends CurdController<RztSysUser, CommonService
      *
      * @param page
      * @param size
-     * @param userId
      * @param startTime
      * @param endTime
      * @param deptId
      * @return
      */
     @RequestMapping("OfflinesList")
-    public WebApiResponse OfflinesList(Integer page, Integer size, String userId, String startTime, String endTime, String deptId) {
+    public WebApiResponse OfflinesList(Integer page, Integer size, String currentUserId, String startTime, String endTime, String deptId) {
         org.springframework.data.domain.Pageable pageable = new PageRequest(page, size);
         List listLike = new ArrayList();
         String s = "";
-        JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", userId).toString());
+        JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", currentUserId).toString());
         int roletype = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
         Object deptid = jsonObject.get("DEPTID");
         if (roletype == 1 || roletype == 2) {

@@ -31,22 +31,22 @@ public class ProblemController  extends
      * @param lineName   线路名称
      * @param taskType   作业类型  巡视 看护 稽查
      * @param level      线路电压
-     * @param userId     角色id
+     * @param currentUserId     角色id
      */
     @GetMapping("/findProblemAll")
     public WebApiResponse findProblemAll(Integer page,Integer size,String startTime,String endTime,String proType,
-                                         String tdORG,String lineName,String taskType,String wxORG,String level,String userId){
-        return problemService.findProblemAll(page,size,startTime,endTime,proType,tdORG,lineName,taskType,wxORG,level,userId);
+                                         String tdORG,String lineName,String taskType,String wxORG,String level,String currentUserId){
+        return problemService.findProblemAll(page,size,startTime,endTime,proType,tdORG,lineName,taskType,wxORG,level,currentUserId);
     }
 
     /**
      * 根据用户id查询当前用户的角色类型  前端准备按照权限显示筛选条件
-     * @param userId
+     * @param currentUserId
      * @return
      */
     @GetMapping("/findRoleTypeByUserId")
-    public WebApiResponse findRoleTypeByUserId(String userId){
-        return problemService.findRoleType(userId);
+    public WebApiResponse findRoleTypeByUserId(String currentUserId){
+        return problemService.findRoleType(currentUserId);
     }
 
 
