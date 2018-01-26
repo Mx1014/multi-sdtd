@@ -22,5 +22,8 @@ public interface TimedConfigRepository  extends JpaRepository<TimedConfig, Strin
 
     @Modifying
     @Query(value = " INSERT INTO TIMED_TASK_RECORD VALUES (?1,?2,?3,?4,?5,?6)", nativeQuery = true)
-    int insertTaskRecord(String uuid, Date date, Date parse, String sum, String comSum, String deptId);
+    int insertTaskRecord(String uuid, Date date, String parse, String sum, String comSum, String deptId);
+    @Modifying
+    @Query(value = " UPDATE  WORKING_TIMED SET START_TIME = ?2 , END_TIME = ?3 , DAY_USER = ?4 , NIGHT_USER = ?5 WHERE DEPT_ID = ?1", nativeQuery = true)
+    int updateWorkings(String deptId, String startTime, String endTime, String dayUserId, String nightUserId);
 }

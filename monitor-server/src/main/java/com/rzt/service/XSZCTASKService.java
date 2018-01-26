@@ -231,8 +231,9 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
      */
    @Transactional
     public void xsTaskAddAndFind()  {
-
-        try {
+       //统一时间作为阶段标识
+       Date date1 = new Date();
+       try {
             //抽查之前需要记录上一次抽查任务的审核完成情况
             //查询所有通道单位的sql
             String deptSql = "SELECT d.ID" +
@@ -259,12 +260,11 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                 String sum = map1.get("SUM").toString();
                 String comSum = map2.get("COMSUM").toString();
                 String date =  map3.get("TIME").toString();
-                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
-                Date parse = simpleDateFormat.parse(date);
-                parse.setSeconds(00);
+
                 //插入到记录表中
                 String uuid = UUID.randomUUID().toString();
-                timedConfigRepository.insertTaskRecord(uuid,new Date(),parse,sum,comSum,deptId);
+                timedConfigRepository.insertTaskRecord(uuid,date1,date,sum,comSum,deptId);
+                LOGGER.info(deptId+ "单位本周期查询情况添加");
             }
 
 
@@ -357,6 +357,8 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
 
 
     }
+
+
 
 
 
@@ -652,6 +654,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                sql = "SELECT * FROM WORKING_TIMED " ;
            }
             maps = this.execSql(sql);
+           LOGGER.info("查询倒班信息成功");
        }catch (Exception e){
            LOGGER.error("查询排班情况失败"+e.getMessage());
            return WebApiResponse.erro("查询排班情况失败"+e.getMessage());
@@ -659,5 +662,22 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
 
        return WebApiResponse.success(maps);
 
+    }
+
+    public WebApiResponse updateWorkings(String currentUserId, String deptId, String startTime, String endTime, String dayUserId, String nightUserId) {
+
+        if(null == deptId || "".equals(deptId) ){
+            return WebApiResponse.erro("参数错误 deptId="+deptId);
+        }
+        try {
+            //修改倒班信息
+            timedConfigRepository.updateWorkings(deptId,startTime,endTime,dayUserId,nightUserId);
+            LOGGER.info("修改倒班信息成功");
+        }catch (Exception e){
+            LOGGER.error("修改倒班信息失败"+e.getMessage());
+            return WebApiResponse.erro("修改倒班信息失败"+e.getMessage());
+        }
+
+        return WebApiResponse.success("");
     }
 }
