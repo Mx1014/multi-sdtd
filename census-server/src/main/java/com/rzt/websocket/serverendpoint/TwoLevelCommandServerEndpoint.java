@@ -34,10 +34,10 @@ public class TwoLevelCommandServerEndpoint {
     @OnOpen
     public void openSession(@PathParam("currentUserId") String currentUserId, @PathParam("mapType") String mapType, @PathParam("type") String type, Session session) {
         JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", currentUserId).toString());
-        HashMap h = new HashMap();
+        HashMap<String, Object> h = new HashMap();
         String sessionId = session.getId();
         h.put("session", session);
-        h.put("jsonObject", jsonObject);
+        h.put("DEPTID", jsonObject.get("DEPTID"));
         h.put("mapType", mapType);
         h.put("type", type);
         livingSessions.put(sessionId, h);
