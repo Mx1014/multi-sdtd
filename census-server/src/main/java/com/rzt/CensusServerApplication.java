@@ -89,13 +89,11 @@ public class CensusServerApplication {
     }
 
     /**
-     * 首页admin一级运检部
-     *
+     * 一键告警
      * @return
      */
     @Bean
-    public FirstLevelCommandServerEndpoint firstlevelcommand() {
-        return new FirstLevelCommandServerEndpoint();
+    public warningMonitorServerEndpoint warningMonitor() {
+        return new warningMonitorServerEndpoint();
     }
-
 }

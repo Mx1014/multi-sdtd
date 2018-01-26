@@ -33,7 +33,7 @@ public class QuartzService  {
     // @Scheduled(cron = "*//**//*60 * * * * ?") // 每60秒执行一次
     public void reportCurrentTime() {
         service.createTask();
-    }
+    }//ss
     /*//每天0点执行
     private String cron = "0 0 0 * * ?";
 
