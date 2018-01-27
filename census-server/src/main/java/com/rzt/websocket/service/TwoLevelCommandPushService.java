@@ -3,7 +3,7 @@ package com.rzt.websocket.service;
 import com.rzt.entity.websocket;
 import com.rzt.repository.websocketRepository;
 import com.rzt.service.CurdService;
-import com.rzt.websocket.serverendpoint.FirstLevelCommandServerEndpoint;
+import com.rzt.websocket.serverendpoint.TwoLevelCommandServerEndpoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -15,43 +15,44 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class FirstLevelCommandPushService extends CurdService<websocket, websocketRepository> {
+public class TwoLevelCommandPushService extends CurdService<websocket, websocketRepository> {
     @Autowired
-    FirstLevelCommandServerEndpoint firstLevelCommandServerEndpoint;
+    TwoLevelCommandServerEndpoint twoLevelCommandServerEndpoint;
 
     @Scheduled(fixedRate = 3000)
     public void adminModule1() {
-        Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
+        Map<String, HashMap> sendMsg = twoLevelCommandServerEndpoint.sendMsg();
         sendMsg.forEach((sessionId, session) -> {
             List list = new ArrayList();
-            firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), list);
+            twoLevelCommandServerEndpoint.sendText((Session) session.get("session"), list);
         });
     }
 
     @Scheduled(fixedRate = 3000)
     public void adminModule2() {
-        Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
+        Map<String, HashMap> sendMsg = twoLevelCommandServerEndpoint.sendMsg();
         sendMsg.forEach((sessionId, session) -> {
             List list = new ArrayList();
-            firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), list);
+            twoLevelCommandServerEndpoint.sendText((Session) session.get("session"), list);
         });
     }
 
     @Scheduled(fixedRate = 3000)
     public void adminModule4() {
-        Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
+        Map<String, HashMap> sendMsg = twoLevelCommandServerEndpoint.sendMsg();
         sendMsg.forEach((sessionId, session) -> {
+            Object deptid = session.get("DEPTID");
             String sql = " select  " +
-                    "(select count(h.id) from KH_YH_HISTORY h where yhjb1='施工隐患') sg, " +
-                    "(select count(h.id) from KH_YH_HISTORY h where yhjb1='建筑隐患') jz, " +
-                    "(select count(h.id) from KH_YH_HISTORY h where yhjb1='异物隐患') yw, " +
-                    "(select count(h.id) from KH_YH_HISTORY h where yhjb1='树木隐患') sm from dual  ";
+                    "(select count(h.id) from KH_YH_HISTORY h where yhjb1='施工隐患' AND YWORG_ID='" + deptid + "') sg, " +
+                    "(select count(h.id) from KH_YH_HISTORY h where yhjb1='建筑隐患' AND YWORG_ID='" + deptid + "') jz, " +
+                    "(select count(h.id) from KH_YH_HISTORY h where yhjb1='异物隐患' AND YWORG_ID='" + deptid + "') yw, " +
+                    "(select count(h.id) from KH_YH_HISTORY h where yhjb1='树木隐患' AND YWORG_ID='" + deptid + "') sm from dual  ";
             try {
                 Map<Object, Object> map1 = new HashMap<>();
                 Map<String, Object> map = this.execSqlSingleResult(sql);
                 map1.put("data", map);
                 map1.put("adminModule", 4);
-                firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), map1);
+                twoLevelCommandServerEndpoint.sendText((Session) session.get("session"), map1);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -60,21 +61,22 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
 
     @Scheduled(fixedRate = 3000)
     public void adminModule3() {
-        Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
+        Map<String, HashMap> sendMsg = twoLevelCommandServerEndpoint.sendMsg();
         sendMsg.forEach((sessionId, session) -> {
+            Object deptid = session.get("DEPTID");
             String sql = "SELECT " +
                     "  (SELECT count(h.id) " +
                     "   FROM KH_YH_HISTORY h " +
-                    "   WHERE trunc(CREATE_TIME) = trunc(sysdate)) xzyh, " +
+                    "   WHERE trunc(CREATE_TIME) = trunc(sysdate) AND YWORG_ID='" + deptid + "') xzyh, " +
                     "  (SELECT count(*) " +
                     "   FROM KH_YH_HISTORY h " +
                     "   WHERE (yhjb1 = '施工隐患' OR yhjb1 = '建筑隐患' OR yhjb1 = '异物隐患' OR " +
-                    "         yhjb1 = '树木隐患') AND UPDATE_TIME IS NOT NULL AND   YHXQ_TIME IS NULL AND trunc(UPDATE_TIME) = trunc(sysdate) " +
+                    "         yhjb1 = '树木隐患') AND UPDATE_TIME IS NOT NULL AND   YHXQ_TIME IS NULL AND trunc(UPDATE_TIME) = trunc(sysdate) and YWORG_ID='" + deptid + "' " +
                     "  )                                           tzyh, " +
                     "  (SELECT count(*) " +
                     "   FROM KH_YH_HISTORY h " +
                     "   WHERE (yhjb1 = '施工隐患' OR yhjb1 = '建筑隐患' OR yhjb1 = '异物隐患' OR " +
-                    "         yhjb1 = '树木隐患') AND YHXQ_TIME IS NOT NULL AND trunc(YHXQ_TIME) = trunc(sysdate) " +
+                    "         yhjb1 = '树木隐患') AND YHXQ_TIME IS NOT NULL AND trunc(YHXQ_TIME) = trunc(sysdate) and YWORG_ID='" + deptid + "'" +
                     "  )                                           zlyh " +
                     "FROM dual";
 
@@ -83,7 +85,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
                 Map<String, Object> map = this.execSqlSingleResult(sql);
                 map1.put("data", map);
                 map1.put("adminModule", 3);
-                firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), map1);
+                twoLevelCommandServerEndpoint.sendText((Session) session.get("session"), map1);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -92,33 +94,34 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
 
     @Scheduled(fixedRate = 3000)
     public void adminModule5() {
-        Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
+        Map<String, HashMap> sendMsg = twoLevelCommandServerEndpoint.sendMsg();
         sendMsg.forEach((sessionId, session) -> {
+            Object deptid = session.get("DEPTID");
             String xsZxUser = " SELECT count(1) SM " +
                     "FROM (SELECT z.CM_USER_ID " +
                     "      FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID " +
-                    "      WHERE LOGINSTATUS = 1 AND USERDELETE = 1 AND z.PLAN_START_TIME< = sysdate AND z.PLAN_END_TIME >= sysdate " +
+                    "      WHERE LOGINSTATUS = 1 AND USERDELETE = 1 AND z.PLAN_START_TIME< = sysdate AND z.PLAN_END_TIME >= sysdate and r.deptid='"+deptid+"'" +
                     "      GROUP BY z.CM_USER_ID) ";
             /**
              * 巡视离线人员
              */
             String xsLxUser = " SELECT count(1) SM  FROM (SELECT z.CM_USER_ID " +
                     "  FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID " +
-                    "  WHERE LOGINSTATUS = 0 AND USERDELETE = 1  AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= sysdate " +
+                    "  WHERE LOGINSTATUS = 0 AND USERDELETE = 1  AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= sysdate and r.deptid='"+deptid+"'" +
                     "  GROUP BY z.CM_USER_ID) ";
             /**
              * 看护在线人员
              */
             String khZxUser = " SELECT count(1) SM FROM (SELECT count(u.ID) " +
                     "FROM RZTSYSUSER u LEFT JOIN KH_TASK k ON u.ID = k.USER_ID " +
-                    "WHERE LOGINSTATUS = 1 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= sysdate " +
+                    "WHERE LOGINSTATUS = 1 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= sysdate and u.deptid='"+deptid+"'" +
                     "GROUP BY k.USER_ID) ";
             /**
              * 看护离线人员
              */
             String khLxUser = " SELECT count(1) SM FROM (SELECT count(u.ID) " +
                     "FROM RZTSYSUSER u LEFT JOIN KH_TASK k ON u.ID = k.USER_ID " +
-                    "WHERE LOGINSTATUS = 0 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= sysdate " +
+                    "WHERE LOGINSTATUS = 0 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= sysdate and u.deptid='"+deptid+"'" +
                     "GROUP BY k.USER_ID) ";
 
             /**
@@ -127,23 +130,23 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
             String qjcZxUser = " SELECT count(1) SM FROM (SELECT " +
                     "    count(1) " +
                     "  FROM CHECK_LIVE_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID " +
-                    "  WHERE u.LOGINSTATUS = 1 AND u.USERDELETE = 1 AND sysdate BETWEEN PLAN_START_TIME AND PLAN_END_TIME GROUP BY k.USER_ID) ";
+                    "  WHERE u.LOGINSTATUS = 1 AND u.USERDELETE = 1 AND sysdate BETWEEN PLAN_START_TIME AND PLAN_END_TIME GROUP BY k.USER_ID) and u.deptid='"+deptid+"'";
             /**
              * 前台稽查离线人员
              */
             String qjcLxUser = " SELECT count(1) SM FROM (SELECT " +
                     "    count(1) " +
                     "  FROM CHECK_LIVE_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID " +
-                    "  WHERE u.LOGINSTATUS = 0 AND u.USERDELETE = 1 AND sysdate BETWEEN PLAN_START_TIME AND PLAN_END_TIME GROUP BY k.USER_ID) ";
+                    "  WHERE u.LOGINSTATUS = 0 AND u.USERDELETE = 1 AND sysdate BETWEEN PLAN_START_TIME AND PLAN_END_TIME GROUP BY k.USER_ID) and u.deptid='"+deptid+"'";
 
             /**
              * 后台稽查在线人员
              */
-            String hjcZxUser = " SELECT count(id) SM FROM RZTSYSUSER WHERE LOGINSTATUS = 1 AND WORKTYPE = 4 AND USERDELETE = 1  AND USERTYPE=0 ";
+            String hjcZxUser = " SELECT count(id) SM FROM RZTSYSUSER WHERE LOGINSTATUS = 1 AND WORKTYPE = 4 AND USERDELETE = 1  AND USERTYPE=0 and deptid='"+deptid+"' ";
             /**
              * 后台稽查离线人员
              */
-            String hjcLxUser = " SELECT count(id) SM  FROM RZTSYSUSER WHERE LOGINSTATUS = 0 AND WORKTYPE = 4 AND USERDELETE = 1  AND USERTYPE=0 ";
+            String hjcLxUser = " SELECT count(id) SM  FROM RZTSYSUSER WHERE LOGINSTATUS = 0 AND WORKTYPE = 4 AND USERDELETE = 1  AND USERTYPE=0 and deptid='"+deptid+"'";
             try {
                 Map<Object, Object> returnMap = new HashMap<>();
                 Map<Object, Object> iocMap = new HashMap<>();
@@ -165,7 +168,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
                 iocMap.put("HJCLX", hjcLxUserMap.get("SM").toString());
                 returnMap.put("data", iocMap);
                 returnMap.put("adminModule", 5);
-                firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), returnMap);
+                twoLevelCommandServerEndpoint.sendText((Session) session.get("session"), returnMap);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -174,28 +177,29 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
 
     @Scheduled(fixedRate = 3000)
     public void adminModule8() {
-        Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
+        Map<String, HashMap> sendMsg = twoLevelCommandServerEndpoint.sendMsg();
         sendMsg.forEach((sessionId, session) -> {
+            Object deptid = session.get("DEPTID");
             /**
              * 离线
              */
-            String offline = "SELECT count(1) as OFFLINES FROM MONITOR_CHECK_EJ  WHERE (WARNING_TYPE = 8 OR WARNING_TYPE = 2) AND trunc(CREATE_TIME) = trunc(sysdate)";
+            String offline = "SELECT count(1) as OFFLINES FROM MONITOR_CHECK_EJ  WHERE (WARNING_TYPE = 8 OR WARNING_TYPE = 2) AND trunc(CREATE_TIME) = trunc(sysdate) AND DEPTID= '" + deptid + "'";
             /**
              *未按时开始任务
              */
-            String answertime = "SELECT count(1) as ANSWERTIME  FROM MONITOR_CHECK_EJ WHERE (WARNING_TYPE = 4 OR WARNING_TYPE = 10) AND trunc(CREATE_TIME) = trunc(sysdate)";
+            String answertime = "SELECT count(1) as ANSWERTIME  FROM MONITOR_CHECK_EJ WHERE (WARNING_TYPE = 4 OR WARNING_TYPE = 10) AND trunc(CREATE_TIME) = trunc(sysdate) AND DEPTID= '" + deptid + "'";
             /**
              * 超期任务
              */
-            String overdue = " SELECT count(1) as OVERDUE FROM MONITOR_CHECK_EJ WHERE WARNING_TYPE = 1  AND trunc(CREATE_TIME) = trunc(sysdate) ";
+            String overdue = " SELECT count(1) as OVERDUE FROM MONITOR_CHECK_EJ WHERE WARNING_TYPE = 1  AND trunc(CREATE_TIME) = trunc(sysdate) AND DEPTID= '" + deptid + "'";
             /**
              * 看护人员脱岗
              */
-            String temporarily = " SELECT count(1) AS TEMPORARILY FROM MONITOR_CHECK_EJ WHERE WARNING_TYPE = 7 AND trunc(CREATE_TIME) = trunc(sysdate) ";
+            String temporarily = " SELECT count(1) AS TEMPORARILY FROM MONITOR_CHECK_EJ WHERE WARNING_TYPE = 7 AND trunc(CREATE_TIME) = trunc(sysdate) AND DEPTID= '" + deptid + "'";
             /**
              * 巡视不合格
              */
-            String unqualifiedpatrol = " SELECT count(1) as unqualifiedpatrol FROM MONITOR_CHECK_EJ WHERE WARNING_TYPE = 5 AND trunc(CREATE_TIME) = trunc(sysdate) ";
+            String unqualifiedpatrol = " SELECT count(1) as unqualifiedpatrol FROM MONITOR_CHECK_EJ WHERE WARNING_TYPE = 5 AND trunc(CREATE_TIME) = trunc(sysdate) AND DEPTID= '" + deptid + "'";
             try {
                 Map map1 = new HashMap();
                 Map map = new HashMap();
@@ -211,7 +215,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
                 map.put("UNQUALIFIEDPATROLMAP", unqualifiedpatrolMap.get("UNQUALIFIEDPATROL"));
                 map1.put("data", map);
                 map1.put("adminModule", 8);
-                firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), map1);
+                twoLevelCommandServerEndpoint.sendText((Session) session.get("session"), map1);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -220,80 +224,82 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
 
     @Scheduled(fixedRate = 3000)
     public void adminModule6() {
-        Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
+        Map<String, HashMap> sendMsg = twoLevelCommandServerEndpoint.sendMsg();
         sendMsg.forEach((sessionId, session) -> {
+            Object deptid = session.get("DEPTID");
+            Object dept = session.get("DEPT");
             /**
              * 正常巡视未开始
              */
             String zcXsWks = "SELECT count(1)  " +
                     "FROM XS_ZC_TASK " +
-                    "WHERE STAUTS = 0 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+                    "WHERE STAUTS = 0 AND trunc(PLAN_START_TIME) = trunc(sysdate)  AND TD_ORG='" + deptid + "'";
             /**
              * 保电巡视未开始
              */
             String bdXsWks = "SELECT count(1)  " +
                     "FROM XS_TXBD_TASK " +
-                    "WHERE STAUTS = 0 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+                    "WHERE STAUTS = 0 AND trunc(PLAN_START_TIME) = trunc(sysdate) AND TD_ORG='" + deptid + "'";
             /**
              * 看护未开始
              */
             String khWks = "SELECT count(1)  " +
                     "FROM KH_TASK " +
-                    "WHERE STATUS = 0 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+                    "WHERE STATUS = 0 AND trunc(PLAN_START_TIME) = trunc(sysdate) AND TDYW_ORG = '" + dept + "'";
             /**
              * 现场稽查未开始
              */
             String xcJcWks = "SELECT count(1)  " +
-                    "FROM CHECK_LIVE_TASK " +
-                    "WHERE STATUS = 0 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+                    "FROM CHECK_LIVE_TASK k LEFT JOIN  RZTSYSUSER u ON k.USER_ID = u.ID " +
+                    "WHERE STATUS = 0 AND trunc(PLAN_START_TIME) = trunc(sysdate) AND u.DEPTID='" + deptid + "'";
             /**
              * 正常巡视进行中
              */
             String zcXsJxz = "SELECT count(1)  " +
                     "FROM XS_ZC_TASK " +
-                    "WHERE STAUTS = 1 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+                    "WHERE STAUTS = 1 AND trunc(PLAN_START_TIME) = trunc(sysdate) AND TD_ORG='" + deptid + "'";
             /**
              * 保电巡视进行中
              */
             String bdXsJxz = "SELECT count(1)  " +
                     "FROM XS_TXBD_TASK " +
-                    "WHERE STAUTS = 1 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+                    "WHERE STAUTS = 1 AND trunc(PLAN_START_TIME) = trunc(sysdate) AND TD_ORG='" + deptid + "'";
             /**
              * 看护进行中
              */
             String khJxz = "SELECT count(1)  " +
                     "FROM KH_TASK " +
-                    "WHERE STATUS = 1 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+                    "WHERE STATUS = 1 AND trunc(PLAN_START_TIME) = trunc(sysdate) AND TDYW_ORG = '" + dept + "'";
             /**
              * 现场稽查进行中
              */
             String xcJcJxz = "SELECT count(1)  " +
-                    "FROM CHECK_LIVE_TASK " +
-                    "WHERE STATUS = 1 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+                    "FROM CHECK_LIVE_TASK k LEFT JOIN  RZTSYSUSER u ON k.USER_ID = u.ID " +
+                    "WHERE STATUS = 1 AND trunc(PLAN_START_TIME) = trunc(sysdate) AND u.DEPTID='" + deptid + "'";
             /**
              * 正常巡视已完成
              */
             String zcXsYwc = "SELECT count(1)  " +
                     "FROM XS_ZC_TASK " +
-                    "WHERE STAUTS = 2 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+                    "WHERE STAUTS = 2 AND trunc(PLAN_START_TIME) = trunc(sysdate) AND TD_ORG='" + deptid + "'";
             /**
              * 保电巡视已完成
              */
             String bdXsYwc = "SELECT count(1)  " +
                     "FROM XS_TXBD_TASK " +
-                    "WHERE STAUTS = 2 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+                    "WHERE STAUTS = 2 AND trunc(PLAN_START_TIME) = trunc(sysdate) AND TD_ORG='" + deptid + "'";
             /**
              * 看护已完成
              */
             String khYwc = "SELECT count(1)  " +
                     "FROM KH_TASK " +
-                    "WHERE STATUS = 2 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+                    "WHERE STATUS = 2 AND trunc(PLAN_START_TIME) = trunc(sysdate) AND TDYW_ORG = '" + dept + "'";
             /**
              *现场稽查已完成
              */
             String xcJcYwc = "SELECT count(1)  " +
-                    "FROM CHECK_LIVE_TASK " +
-                    "WHERE STATUS = 2 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+                    "FROM CHECK_LIVE_TASK k LEFT JOIN  RZTSYSUSER u ON k.USER_ID = u.ID " +
+                    "WHERE STATUS = 2 AND trunc(PLAN_START_TIME) = trunc(sysdate) AND u.DEPTID='" + deptid + "'";
             String sql = "SELECT " +
                     "(" + zcXsWks + ")+(" + bdXsWks + ") as XsWks," +
                     "(" + zcXsJxz + ")+(" + bdXsJxz + ") as XsJxz," +
@@ -309,19 +315,20 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
             Map map = new HashMap();
             map.put("data", list);
             map.put("adminModule", 6);
-            firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), map);
+            twoLevelCommandServerEndpoint.sendText((Session) session.get("session"), map);
         });
     }
 
     @Scheduled(fixedRate = 3000)
     public void adminModule7() {
-        Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
+        Map<String, HashMap> sendMsg = twoLevelCommandServerEndpoint.sendMsg();
         sendMsg.forEach((sessionId, session) -> {
+            Object deptid = session.get("DEPTID");
             if (Integer.valueOf(session.get("mapType").toString()) == 2) {
-                String wks = " SELECT nvl(xswks,0) + nvl(khwks,0) AS wks, a.TD_ORG FROM (SELECT rr.ID AS TD_ORG, xswks FROM (SELECT count(1) AS xswks, TD_ORG FROM XS_ZC_TASK k WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STAUTS = 0 GROUP BY TD_ORG) cae RIGHT JOIN RZTSYSDEPARTMENT rr ON cae.TD_ORG = rr.ID WHERE rr.DEPTSORT IS NOT NULL ORDER BY rr.DEPTSORT) a LEFT JOIN (SELECT khwks,  ppp.ID as TD_ORG FROM (SELECT count(1)   AS khwks, k.TDYW_ORG AS TD_ORG FROM KH_TASK k WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STATUS = 0 GROUP BY TDYW_ORG) bb RIGHT JOIN RZTSYSDEPARTMENT ppp ON bb.TD_ORG = ppp.DEPTNAME WHERE ppp.DEPTSORT IS NOT NULL) b ON a.TD_ORG = b.TD_ORG";
-                String jxz = "SELECT nvl(xswks,0) + nvl(khwks,0) AS wks, a.TD_ORG FROM (SELECT rr.ID AS TD_ORG, xswks FROM (SELECT count(1) AS xswks, TD_ORG FROM XS_ZC_TASK k WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STAUTS = 1 GROUP BY TD_ORG) cae RIGHT JOIN RZTSYSDEPARTMENT rr ON cae.TD_ORG = rr.ID WHERE rr.DEPTSORT IS NOT NULL ORDER BY rr.DEPTSORT) a LEFT JOIN (SELECT khwks,  ppp.ID as TD_ORG FROM (SELECT count(1)   AS khwks, k.TDYW_ORG AS TD_ORG FROM KH_TASK k WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STATUS = 1 GROUP BY TDYW_ORG) bb RIGHT JOIN RZTSYSDEPARTMENT ppp ON bb.TD_ORG = ppp.DEPTNAME WHERE ppp.DEPTSORT IS NOT NULL) b ON a.TD_ORG = b.TD_ORG ";
-                String ywc = " SELECT nvl(xswks,0) + nvl(khwks,0) AS wks, a.TD_ORG FROM (SELECT rr.ID AS TD_ORG, xswks FROM (SELECT count(1) AS xswks, TD_ORG FROM XS_ZC_TASK k WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STAUTS = 2 GROUP BY TD_ORG) cae RIGHT JOIN RZTSYSDEPARTMENT rr ON cae.TD_ORG = rr.ID WHERE rr.DEPTSORT IS NOT NULL ORDER BY rr.DEPTSORT) a LEFT JOIN (SELECT khwks,  ppp.ID as TD_ORG FROM (SELECT count(1)   AS khwks, k.TDYW_ORG AS TD_ORG FROM KH_TASK k WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STATUS = 2 GROUP BY TDYW_ORG) bb RIGHT JOIN RZTSYSDEPARTMENT ppp ON bb.TD_ORG = ppp.DEPTNAME WHERE ppp.DEPTSORT IS NOT NULL) b ON a.TD_ORG = b.TD_ORG";
-                String deptnameSql = " SELECT t.ID,t.DEPTNAME FROM RZTSYSDEPARTMENT t WHERE t.DEPTSORT IS NOT NULL ORDER BY t.DEPTSORT ";
+                String wks = " SELECT nvl(xswks,0) + nvl(khwks,0) AS wks, a.TD_ORG FROM (SELECT rr.ID AS TD_ORG, xswks FROM (SELECT count(1) AS xswks, TD_ORG FROM XS_ZC_TASK k WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STAUTS = 0 GROUP BY TD_ORG) cae RIGHT JOIN RZTSYSDEPARTMENT rr ON cae.TD_ORG = rr.ID WHERE rr.DEPTSORT IS NOT NULL ORDER BY rr.DEPTSORT) a LEFT JOIN (SELECT khwks,  ppp.ID as TD_ORG FROM (SELECT count(1)   AS khwks, k.TDYW_ORG AS TD_ORG FROM KH_TASK k WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STATUS = 0 GROUP BY TDYW_ORG) bb RIGHT JOIN RZTSYSDEPARTMENT ppp ON bb.TD_ORG = ppp.DEPTNAME WHERE ppp.DEPTSORT IS NOT NULL) b ON a.TD_ORG = b.TD_ORG WHERE b.TD_ORG = '" + deptid + "'";
+                String jxz = "SELECT nvl(xswks,0) + nvl(khwks,0) AS wks, a.TD_ORG FROM (SELECT rr.ID AS TD_ORG, xswks FROM (SELECT count(1) AS xswks, TD_ORG FROM XS_ZC_TASK k WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STAUTS = 1 GROUP BY TD_ORG) cae RIGHT JOIN RZTSYSDEPARTMENT rr ON cae.TD_ORG = rr.ID WHERE rr.DEPTSORT IS NOT NULL ORDER BY rr.DEPTSORT) a LEFT JOIN (SELECT khwks,  ppp.ID as TD_ORG FROM (SELECT count(1)   AS khwks, k.TDYW_ORG AS TD_ORG FROM KH_TASK k WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STATUS = 1 GROUP BY TDYW_ORG) bb RIGHT JOIN RZTSYSDEPARTMENT ppp ON bb.TD_ORG = ppp.DEPTNAME WHERE ppp.DEPTSORT IS NOT NULL) b ON a.TD_ORG = b.TD_ORG WHERE b.TD_ORG = '" + deptid + "'";
+                String ywc = " SELECT nvl(xswks,0) + nvl(khwks,0) AS wks, a.TD_ORG FROM (SELECT rr.ID AS TD_ORG, xswks FROM (SELECT count(1) AS xswks, TD_ORG FROM XS_ZC_TASK k WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STAUTS = 2 GROUP BY TD_ORG) cae RIGHT JOIN RZTSYSDEPARTMENT rr ON cae.TD_ORG = rr.ID WHERE rr.DEPTSORT IS NOT NULL ORDER BY rr.DEPTSORT) a LEFT JOIN (SELECT khwks,  ppp.ID as TD_ORG FROM (SELECT count(1)   AS khwks, k.TDYW_ORG AS TD_ORG FROM KH_TASK k WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STATUS = 2 GROUP BY TDYW_ORG) bb RIGHT JOIN RZTSYSDEPARTMENT ppp ON bb.TD_ORG = ppp.DEPTNAME WHERE ppp.DEPTSORT IS NOT NULL) b ON a.TD_ORG = b.TD_ORG WHERE b.TD_ORG = '" + deptid + "'";
+                String deptnameSql = " SELECT t.ID,t.DEPTNAME FROM RZTSYSDEPARTMENT t WHERE t.DEPTSORT IS NOT NULL AND ID = '" + deptid + "' ORDER BY t.DEPTSORT ";
                 List<Map<String, Object>> deptname = this.execSql(deptnameSql);
                 List<Map<String, Object>> list = null;
                 List<Map<String, Object>> list1 = null;
@@ -376,7 +383,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
                 Map map = new HashMap();
                 map.put("data", deptname);
                 map.put("adminModule", 7);
-                firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), map);
+                twoLevelCommandServerEndpoint.sendText((Session) session.get("session"), map);
             } else if (Integer.valueOf(session.get("mapType").toString()) == 0) {
                 String sql = "  ";
                 if (Integer.valueOf(session.get("type").toString()) == 0) {
@@ -386,7 +393,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
                             "   FROM KH_YH_HISTORY h\n" +
                             "   WHERE h.TDYW_ORG = d.deptname)                                           all_count\n" +
                             "FROM RZTSYSDEPARTMENT d\n" +
-                            "WHERE d.DEPTPID = '402881e6603a69b801603a6ab1d70000'\n" +
+                            "WHERE d.DEPTPID = '" + deptid + "'\n" +
                             "ORDER BY d.DEPTSORT ";
                 } else if (Integer.valueOf(session.get("type").toString()) == 9) {
                     sql = " SELECT\n" +
@@ -398,7 +405,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
                             "   FROM KH_YH_HISTORY h\n" +
                             "   WHERE h.TDYW_ORG = d.deptname AND trunc(h.CREATE_TIME) = trunc(sysdate)) new_count\n" +
                             "FROM RZTSYSDEPARTMENT d\n" +
-                            "WHERE d.DEPTPID = '402881e6603a69b801603a6ab1d70000'\n" +
+                            "WHERE d.DEPTPID = '" + deptid + "'\n" +
                             "ORDER BY d.DEPTSORT ";
                 } else if (Integer.valueOf(session.get("type").toString()) == 1) {
                     sql = " SELECT\n" +
@@ -407,20 +414,20 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
                             "   FROM KH_YH_HISTORY h\n" +
                             "   WHERE h.TDYW_ORG = d.deptname AND trunc(h.CREATE_TIME) = trunc(sysdate)) new_count\n" +
                             "FROM RZTSYSDEPARTMENT d\n" +
-                            "WHERE d.DEPTPID = '402881e6603a69b801603a6ab1d70000'\n" +
+                            "WHERE d.DEPTPID = '" + deptid + "'\n" +
                             "ORDER BY d.DEPTSORT ";
                 }
                 List<Map<String, Object>> list = this.execSql(sql);
                 Map map = new HashMap();
                 map.put("data", list);
                 map.put("adminModule", 7);
-                firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), map);
+                twoLevelCommandServerEndpoint.sendText((Session) session.get("session"), map);
             } else if (Integer.valueOf(session.get("mapType").toString()) == 1) {
-                String khzx = " SELECT rr.ID,count(a.ID) as khzx FROM (SELECT u.ID,u.DEPTID FROM RZTSYSUSER u LEFT JOIN KH_TASK k ON u.ID = k.USER_ID WHERE LOGINSTATUS = 1 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= sysdate GROUP BY u.ID,u.DEPTID) a RIGHT JOIN RZTSYSDEPARTMENT rr ON a.DEPTID = rr.ID WHERE rr.DEPTSORT IS NOT NULL GROUP BY rr.ID ";
-                String khlx = " SELECT rr.ID,count(a.ID) as khlx FROM (SELECT u.ID,u.DEPTID FROM RZTSYSUSER u LEFT JOIN KH_TASK k ON u.ID = k.USER_ID WHERE LOGINSTATUS = 0 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= sysdate GROUP BY u.ID,u.DEPTID) a RIGHT JOIN RZTSYSDEPARTMENT rr ON a.DEPTID = rr.ID WHERE rr.DEPTSORT IS NOT NULL GROUP BY rr.ID ";
-                String xszx = " SELECT rr.ID,count(a.ID) as xszx FROM (SELECT r.ID,r.DEPTID FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID WHERE LOGINSTATUS = 1 AND USERDELETE = 1 AND z.PLAN_START_TIME< = sysdate AND z.PLAN_END_TIME >= sysdate GROUP BY r.ID,r.DEPTID) a RIGHT JOIN RZTSYSDEPARTMENT rr ON a.DEPTID = rr.ID WHERE rr.DEPTSORT IS NOT NULL GROUP BY rr.ID ";
-                String xslx = " SELECT rr.ID,count(a.ID) as xslx FROM (SELECT r.ID,r.DEPTID FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID WHERE LOGINSTATUS = 0 AND USERDELETE = 1 AND z.PLAN_START_TIME< = sysdate AND z.PLAN_END_TIME >= sysdate GROUP BY r.ID,r.DEPTID) a RIGHT JOIN RZTSYSDEPARTMENT rr ON a.DEPTID = rr.ID WHERE rr.DEPTSORT IS NOT NULL GROUP BY rr.ID\n ";
-                String deptnameSql = " SELECT t.ID,t.DEPTNAME FROM RZTSYSDEPARTMENT t WHERE t.DEPTSORT IS NOT NULL ORDER BY t.DEPTSORT ";
+                String khzx = " SELECT rr.ID,count(a.ID) as khzx FROM (SELECT u.ID,u.DEPTID FROM RZTSYSUSER u LEFT JOIN KH_TASK k ON u.ID = k.USER_ID WHERE LOGINSTATUS = 1 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= sysdate GROUP BY u.ID,u.DEPTID) a RIGHT JOIN RZTSYSDEPARTMENT rr ON a.DEPTID = rr.ID WHERE rr.DEPTSORT IS NOT NULL AND rr.ID = '" + deptid + "' GROUP BY rr.ID ";
+                String khlx = " SELECT rr.ID,count(a.ID) as khlx FROM (SELECT u.ID,u.DEPTID FROM RZTSYSUSER u LEFT JOIN KH_TASK k ON u.ID = k.USER_ID WHERE LOGINSTATUS = 0 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= sysdate GROUP BY u.ID,u.DEPTID) a RIGHT JOIN RZTSYSDEPARTMENT rr ON a.DEPTID = rr.ID WHERE rr.DEPTSORT IS NOT NULL AND rr.ID = '" + deptid + "' GROUP BY rr.ID ";
+                String xszx = " SELECT rr.ID,count(a.ID) as xszx FROM (SELECT r.ID,r.DEPTID FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID WHERE LOGINSTATUS = 1 AND USERDELETE = 1 AND z.PLAN_START_TIME< = sysdate AND z.PLAN_END_TIME >= sysdate GROUP BY r.ID,r.DEPTID) a RIGHT JOIN RZTSYSDEPARTMENT rr ON a.DEPTID = rr.ID WHERE rr.DEPTSORT IS NOT NULL AND rr.ID = '" + deptid + "' GROUP BY rr.ID ";
+                String xslx = " SELECT rr.ID,count(a.ID) as xslx FROM (SELECT r.ID,r.DEPTID FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID WHERE LOGINSTATUS = 0 AND USERDELETE = 1 AND z.PLAN_START_TIME< = sysdate AND z.PLAN_END_TIME >= sysdate GROUP BY r.ID,r.DEPTID) a RIGHT JOIN RZTSYSDEPARTMENT rr ON a.DEPTID = rr.ID WHERE rr.DEPTSORT IS NOT NULL AND rr.ID = '" + deptid + "' GROUP BY rr.ID ";
+                String deptnameSql = " SELECT t.ID,t.DEPTNAME FROM RZTSYSDEPARTMENT t WHERE t.DEPTSORT IS NOT NULL AND ID='" + deptid + "' ORDER BY t.DEPTSORT ";
                 List<Map<String, Object>> deptname = this.execSql(deptnameSql);
                 List<Map<String, Object>> list1 = null;
                 List<Map<String, Object>> list3 = null;
@@ -474,7 +481,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
                 Map map = new HashMap();
                 map.put("data", deptname);
                 map.put("adminModule", 7);
-                firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), map);
+                twoLevelCommandServerEndpoint.sendText((Session) session.get("session"), map);
             }
         });
     }

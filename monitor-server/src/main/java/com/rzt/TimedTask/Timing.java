@@ -80,8 +80,8 @@ public class Timing  extends
     }
 
     @GetMapping("/getTimeConfig")
-    public WebApiResponse getTimeConfig(String userId){
-        return service.getTimedConfig(userId);
+    public WebApiResponse getTimeConfig(String currentUserId){
+        return service.getTimedConfig(currentUserId);
     }
 
 

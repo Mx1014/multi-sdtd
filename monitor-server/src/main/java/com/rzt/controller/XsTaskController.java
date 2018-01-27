@@ -78,8 +78,9 @@ public class XsTaskController extends
      * @return
      */
     @GetMapping("checkOff")
-    public WebApiResponse checkOff(CheckDetail checkDetail,String timedTaskId){
+    public WebApiResponse checkOff(CheckDetail checkDetail,String timedTaskId,String currentUserId){
         try {
+            checkDetail.setCheckUser(currentUserId);
             //根据审核人id和问题任务id查询该条审核记录是否存在
             Long detailID = detailService.findByCheckUserAndQuestionTaskId(checkDetail.getCheckUser(),checkDetail.getQuestionTaskId());
             if(detailID==null){
@@ -93,6 +94,31 @@ public class XsTaskController extends
         }
     }
 
+    /**
+     * 查看所有单位排班情况
+     * @return
+     */
+    @GetMapping("/findWorkings")
+    public WebApiResponse findWorkings(String currentUserId){
+        return service.findWorking(currentUserId);
+    }
+
+    /**
+     * 修改排班情况
+     * @param currentUserId  当前登录人id
+     * @param deptId         部门id
+     * @param startTime      开始时间
+     * @param endTime        结束时间
+     * @param dayUserId      白班人选
+     * @param nightUserId    夜班人选
+     * @return
+     */
+    @GetMapping("/updateWorkings")
+    public WebApiResponse updateWorkings(String currentUserId,String deptId,String startTime
+                    ,String endTime,String dayUserId,String nightUserId){
+
+            return service.updateWorkings(currentUserId,deptId,startTime,endTime,dayUserId,nightUserId);
+    }
 
 
 

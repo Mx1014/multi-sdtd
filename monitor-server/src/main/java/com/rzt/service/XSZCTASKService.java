@@ -5,6 +5,7 @@ import com.rzt.entity.TimedTask;
 import com.rzt.repository.TimedConfigRepository;
 import com.rzt.repository.XSZCTASKRepository;
 import com.rzt.util.WebApiResponse;
+import com.rzt.utils.RedisUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,8 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
     private RedisTemplate<String, Object> redisTemplate;
     @Autowired
     private TimedConfigRepository timedConfigRepository;
+    @Autowired
+    private RedisUtil redisUtil;
 
 
     public String findDeptAuth(String userId){
@@ -228,8 +231,43 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
      */
    @Transactional
     public void xsTaskAddAndFind()  {
+       //统一时间作为阶段标识
+       Date date1 = new Date();
+       try {
+            //抽查之前需要记录上一次抽查任务的审核完成情况
+            //查询所有通道单位的sql
+            String deptSql = "SELECT d.ID" +
+                    "   FROM RZTSYSDEPARTMENT d WHERE d.DEPTPID = '402881e6603a69b801603a6ab1d70000'";
+            List<Map<String, Object>> maps1 = this.execSql(deptSql);
+            for (Map<String, Object> map : maps1) {
+                String deptId = (String) map.get("ID");
+                String sumSql = "SELECT count(*) AS SUM" +
+                        "   FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID" +
+                        "     WHERE u.ID IS  NOT  null AND t.CREATETIME >= (SELECT max(CREATETIME) -  600   / (1 * 24 * 60 * 60)" +
+                        "       FROM TIMED_TASK  WHERE THREEDAY = 0 )  AND d.ID = '"+deptId+"'";
+                //实际检查完成数
+                String ComSumSql = "SELECT count(*) AS COMSUM" +
+                        "   FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID" +
+                        "     WHERE u.ID IS  NOT  null AND t.CREATETIME >= (SELECT max(CREATETIME) -  600   / (1 * 24 * 60 * 60)" +
+                        "       FROM TIMED_TASK  WHERE THREEDAY = 0 ) AND STATUS = 1  AND d.ID = '"+deptId+"'";
+                //抽查结束时间
+                String dateSql = "SELECT max(CREATETIME) as TIME" +
+                        "   FROM TIMED_TASK  WHERE THREEDAY = 0";
+                Map<String, Object> map1 = this.execSqlSingleResult(sumSql);
+                Map<String, Object> map2 = this.execSqlSingleResult(ComSumSql);
+                Map<String, Object> map3 = this.execSqlSingleResult(dateSql);
 
-        try {
+                String sum = map1.get("SUM").toString();
+                String comSum = map2.get("COMSUM").toString();
+                String date =  map3.get("TIME").toString();
+
+                //插入到记录表中
+                String uuid = UUID.randomUUID().toString();
+                timedConfigRepository.insertTaskRecord(uuid,date1,date,sum,comSum,deptId);
+                LOGGER.info(deptId+ "单位本周期查询情况添加");
+            }
+
+
             //巡视sql
             String findSql1 = "select x.TASK_NAME,x.STAUTS,x.ID,x.CM_USER_ID from XS_ZC_TASK x" +
                     "  WHERE x.ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 1 ) AND  x.STAUTS != 0 ";
@@ -319,6 +357,11 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
 
 
     }
+
+
+
+
+
     /**
      * 一级单位使用   固定时间抽查任务 三天为一个周期
      * 先查询需要的数据 查询后将数据添加进定时任务表
@@ -593,4 +636,48 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
     }
 
 
+    public WebApiResponse findWorking(String currentUserId) {
+        if(null == currentUserId || "".equals(currentUserId)){
+            return WebApiResponse.erro("参数错误currentUserId = "+currentUserId);
+        }
+        String sql = "";
+        List<Map<String, Object>> maps = null;
+       try {
+           String deptId = redisUtil.findTDIDByUserId(currentUserId);
+
+           if(null != deptId && !"".equals(deptId)){
+               sql = "SELECT * " +
+                       "     FROM WORKING_TIMED WHERE DEPT_ID = '"+deptId+"'";
+           }
+           //公司本部情况
+           if("40283781608b848701608b85d3700000".equals(deptId)){
+               sql = "SELECT * FROM WORKING_TIMED " ;
+           }
+            maps = this.execSql(sql);
+           LOGGER.info("查询倒班信息成功");
+       }catch (Exception e){
+           LOGGER.error("查询排班情况失败"+e.getMessage());
+           return WebApiResponse.erro("查询排班情况失败"+e.getMessage());
+       }
+
+       return WebApiResponse.success(maps);
+
+    }
+
+    public WebApiResponse updateWorkings(String currentUserId, String deptId, String startTime, String endTime, String dayUserId, String nightUserId) {
+
+        if(null == deptId || "".equals(deptId) ){
+            return WebApiResponse.erro("参数错误 deptId="+deptId);
+        }
+        try {
+            //修改倒班信息
+            timedConfigRepository.updateWorkings(deptId,startTime,endTime,dayUserId,nightUserId);
+            LOGGER.info("修改倒班信息成功");
+        }catch (Exception e){
+            LOGGER.error("修改倒班信息失败"+e.getMessage());
+            return WebApiResponse.erro("修改倒班信息失败"+e.getMessage());
+        }
+
+        return WebApiResponse.success("");
+    }
 }

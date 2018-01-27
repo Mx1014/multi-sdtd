@@ -12,13 +12,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-@ServerEndpoint("/serverendpoint/firstlevelcommand/{currentUserId}/{mapType}/{type}")
-public class FirstLevelCommandServerEndpoint {
+@ServerEndpoint("/serverendpoint/twolevelcommand/{currentUserId}/{mapType}/{type}")
+public class TwoLevelCommandServerEndpoint {
     static RedisTemplate<String, Object> redisTemplate;
 
     @Autowired
     public void setRedisTemplate(RedisTemplate<String, Object> redisTemplate) {
-        FirstLevelCommandServerEndpoint.redisTemplate = redisTemplate;
+        TwoLevelCommandServerEndpoint.redisTemplate = redisTemplate;
     }
 
     /**
@@ -34,10 +34,11 @@ public class FirstLevelCommandServerEndpoint {
     @OnOpen
     public void openSession(@PathParam("currentUserId") String currentUserId, @PathParam("mapType") String mapType, @PathParam("type") String type, Session session) {
         JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", currentUserId).toString());
-        HashMap h = new HashMap();
+        HashMap<String, Object> h = new HashMap();
         String sessionId = session.getId();
         h.put("session", session);
-        h.put("jsonObject", jsonObject);
+        h.put("DEPTID", jsonObject.get("DEPTID"));
+        h.put("DEPT", jsonObject.get("DEPT"));
         h.put("mapType", mapType);
         h.put("type", type);
         livingSessions.put(sessionId, h);

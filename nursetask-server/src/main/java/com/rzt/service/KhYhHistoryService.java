@@ -150,7 +150,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         try {
             StringBuffer buffer = new StringBuffer();
             List<Object> params = new ArrayList<>();
-            buffer.append(" where trunc(create_time)=trunc(sysdate) ");
+            buffer.append(" where s.YH_ID=y.ID ");
             if (yhjb != null && !yhjb.equals("")) {
                 buffer.append(" and yhjb1 like");
                 params.add("%" + yhjb + "%");
@@ -160,7 +160,8 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 params.add("%" + yhlb + "%");
             }
             buffer.append(" and yhzt = 0 ");
-            String sql = "select * from kh_yh_history " + buffer.toString();
+            String sql = "SELECT DISTINCT(s.yh_id),y.* " +
+                    "FROM KH_YH_HISTORY y ,KH_SITE s -" + buffer.toString();
             List<Map<String, Object>> list = this.execSql(sql, params.toArray());
             List<Object> list1 = new ArrayList<>();
             for (Map map : list) {
@@ -1072,7 +1073,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
     public WebApiResponse findLineOrg(long towerId) {
         try {
             String sql = "SELECT S.TD_ORG_NAME,S.LINE_NAME,S.LINE_ID\n" +
-                    "FROM CM_LINE_SECTION S LEFT JOIN CM_TOWER T ON T.LINE_ID = S.LINE_ID where T.ID = ?  and S.TD_ORG_NAME in ('门头沟公司','通州公司') ";
+                    "FROM CM_LINE_SECTION S LEFT JOIN CM_TOWER T ON T.LINE_ID = S.LINE_ID where T.ID = ?  and S.TD_ORG_NAME not in ('通州公司') ";
             List<Map<String, Object>> maps = this.execSql(sql, towerId);
             if (maps.size() > 0) {
                 return WebApiResponse.success("可以采集");

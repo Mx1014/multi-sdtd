@@ -21,7 +21,7 @@ public class NightDynamicScheduledTask implements SchedulingConfigurer {
   //默认晚8点开始
   private String cron = "0 0 20 * * ?";
   //private String cron = "0 20 * * * ?";
-  private String time = "3";
+  private String time = "2";
   //注入主定时器
   @Autowired
   private DynamicScheduledTask dyn;
