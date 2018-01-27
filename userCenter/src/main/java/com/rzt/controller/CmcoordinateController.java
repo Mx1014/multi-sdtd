@@ -19,12 +19,16 @@ import org.springframework.data.redis.core.GeoOperations;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
-import org.springframework.http.HttpRequest;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -60,6 +64,8 @@ public class CmcoordinateController extends
             cmcoordinate.setLatitude(myCoordinate.getLatitude());
             cmcoordinate.setOnLine(myCoordinate.getLOGINSTATUS());
             cmcoordinate.setUserName(myCoordinate.getREALNAME());
+            cmcoordinate.setDEPT(myCoordinate.getDEPT());
+            cmcoordinate.setDEPTID(myCoordinate.getDEPTID());
 
             //2.添加用户坐标到redis geo,用于范围查询，和最新位置查询。
             Point point = new Point(cmcoordinate.getLongitude(), cmcoordinate.getLatitude());
@@ -68,6 +74,7 @@ public class CmcoordinateController extends
 
             //3.用来展示pc端地图的key
             HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
+
             hashOperations.put("menInMap", cmcoordinate.getUserid(), cmcoordinate);
 
             //4.为每个用户每天创建一个key，用于保存当天的坐标  暂定三天失效
