@@ -1085,4 +1085,15 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             return WebApiResponse.erro("不可以采集");
         }
     }
+
+    public WebApiResponse findYhPicture(long yhId){
+        try {
+            String sql = "SELECT * FROM PICTURE_YH where yh_id=? and  trunc(CREATE_TIME)>=TRUNC(sysdate-7) ";
+                return WebApiResponse.erro("不可以采集");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("不可以采集");
+        }
+
+    }
 }

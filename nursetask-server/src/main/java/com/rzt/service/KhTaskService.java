@@ -41,7 +41,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
     @Autowired
     private KhSiteRepository siteRepository;
 
-    public Object listAllKhTask(KhTaskModel task, String status, Pageable pageable, int roleType, String yworg,String currentUserId) {
+    public Object listAllKhTask(KhTaskModel task, String status, Pageable pageable, int roleType, String yworg, String currentUserId) {
         task = timeUtil(task);
         String result = "k.id as id, k.task_name as taskName,k.tdyw_org as yworg,k.CREATE_TIME as createTime,k.plan_start_time as startTime,k.plan_end_time as endTime,k.status as status,u.realname as userName,d.DEPTNAME as class,k.task_type as type";
         List params = new ArrayList<>();
@@ -72,6 +72,10 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         if (yworg != null && !yworg.equals("")) {
             buffer.append(" and k.tdyw_org like ? ");
             params.add("%" + yworg + "%");
+        }
+        if (task.getTdOrg() != null && !task.getTdOrg().equals("")) {
+            buffer.append(" and k.yworg_id = ?");
+            params.add((task.getTdOrg()));
         }
         String sql = "";
 
@@ -408,7 +412,13 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         this.reposiotry.updateSite(startTime, endTime, site.getId(), count);
         KhTask task = new KhTask();
         task.setId();
-        task.setWxOrg(site.getWxOrg());
+        try {
+            task.setWxOrg(site.getWxOrg());
+            task.setWxOrgId(site.getWxOrgId());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        task.setYwOrgId(site.getTdywOrgId());
         task.setSiteId(site.getId());
         task.setTdywOrg(site.getTdywOrg());
         task.setCount(count);

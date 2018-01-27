@@ -141,4 +141,10 @@ public class KhYhHistoryController extends
     public WebApiResponse findLineOrg(long towerId){
         return this.service.findLineOrg(towerId);
     }
+
+	@ApiOperation(value = "隐患台账图片展示",notes = "隐患台账图片展示")
+	@GetMapping("findYhPicture")
+	public WebApiResponse findYhPicture(long yhId){
+		return this.service.findYhPicture(yhId);
+	}
 }

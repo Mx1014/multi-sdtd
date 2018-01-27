@@ -7,6 +7,7 @@ import com.rzt.util.WebApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -106,6 +107,73 @@ public class UserDisplaySynthesisController extends CurdController<RztSysUser, C
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("");
+        }
+    }
+
+    @GetMapping("userLoginTypeZhu")
+    public WebApiResponse userLoginTypeZhu(String currentUserId, String startTime, String endTime, String deptId) {
+        try {
+            JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", currentUserId).toString());
+            int roletype = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
+            Object deptid = jsonObject.get("DEPTID");
+            List listLike = new ArrayList();
+            StringBuffer buffer = new StringBuffer();
+            if (!StringUtils.isEmpty(startTime) && !StringUtils.isEmpty(endTime)) {
+                listLike.add(endTime);
+                buffer.append(" AND z.PLAN_END_TIME >= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ");
+                listLike.add(startTime);
+                buffer.append(" PLAN_START_TIME <= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ");
+            } else {
+                buffer.append(" AND PLAN_END_TIME >= trunc( SYSDATE ) AND PLAN_START_TIME <= trunc(sysdate+1) ");
+            }
+            if (roletype == 1 || roletype == 2) {
+                listLike.add(deptid);
+                buffer.append(" AND r.DEPTID= ?" + listLike.size());
+            }
+            if (!StringUtils.isEmpty(deptId)) {
+                listLike.add(deptId);
+                buffer.append(" AND r.DEPTID= ?" + listLike.size());
+            }
+            String xsLogin = "SELECT nvl(sum(decode(LOGINSTATUS,1,1,0)),0) xszx,\n" +
+                    "                  nvl(sum(decode(LOGINSTATUS,0,1,0)),0) xslx,DEPTID FROM (SELECT CM_USER_ID,DEPTID,CLASSNAME,LOGINSTATUS\n" +
+                    "                 FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID\n" +
+                    "                 WHERE USERDELETE = 1 " + buffer.toString() +
+                    "                 GROUP BY DEPTID,CM_USER_ID,CLASSNAME,LOGINSTATUS ) GROUP BY DEPTID";
+            String khLogin = " SELECT nvl(sum(decode(LOGINSTATUS,1,1,0)),0) khzx," +
+                    "  nvl(sum(decode(LOGINSTATUS,0,1,0)),0) khlx,DEPTID FROM (SELECT USER_ID,DEPTID,CLASSNAME,LOGINSTATUS " +
+                    " FROM RZTSYSUSER r RIGHT JOIN KH_TASK z ON r.ID = z.USER_ID " +
+                    " WHERE USERDELETE = 1  " + buffer.toString() +
+                    " GROUP BY DEPTID,USER_ID,CLASSNAME,LOGINSTATUS ) GROUP BY DEPTID ";
+            String xcjcLogin = " SELECT nvl(sum(decode(LOGINSTATUS,1,1,0)),0) zxjczx," +
+                    "  nvl(sum(decode(LOGINSTATUS,0,1,0)),0) zxjclx ,DEPTID FROM (SELECT z.USER_ID AS USERID,DEPTID,CLASSNAME,LOGINSTATUS " +
+                    " FROM RZTSYSUSER r RIGHT JOIN CHECK_LIVE_TASK z ON r.ID = z.USER_ID " +
+                    " WHERE  USERDELETE = 1  " + buffer.toString() +
+                    " GROUP BY z.USER_ID,DEPTID,CLASSNAME,LOGINSTATUS ) GROUP BY DEPTID ";
+            String htjcLogin = "";
+            Map<String, Object> xsLoginMap = this.service.execSqlSingleResult(xsLogin, listLike.toArray());
+            Map<String, Object> khLoginMap = this.service.execSqlSingleResult(khLogin, listLike.toArray());
+            Map<Object, Object> map = new HashMap<>();
+            map.put("xcjclx",0);
+            map.put("xcjczx",0);
+            map.put("htjczx", 0);
+            map.put("htjclx", 0);
+            try {
+                Map<String, Object> xcjcLoginMap = this.service.execSqlSingleResult(xcjcLogin, listLike.toArray());
+                map.put("xcjclx", Integer.parseInt(xcjcLoginMap.get("ZXJCLX").toString()));
+                map.put("xcjczx", Integer.parseInt(xcjcLoginMap.get("ZXJCZX").toString()));
+            } catch (Exception e) {
+
+            }
+
+            map.put("xsls", Integer.parseInt(xsLoginMap.get("XSLX").toString()));
+            map.put("xszx", Integer.parseInt(xsLoginMap.get("XSZX").toString()));
+            map.put("khlx", Integer.parseInt(khLoginMap.get("KHLX").toString()));
+            map.put("khzx", Integer.parseInt(khLoginMap.get("KHZX").toString()));
+
+            return WebApiResponse.success(map);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("失败");
         }
     }
 }
