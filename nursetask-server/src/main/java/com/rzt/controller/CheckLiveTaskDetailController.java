@@ -33,9 +33,9 @@ public class CheckLiveTaskDetailController extends
 
     @ApiOperation(value = "到岗到位检查",notes = "到岗到位检查")
     @GetMapping("/checkDgdwUpdate")
-    public WebApiResponse checkDgdwUpdate(String detailId,String sfzg,String ryyz,String dzwl,String yhId,String lon,String lat,String radius , String taskType){
+    public WebApiResponse checkDgdwUpdate(String detailId,String sfzg,String ryyz,String sjt,String dzwl,String yhId,String lon,String lat,String radius , String taskType){
         try{
-            service.checkDgdwUpdate( detailId, sfzg, ryyz, dzwl,yhId, lon, lat, radius , taskType);
+            service.checkDgdwUpdate( detailId, sfzg, ryyz,sjt, dzwl,yhId, lon, lat, radius , taskType);
             return WebApiResponse.success("成功");
         }catch (Exception e){
             LOGGER.error("更新失败",e);
@@ -45,9 +45,9 @@ public class CheckLiveTaskDetailController extends
 
     @ApiOperation(value = "现场稽查问卷",notes = "现场稽查问卷")
     @GetMapping("/checkQuestionUpdate")
-    public WebApiResponse checkQuestionUpdate(String detailId, String dydj,String yhxx ,String czfa,String qtwt, String taskType){
+    public WebApiResponse checkQuestionUpdate(String detailId, String dydj,String yhxx ,String czfa,String qtwt,String dxjx ,String taskType){
         try{
-            Object obj = service.checkQuestionUpdate( detailId,  dydj, yhxx , czfa, qtwt, taskType);
+            Object obj = service.checkQuestionUpdate( detailId,  dydj, yhxx , czfa, qtwt,dxjx, taskType);
             return WebApiResponse.success(obj);
         }catch (Exception e){
             LOGGER.error("稽查问卷更新失败",e);

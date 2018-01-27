@@ -69,11 +69,11 @@ public class CheckLiveTaskDetailService extends CurdService<CheckLiveTaskDetail,
     }
 
     @Transactional
-    public Object checkQuestionUpdate(String detailId, String dydj, String yhxx, String czfa, String qtwt, String taskType) {
+    public Object checkQuestionUpdate(String detailId, String dydj, String yhxx, String czfa, String qtwt,String dxjx, String taskType) {
         Object obj = new Object();
         //0看护 1巡视 0待稽查 1已稽查
         if("0,0".equals(taskType)){
-            reposiotry.checkQuestionUpdate( detailId, dydj, yhxx, czfa, qtwt);
+            reposiotry.checkQuestionUpdate( detailId, dydj, yhxx, czfa, qtwt,dxjx);
         }else if ("1,0".equals(taskType)){
             reposiotry.checkQuestionUpdateXs( detailId, dydj, yhxx, czfa, qtwt);
         }
@@ -92,10 +92,10 @@ public class CheckLiveTaskDetailService extends CurdService<CheckLiveTaskDetail,
     }
 
     @Transactional
-    public void checkDgdwUpdate(String id, String sfzg, String ryyz, String dzwl,String yhId, String lon, String lat, String radius, String taskType) {
+    public void checkDgdwUpdate(String id, String sfzg, String ryyz,String sjt, String dzwl,String yhId, String lon, String lat, String radius, String taskType) {
         //0看护 1巡视 0待稽查 1已稽查
         if("0,0".equals(taskType)){
-            reposiotry.checkDgdwUpdate(Long.valueOf(id),sfzg,ryyz,dzwl);
+            reposiotry.checkDgdwUpdate(Long.valueOf(id),sfzg,ryyz,sjt,dzwl);
             if(!StringUtils.isEmpty(radius)&& !StringUtils.isEmpty(lon)){
                 reposiotry.updateDzwl(yhId,lon,lat,radius);
             }
