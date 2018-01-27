@@ -222,7 +222,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
         String sql = "";
         //0看护 1巡视 0待稽查 1已稽查
         if("0,0".equals(taskType)){
-            sql = "select t.id,t.TASK_ID,t.TASK_NAME,u.REALNAME,t.plan_start_time " +
+            sql = "select t.id,t.TASK_ID,t.TASK_NAME,u.REALNAME,t.plan_start_time, " +
                     " t.TASK_TYPE , t.STATUS " +
                     "from CHECK_LIVE_TASK t " +
                     "  LEFT JOIN  rztsysuser u on u.id=t.USER_ID " +
