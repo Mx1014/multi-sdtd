@@ -49,7 +49,7 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
             List<Map<String, Object>> list = this.execSql(sql, Long.parseLong(taskId));
             return WebApiResponse.success(list);
         } catch (Exception e) {
-            return WebApiResponse.erro("数据获取失败"+e.getMessage());
+            return WebApiResponse.erro("数据获取失败" + e.getMessage());
         }
     }
 
@@ -109,8 +109,6 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
     }
 
 
-
-
     public WebApiResponse getYbCount(String userId) {
         try {
             //保存现场照片 this.reposiotry.getybCount(userId)
@@ -163,14 +161,6 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
                 if (map.get("WD") == null || map.get("JD") == null) {
                     sql = "select y.radius as ROUND,y.jd as jd,y.wd as wd from kh_yh_history y left join kh_task k on y.id = k.yh_id where k.id=?";
                     list = this.execSql(sql, taskId);
-                }else{
-                    String round = map.get("ROUND").toString();
-                    if (!round.contains(".")){
-                        if (Long.parseLong(round)>500){
-                            round="500";
-                        }
-                        map.put("ROUND",round+".0");
-                    }
                 }
             }
         } else {
@@ -178,6 +168,13 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
             list = this.execSql(sql, taskId);
         }
         for (Map map : list) {
+            String round = map.get("ROUND").toString();
+            if (!round.contains(".")) {
+                if (Long.parseLong(round) > 500) {
+                    round = "500";
+                }
+                map.put("ROUND", round + ".0");
+            }
             map.put("URL", "http://39.106.206.129:8097/warningServer/warning/KHOffPost");
         }
        /* Point point = null;

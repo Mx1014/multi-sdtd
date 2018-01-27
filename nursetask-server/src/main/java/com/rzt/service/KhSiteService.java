@@ -58,7 +58,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
     private KhCycleRepository cycleRepository;
 
 
-    public Object listAllTaskNotDo(KhTaskModel task, Pageable pageable, String userName, String roleType, String yhjb, String yworg,String currentUserId) {
+    public Object listAllTaskNotDo(KhTaskModel task, Pageable pageable, String userName, String roleType, String yhjb, String yworg, String currentUserId) {
         List params = new ArrayList<>();
         StringBuffer buffer = new StringBuffer();
         String result = " k.id as id,k.task_name as taskName,k.tdyw_org as yworg,y.yhms as ms,y.yhjb as jb,k.create_time as createTime,k.COUNT as COUNT,u.realname as username,k.jbd as jbd,k.plan_start_time as starttime,k.plan_end_time as endtime,u.id as userId";
@@ -92,7 +92,10 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             buffer.append(" and k.tdyw_org like ?");
             params.add(("%" + yworg + "%"));
         }
-
+        if (task.getTdOrg() != null && !task.getTdOrg().equals("")) {
+            buffer.append(" and k.yworg_id = ?");
+            params.add((task.getTdOrg()));
+        }
         String sql = "";
 
         //公司本部、属地公司权限
@@ -306,6 +309,8 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                     Map<String, Object> map1 = this.execSqlSingleResult(sql, userId);
                     site.setWxOrgId(map1.get("ID").toString());
                     site.setWxOrg(map1.get("NAME").toString());
+                    task.setWxOrgId(map1.get("ID").toString());
+                    task.setWxOrg(map1.get("NAME").toString());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -337,6 +342,8 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                 task.setPlanEndTime(DateUtil.getPlanStartTime(endTime));
                 task.setUserId(userId);
                 task.setCount(1);
+                task.setYwOrgId(site.getTdywOrgId());
+                task.setWxOrgId(site.getWxOrgId());
                 task.setWxOrg(site.getWxOrg());
                 task.setTdywOrg(cycle.getTdywOrg());
                 task.setCreateTime(new Date());

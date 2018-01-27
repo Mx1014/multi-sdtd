@@ -59,7 +59,6 @@ public class KhTaskController extends
             return WebApiResponse.erro("数据查询失败" + e.getMessage());
         }
     }
-
     /**
      * 修改已安排任务
      */

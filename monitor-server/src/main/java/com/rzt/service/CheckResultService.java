@@ -131,7 +131,7 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
             String sqll = "";
             //最高权限查询所有
             if ("0".equals(deptID)) {
-                sqll = " select * from ( " + sql + " where 1 = 1 " + s + " ) ";
+                sqll = " select * from ( " + sql + "  ) where 1 = 1  " + s ;
             } else {
                 sqll = " select * from ( " + sql + " ) where   TD_ORG='" + deptID + "' OR TDYW_ORGID='" + deptID + "'" + s;
             }
