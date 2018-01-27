@@ -6,16 +6,18 @@ import com.rzt.service.CurdService;
 import com.rzt.websocket.serverendpoint.ErJiServerEndpoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
 
 import javax.websocket.Session;
 import java.util.*;
 
+@Service
 public class ErJiPushService extends CurdService<websocket, websocketRepository> {
     @Autowired
     ErJiServerEndpoint erJiServerEndpoint;
 
 
-    @Scheduled(fixedRate = 30000)
+    @Scheduled(fixedDelay = 3000)
     public void module2() throws Exception {
         Map<String, Map> allMap = new HashMap<String, Map>();
         Map<String, HashMap> map = erJiServerEndpoint.sendMsg();
@@ -46,7 +48,7 @@ public class ErJiPushService extends CurdService<websocket, websocketRepository>
         erJiServerEndpoint.sendText((Session) session.get("session"), message);
     }
 
-    @Scheduled(fixedRate = 30000)
+    @Scheduled(fixedDelay = 3000)
     public void module3() throws Exception {
         Map<String, Map> allMap = new HashMap<String, Map>();
         Map<String, HashMap> map = erJiServerEndpoint.sendMsg();
@@ -83,7 +85,7 @@ public class ErJiPushService extends CurdService<websocket, websocketRepository>
         erJiServerEndpoint.sendText((Session) session.get("session"), message);
     }
 
-    @Scheduled(fixedRate = 30000)
+    @Scheduled(fixedDelay = 3000)
     public void module4_1() throws Exception {
         Map<String, Map> allMap = new HashMap<String, Map>();
         Map<String, HashMap> map = erJiServerEndpoint.sendMsg();
@@ -114,7 +116,7 @@ public class ErJiPushService extends CurdService<websocket, websocketRepository>
         } else {
             try {
                 Map<String, Object> res = this.execSqlSingleResult(module4_1);
-                message.put("module", 4_1);
+                message.put("module", 41);
                 message.put("data", res);
                 allMap.put(deptId, message);
             } catch (Exception e) {
@@ -124,7 +126,7 @@ public class ErJiPushService extends CurdService<websocket, websocketRepository>
         erJiServerEndpoint.sendText((Session) session.get("session"), message);
     }
 
-    @Scheduled(fixedRate = 30000)
+    @Scheduled(fixedDelay = 3000)
     public void module4_2() throws Exception {
         Map<String, Map> allMap = new HashMap<String, Map>();
         Map<String, HashMap> map = erJiServerEndpoint.sendMsg();
@@ -139,7 +141,7 @@ public class ErJiPushService extends CurdService<websocket, websocketRepository>
         String deptId;
         String module4_2;
         deptId = session.get("DEPTID").toString();
-        module4_2 = " SELECT count(1)\n" +
+        module4_2 = " SELECT count(1) as yh\n" +
                 "FROM ACT_HI_ACTINST t LEFT JOIN ACT_RU_VARIABLE h ON t.PROC_INST_ID_ = h.PROC_INST_ID_\n" +
                 "               LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_\n" +
                 "WHERE  h.NAME_ = 'YHID' AND t.PROC_DEF_ID_ LIKE 'wtsh%' AND ASSIGNEE_ = 'sdid' AND y.YWORG_ID = '" + deptId + "' ";
@@ -148,8 +150,12 @@ public class ErJiPushService extends CurdService<websocket, websocketRepository>
         } else {
             try {
                 Map<String, Object> res = this.execSqlSingleResult(module4_2);
-                message.put("module", 4_2);
-                message.put("data", res);
+                HashMap map = new HashMap();
+                map.put("YH", res.get("YH"));
+                map.put("QX", 0);
+                map.put("JC", 0);
+                message.put("module", 42);
+                message.put("data", map);
                 allMap.put(deptId, message);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -158,7 +164,7 @@ public class ErJiPushService extends CurdService<websocket, websocketRepository>
         erJiServerEndpoint.sendText((Session) session.get("session"), message);
     }
 
-    @Scheduled(fixedRate = 30000)
+    @Scheduled(fixedDelay = 3000)
     public void module5_1() throws Exception {
         Map<String, Map> allMap = new HashMap<String, Map>();
         Map<String, HashMap> map = erJiServerEndpoint.sendMsg();
@@ -183,7 +189,7 @@ public class ErJiPushService extends CurdService<websocket, websocketRepository>
         } else {
             try {
                 Map<String, Object> res = this.execSqlSingleResult(module5_1);
-                message.put("module", 5_1);
+                message.put("module", 51);
                 message.put("data", res);
                 allMap.put(deptId, message);
             } catch (Exception e) {
@@ -193,7 +199,7 @@ public class ErJiPushService extends CurdService<websocket, websocketRepository>
         erJiServerEndpoint.sendText((Session) session.get("session"), message);
     }
 
-    @Scheduled(fixedRate = 30000)
+    @Scheduled(fixedDelay = 3000)
     public void module5_2() throws Exception {
         Map<String, Map> allMap = new HashMap<String, Map>();
         Map<String, HashMap> map = erJiServerEndpoint.sendMsg();
@@ -208,7 +214,7 @@ public class ErJiPushService extends CurdService<websocket, websocketRepository>
         String deptId;
         String module5_2;
         deptId = session.get("DEPTID").toString();
-        module5_2 = " SELECT nvl(sum(decode(TASK_TYPE, 1, 1, 0)), 0) xs,nvl(sum(decode(TASK_TYPE, 2, 1, 0)), 0) kh,nvl(sum(decode(TASK_TYPE, 3, 1, 0)), 0) jc FROM MONITOR_CHECK_EJ WHERE trunc(CREATE_TIME) = trunc(sysdate) AND DEPTID = '" + deptId + "' ";
+        module5_2 = " SELECT nvl(sum(decode(TASK_TYPE, 1, 1, 0)), 0) xs,nvl(sum(decode(TASK_TYPE, 2, 1, 0)), 0) kh,nvl(sum(decode(TASK_TYPE, 3, 1, 0)), 0) jc,0 as yh,0 as tf FROM MONITOR_CHECK_EJ WHERE trunc(CREATE_TIME) = trunc(sysdate) AND DEPTID = '" + deptId + "' ";
         if (allMap.containsKey(deptId)) {
             message = allMap.get(deptId);
         } else {
@@ -224,18 +230,7 @@ public class ErJiPushService extends CurdService<websocket, websocketRepository>
         erJiServerEndpoint.sendText((Session) session.get("session"), message);
     }
 
-    public void module7(String sessionId) throws Exception {
-        Map<String, HashMap> map = erJiServerEndpoint.sendMsg();
-        HashMap session = map.get(sessionId);
-        Map message = new HashMap<String, Object>();
-        message.put("module", 7);
-        String module7 = "select count(1) total from MONITOR_CHECK_YJ where CREATE_TIME > trunc(sysdate)";
-        Map<String, Object> map1 = this.execSqlSingleResult(module7);
-        message.put("data", map1);
-        erJiServerEndpoint.sendText((Session) session.get("session"), message);
-    }
-
-    @Scheduled(fixedRate = 30000)
+    @Scheduled(fixedDelay = 3000)
     public void module7() throws Exception {
         Map<String, HashMap> map = erJiServerEndpoint.sendMsg();
         if (map.size() == 0) {
@@ -245,102 +240,58 @@ public class ErJiPushService extends CurdService<websocket, websocketRepository>
         for (Map.Entry<String, HashMap> entry : entries) {
             String sessionId = entry.getKey();
             HashMap session = map.get(sessionId);
+            Object deptid = session.get("DEPTID");
             Map message = new HashMap<String, Object>();
             message.put("module", 7);
-            String module7 = "select count(1) total from MONITOR_CHECK_YJ where CREATE_TIME > trunc(sysdate)";
+            String module7 = "select count(1) total from MONITOR_CHECK_YJ where CREATE_TIME > trunc(sysdate) AND DEPTID='" + deptid + "'";
             Map<String, Object> map1 = this.execSqlSingleResult(module7);
             message.put("data", map1);
             erJiServerEndpoint.sendText((Session) session.get("session"), message);
         }
     }
 
-    public void module8(String sessionId) throws Exception {
-        Map<String, HashMap> map = erJiServerEndpoint.sendMsg();
-        HashMap session = map.get(sessionId);
-        Map message = new HashMap<String, Object>();
-        message.put("module", 8);
-        String module8 = "select count(1) total from WARNING_ONE_KEY where CREATE_TIME > trunc(sysdate)";
-        Map<String, Object> map1 = this.execSqlSingleResult(module8);
-        message.put("data", map1);
-        erJiServerEndpoint.sendText((Session) session.get("session"), message);
-    }
-
-    @Scheduled(fixedRate = 30000)
+    @Scheduled(fixedDelay = 3000)
     public void module8() throws Exception {
         Map<String, HashMap> map = erJiServerEndpoint.sendMsg();
         if (map.size() == 0) {
             return;
         }
-        Map message = new HashMap<String, Object>();
-        message.put("module", 8);
-        String module8 = "select count(1) total from WARNING_ONE_KEY where CREATE_TIME > trunc(sysdate)";
-        Map<String, Object> map1 = this.execSqlSingleResult(module8);
-        message.put("data", map1);
+
         Set<Map.Entry<String, HashMap>> entries = map.entrySet();
         for (Map.Entry<String, HashMap> entry : entries) {
             String sessionId = entry.getKey();
             HashMap session = map.get(sessionId);
+            Object deptid = session.get("DEPTID");
+            Map message = new HashMap<String, Object>();
+            message.put("module", 8);
+            String module8 = "select count(1) total from WARNING_ONE_KEY l LEFT JOIN RZTSYSUSER r ON l.USER_ID = r.ID where CREATE_TIME > trunc(sysdate) AND r.DEPTID='" + deptid + "'";
+            Map<String, Object> map1 = this.execSqlSingleResult(module8);
+            message.put("data", map1);
             erJiServerEndpoint.sendText((Session) session.get("session"), message);
         }
     }
 
-    public void module9(String sessionId) throws Exception {
-        Map<String, HashMap> map = erJiServerEndpoint.sendMsg();
-        HashMap session = map.get(sessionId);
-        Map message = new HashMap<String, Object>();
-        message.put("module", 9);
-        String module9 = "select sum(decode(WARNING_TYPE,5,1,0)) xsgj,sum(decode(WARNING_TYPE,7,1,0)) khgj,0 xcjc,0 yhgj  from MONITOR_CHECK_EJ";
-        Map<String, Object> map1 = this.execSqlSingleResult(module9);
-        message.put("data", map1);
-        erJiServerEndpoint.sendText((Session) session.get("session"), message);
-    }
-
-    @Scheduled(fixedRate = 30000)
+    @Scheduled(fixedDelay = 3000)
     public void module9() throws Exception {
         Map<String, HashMap> map = erJiServerEndpoint.sendMsg();
         if (map.size() == 0) {
             return;
         }
-        Map message = new HashMap<String, Object>();
-        message.put("module", 9);
-        String module9 = "select sum(decode(WARNING_TYPE,5,1,0)) xsgj,sum(decode(WARNING_TYPE,7,1,0)) khgj,0 xcjc,0 yhgj  from MONITOR_CHECK_EJ";
-        Map<String, Object> map1 = this.execSqlSingleResult(module9);
-        message.put("data", map1);
         Set<Map.Entry<String, HashMap>> entries = map.entrySet();
         for (Map.Entry<String, HashMap> entry : entries) {
             String sessionId = entry.getKey();
             HashMap session = map.get(sessionId);
+            Object deptid = session.get("DEPTID");
+            Map message = new HashMap<String, Object>();
+            message.put("module", 9);
+            String module9 = "select sum(decode(WARNING_TYPE,5,1,0)) xsgj,sum(decode(WARNING_TYPE,7,1,0)) khgj,0 xcjc,0 yhgj  from MONITOR_CHECK_EJ WHERE DEPTID='" + deptid + "'";
+            Map<String, Object> map1 = this.execSqlSingleResult(module9);
+            message.put("data", map1);
             erJiServerEndpoint.sendText((Session) session.get("session"), message);
         }
     }
 
-
-    public void module10(String sessionId) throws Exception {
-        Map<String, HashMap> map = erJiServerEndpoint.sendMsg();
-        HashMap session = map.get(sessionId);
-        Map message = new HashMap<String, Object>();
-        message.put("module", 10);
-        String module7 = "SELECT\n" +
-                "  sum((CASE WHEN PROC_DEF_ID_ LIKE 'xssh%'\n" +
-                "    THEN 1\n" +
-                "   ELSE 0 END)) xssh,\n" +
-                "  sum((CASE WHEN PROC_DEF_ID_ LIKE 'wtsh%'\n" +
-                "    THEN 1\n" +
-                "   ELSE 0 END)) wtsh,\n" +
-                "  sum((CASE WHEN PROC_DEF_ID_ LIKE 'defect%'\n" +
-                "    THEN 1\n" +
-                "   ELSE 0 END)) defect,\n" +
-                "  sum((CASE WHEN PROC_DEF_ID_ LIKE 'jcsh%'\n" +
-                "    THEN 1\n" +
-                "   ELSE 0 END)) jcsh\n" +
-                "FROM ACT_RU_TASK\n" +
-                "WHERE CREATE_TIME_ > trunc(sysdate)";
-        Map<String, Object> map1 = this.execSqlSingleResult(module7);
-        message.put("data", map1);
-        erJiServerEndpoint.sendText((Session) session.get("session"), message);
-    }
-
-    @Scheduled(fixedRate = 30000)
+    @Scheduled(fixedDelay = 3000)
     public void module10() throws Exception {
         Map<String, HashMap> map = erJiServerEndpoint.sendMsg();
         if (map.size() == 0) {
