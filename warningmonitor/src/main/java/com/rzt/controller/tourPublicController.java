@@ -13,8 +13,8 @@ public class tourPublicController extends CurdController<Monitorcheckej, tourPub
 
     //未到杆塔半径5米内(无法到位)
     @GetMapping("xsTourScope")
-    public WebApiResponse xsTourScope(Long taskid, String userid) {
-        return this.service.xsTourScope(taskid, userid);
+    public WebApiResponse xsTourScope(Long taskid, String userid,String reason) {
+        return this.service.xsTourScope(taskid, userid,reason);
     }
 
     //巡视未按标准速率拍照
@@ -82,6 +82,7 @@ public class tourPublicController extends CurdController<Monitorcheckej, tourPub
         }
     }
 
+    //看护脱岗
     @GetMapping("khtgang")
     public WebApiResponse khtgang(Long taskId){
         try{

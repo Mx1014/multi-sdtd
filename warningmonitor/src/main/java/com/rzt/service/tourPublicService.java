@@ -29,13 +29,13 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
      * 巡视人员未到杆塔半径5米范围内
      */
     @Transactional(rollbackFor = Exception.class)
-    public WebApiResponse xsTourScope(Long taskid, String userid) {
+    public WebApiResponse xsTourScope(Long taskid, String userid,String reason) {
         try {
             String sql = "   SELECT TASK_NAME AS TASKNAME,TD_ORG FROM XS_ZC_TASK WHERE ID=? ";
             Map<String, Object> map = this.execSqlSingleResult(sql, taskid);
             //往二级单位插数据
-            resp.saveCheckEj(SnowflakeIdWorker.getInstance(10, 12).nextId(),taskid,1,3,userid,map.get("TD_ORG").toString(),map.get("TASKNAME").toString());
-            String key = "ONE+" + taskid + "+1+3+" + userid + "+" + map.get("TD_ORG").toString() + "+" + map.get("TASKNAME").toString();
+            resp.saveCheckEjWdw(SnowflakeIdWorker.getInstance(10, 12).nextId(),taskid,1,3,userid,map.get("TD_ORG").toString(),map.get("TASKNAME").toString(),reason);
+            String key = "ONE+" + taskid + "+1+3+" + userid + "+" + map.get("TD_ORG").toString() + "+" + map.get("TASKNAME").toString()+"+"+reason;
 
             redisService.setex(key);
             return WebApiResponse.success("");
@@ -66,12 +66,12 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
     //看护未到位
     public void khWFDW(Long taskid, String userid) {
         try {
-            String sql = "   SELECT  kh.TASK_NAME AS TASKNAME,d.ID AS TDYW_ORG  FROM KH_TASK kh LEFT JOIN RZTSYSDEPARTMENT d ON d.DEPTNAME=kh.TDYW_ORG  " +
+            String sql = "   SELECT  kh.TASK_NAME AS TASKNAME,d.ID AS TDYW_ORG,kh.REASON  FROM KH_TASK kh LEFT JOIN RZTSYSDEPARTMENT d ON d.DEPTNAME=kh.TDYW_ORG  " +
                     "WHERE kh.ID=? ";
             Map<String, Object> map = this.execSqlSingleResult(sql, taskid);
-            //往二级单位插数据
-            resp.saveCheckEj(SnowflakeIdWorker.getInstance(10, 12).nextId(),taskid,2,11,userid,map.get("TDYW_ORG").toString(),map.get("TASKNAME").toString());
-            String key = "ONE+" + taskid + "+2+11+" + userid + "+" + map.get("TDYW_ORG").toString() + "+" + map.get("TASKNAME").toString();
+            //往二级单位插入未到位
+            resp.saveCheckEjWdw(SnowflakeIdWorker.getInstance(10, 12).nextId(),taskid,2,11,userid,map.get("TDYW_ORG").toString(),map.get("TASKNAME").toString(),map.get("REASON").toString());
+            String key = "ONE+" + taskid + "+2+11+" + userid + "+" + map.get("TDYW_ORG").toString() + "+" + map.get("TASKNAME").toString()+"+"+map.get("REASON").toString();
 
             redisService.setex(key);
         } catch (Exception e) {
@@ -84,16 +84,21 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
         String sql = "";
         if(taskType==2){
             sql = " SELECT kh.ID,d.ID AS  DEPTID,kh.PLAN_START_TIME,kh.PLAN_END_TIME, kh.TASK_NAME,kh.USER_ID FROM  KH_TASK kh  LEFT JOIN RZTSYSDEPARTMENT d " +
-                    " ON kh.TDYW_ORG = d.DEPTNAME WHERE trunc(kh.PLAN_START_TIME) = trunc(sysdate) AND kh.USER_ID =?1 ";
+                    " ON kh.TDYW_ORG = d.DEPTNAME WHERE trunc(kh.PLAN_START_TIME) = trunc(sysdate) AND kh.USER_ID =?1  AND kh.STATUS !=2 AND kh.STATUS !=3";
         }else if(taskType==1){
-            sql = "SELECT ID,TD_ORG as DEPTID,PLAN_START_TIME,TASK_NAME,CM_USER_ID,PLAN_END_TIME  " +
-                    "FROM XS_ZC_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND CM_USER_ID=?1";
+            sql = "SELECT ID,TD_ORG as DEPTID,PLAN_START_TIME,TASK_NAME,CM_USER_ID,PLAN_END_TIME,STAUTS  " +
+                    "FROM XS_ZC_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND CM_USER_ID=?1  AND STAUTS !=2";
+        }else if(taskType==3){
+            sql=" SELECT t.ID,t.USER_ID,t.TASK_NAME,t.PLAN_START_TIME,t.PLAN_END_TIME,u.DEPTID FROM CHECK_LIVE_TASK t " +
+                    " LEFT JOIN RZTSYSUSER u ON t.USER_ID=u.ID " +
+                    " WHERE trunc(t.CREATE_TIME)=trunc(sysdate) AND STATUS!=2 ";
         }
         List<Map<String, Object>> maps = execSql(sql,userId);
         //如果查询结果为0，证明这个人当天没有任务
         if(maps.size()==0){
             return;
         }
+
         for (Map<String, Object> map:maps) {
             //开始时间
             Date plan_start_time = (Date) map.get("PLAN_START_TIME");
@@ -104,6 +109,7 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
                 Long startDate = plan_start_time.getTime();
                 Long endDate = plan_end_time.getTime();
                 Long currentDate = new Date().getTime();
+
                 if(startDate<currentDate && currentDate<endDate){
                     //如果用户在任务时间内退出登录，则直接往往二级推，并设置往一级推送时间
                     String key = "";
@@ -113,6 +119,9 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
                     }else if (taskType==1){
                         key = "ONE+"+map.get("ID")+"+1+2+"+map.get("CM_USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
                         resp.saveCheckEj(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(map.get("ID").toString()),1,2,map.get("CM_USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString());
+                    }else if(taskType==3){
+                        key = "ONE+"+map.get("ID")+"+3+13+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
+                        resp.saveCheckEj(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(map.get("ID").toString()),3,13,map.get("USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString());
                     }
                     redisService.setex(key);
                 }else if(new Date().getTime()<startDate){
@@ -123,6 +132,8 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
                     }else if (taskType==1){
                         key = "TWO+"+map.get("ID")+"+1+2+"+map.get("CM_USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
                         //resp.saveCheckEj(new SnowflakeIdWorker(0,0).nextId(),Long.valueOf(map.get("ID").toString()),1,2,map.get("CM_USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString());
+                    }else if(taskType==3){
+                        key = "TWO+"+map.get("ID")+"+3+13+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
                     }
                     Long time = plan_start_time.getTime() - new Date().getTime();
                     redisService.psetex(key,time);
@@ -134,16 +145,20 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
         }
     }
 
-    //看护/巡视上线  taskType任务类型，1巡视 2看护
+    //看护/巡视上线  taskType任务类型，1巡视 2看护 3现场稽查
     //上线后就把redis中的值删掉，不删往一级推的键
     public void KHSX(String userId,Integer taskType){
         String sql = "";
         if(taskType==2){
             sql = " SELECT kh.ID,d.ID as DEPTID,kh.PLAN_START_TIME,kh.PLAN_END_TIME, kh.TASK_NAME,kh.USER_ID FROM  KH_TASK kh   LEFT JOIN RZTSYSDEPARTMENT d " +
-                    " ON kh.TDYW_ORG = d.DEPTNAME  WHERE trunc(kh.PLAN_START_TIME) = trunc(sysdate) AND kh.USER_ID =?1 ";
+                    " ON kh.TDYW_ORG = d.DEPTNAME  WHERE trunc(kh.PLAN_START_TIME) = trunc(sysdate) AND kh.USER_ID =?1 AND kh.STATUS !=2 AND kh.STATUS !=3";
         }else if(taskType==1){
             sql = "SELECT ID,TD_ORG as DEPTID,PLAN_START_TIME,TASK_NAME,CM_USER_ID,PLAN_END_TIME  " +
-                    "FROM XS_ZC_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND CM_USER_ID=?1";
+                    "FROM XS_ZC_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND CM_USER_ID=?1 AND STAUTS !=2";
+        }else if(taskType==3){
+            sql=" SELECT t.ID,t.USER_ID,t.TASK_NAME,t.PLAN_START_TIME,t.PLAN_END_TIME,u.DEPTID FROM CHECK_LIVE_TASK t " +
+                    " LEFT JOIN RZTSYSUSER u ON t.USER_ID=u.ID " +
+                    " WHERE trunc(t.CREATE_TIME)=trunc(sysdate) AND STATUS!=2";
         }
 
         List<Map<String, Object>> maps = execSql(sql,userId);
@@ -169,6 +184,8 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
                         key = "TWO+"+map.get("ID")+"+2+8+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
                     }else if(taskType==1){
                         key = "TWO+"+map.get("ID")+"+1+2+"+map.get("CM_USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
+                    }else if(taskType==3){
+                        key = "TWO+"+map.get("ID")+"+3+13+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
                     }
                     jedis.del(key);
                    resp.updateOnlineTime(userId,Long.parseLong(map.get("ID").toString()));
@@ -220,7 +237,7 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
 
 
     public Object khtgang(Long taskId) {
-        String sql="SELECT * FROM WARNING_OFF_POST_USER_TIME WHERE FK_TASK_ID=?1 AND trunc(START_TIME)=trunc(sysdate)";
+        String sql="SELECT * FROM WARNING_OFF_POST_USER_TIME WHERE FK_TASK_ID=?1";
         List<Map<String, Object>> maps = execSql(sql, taskId);
 
         return maps;
