@@ -95,6 +95,12 @@ public class CheckLiveTaskDetail implements Serializable{
     @Column(name = "TDWX_ORGID")
     private String tdwxOrgid;
 
+    @Column(name = "SJT")
+    private String sjt;
+
+    @Column(name = "DXJX")
+    private String dxjx;
+
     public void setId(Long id){
         if(id==null||id==0){
             SnowflakeIdWorker instance = SnowflakeIdWorker.getInstance(8, 3);
@@ -258,5 +264,21 @@ public class CheckLiveTaskDetail implements Serializable{
     @ExcelResources(title="通道运维单位",order=10)
     public String getTdywOrgid(){
         return this.tdywOrgid;
+    }
+
+    public String getSjt() {
+        return sjt;
+    }
+
+    public void setSjt(String sjt) {
+        this.sjt = sjt;
+    }
+
+    public String getDxjx() {
+        return dxjx;
+    }
+
+    public void setDxjx(String dxjx) {
+        this.dxjx = dxjx;
     }
 }

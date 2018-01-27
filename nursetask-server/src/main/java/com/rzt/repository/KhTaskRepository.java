@@ -82,4 +82,9 @@ public interface KhTaskRepository extends JpaRepository<KhTask, String> {
     @Transactional
     @Query(value = "DELETE FROM KH_TASK where id=?1", nativeQuery = true)
     void deleteTaskById(long id);
+
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE KH_TASK SET WXORG_ID=?3,YWORG_ID=?2 where id=?1", nativeQuery = true)
+    void updateKhTASK(long id, Object deptid, Object companyid);
 }

@@ -23,7 +23,7 @@ public class AnswertimeController extends CurdController<RztSysUser, CommonServi
     private RedisTemplate<String, Object> redisTemplate;
 
     @RequestMapping("answertimeList")
-    public WebApiResponse answertimeList(Integer page, Integer size, String currentUserId, String startTime, String endTime, String deptId) {
+    public WebApiResponse answertimeList(Integer page, Integer size, String currentUserId, String startTime, String endTime, String deptId, String taskType) {
         Pageable pageable = new PageRequest(page, size);
         List listLike = new ArrayList();
         String s = "";
@@ -41,26 +41,38 @@ public class AnswertimeController extends CurdController<RztSysUser, CommonServi
         }
         if (roletype == 1 || roletype == 2) {
             listLike.add(deptid);
-            s += " AND u.DEPTID = ?" + listLike;
+            s += " AND u.DEPTID = ?" + listLike.size();
         } else if (!StringUtils.isEmpty(deptId)) {
             listLike.add(deptId);
-            s += " AND u.DEPTID = ?" + listLike;
+            s += " AND u.DEPTID = ?" + listLike.size();
         }
-
-        String sql = "  SELECT * FROM (SELECT x.TASK_NAME,x.PLAN_START_TIME," +
+        String allSql = "";
+        String xssql = "  SELECT * FROM (SELECT x.TASK_NAME,x.PLAN_START_TIME," +
                 "  x.REAL_START_TIME,u.REALNAME,u.COMPANYNAME,u.DEPT,u.CLASSNAME,u.PHONE, X.STAUTS " +
                 "FROM (SELECT TASK_ID,USER_ID " +
                 "      FROM MONITOR_CHECK_EJ " +
                 "      WHERE WARNING_TYPE = 4 " + s1 + " ) e LEFT JOIN XS_ZC_TASK x ON e.TASK_ID = x.ID " +
-                "  LEFT JOIN USERINFO u ON e.USER_ID = u.ID WHERE 1=1 " + s +
-                " UNION ALL " +
-                " SELECT x.TASK_NAME,x.PLAN_START_TIME,x.REAL_START_TIME,u.REALNAME,u.COMPANYNAME,u.DEPT,u.CLASSNAME,u.PHONE, X.STATUS as STAUTS " +
+                "  LEFT JOIN USERINFO u ON e.USER_ID = u.ID WHERE 1=1 " + s+" ) ";
+
+        String khsql = " SELECT x.TASK_NAME,x.PLAN_START_TIME,x.REAL_START_TIME,u.REALNAME,u.COMPANYNAME,u.DEPT,u.CLASSNAME,u.PHONE, X.STATUS as STAUTS " +
                 " FROM (SELECT TASK_ID,USER_ID " +
                 "      FROM MONITOR_CHECK_EJ " +
                 "      WHERE WARNING_TYPE = 10 " + s1 + " ) e LEFT JOIN KH_TASK x ON e.TASK_ID = x.ID " +
                 "  LEFT JOIN USERINFO u ON e.USER_ID = u.ID WHERE 1=1 " + s + " ) ORDER BY  PLAN_START_TIME DESC  ";
+        allSql=xssql+" UNION ALL " +khsql;
+        if (!StringUtils.isEmpty(taskType)) {
+            switch (taskType) {
+                case "1":
+                    allSql = xssql;
+                    break;
+                case "2":
+                    allSql = khsql;
+                    break;
+                default:allSql=xssql+" UNION ALL " +khsql;
+            }
+        }
         try {
-            return WebApiResponse.success(this.service.execSqlPage(pageable, sql, listLike.toArray()));
+            return WebApiResponse.success(this.service.execSqlPage(pageable, allSql, listLike.toArray()));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("");

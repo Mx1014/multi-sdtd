@@ -31,7 +31,7 @@ public class OfflinesController extends CurdController<RztSysUser, CommonService
      * @return
      */
     @RequestMapping("OfflinesList")
-    public WebApiResponse OfflinesList(Integer page, Integer size, String currentUserId, String startTime, String endTime, String deptId) {
+    public WebApiResponse OfflinesList(Integer page, Integer size, String currentUserId, String startTime, String endTime, String deptId, String taskType) {
         org.springframework.data.domain.Pageable pageable = new PageRequest(page, size);
         List listLike = new ArrayList();
         String s = "";
@@ -52,7 +52,10 @@ public class OfflinesController extends CurdController<RztSysUser, CommonService
             listLike.add(endTime);
             s += " AND CREATE_TIME <= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
         } else {
-            s += " AND trunc(CREATE_TIME) = trunc(sysdate) " ;
+            s += " AND trunc(CREATE_TIME) = trunc(sysdate) ";
+        }
+        if (!StringUtils.isEmpty(taskType)) {
+            s += " and TASK_TYPE = " + taskType;
         }
         String sql = " SELECT " +
                 "  e.USER_ID, " +
