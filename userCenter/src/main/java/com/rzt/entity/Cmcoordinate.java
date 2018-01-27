@@ -6,10 +6,7 @@
  */
 package com.rzt.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.Date;
 
 /**
@@ -52,7 +49,9 @@ public class Cmcoordinate {
     @Column(name = "on_line")
     private Integer onLine;
 
+    @Transient
     private String DEPT;
+    @Transient
     private String DEPTID;
 
     public String getDEPT() {

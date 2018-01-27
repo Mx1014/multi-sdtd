@@ -6,10 +6,10 @@ token:
 spring:
     datasource:
       type: com.alibaba.druid.pool.DruidDataSource
-      url: jdbc:oracle:thin:@168.130.1.30:1521:rztDemo
+      url: jdbc:oracle:thin:@168.130.1.30:1521:orcl
 #      url: jdbc:oracle:thin:@168.130.1.32:1521:LIUZE
-      username: sdt
-      password: sdt
+      username: sdtd27
+      password: sdtd27
       driver-class-name: oracle.jdbc.driver.OracleDriver
       minIdle: 10
       maxActive: 50
