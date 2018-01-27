@@ -17,8 +17,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @ServerEndpoint("/serverendpoint/ErJiServerEndpoint/{userId}")
 public class ErJiServerEndpoint {
     static RedisTemplate<String, Object> redisTemplate;
-    @Autowired
-    ErJiPushService erJiPushService;
 
 
     @Autowired
@@ -47,9 +45,6 @@ public class ErJiServerEndpoint {
         jsonObject.put("session", session);
         String sessionId = session.getId();
         livingSessions.put(sessionId, jsonObject);
-        erJiPushService.module2();
-        erJiPushService.module3();
-
     }
 
 
