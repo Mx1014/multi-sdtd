@@ -193,7 +193,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
         String taskname = "";
         List<Map<String, Object>> tasknames = execSql("select TDYW_ORG||line_name||section taskname from KH_YH_HISTORY where id in (" + task.getTaskId() + ")");
         for (int i = 0; i <tasknames.size() ; i++) {
-            taskname = tasknames.get(i).get("TASKNAME")+",";
+            taskname += tasknames.get(i).get("TASKNAME")+",";
         }
         task.setTaskName(taskname);
         CheckLiveTask save = reposiotry.save(task);
