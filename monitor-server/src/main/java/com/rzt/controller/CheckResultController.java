@@ -81,11 +81,11 @@ public class    CheckResultController extends CurdController<CheckResult,CheckRe
 	 */
 	@RequestMapping("/getCheckResult")
 	public WebApiResponse getCheckResult(@RequestParam(value = "page",defaultValue = "0") Integer page, @RequestParam(value = "size",defaultValue = "8") Integer size,CheckDetail checkDetail){
-		//try {
+		try {
 			return WebApiResponse.success(resultservice.getCheckResult(page,size,checkDetail));
-		//} catch (Exception e) {
-			//return WebApiResponse.erro("查询失败！"+e.getMessage());
-		//}
+		} catch (Exception e) {
+			return WebApiResponse.erro("查询失败！"+e.getMessage());
+		}
 	}
 
 	/**
