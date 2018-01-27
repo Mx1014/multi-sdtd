@@ -18,8 +18,8 @@ public interface CheckLiveTaskDetailRepository extends JpaRepository<CheckLiveTa
     CheckLiveTaskDetail findById(Long id);
 
     @Modifying
-    @Query(value = "UPDATE check_live_task_detail SET sfzg=?2,  ryyz=?3,  dzwl=?4,status=1 where status!=2 AND id= ?1",nativeQuery = true)
-    void checkDgdwUpdate(Long id, String sfzg, String ryyz, String dzwl);
+    @Query(value = "UPDATE check_live_task_detail SET sfzg=?2,  ryyz=?3, sjt=?4, dzwl=?5,status=1 where status!=2 AND id= ?1",nativeQuery = true)
+    void checkDgdwUpdate(Long id, String sfzg, String ryyz,String sjt, String dzwl);
     @Modifying
     @Query(value = "UPDATE check_live_task_detailxs SET sfzg=?2,  ryyz=?3,  dzwl=?4,status=1 where status!=2 AND id= ?1",nativeQuery = true)
     void checkDgdwUpdateXs(Long id, String sfzg, String ryyz, String dzwl);
@@ -29,8 +29,8 @@ public interface CheckLiveTaskDetailRepository extends JpaRepository<CheckLiveTa
     void updateDzwl(String yhId, String lon, String lat, String radius);
 
     @Modifying
-    @Query(value = "UPDATE check_live_task_detail SET dydj=?2,  yhxx=?3,  czfa=?4 ,qtwt=?5,status=2 where status!=2 AND id= ?1",nativeQuery = true)
-    void checkQuestionUpdate(String detailId, String dydj, String yhxx, String czfa, String qtwt);
+    @Query(value = "UPDATE check_live_task_detail SET dydj=?2,  yhxx=?3,  czfa=?4 ,qtwt=?5 , dxjx=?6,status=2 where status!=2 AND id= ?1",nativeQuery = true)
+    void checkQuestionUpdate(String detailId, String dydj, String yhxx, String czfa, String qtwt,String dxjx);
     @Modifying
     @Query(value = "UPDATE check_live_task_detailxs SET  dydj=?2,  yhxx=?3,  czfa=?4 ,qtwt=?5,status=2 where status!=2 AND id= ?1",nativeQuery = true)
     void checkQuestionUpdateXs(String detailId, String dydj, String yhxx, String czfa, String qtwt);
