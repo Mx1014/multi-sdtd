@@ -7,6 +7,7 @@ import com.rzt.websocket.serverendpoint.FirstLevelCommandServerEndpoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import javax.websocket.Session;
 import java.util.ArrayList;
@@ -19,7 +20,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
     @Autowired
     FirstLevelCommandServerEndpoint firstLevelCommandServerEndpoint;
 
-    @Scheduled(fixedRate = 3000)
+    @Scheduled(fixedDelay = 3000)
     public void adminModule1() {
         Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
         sendMsg.forEach((sessionId, session) -> {
@@ -28,7 +29,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
         });
     }
 
-    @Scheduled(fixedRate = 3000)
+    @Scheduled(fixedDelay = 3000)
     public void adminModule2() {
         Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
         sendMsg.forEach((sessionId, session) -> {
@@ -37,7 +38,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
         });
     }
 
-    @Scheduled(fixedRate = 3000)
+    @Scheduled(fixedDelay = 3000)
     public void adminModule4() {
         Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
         sendMsg.forEach((sessionId, session) -> {
@@ -58,7 +59,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
         });
     }
 
-    @Scheduled(fixedRate = 3000)
+    @Scheduled(fixedDelay = 3000)
     public void adminModule3() {
         Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
         sendMsg.forEach((sessionId, session) -> {
@@ -90,7 +91,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
         });
     }
 
-    @Scheduled(fixedRate = 3000)
+    @Scheduled(fixedDelay = 3000)
     public void adminModule5() {
         Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
         sendMsg.forEach((sessionId, session) -> {
@@ -172,7 +173,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
         });
     }
 
-    @Scheduled(fixedRate = 3000)
+    @Scheduled(fixedDelay = 3000)
     public void adminModule8() {
         Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
         sendMsg.forEach((sessionId, session) -> {
@@ -218,7 +219,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
         });
     }
 
-    @Scheduled(fixedRate = 3000)
+    @Scheduled(fixedDelay = 3000)
     public void adminModule6() {
         Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
         sendMsg.forEach((sessionId, session) -> {
@@ -313,7 +314,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
         });
     }
 
-    @Scheduled(fixedRate = 3000)
+    @Scheduled(fixedDelay = 3000)
     public void adminModule7() {
         Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
         sendMsg.forEach((sessionId, session) -> {
@@ -344,14 +345,20 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
                 Map wks1 = new HashMap();
                 Map jxz1 = new HashMap();
                 Map ywc2 = new HashMap();
-                for (Map<String, Object> singleXs : list) {
-                    wks1.put(singleXs.get("TD_ORG"), singleXs.get("WKS"));
+                if (!StringUtils.isEmpty(list)) {
+                    for (Map<String, Object> singleXs : list) {
+                        wks1.put(singleXs.get("TD_ORG"), singleXs.get("WKS"));
+                    }
                 }
-                for (Map<String, Object> singleKh : list1) {
-                    jxz1.put(singleKh.get("TD_ORG"), singleKh.get("WKS"));
+                if (!StringUtils.isEmpty(list1)) {
+                    for (Map<String, Object> singleKh : list1) {
+                        jxz1.put(singleKh.get("TD_ORG"), singleKh.get("WKS"));
+                    }
                 }
-                for (Map<String, Object> singleKh : list2) {
-                    ywc2.put(singleKh.get("TD_ORG"), singleKh.get("WKS"));
+                if (!StringUtils.isEmpty(list2)) {
+                    for (Map<String, Object> singleKh : list2) {
+                        ywc2.put(singleKh.get("TD_ORG"), singleKh.get("WKS"));
+                    }
                 }
                 if (Integer.valueOf(session.get("type").toString()) == 9) {
                     for (Map<String, Object> dept : deptname) {
@@ -432,22 +439,35 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
                 } else if (Integer.valueOf(session.get("type").toString()) == 1) {
                     list1 = this.execSql(khzx);
                     list3 = this.execSql(xszx);
+                } else if (Integer.valueOf(session.get("type").toString()) == 9) {
+                    list2 = this.execSql(khlx);
+                    list4 = this.execSql(xslx);
+                    list1 = this.execSql(khzx);
+                    list3 = this.execSql(xszx);
                 }
                 Map map1 = new HashMap();
                 Map map2 = new HashMap();
                 Map map3 = new HashMap();
                 Map map4 = new HashMap();
-                for (Map<String, Object> singleXs : list1) {
-                    map1.put(singleXs.get("ID"), singleXs.get("KHZX"));
+                if (!StringUtils.isEmpty(list1)) {
+                    for (Map<String, Object> singleXs : list1) {
+                        map1.put(singleXs.get("ID"), singleXs.get("KHZX"));
+                    }
                 }
-                for (Map<String, Object> singleXs : list2) {
-                    map2.put(singleXs.get("ID"), singleXs.get("KHLX"));
+                if (!StringUtils.isEmpty(list2)) {
+                    for (Map<String, Object> singleXs : list2) {
+                        map2.put(singleXs.get("ID"), singleXs.get("KHLX"));
+                    }
                 }
-                for (Map<String, Object> singleXs : list3) {
-                    map3.put(singleXs.get("ID"), singleXs.get("XSZX"));
+                if (!StringUtils.isEmpty(list3)) {
+                    for (Map<String, Object> singleXs : list3) {
+                        map3.put(singleXs.get("ID"), singleXs.get("XSZX"));
+                    }
                 }
-                for (Map<String, Object> singleXs : list4) {
-                    map4.put(singleXs.get("ID"), singleXs.get("XSLX"));
+                if (!StringUtils.isEmpty(list4)) {
+                    for (Map<String, Object> singleXs : list4) {
+                        map4.put(singleXs.get("ID"), singleXs.get("XSLX"));
+                    }
                 }
                 if (Integer.valueOf(session.get("type").toString()) == 9) {
                     for (Map<String, Object> dept : deptname) {
