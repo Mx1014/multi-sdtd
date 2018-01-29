@@ -12,10 +12,7 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /***
 * @Class  PcMapShowService
@@ -100,28 +97,39 @@ public class PcMapShowService {
 
     /**
      *
-     * @param deptId
+     * @param param
      * @return 从redis中拿部门的人
      * @throws Exception
      */
-    public List<Map<String,Object>> deptMenFromRedis(String deptId) throws Exception {
+    public List<Map<String,Object>> deptMenFromRedis(String param) throws Exception {
         HashOperations hashOperations = redisTemplate.opsForHash();
 
-        List userList = null;
-        Object userInformation = hashOperations.get("menInDept", deptId);
-        if(userInformation == null) {
-            if(deptId.equals("all")) {
-                String userListSql = "select id,worktype from RZTSYSUSER where USERDELETE = 1";
-                userList = cmcoordinateService.execSql(userListSql);
+        List userList = new ArrayList();
+        String[] deptIds = param.split(",");
+        for (String deptId:deptIds) {
+            Object userInformation = hashOperations.get("menInDept", deptId);
+            if(userInformation == null) {
+                if(deptId.equals("all")) {
+                    String userListSql = "select id,worktype from RZTSYSUSER where USERDELETE = 1";
+                    userList.addAll(cmcoordinateService.execSql(userListSql));
+                } else {
+                    String userListSql = "select id,worktype from RZTSYSUSER where USERDELETE = 1 and (DEPTID = ?1 or COMPANYID = ?1 or GROUPID = ?1 or CLASSNAME = ?1 ) ";
+                    userList.addAll(cmcoordinateService.execSql(userListSql, deptId));
+                }
+                hashOperations.put("menInDept",deptId,userList);
             } else {
-                String userListSql = "select id,worktype from RZTSYSUSER where USERDELETE = 1 and (DEPTID = ?1 or COMPANYID = ?1 or GROUPID = ?1 or CLASSNAME = ?1 ) ";
-                userList = cmcoordinateService.execSql(userListSql, deptId);
+                userList.addAll(JSONObject.parseArray(userInformation.toString()));
             }
-            hashOperations.put("menInDept",deptId,userList);
-        } else {
-            userList = JSONObject.parseArray(userInformation.toString());
         }
+
         return userList;
+    }
+
+    public static void main(String[] args) {
+        String u = "1,2,3";
+        if(u.contains("1")) {
+            System.out.println("哈哈");
+        }
     }
 
 }
