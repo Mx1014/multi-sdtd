@@ -62,6 +62,7 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
                 if(time<0){
                     continue;
                 }
+                time = time+5400000L;
                 jedis.psetex(key,time,"看护未上线");
             } catch (Exception e) {
                 //System.out.println(e.getMessage());
@@ -84,6 +85,7 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
             try {
                 Long time = plan_start_time.getTime() - new Date().getTime();
                 if(time>0){
+                    time = time+5400000L;
                     jedis.psetex(key,time,"巡视未上线");
                 }
             } catch (Exception e) {
@@ -113,6 +115,7 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
                     list.add(map.get("ID"));
                     continue;
                 }
+                time = time+1800000L;
                 jedis.psetex(key, time, "看护人员未按规定时间看护任务");
             } catch (Exception e) {
                 //System.out.println(e.getMessage());
@@ -133,7 +136,7 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
                     resp.saveCheckEj(SnowflakeIdWorker.getInstance(0,0).nextId(),Long.valueOf(map.get("ID").toString()),2,10,map.get("USER_ID").toString(),map.get("TDYW_ORG").toString(),map.get("TASK_NAME").toString());
                     String key = "ONE+"+map.get("ID").toString()+"+2+10+"+map.get("USER_ID")+"+"+map.get("TDYW_ORG")+"+"+map.get("TASK_NAME");
                     redisService.setex(key);
-                    /*String[] message = new String[7];
+                   /* String[] message = new String[7];
                     message[0] = "ONE";
                     message[1] = map.get("ID").toString();
                     message[2] = "2";
@@ -164,6 +167,7 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
                     list.add(map.get("ID"));
                     continue;
                 }
+                time = time+1800000L;
                 jedis.psetex(key, time, "巡视未按规定时间接任务");
             } catch (Exception e) {
                 //System.out.println(e.getMessage());
@@ -232,6 +236,7 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
             try {
                 Long time = plan_start_time.getTime() - new Date().getTime();
                 if(time>0){
+                    time = time+5400000L;
                     jedis.psetex(key,time,"稽查未上线");
                 }
             } catch (Exception e) {
