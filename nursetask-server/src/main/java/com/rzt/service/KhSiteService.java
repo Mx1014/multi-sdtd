@@ -230,27 +230,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             if (yh.getVtype().contains("kV")) {
                 kv = kv.substring(0, kv.indexOf("k"));
             }
-
-            if (yh.getYhlb() != null && yh.getYhlb().equals("在施类")){
-                yh.setTaskId(task.getId());
-                String taskName = kv + "-" + yh.getLineName() + " " + yh.getSection() + " 号杆塔看护任务";
-                task.setVtype(yh.getVtype());
-                task.setLineName(yh.getLineName());
-                task.setTdywOrg(yh.getTdywOrg());
-                task.setSection(yh.getSection());
-                task.setLineId(yh.getLineId());
-                task.setTaskName(taskName);
-                task.setWxOrgId(yh.getWxorgId());
-                task.setTdywOrgId(yh.getTdorgId());
-                task.setWxOrg(yh.getTdwxOrg());
-                task.setStatus(0);// 未派发
-                task.setYhId(yh.getId());
-                task.setCreateTime(DateUtil.dateNow());
-                this.cycleService.add(task);
-                long id = new SnowflakeIdWorker(8, 24).nextId();
-                this.reposiotry.addCheckSite(id, task.getId(), 0, task.getTaskName(), 0, task.getLineId(), task.getTdywOrgId(), task.getWxOrgId(), task.getYhId());
-            }
-
+            yh.setTaskId(task.getId());
             yh.setYhzt(0);//隐患未消除
             if (yh.getId() == null) {
                 yh.setId(0L);
@@ -258,11 +238,27 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             yh.setCreateTime(DateUtil.dateNow());
             yh.setSection(startTowerName + "-" + endTowerName);
             yhservice.add(yh);
-            ;
+            String taskName = kv + "-" + yh.getLineName() + " " + yh.getSection() + " 号杆塔看护任务";
+            task.setVtype(yh.getVtype());
+            task.setLineName(yh.getLineName());
+            task.setTdywOrg(yh.getTdywOrg());
+            task.setSection(yh.getSection());
+            task.setLineId(yh.getLineId());
+            task.setTaskName(taskName);
+            task.setWxOrgId(yh.getWxorgId());
+            task.setTdywOrgId(yh.getTdorgId());
+            task.setWxOrg(yh.getTdwxOrg());
+            task.setStatus(0);// 未派发
+            task.setYhId(yh.getId());
+            task.setCreateTime(DateUtil.dateNow());
+            this.cycleService.add(task);
+            long id = new SnowflakeIdWorker(8, 24).nextId();
+            this.reposiotry.addCheckSite(id, task.getId(), 0, task.getTaskName(), 0, task.getLineId(), task.getTdywOrgId(), task.getWxOrgId(), task.getYhId());
             if (null != pictureId && !pictureId.equals("")) {
                 String[] split = pictureId.split(",");
                 for (int i = 0; i < split.length; i++) {
                     yhRepository.updatePicture(Long.parseLong(split[i]), yh.getId());
+                    //审批完成后   为图片添加taskId
                 }
             }
             return WebApiResponse.success("保存成功");

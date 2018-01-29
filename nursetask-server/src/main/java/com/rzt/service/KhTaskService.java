@@ -94,11 +94,11 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         } else {
             sql = "select " + result + " from kh_task k  left join rztsysuser u on u.id = k.user_id left join RZTSYSDEPARTMENT d on u.classname = d.id " + buffer.toString();
         }
-        sql = sql + " order by k.create_time desc";
+        sql += " order by k.id desc";
         //String sql = "select * from listAllKhTask "+buffer.toString();
-        Page<Map<String, Object>> maps = execSqlPage(pageable, sql, params.toArray());
-        List<Map<String, Object>> content1 = maps.getContent();
-        /*for (Map map : content1) {
+        Page<Map<String, Object>> maps = this.execSqlPage(pageable, sql, params.toArray());
+       /* List<Map<String, Object>> content1 = maps1.getContent();
+        for (Map map : content1) {
             map.put("ID", map.get("ID") + "");
         }*/
         return maps;
@@ -109,7 +109,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
             SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
             Calendar c = Calendar.getInstance();
             c.setTime(new Date());
-            c.add(Calendar.DAY_OF_MONTH, -7);
+            c.add(Calendar.DAY_OF_MONTH, -6);
             Date m = c.getTime();
             String mon = df.format(m);
             task.setPlanStartTime(mon + " 00:00");
