@@ -97,4 +97,13 @@ public interface KhYhHistoryRepository extends JpaRepository<KhYhHistory, String
     @Transactional
     @Query(value = "update KH_CYCLE SET STATUS=2,XQ_TIME=sysdate WHERE YH_ID=?1", nativeQuery = true)
     void updateKhCycle(long yhId);
+
+    @Modifying
+    @Transactional
+    @Query(value = "update KH_TASK SET YWORG_ID=?2 ,WXORG_ID=?3  WHERE ID=?1", nativeQuery = true)
+    void addTdOrgId(long id, String deptid, Object wx);
+    @Modifying
+    @Transactional
+    @Query(value = "update KH_TASK SET WXORG_ID=?2 WHERE ID=?1", nativeQuery = true)
+    void addTdOrgId2(long id, String deptid);
 }

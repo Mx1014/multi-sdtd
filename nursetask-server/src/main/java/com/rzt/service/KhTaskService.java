@@ -430,7 +430,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         task.setYhId(site.getYhId());
         task.setStatus(0);
         this.reposiotry.addTask(task.getId(), task.getSiteId(), task.getUserId(), task.getTaskName(), task.getYhId(),
-                task.getPlanStartTime(), task.getPlanEndTime(), task.getWxOrg(), task.getCount(), task.getTdywOrg(), 0);
+                task.getPlanStartTime(), task.getPlanEndTime(), task.getWxOrg(), task.getCount(), task.getTdywOrg(), 0,task.getYwOrgId(),task.getWxOrgId());
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     }
 

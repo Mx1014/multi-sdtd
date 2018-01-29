@@ -168,12 +168,16 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
             list = this.execSql(sql, taskId);
         }
         for (Map map : list) {
-            String round = map.get("ROUND").toString();
-            if (!round.contains(".")) {
-                if (Long.parseLong(round) > 500) {
-                    round = "500";
+            if (map.get("ROUND") != null) {
+                String round = map.get("ROUND").toString();
+                if (!round.contains(".")) {
+                    if (Long.parseLong(round) > 500) {
+                        round = "500";
+                    }
+                    map.put("ROUND", round + ".0");
                 }
-                map.put("ROUND", round + ".0");
+            }else {
+                map.put("ROUND","300.0");
             }
             map.put("URL", "http://39.106.206.129:8097/warningServer/warning/KHOffPost");
         }
