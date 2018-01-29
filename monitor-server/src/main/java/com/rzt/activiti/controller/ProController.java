@@ -248,6 +248,7 @@ public class ProController {
 
     /**
      * 页面 通道单位框权限接口
+     * 返回0 不显示 代表二级单位   返回1时显示代表顶级单位
      * @param currentUserId
      * @return
      */
