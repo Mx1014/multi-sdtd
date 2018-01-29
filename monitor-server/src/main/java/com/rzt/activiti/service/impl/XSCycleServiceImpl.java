@@ -13,17 +13,16 @@ import org.activiti.engine.TaskService;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.repository.ProcessDefinitionQuery;
 import org.activiti.engine.runtime.ProcessInstance;
-import org.activiti.engine.task.Task;
-import org.activiti.engine.task.TaskQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -43,10 +42,9 @@ public class XSCycleServiceImpl  extends CurdService<CheckResult, CheckResultRep
     private RepositoryService repositoryService;
     @Autowired
     private YHrepository yHrepository;
- /*   @Autowired
-    private RedisTemplate redisTemplate;
     @Autowired
-    private RedisUtil redisUtil;*/
+    private RedisUtil redisUtil;
+
     protected static Logger LOGGER = LoggerFactory.getLogger(ProServiceImpl.class);
 
     /**
@@ -69,119 +67,177 @@ public class XSCycleServiceImpl  extends CurdService<CheckResult, CheckResultRep
         return runtimeService.createProcessInstanceQuery().list();
     }
 
+    @Override
+    public WebApiResponse checkTask(String userName, Integer page, Integer size) {
+        return null;
+    }
+
     /**
-     * 查看任务
-     * @param userName
+     * 查看所有待办任务
+     * @param userId 登录人
+     * @param page
+     * @param size
+     * @param tdId   通道公司
+     * @param lineName  线路名称
+     * @param vLevel    电压等级
+     * @param startTime  开始时间
+     * @param endTime    结束时间
      * @return
      */
-    @Override
-    public WebApiResponse checkTask(String userName,Integer page,Integer size) {
-      /*  try {
-            String roleIdByUserId = redisUtil.findRoleIdByUserId(redisTemplate, userName);
-            System.out.println(roleIdByUserId+"******************************");
-        }catch (Exception e){
-
-        }*/
-
-
-
-        //分页数据容错
-        if(null == page || 0 == page){
-            page = 1;
-        }
-        if(null == size || 0 == size){
-            size = 10;
-        }
-        List<Object> result = new ArrayList<>();
-
-
-        //流程定义key（流程定义的标识）
-        String processDefinitionKey = "xssh";
-        //创建查询对象
-        TaskQuery taskQuery = taskService.createTaskQuery();
-        //设置查询条件
-        taskQuery.taskAssignee(userName);
-        //指定流程定义key，只查询某个流程的任务
-        taskQuery.processDefinitionKey(processDefinitionKey);
-        //获取查询列表
-        List<Task> list = taskQuery.list();
-        //完整sql
-        /*SELECT x.CREATE_TIME,x.V_LEVEL,x.SECTION,x.TASK_NAME,x.WX_ORG,x.TD_ORG,(SELECT d.DEPTNAME
-        FROM RZTSYSDEPARTMENT d WHERE ID = x.TD_ORG) as tdorg,(SELECT d.DEPTNAME
-        FROM RZTSYSDEPARTMENT d WHERE ID = x.WX_ORG) as wxorg,x.ID,r.PROPOSER_ID,r.PROPOSER_TIME,r.CHANGE_REASON
-
-        FROM XS_ZC_CYCLE x
-        LEFT JOIN XS_ZC_CYCLE_RECORD r ON r.XS_ZC_CYCLE_ID = x.ID
-        WHERE r.PROPOSER_STATUS = 0*/
-
-
-
-        //分页查询当前待办任务
-        //List<Task> list = taskQuery.taskAssignee(userName).orderByTaskCreateTime().desc().listPage(page, size);
-        if(null == list  || list.size()==0){
-            return WebApiResponse.success("");
-        }
+    public WebApiResponse checkTasks(String userId,Integer page,Integer size
+            ,String tdId,String lineName,String vLevel,String startTime,String endTime) {
+        Page<Map<String, Object>> maps = null;
         try{
-           /* String ids = "";
-            for (Task task : list) {
-                ids += ","+task.getId();
+            String td = redisUtil.findTDByUserId(userId);
+            userId = redisUtil.findRoleIdByUserId(userId);
+            if(null == userId || "".equals(userId)){
+                return WebApiResponse.erro("巡视审核历史查询失败  登录人节点 = "+userId);
             }
-            System.out.println(ids+"****************");
-            if(ids.length()>0){
-                ids = ids.substring(1,ids.length());
+            if(null == td || "".equals(td)){
+                return WebApiResponse.erro("巡视审核历史查询失败 通道公司="+td);
+            }
+            Pageable pageable = new PageRequest(page, size, null);
+            String sql = "SELECT *" +
+                    "FROM (SELECT x.ID,x.XS_ZC_CYCLE_ID as cycleid,x.XS_ZC_CYCLE,x.PLAN_XS_NUM,x.APPROVER_TIME,t.ID_ as actaskid,t.PROC_INST_ID_,t.ASSIGNEE_,x.PROPOSER_TYPE," +
+                    "        x.PLAN_START_TIME,x.PLAN_END_TIME,x.CM_USER_ID,x.CHANGE_REASON,x.DESCRIPTION,x.PROPOSER_ID," +
+                    "                  (SELECT u.REALNAME FROM RZTSYSUSER u WHERE u.ID = x.CM_USER_ID ) as username," +
+                    "                   (SELECT u.DEPTID FROM RZTSYSUSER u WHERE u.ID = x.CM_USER_ID ) as DID," +
+                    "                  (SELECT d.DEPTNAME FROM RZTSYSUSER u LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID WHERE u.ID = x.CM_USER_ID ) as dept," +
+                    "                  (SELECT d.COMPANYNAME FROM RZTSYSUSER u LEFT JOIN RZTSYSCOMPANY d ON d.ID = u.COMPANYID WHERE u.ID = x.CM_USER_ID ) as wx," +
+                    "                  (SELECT DISTINCT v.TEXT_ FROM ACT_HI_VARINST v WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'info') as info," +
+                    "                   (SELECT DISTINCT u.REALNAME FROM ACT_HI_VARINST v LEFT JOIN RZTSYSUSER u  ON  u.ID = v.TEXT_ WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'userName') as v_user," +
+                    "                    (SELECT DISTINCT u.PHONE FROM ACT_HI_VARINST v LEFT JOIN RZTSYSUSER u  ON  u.ID = v.TEXT_ WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'userName') as v_phone," +
+                    "                  (SELECT DISTINCT u.PHONE FROM RZTSYSUSER u WHERE u.ID = x.CM_USER_ID) as phone," +
+                    "                  (SELECT l.LINE_NAME FROM XS_ZC_CYCLE cy LEFT JOIN CM_LINE l ON l.ID = cy.LINE_ID WHERE cy.ID = x.XS_ZC_CYCLE_ID ) as LINE_NAME," +
+                    "                  (SELECT l.V_LEVEL FROM XS_ZC_CYCLE cy LEFT JOIN CM_LINE l ON l.ID = cy.LINE_ID WHERE cy.ID = x.XS_ZC_CYCLE_ID ) as V_LEVEL," +
+                    "                  (SELECT l.SECTION FROM XS_ZC_CYCLE cy LEFT JOIN CM_LINE l ON l.ID = cy.LINE_ID WHERE cy.ID = x.XS_ZC_CYCLE_ID ) as SECTION," +
+                    "                   (SELECT  c.PLAN_XS_NUM from XS_ZC_CYCLE  c WHERE c.ID = x.XS_ZC_CYCLE_ID ) as xsnum," +
+                    "                   (SELECT  c.TASK_NAME from XS_ZC_CYCLE  c WHERE c.ID = x.XS_ZC_CYCLE_ID ) as taskname," +
+                    "                (SELECT  c.CYCLE from XS_ZC_CYCLE  c WHERE c.ID = x.XS_ZC_CYCLE_ID ) as xscycle" +
+                    "      FROM ACT_RU_TASK t LEFT JOIN ACT_RU_VARIABLE h ON t.PROC_INST_ID_ = h.PROC_INST_ID_" +
+                    "        LEFT JOIN XS_ZC_CYCLE_RECORD x ON x.XS_ZC_CYCLE_ID = h.TEXT_" +
+                    "      WHERE h.NAME_ = 'XSID' AND t.PROC_DEF_ID_ LIKE 'xssh%'  AND t.ASSIGNEE_ = '"+userId+"') tt WHERE 1=1 ";
+
+
+            if(null != lineName && !"".equals(lineName) ){
+                sql += "  AND  tt.LINE_NAME LIKE '%"+lineName+"%' ";
+            }
+            if(null != vLevel && !"".equals(vLevel) ){
+                sql += "  AND tt.V_LEVEL =  '"+vLevel+"'";
+            }
+            if(null != startTime && !"".equals(startTime) ){
+                sql += "  AND   APPROVER_TIME >=  to_date('"+startTime+"','YYYY-MM-dd HH24:mi') ";
+            }
+            if(null != startTime && !"".equals(startTime) ){
+                sql += "  AND   APPROVER_TIME <=  to_date('"+endTime+"','YYYY-MM-dd HH24:mi') ";
+            }
+            //判断当前用户所属节点    书否显示所有信息
+           /* if("sdid".equals(userId) || "sdyjid".equals(userId)){
+                sql += "  AND  tt.DID =   '"+td+"'";
+            }else{
+                if(null != tdId && !"".equals(tdId)){
+                    sql += "  AND  tt.DID =   '"+tdId+"'";
+                }
             }*/
-            //这个sql可以用工作流提供的id查询到启动流程时传递的参数
-            for (Task task : list) {
-                String realname = "";
-                System.out.println("当前任务  "+task);
-                System.out.println(task.getId());
-
-                Object info =  taskService.getVariable(task.getId(), "info");
-                Object XSID =  taskService.getVariable(task.getId(), "XSID");
-                Object name =  taskService.getVariable(task.getId(), "userName");
-
-                if(null == XSID || "".equals(XSID)){
-                    //拿不到隐患id的跳过
-                    continue;
-                }
-                ArrayList<Object> strings = new ArrayList<>();
-                strings.add(XSID);
-                Map<String, Object> map = null;
-                String sql = " SELECT r.PROPOSER_TIME,x.WX_ORG,x.TD_ORG,(SELECT d.DEPTNAME" +
-                        "  FROM RZTSYSDEPARTMENT d WHERE d.ID = x.TD_ORG) as tdorg,(SELECT d.COMPANYNAME" +
-                        "  FROM RZTSYSCOMPANY d WHERE d.ID = x.WX_ORG) as wxorg,x.ID," +
-                        "  (SELECT l.V_LEVEL" +
-                        "   FROM CM_LINE l WHERE l.ID = x.LINE_ID) as vlevel," +
-                        "  (SELECT l.SECTION" +
-                        "   FROM CM_LINE l WHERE l.ID = x.LINE_ID) as SECTION," +
-                        "  (SELECT l.LINE_NAME" +
-                        "   FROM CM_LINE l WHERE l.ID = x.LINE_ID) as lineName" +
-                        "   , r.CHANGE_REASON," +
-                        "  (SELECT u.REALNAME FROM RZTSYSUSER u WHERE  u.id = r.PROPOSER_ID) as name," +
-                        "  (SELECT u.PHONE FROM RZTSYSUSER u WHERE  u.id = r.PROPOSER_ID) as PHONE" +
-                        "    ,x.IS_KT,x.CYCLE,x.PLAN_XS_NUM,r.XS_ZC_CYCLE cycle1,r.PLAN_XS_NUM as plan_xs_num1,r.PROPOSER_TYPE" +
-                        "   FROM XS_ZC_CYCLE x" +
-                        "    LEFT JOIN XS_ZC_CYCLE_RECORD r ON r.XS_ZC_CYCLE_ID = x.ID" +
-                        "    WHERE r.PROPOSER_STATUS = 0  AND  x.ID = ?"+strings.size();
-                List<Map<String, Object>> maps = this.execSql(sql, strings);
-                if(null != maps && maps.size()>0){
-                     map = maps.get(0);
-                }else {
-                    continue;
-                }
-                map.put("acTaskId",task.getId());
-                map.put("assignee",task.getAssignee());
-                map.put("info",info);
-                map.put("proId",task.getProcessInstanceId());
-                result.add(map);
-
+            if(null != tdId && !"".equals(tdId)){
+                sql += "  AND  tt.DID =   '"+tdId+"'";
             }
+            maps = this.execSqlPage(pageable, sql, null);
+            LOGGER.info("当前节点待办任务查询成功"+userId);
 
         }catch (Exception e){
-            System.out.println(e.getMessage());
+            LOGGER.error(userId+"当前节点待办信息查询失败"+e.getMessage());
+            return WebApiResponse.erro(userId+"当前节点待办信息查询失败"+e.getMessage());
         }
-        return WebApiResponse.success(result);
+
+        return WebApiResponse.success(maps);
     }
+
+
+
+
+    /**
+     * 查看所有历史任务
+     * @param userId 登录人
+     * @param page
+     * @param size
+     * @param tdId   通道公司
+     * @param lineName  线路名称
+     * @param vLevel    电压等级
+     * @param startTime  开始时间
+     * @param endTime    结束时间
+     * @return
+     */
+    public WebApiResponse historyActInstanceList(String userId,Integer page,Integer size
+            ,String tdId,String lineName,String vLevel,String startTime,String endTime) {
+        Page<Map<String, Object>> maps = null;
+        try{
+            String td = redisUtil.findTDByUserId(userId);
+            userId = redisUtil.findRoleIdByUserId(userId);
+            if(null == userId || "".equals(userId)){
+                return WebApiResponse.erro("巡视审核历史查询失败  登录人节点 = "+userId);
+            }
+            if(null == td || "".equals(td)){
+                return WebApiResponse.erro("巡视审核历史查询失败 通道公司="+td);
+            }
+            Pageable pageable = new PageRequest(page, size, null);
+            String sql = "SELECT *" +
+                    "FROM (SELECT x.ID,x.XS_ZC_CYCLE_ID as cycleid,x.XS_ZC_CYCLE,x.PLAN_XS_NUM,x.APPROVER_TIME,t.ID_ as actaskid,t.PROC_INST_ID_,t.ASSIGNEE_,x.PROPOSER_TYPE," +
+                    "        x.PLAN_START_TIME,x.PLAN_END_TIME,x.CM_USER_ID,x.CHANGE_REASON,x.DESCRIPTION,x.PROPOSER_ID,t.START_TIME_,t.END_TIME_," +
+                    "                  (SELECT u.REALNAME FROM RZTSYSUSER u WHERE u.ID = x.CM_USER_ID ) as username," +
+                    "                   (SELECT u.DEPTID FROM RZTSYSUSER u WHERE u.ID = x.CM_USER_ID ) as DID," +
+                    "                      (SELECT  c.TASK_NAME from XS_ZC_CYCLE  c WHERE c.ID = x.XS_ZC_CYCLE_ID ) as taskname," +
+                    "                  (SELECT d.DEPTNAME FROM RZTSYSUSER u LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID WHERE u.ID = x.CM_USER_ID ) as dept," +
+                    "                  (SELECT d.COMPANYNAME FROM RZTSYSUSER u LEFT JOIN RZTSYSCOMPANY d ON d.ID = u.COMPANYID WHERE u.ID = x.CM_USER_ID ) as wx," +
+                    "                  (SELECT DISTINCT v.TEXT_ FROM ACT_HI_VARINST v WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'info') as info," +
+                    "                  (SELECT DISTINCT v.TEXT_ FROM ACT_HI_VARINST v WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'flag') as flag," +
+                    "                   (SELECT DISTINCT u.REALNAME FROM ACT_HI_VARINST v LEFT JOIN RZTSYSUSER u  ON  u.ID = v.TEXT_ WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'userName') as v_user," +
+                    "                   (SELECT DISTINCT u.PHONE FROM ACT_HI_VARINST v LEFT JOIN RZTSYSUSER u  ON  u.ID = v.TEXT_ WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'userName') as v_phone," +
+                    "                   (SELECT  c.PLAN_XS_NUM from XS_ZC_CYCLE  c WHERE c.ID = x.XS_ZC_CYCLE_ID ) as xsnum," +
+                    "                (SELECT  c.CYCLE from XS_ZC_CYCLE  c WHERE c.ID = x.XS_ZC_CYCLE_ID ) as xscycle ," +
+                    "                  (SELECT DISTINCT u.PHONE FROM RZTSYSUSER u WHERE u.ID = x.CM_USER_ID) as phone," +
+                    "                  (SELECT l.LINE_NAME FROM XS_ZC_CYCLE cy LEFT JOIN CM_LINE l ON l.ID = cy.LINE_ID WHERE cy.ID = x.XS_ZC_CYCLE_ID ) as LINE_NAME," +
+                    "                  (SELECT l.V_LEVEL FROM XS_ZC_CYCLE cy LEFT JOIN CM_LINE l ON l.ID = cy.LINE_ID WHERE cy.ID = x.XS_ZC_CYCLE_ID ) as V_LEVEL," +
+                    "                  (SELECT l.SECTION FROM XS_ZC_CYCLE cy LEFT JOIN CM_LINE l ON l.ID = cy.LINE_ID WHERE cy.ID = x.XS_ZC_CYCLE_ID ) as SECTION" +
+                    "      FROM ACT_HI_ACTINST t LEFT JOIN ACT_RU_VARIABLE h ON t.PROC_INST_ID_ = h.PROC_INST_ID_" +
+                    "        LEFT JOIN XS_ZC_CYCLE_RECORD x ON x.XS_ZC_CYCLE_ID = h.TEXT_" +
+                    "      WHERE h.NAME_ = 'XSID' AND t.PROC_DEF_ID_ LIKE 'xssh%'  AND t.ASSIGNEE_ = '"+userId+"'   AND t.END_TIME_ IS  NOT  NULL  ) tt WHERE 1=1 ";
+
+
+            if(null != lineName && !"".equals(lineName) ){
+                sql += "  AND  tt.LINE_NAME LIKE '%"+lineName+"%' ";
+            }
+            if(null != vLevel && !"".equals(vLevel) ){
+                sql += "  AND tt.V_LEVEL =  '"+vLevel+"'";
+            }
+            if(null != startTime && !"".equals(startTime) ){
+                sql += "  AND   APPROVER_TIME >=  to_date('"+startTime+"','YYYY-MM-dd HH24:mi') ";
+            }
+            if(null != startTime && !"".equals(startTime) ){
+                sql += "  AND   APPROVER_TIME <=  to_date('"+endTime+"','YYYY-MM-dd HH24:mi') ";
+            }
+            //判断当前用户所属节点    书否显示所有信息
+           /* if("sdid".equals(userId) || "sdyjid".equals(userId)){
+                sql += "  AND  tt.DID =   '"+td+"'";
+            }else{
+                if(null != tdId && !"".equals(tdId)){
+                    sql += "  AND  tt.DID =   '"+tdId+"'";
+                }
+            }*/
+            if(null != tdId && !"".equals(tdId)){
+                sql += "  AND  tt.DID =   '"+tdId+"'";
+            }
+            maps = this.execSqlPage(pageable, sql, null);
+            LOGGER.info("当前节点历史任务查询成功"+userId);
+
+        }catch (Exception e){
+            LOGGER.error(userId+"当前节点历史信息查询失败"+e.getMessage());
+            return WebApiResponse.erro(userId+"当前节点历史信息查询失败"+e.getMessage());
+        }
+
+        return WebApiResponse.success(maps);
+    }
+
 
 
 

@@ -2,12 +2,10 @@ package com.rzt.websocket.serverendpoint;
 
 import com.alibaba.fastjson.JSONObject;
 import com.rzt.websocket.service.ErJiPushService;
-import com.rzt.websocket.service.YiJiPushService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 
-import javax.annotation.Resource;
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
@@ -19,16 +17,11 @@ import java.util.concurrent.ConcurrentHashMap;
 @ServerEndpoint("/serverendpoint/ErJiServerEndpoint/{userId}")
 public class ErJiServerEndpoint {
     static RedisTemplate<String, Object> redisTemplate;
-    private static ErJiPushService erJiPushService;
+
 
     @Autowired
     public void setRedisTemplate(RedisTemplate<String, Object> redisTemplate) {
         ErJiServerEndpoint.redisTemplate = redisTemplate;
-    }
-
-    @Resource
-    public void setWuDPushService(ErJiPushService erJiPushService) {
-        ErJiServerEndpoint.erJiPushService = erJiPushService;
     }
 
     /**
@@ -52,18 +45,6 @@ public class ErJiServerEndpoint {
         jsonObject.put("session", session);
         String sessionId = session.getId();
         livingSessions.put(sessionId, jsonObject);
-        //tui - tui - tui
-        erJiPushService.module2Method(new HashMap<>(), jsonObject);
-        erJiPushService.module3Method(new HashMap<>(), jsonObject);
-        erJiPushService.module4_1Method(new HashMap<>(), jsonObject);
-        erJiPushService.module4_2Method(new HashMap<>(), jsonObject);
-        erJiPushService.module5_1Method(new HashMap<>(), jsonObject);
-        erJiPushService.module5_2Method(new HashMap<>(), jsonObject);
-        erJiPushService.module7(sessionId);
-        erJiPushService.module8(sessionId);
-        erJiPushService.module9(sessionId);
-        erJiPushService.module10(sessionId);
-
     }
 
 

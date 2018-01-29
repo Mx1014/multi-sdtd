@@ -13,7 +13,6 @@ import com.rzt.repository.CheckLiveTaskDetailRepository;
 import com.rzt.repository.CheckLiveTaskRepository;
 import com.rzt.repository.CheckLiveTaskXsRepository;
 import com.rzt.repository.KhYhHistoryRepository;
-import com.rzt.utils.DateTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -191,7 +190,12 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
         task.setCheckType(0); //0 看护  1巡视
         //task.setTaskType(0);//（0 正常 1保电 2 特殊）
         task.setCheckCycle(1);
-        task.setTaskName(username+ DateTool.format(task.getPlanStartTime(),"yyyy-MM-dd")+"稽查任务");
+        String taskname = "";
+        List<Map<String, Object>> tasknames = execSql("select TDYW_ORG||line_name||section taskname from KH_YH_HISTORY where id in (" + task.getTaskId() + ")");
+        for (int i = 0; i <tasknames.size() ; i++) {
+            taskname += tasknames.get(i).get("TASKNAME")+",";
+        }
+        task.setTaskName(taskname);
         CheckLiveTask save = reposiotry.save(task);
         String[] split = save.getTaskId().split(",");//隐患ids
         for (int i = 0; i < split.length; i++) {
@@ -218,13 +222,13 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
         String sql = "";
         //0看护 1巡视 0待稽查 1已稽查
         if("0,0".equals(taskType)){
-            sql = "select t.id,t.TASK_ID,t.TASK_NAME,u.REALNAME, " +
+            sql = "select t.id,t.TASK_ID,t.TASK_NAME,u.REALNAME,t.plan_start_time, " +
                     " t.TASK_TYPE , t.STATUS " +
                     "from CHECK_LIVE_TASK t " +
                     "  LEFT JOIN  rztsysuser u on u.id=t.USER_ID " +
                     " where t.status !=3 and t.status !=2 ";
         }else if("0,1".equals(taskType)){
-            sql = "select t.id,t.TASK_ID,t.TASK_NAME,u.REALNAME, t.TASK_TYPE " +
+            sql = "select t.id,t.TASK_ID,t.TASK_NAME,u.REALNAME, t.TASK_TYPE,t.plan_start_time " +
                     " from CHECK_LIVE_TASK t " +
                     "  LEFT JOIN  rztsysuser u on u.id=t.USER_ID " +
                     " where t.status =2 and trunc(t.PLAN_START_TIME) <= trunc(sysdate) and trunc(t.PLAN_END_TIME) >= trunc(sysdate) ";

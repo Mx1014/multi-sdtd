@@ -7,6 +7,7 @@ import com.rzt.websocket.serverendpoint.TwoLevelCommandServerEndpoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import javax.websocket.Session;
 import java.util.ArrayList;
@@ -100,28 +101,28 @@ public class TwoLevelCommandPushService extends CurdService<websocket, websocket
             String xsZxUser = " SELECT count(1) SM " +
                     "FROM (SELECT z.CM_USER_ID " +
                     "      FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID " +
-                    "      WHERE LOGINSTATUS = 1 AND USERDELETE = 1 AND z.PLAN_START_TIME< = sysdate AND z.PLAN_END_TIME >= sysdate and r.deptid='"+deptid+"'" +
+                    "      WHERE LOGINSTATUS = 1 AND USERDELETE = 1 AND z.PLAN_START_TIME< = sysdate AND z.PLAN_END_TIME >= sysdate and r.deptid='" + deptid + "'" +
                     "      GROUP BY z.CM_USER_ID) ";
             /**
              * 巡视离线人员
              */
             String xsLxUser = " SELECT count(1) SM  FROM (SELECT z.CM_USER_ID " +
                     "  FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID " +
-                    "  WHERE LOGINSTATUS = 0 AND USERDELETE = 1  AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= sysdate and r.deptid='"+deptid+"'" +
+                    "  WHERE LOGINSTATUS = 0 AND USERDELETE = 1  AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= sysdate and r.deptid='" + deptid + "'" +
                     "  GROUP BY z.CM_USER_ID) ";
             /**
              * 看护在线人员
              */
             String khZxUser = " SELECT count(1) SM FROM (SELECT count(u.ID) " +
                     "FROM RZTSYSUSER u LEFT JOIN KH_TASK k ON u.ID = k.USER_ID " +
-                    "WHERE LOGINSTATUS = 1 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= sysdate and u.deptid='"+deptid+"'" +
+                    "WHERE LOGINSTATUS = 1 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= sysdate and u.deptid='" + deptid + "'" +
                     "GROUP BY k.USER_ID) ";
             /**
              * 看护离线人员
              */
             String khLxUser = " SELECT count(1) SM FROM (SELECT count(u.ID) " +
                     "FROM RZTSYSUSER u LEFT JOIN KH_TASK k ON u.ID = k.USER_ID " +
-                    "WHERE LOGINSTATUS = 0 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= sysdate and u.deptid='"+deptid+"'" +
+                    "WHERE LOGINSTATUS = 0 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= sysdate and u.deptid='" + deptid + "'" +
                     "GROUP BY k.USER_ID) ";
 
             /**
@@ -130,23 +131,23 @@ public class TwoLevelCommandPushService extends CurdService<websocket, websocket
             String qjcZxUser = " SELECT count(1) SM FROM (SELECT " +
                     "    count(1) " +
                     "  FROM CHECK_LIVE_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID " +
-                    "  WHERE u.LOGINSTATUS = 1 AND u.USERDELETE = 1 AND sysdate BETWEEN PLAN_START_TIME AND PLAN_END_TIME GROUP BY k.USER_ID) and u.deptid='"+deptid+"'";
+                    "  WHERE u.LOGINSTATUS = 1 AND u.USERDELETE = 1 AND sysdate BETWEEN PLAN_START_TIME AND PLAN_END_TIME and u.deptid='" + deptid + "' GROUP BY k.USER_ID) ";
             /**
              * 前台稽查离线人员
              */
             String qjcLxUser = " SELECT count(1) SM FROM (SELECT " +
                     "    count(1) " +
                     "  FROM CHECK_LIVE_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID " +
-                    "  WHERE u.LOGINSTATUS = 0 AND u.USERDELETE = 1 AND sysdate BETWEEN PLAN_START_TIME AND PLAN_END_TIME GROUP BY k.USER_ID) and u.deptid='"+deptid+"'";
+                    "  WHERE u.LOGINSTATUS = 0 AND u.USERDELETE = 1 AND sysdate BETWEEN PLAN_START_TIME AND PLAN_END_TIME and u.deptid='" + deptid + "' GROUP BY k.USER_ID) ";
 
             /**
              * 后台稽查在线人员
              */
-            String hjcZxUser = " SELECT count(id) SM FROM RZTSYSUSER WHERE LOGINSTATUS = 1 AND WORKTYPE = 4 AND USERDELETE = 1  AND USERTYPE=0 and deptid='"+deptid+"' ";
+            String hjcZxUser = " SELECT count(id) SM FROM RZTSYSUSER WHERE LOGINSTATUS = 1 AND WORKTYPE = 4 AND USERDELETE = 1  AND USERTYPE=0 and deptid='" + deptid + "' ";
             /**
              * 后台稽查离线人员
              */
-            String hjcLxUser = " SELECT count(id) SM  FROM RZTSYSUSER WHERE LOGINSTATUS = 0 AND WORKTYPE = 4 AND USERDELETE = 1  AND USERTYPE=0 and deptid='"+deptid+"'";
+            String hjcLxUser = " SELECT count(id) SM  FROM RZTSYSUSER WHERE LOGINSTATUS = 0 AND WORKTYPE = 4 AND USERDELETE = 1  AND USERTYPE=0 and deptid='" + deptid + "'";
             try {
                 Map<Object, Object> returnMap = new HashMap<>();
                 Map<Object, Object> iocMap = new HashMap<>();
@@ -351,14 +352,20 @@ public class TwoLevelCommandPushService extends CurdService<websocket, websocket
                 Map wks1 = new HashMap();
                 Map jxz1 = new HashMap();
                 Map ywc2 = new HashMap();
-                for (Map<String, Object> singleXs : list) {
-                    wks1.put(singleXs.get("TD_ORG"), singleXs.get("WKS"));
+                if (!StringUtils.isEmpty(list)) {
+                    for (Map<String, Object> singleXs : list) {
+                        wks1.put(singleXs.get("TD_ORG"), singleXs.get("WKS"));
+                    }
                 }
-                for (Map<String, Object> singleKh : list1) {
-                    jxz1.put(singleKh.get("TD_ORG"), singleKh.get("WKS"));
+                if (!StringUtils.isEmpty(list1)) {
+                    for (Map<String, Object> singleKh : list1) {
+                        jxz1.put(singleKh.get("TD_ORG"), singleKh.get("WKS"));
+                    }
                 }
-                for (Map<String, Object> singleKh : list2) {
-                    ywc2.put(singleKh.get("TD_ORG"), singleKh.get("WKS"));
+                if (!StringUtils.isEmpty(list2)) {
+                    for (Map<String, Object> singleKh : list2) {
+                        ywc2.put(singleKh.get("TD_ORG"), singleKh.get("WKS"));
+                    }
                 }
                 if (Integer.valueOf(session.get("type").toString()) == 9) {
                     for (Map<String, Object> dept : deptname) {
@@ -444,17 +451,25 @@ public class TwoLevelCommandPushService extends CurdService<websocket, websocket
                 Map map2 = new HashMap();
                 Map map3 = new HashMap();
                 Map map4 = new HashMap();
-                for (Map<String, Object> singleXs : list1) {
-                    map1.put(singleXs.get("ID"), singleXs.get("KHZX"));
+                if (!StringUtils.isEmpty(list1)) {
+                    for (Map<String, Object> singleXs : list1) {
+                        map1.put(singleXs.get("ID"), singleXs.get("KHZX"));
+                    }
                 }
-                for (Map<String, Object> singleXs : list2) {
-                    map2.put(singleXs.get("ID"), singleXs.get("KHLX"));
+                if (!StringUtils.isEmpty(list2)) {
+                    for (Map<String, Object> singleXs : list2) {
+                        map2.put(singleXs.get("ID"), singleXs.get("KHLX"));
+                    }
                 }
-                for (Map<String, Object> singleXs : list3) {
-                    map3.put(singleXs.get("ID"), singleXs.get("XSZX"));
+                if (!StringUtils.isEmpty(list3)) {
+                    for (Map<String, Object> singleXs : list3) {
+                        map3.put(singleXs.get("ID"), singleXs.get("XSZX"));
+                    }
                 }
-                for (Map<String, Object> singleXs : list4) {
-                    map4.put(singleXs.get("ID"), singleXs.get("XSLX"));
+                if (!StringUtils.isEmpty(list4)) {
+                    for (Map<String, Object> singleXs : list4) {
+                        map4.put(singleXs.get("ID"), singleXs.get("XSLX"));
+                    }
                 }
                 if (Integer.valueOf(session.get("type").toString()) == 9) {
                     for (Map<String, Object> dept : deptname) {
