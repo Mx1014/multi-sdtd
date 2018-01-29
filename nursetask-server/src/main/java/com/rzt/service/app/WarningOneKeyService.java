@@ -21,7 +21,6 @@ public class WarningOneKeyService extends CurdService<WarningOneKey, WarningOneK
     @Autowired
     private CensusServer censusServer;
 
-    @Transactional
     public WebApiResponse saveWarning(WarningOneKey warn, String ids) {
         try {
             warn.setId(0L);
@@ -31,13 +30,8 @@ public class WarningOneKeyService extends CurdService<WarningOneKey, WarningOneK
                     this.reposiotry.updateWaring(warn.getId(), Long.parseLong(split[i]));
                 }
             }
-            warn.setCreateTime(DateUtil.dateNow());
-            this.add(warn);
-            try {
-                censusServer.warningKey(warn.getId());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            this.reposiotry.insertWarn(warn.getId(), warn.getGjlx(), warn.getGjms(), warn.getLon(), warn.getLat(), warn.getUserId());
+            censusServer.warningKey(warn.getId());
             return WebApiResponse.success("数据保存成功");
         } catch (Exception e) {
             e.printStackTrace();

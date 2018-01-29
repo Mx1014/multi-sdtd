@@ -50,8 +50,8 @@ public class KhTaskController extends
             //分页参数 page size
             HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
             JSONObject jsonObject = new JSONObject();
-                jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", currentUserId).toString());
-            Object o = this.service.listAllKhTask(task, status, pageable, Integer.valueOf(jsonObject.get("ROLETYPE").toString()), yworg,currentUserId);
+            jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", currentUserId).toString());
+            Object o = this.service.listAllKhTask(task, status, pageable, Integer.valueOf(jsonObject.get("ROLETYPE").toString()), yworg, currentUserId);
             //Object o = this.service.listAllKhTask(	task, status,pageable,0);
             return WebApiResponse.success(o);
         } catch (Exception e) {
@@ -59,6 +59,7 @@ public class KhTaskController extends
             return WebApiResponse.erro("数据查询失败" + e.getMessage());
         }
     }
+
     /**
      * 修改已安排任务
      */
@@ -191,6 +192,28 @@ public class KhTaskController extends
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("任务删除失败" + e.getMessage());
+        }
+    }
+
+    @GetMapping("/listTowerPoint")
+    @ResponseBody
+    public WebApiResponse listTowerPoint(String id) {
+        try {
+            return this.service.listTowerPoint(Long.parseLong(id));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("");
+        }
+    }
+
+    @GetMapping("/listTowerPoint2")
+    @ResponseBody
+    public WebApiResponse listTowerPoint2(String id) {
+        try {
+            return this.service.listTowerPoint2(Long.parseLong(id));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("");
         }
     }
 }

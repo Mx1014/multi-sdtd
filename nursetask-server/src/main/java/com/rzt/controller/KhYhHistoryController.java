@@ -171,4 +171,9 @@ public class KhYhHistoryController extends
             e.printStackTrace();
         }
     }
+    @ApiOperation(value = "隐患台账图片展示", notes = "隐患台账图片展示")
+    @GetMapping("addadd")
+    public void addadd() {
+        this.service.list();
+    }
 }

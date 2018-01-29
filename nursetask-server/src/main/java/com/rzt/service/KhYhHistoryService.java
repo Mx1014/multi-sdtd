@@ -1081,9 +1081,34 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
     }
 
     public void addTdOrgId(long id, String td, Object wx) {
-        this.reposiotry.addTdOrgId(id,td,wx);
+        this.reposiotry.addTdOrgId(id, td, wx);
     }
-    public void addTdOrgId2(long id, String td) {
-        this.reposiotry.addTdOrgId2(id,td);
+
+    public void list() {
+        String sql = "select id,section from kh_yh_history";
+        List<Map<String, Object>> maps = this.execSql(sql);
+        for (Map map : maps) {
+            if (map.get("SECTION") != null) {
+                String[] split = map.get("SECTION").toString().split("-");
+                String section = "";
+
+                if (split[0].startsWith("0")) {
+                    try {
+                        section += split[0].substring(1, split[0].length()) + "-";
+                    } catch (NumberFormatException e) {
+                        e.printStackTrace();
+                    }
+                    if (split[1].startsWith("0")) {
+                        section += split[1].substring(1, split[1].length());
+                        this.reposiotry.updateyhs(Long.parseLong(map.get("ID").toString()), section);
+                    } else {
+                        section += split[1];
+                    }
+
+                }
+
+            }
+        }
     }
+
 }

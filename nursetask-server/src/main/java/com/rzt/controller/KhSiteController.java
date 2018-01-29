@@ -63,7 +63,6 @@ public class KhSiteController extends
     private RedisTemplate<String, Object> redisTemplate;
 
 
-    //  数据没有设置完成  稽查任务实体类有部分修改
     @PostMapping("/saveYh.do")
     @ResponseBody
     public WebApiResponse saveYh(KhYhHistory yh, String fxtime, String startTowerName, String endTowerName, String pictureId) {

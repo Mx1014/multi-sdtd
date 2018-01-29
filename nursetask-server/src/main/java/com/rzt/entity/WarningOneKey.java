@@ -30,10 +30,10 @@ public class WarningOneKey implements Serializable {
     //字段描述: 创建时间
     @Column(name = "CREATE_TIME")
     private Date createTime;
-    //字段描述: 经度
+    //字段描述: 纬度
     @Column(name = "LAT")
     private String lat;
-    //字段描述: 纬度
+    //字段描述: 经度
     @Column(name = "LON")
     private String lon;
     //字段描述: 告警类型
