@@ -31,7 +31,7 @@ public class OfflinesController extends CurdController<RztSysUser, CommonService
      * @return
      */
     @RequestMapping("OfflinesList")
-    public WebApiResponse OfflinesList(Integer page, Integer size, String currentUserId, String startTime, String endTime, String deptId) {
+    public WebApiResponse OfflinesList(Integer page, Integer size, String currentUserId, String startTime, String endTime, String deptId, String taskType) {
         org.springframework.data.domain.Pageable pageable = new PageRequest(page, size);
         List listLike = new ArrayList();
         String s = "";
@@ -52,30 +52,35 @@ public class OfflinesController extends CurdController<RztSysUser, CommonService
             listLike.add(endTime);
             s += " AND CREATE_TIME <= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
         } else {
-            s += " AND trunc(CREATE_TIME) = trunc(sysdate) " ;
+            s += " AND trunc(CREATE_TIME) = trunc(sysdate) ";
         }
-        String sql = " SELECT " +
-                "  e.USER_ID, " +
-                "  u.REALNAME, " +
-                "  u.CLASSNAME, " +
-                "  u.DEPT, " +
-                "  u.COMPANYNAME, " +
-                "  CASE u.WORKTYPE " +
-                "  WHEN 1 " +
-                "    THEN '看护' " +
-                "  WHEN 2 " +
-                "    THEN '巡视' " +
-                "  WHEN 3 " +
-                "    THEN '现场稽查' END AS WORKTYPE, " +
-                "  count(1)          AS MORE,u.DEPTID,e.CREATE_TIME " +
-                "FROM (SELECT USER_ID,CREATE_TIME " +
-                "      FROM MONITOR_CHECK_EJ " +
-                "      WHERE (WARNING_TYPE = 8 OR WARNING_TYPE = 2) " + s + " ) e LEFT JOIN USERINFO u " +
-                "    ON e.USER_ID = u.ID " +
-                "GROUP BY e.USER_ID, u.REALNAME, " +
-                "  u.CLASSNAME, " +
-                "  u.DEPT, " +
-                "  u.COMPANYNAME, u.WORKTYPE,u.DEPTID,e.CREATE_TIME ";
+        if (!StringUtils.isEmpty(taskType)) {
+            s += " and TASK_TYPE = " + taskType;
+        }
+        String sql = " SELECT\n" +
+                "  e.USER_ID,\n" +
+                "  u.REALNAME,\n" +
+                "  u.CLASSNAME,\n" +
+                "  u.DEPT,\n" +
+                "  u.COMPANYNAME,\n" +
+                "  CASE u.WORKTYPE\n" +
+                "  WHEN 1\n" +
+                "    THEN '看护'\n" +
+                "  WHEN 2\n" +
+                "    THEN '巡视'\n" +
+                "  WHEN 3\n" +
+                "    THEN '现场稽查' END AS WORKTYPE,\n" +
+                "  e.a          AS MORE,\n" +
+                "  u.DEPTID,\n" +
+                "  e.CREATE_TIME,\n" +
+                "  e.ONLINE_TIME\n" +
+                "FROM (SELECT\n" +
+                "count(1) as a,\n" +
+                "USER_ID, MAX (CREATE_TIME) AS CREATE_TIME,\n" +
+                "nvl(to_char( MAX (ONLINE_TIME), 'yyyy-MM-dd hh24:mi:ss'), '人员未上线') as ONLINE_TIME\n" +
+                "FROM MONITOR_CHECK_EJ\n" +
+                "WHERE (WARNING_TYPE = 8 OR WARNING_TYPE = 2) " + s + " GROUP BY USER_ID) e LEFT JOIN USERINFO u\n" +
+                "ON e.USER_ID = u.ID ";
         try {
             return WebApiResponse.success(this.service.execSqlPage(pageable, sql, listLike.toArray()));
         } catch (Exception e) {

@@ -117,4 +117,9 @@ public class CensusServerApplication {
     public FirstLevelCommandServerEndpoint firstlevelcommand() {
         return new FirstLevelCommandServerEndpoint();
     }
+
+    @Bean
+    public ErJiServerEndpoint erjiserver() {
+        return new ErJiServerEndpoint();
+    }
 }

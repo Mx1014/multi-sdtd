@@ -34,7 +34,7 @@ public class PersonnelTasksPushService extends CurdService<websocket, websocketR
      * The WebSocket session [0] has been closed
      * and no method (apart from close()) may be called on a closed session
      */
-    @Scheduled(fixedRate = 3000)
+//    @Scheduled(fixedRate = 3000)
     public void sendMsgs() {
         Map<String, HashMap> sendMsg = personnelTasksServerEndpoint.sendMsg();
         /**

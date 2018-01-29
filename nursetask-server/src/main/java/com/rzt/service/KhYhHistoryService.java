@@ -58,15 +58,6 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
     @Autowired
     private MonitorService monitorService;
 
-    public WebApiResponse list() {
-        try {
-
-            return WebApiResponse.success("");
-        } catch (Exception e) {
-            return WebApiResponse.erro("数据获取失败");
-        }
-    }
-
     @Transactional
     public WebApiResponse saveYh(XsSbYh yh, String startTowerName, String endTowerName, String pictureId) {
         try {
@@ -138,6 +129,13 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             if (!radius.contains(".")) {
                 radius = radius + ".0";
             }
+            try {
+                if (Double.parseDouble(radius) > 500) {
+                    radius = 500.0 + "";
+                }
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+            }
             // this.reposiotry.updateYh(Long.parseLong(yhId), lat, lon, radius);
             this.reposiotry.updateCycle(Long.parseLong(yhId), lat, lon, radius);
             return WebApiResponse.success("保存成功");
@@ -161,7 +159,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             }
             buffer.append(" and yhzt = 0 ");
             String sql = "SELECT DISTINCT(s.yh_id),y.* " +
-                    "FROM KH_YH_HISTORY y ,KH_SITE s -" + buffer.toString();
+                    "FROM KH_YH_HISTORY y ,KH_SITE s " + buffer.toString();
             List<Map<String, Object>> list = this.execSql(sql, params.toArray());
             List<Object> list1 = new ArrayList<>();
             for (Map map : list) {
@@ -444,20 +442,6 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 if (task.get("GKCS") != null) {
                     row.createCell(26).setCellValue(task.get("GKCS").toString());
                 }
-
-               /* int status = Integer.parseInt(task.get("STATUS").toString());
-                //该次执行状态(0待办,1进行中,2完成)
-
-                if (status == 0) {
-                    row.createCell(8).setCellValue("未开始");
-                } else if (status == 1) {
-                    row.createCell(8).setCellValue("进行中");
-                } else if (status == 2) {
-                    row.createCell(8).setCellValue("已完成");
-                } else {
-                    row.createCell(8).setCellValue("已取消");
-                }*/
-
             }
             OutputStream output = response.getOutputStream();
             response.reset();
@@ -544,7 +528,6 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
     public WebApiResponse reviewYh(long yhId) {
@@ -1073,7 +1056,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
     public WebApiResponse findLineOrg(long towerId) {
         try {
             String sql = "SELECT S.TD_ORG_NAME,S.LINE_NAME,S.LINE_ID\n" +
-                    "FROM CM_LINE_SECTION S LEFT JOIN CM_TOWER T ON T.LINE_ID = S.LINE_ID where T.ID = ?  and S.TD_ORG_NAME not in ('通州公司') ";
+                    "FROM CM_LINE_SECTION S LEFT JOIN CM_TOWER T ON T.LINE_ID = S.LINE_ID where T.ID = ? ";// and S.TD_ORG_NAME not in ('通州公司')
             List<Map<String, Object>> maps = this.execSql(sql, towerId);
             if (maps.size() > 0) {
                 return WebApiResponse.success("可以采集");
@@ -1085,4 +1068,47 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             return WebApiResponse.erro("不可以采集");
         }
     }
+
+    public WebApiResponse findYhPicture(long yhId) {
+        try {
+            String sql = "SELECT * FROM PICTURE_YH where yh_id=? and  trunc(CREATE_TIME)>=TRUNC(sysdate-7) ";
+            return WebApiResponse.erro("获取成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("获取失败");
+        }
+
+    }
+
+    public void addTdOrgId(long id, String td, Object wx) {
+        this.reposiotry.addTdOrgId(id, td, wx);
+    }
+
+    public void list() {
+        String sql = "select id,section from kh_yh_history";
+        List<Map<String, Object>> maps = this.execSql(sql);
+        for (Map map : maps) {
+            if (map.get("SECTION") != null) {
+                String[] split = map.get("SECTION").toString().split("-");
+                String section = "";
+
+                if (split[0].startsWith("0")) {
+                    try {
+                        section += split[0].substring(1, split[0].length()) + "-";
+                    } catch (NumberFormatException e) {
+                        e.printStackTrace();
+                    }
+                    if (split[1].startsWith("0")) {
+                        section += split[1].substring(1, split[1].length());
+                        this.reposiotry.updateyhs(Long.parseLong(map.get("ID").toString()), section);
+                    } else {
+                        section += split[1];
+                    }
+
+                }
+
+            }
+        }
+    }
+
 }

@@ -96,10 +96,10 @@ public class CheckLiveTaskDetail implements Serializable{
     private String tdwxOrgid;
 
     @Column(name = "SJT")
-    private String sjt;
+    private Integer sjt;
 
     @Column(name = "DXJX")
-    private String dxjx;
+    private Integer dxjx;
 
     public void setId(Long id){
         if(id==null||id==0){
@@ -266,19 +266,19 @@ public class CheckLiveTaskDetail implements Serializable{
         return this.tdywOrgid;
     }
 
-    public String getSjt() {
+    public Integer getSjt() {
         return sjt;
     }
 
-    public void setSjt(String sjt) {
+    public void setSjt(Integer sjt) {
         this.sjt = sjt;
     }
 
-    public String getDxjx() {
+    public Integer getDxjx() {
         return dxjx;
     }
 
-    public void setDxjx(String dxjx) {
+    public void setDxjx(Integer dxjx) {
         this.dxjx = dxjx;
     }
 }

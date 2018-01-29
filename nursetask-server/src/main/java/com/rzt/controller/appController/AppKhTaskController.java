@@ -91,8 +91,8 @@ public class AppKhTaskController extends
     @ApiOperation(value = "看护提醒", notes = "车辆回显  ")
     @GetMapping("/appListCl.do")
     @ResponseBody
-    public WebApiResponse appListZl(String taskId){
-        return this.service.appListZl(taskId);
+    public WebApiResponse appListCl(String taskId){
+        return this.service.appListCl(taskId);
     }
 
     // 开始看护 →  交接班   现场环境照片保存

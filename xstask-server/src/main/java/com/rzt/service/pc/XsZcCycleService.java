@@ -431,7 +431,8 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
             arrList.add(tdOrg);
             arrList.add(tdOrg);
         }
-
+        //排个序
+        sqlBuffer.append(" order by pd_time desc");
         Page<Map<String, Object>> maps = this.execSqlPage(pageable, sqlBuffer.toString(), arrList.toArray());
         List<Map<String, Object>> content = maps.getContent();
         for(Map<String,Object> con:content) {
@@ -451,7 +452,7 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
      * @Method getCycle
      * @Description 查看周期
      * @param [id]
-     * @return java.lang.Object
+     * @return java.lang.Objecttime
      * @date 2017/12/15 16:56
      * @author nwz
      */

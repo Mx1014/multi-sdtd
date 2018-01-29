@@ -49,7 +49,7 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
             List<Map<String, Object>> list = this.execSql(sql, Long.parseLong(taskId));
             return WebApiResponse.success(list);
         } catch (Exception e) {
-            return WebApiResponse.erro("数据获取失败"+e.getMessage());
+            return WebApiResponse.erro("数据获取失败" + e.getMessage());
         }
     }
 
@@ -80,7 +80,7 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
         }
     }
 
-    public WebApiResponse appListZl(String taskId) {
+    public WebApiResponse appListCl(String taskId) {
         try {
             String sql = "select cl_zt from kh_task_wpqr where taskId=?";
             Map<String, Object> map = this.execSqlSingleResult(sql, taskId);
@@ -107,8 +107,6 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
             return WebApiResponse.erro("数据获取失败");
         }
     }
-
-
 
 
     public WebApiResponse getYbCount(String userId) {
@@ -156,34 +154,33 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
 
     //获取中心点坐标  现获取看护点的坐标  如果不存在，就用隐患的坐标
     public List<Map<String, Object>> getPoint(long taskId) {
-        String sql = "select c.radius as ROUND,c.longitude as jd,c.latitude as wd from kh_cycle c left join kh_site s on s.yh_id = c.yh_id left join kh_task k on k.site_id = s.id where k.id = ?";
+        String sql = "select c.radius as ROUND,c.longitude as jd,c.latitude as wd,k.yh_id id,y.start_tower start,y.end_tower end from kh_cycle c left join kh_site s on s.yh_id = c.yh_id left join kh_task k on k.site_id = s.id where k.id = ?";
         List<Map<String, Object>> list = this.execSql(sql, taskId);
         if (!list.isEmpty()) {
             for (Map map : list) {
                 if (map.get("WD") == null || map.get("JD") == null) {
-                    sql = "select y.radius as ROUND,y.jd as jd,y.wd as wd from kh_yh_history y left join kh_task k on y.id = k.yh_id where k.id=?";
+                    sql = "select y.id as id,y.start_tower start,y.end_tower end,y.radius as ROUND,y.jd as jd,y.wd as wd from kh_yh_history y left join kh_task k on y.id = k.yh_id where k.id=?";
                     list = this.execSql(sql, taskId);
-                }else{
-                    String round = map.get("ROUND").toString();
-                    if (!round.contains(".")){
-                        if (Long.parseLong(round)>500){
-                            round="500";
-                        }
-                        map.put("ROUND",round+".0");
-                    }
                 }
             }
         } else {
-            sql = "select y.radius as ROUND,y.jd as jd,y.wd as wd from kh_yh_history y left join kh_task k on y.id = k.yh_id where k.id=?";
+            sql = "select y.id as id,y.start_tower start,y.end_tower end,y.radius as ROUND,y.jd as jd,y.wd as wd from kh_yh_history y left join kh_task k on y.id = k.yh_id where k.id=?";
             list = this.execSql(sql, taskId);
         }
         for (Map map : list) {
+            if (map.get("ROUND") != null) {
+                String round = map.get("ROUND").toString();
+                if (!round.contains(".")) {
+                    if (Long.parseLong(round) > 500) {
+                        round = "500";
+                    }
+                    map.put("ROUND", round + ".0");
+                }
+            } else {
+                map.put("ROUND", "300.0");
+            }
             map.put("URL", "http://39.106.206.129:8097/warningServer/warning/KHOffPost");
         }
-       /* Point point = null;
-        for (Map map : list) {
-            point = new Point(Double.parseDouble(map.get("WD").toString()), Double.parseDouble(map.get("JD").toString()));
-        }*/
         return list;
     }
 

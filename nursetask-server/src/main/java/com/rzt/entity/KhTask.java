@@ -93,6 +93,12 @@ public class KhTask implements Serializable{
 	@Column(name="TASK_TYPE")
 	private int taskType;
 
+	@Column(name="YWORG_ID")
+	private String ywOrgId;
+	//字段描述：任务类型
+	@Column(name="WXORG_ID")
+	private String wxOrgId;
+
 	public int getTaskType() {
 		return taskType;
 	}
@@ -119,6 +125,22 @@ public class KhTask implements Serializable{
 		}else{
 			this.id = id;
 		}
+	}
+
+	public String getWxOrgId() {
+		return wxOrgId;
+	}
+
+	public void setWxOrgId(String wxOrgId) {
+		this.wxOrgId = wxOrgId;
+	}
+
+	public String getYwOrgId() {
+		return ywOrgId;
+	}
+
+	public void setYwOrgId(String ywOrgId) {
+		this.ywOrgId = ywOrgId;
 	}
 
 	@ExcelResources(title="",order=1)

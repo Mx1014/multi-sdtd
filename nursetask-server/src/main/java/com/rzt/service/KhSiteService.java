@@ -58,7 +58,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
     private KhCycleRepository cycleRepository;
 
 
-    public Object listAllTaskNotDo(KhTaskModel task, Pageable pageable, String userName, String roleType, String yhjb, String yworg,String currentUserId) {
+    public Object listAllTaskNotDo(KhTaskModel task, Pageable pageable, String userName, String roleType, String yhjb, String yworg, String currentUserId) {
         List params = new ArrayList<>();
         StringBuffer buffer = new StringBuffer();
         String result = " k.id as id,k.task_name as taskName,k.tdyw_org as yworg,y.yhms as ms,y.yhjb as jb,k.create_time as createTime,k.COUNT as COUNT,u.realname as username,k.jbd as jbd,k.plan_start_time as starttime,k.plan_end_time as endtime,u.id as userId";
@@ -92,7 +92,10 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             buffer.append(" and k.tdyw_org like ?");
             params.add(("%" + yworg + "%"));
         }
-
+        if (task.getTdOrg() != null && !task.getTdOrg().equals("")) {
+            buffer.append(" and k.yworg_id = ?");
+            params.add((task.getTdOrg()));
+        }
         String sql = "";
 
         //公司本部、属地公司权限
@@ -227,7 +230,27 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             if (yh.getVtype().contains("kV")) {
                 kv = kv.substring(0, kv.indexOf("k"));
             }
-            yh.setTaskId(task.getId());
+
+            if (yh.getYhlb() != null && yh.getYhlb().equals("在施类")){
+                yh.setTaskId(task.getId());
+                String taskName = kv + "-" + yh.getLineName() + " " + yh.getSection() + " 号杆塔看护任务";
+                task.setVtype(yh.getVtype());
+                task.setLineName(yh.getLineName());
+                task.setTdywOrg(yh.getTdywOrg());
+                task.setSection(yh.getSection());
+                task.setLineId(yh.getLineId());
+                task.setTaskName(taskName);
+                task.setWxOrgId(yh.getWxorgId());
+                task.setTdywOrgId(yh.getTdorgId());
+                task.setWxOrg(yh.getTdwxOrg());
+                task.setStatus(0);// 未派发
+                task.setYhId(yh.getId());
+                task.setCreateTime(DateUtil.dateNow());
+                this.cycleService.add(task);
+                long id = new SnowflakeIdWorker(8, 24).nextId();
+                this.reposiotry.addCheckSite(id, task.getId(), 0, task.getTaskName(), 0, task.getLineId(), task.getTdywOrgId(), task.getWxOrgId(), task.getYhId());
+            }
+
             yh.setYhzt(0);//隐患未消除
             if (yh.getId() == null) {
                 yh.setId(0L);
@@ -235,29 +258,13 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             yh.setCreateTime(DateUtil.dateNow());
             yh.setSection(startTowerName + "-" + endTowerName);
             yhservice.add(yh);
-            String taskName = kv + "-" + yh.getLineName() + " " + yh.getSection() + " 号杆塔看护任务";
-            task.setVtype(yh.getVtype());
-            task.setLineName(yh.getLineName());
-            task.setTdywOrg(yh.getTdywOrg());
-            task.setSection(yh.getSection());
-            task.setLineId(yh.getLineId());
-            task.setTaskName(taskName);
-            task.setWxOrgId(yh.getWxorgId());
-            task.setTdywOrgId(yh.getTdorgId());
-            task.setWxOrg(yh.getTdwxOrg());
-            task.setStatus(0);// 未派发
-            task.setYhId(yh.getId());
-            task.setCreateTime(DateUtil.dateNow());
-            this.cycleService.add(task);
-            long id = new SnowflakeIdWorker(8, 24).nextId();
-            this.reposiotry.addCheckSite(id, task.getId(), 0, task.getTaskName(), 0, task.getLineId(), task.getTdywOrgId(), task.getWxOrgId(), task.getYhId());
-            /*if (null != pictureId && !pictureId.equals("")) {
+            ;
+            if (null != pictureId && !pictureId.equals("")) {
                 String[] split = pictureId.split(",");
                 for (int i = 0; i < split.length; i++) {
                     yhRepository.updatePicture(Long.parseLong(split[i]), yh.getId());
-                    //审批完成后   为图片添加taskId
                 }
-            }*/
+            }
             return WebApiResponse.success("保存成功");
         } catch (Exception e) {
             e.printStackTrace();
@@ -306,6 +313,8 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                     Map<String, Object> map1 = this.execSqlSingleResult(sql, userId);
                     site.setWxOrgId(map1.get("ID").toString());
                     site.setWxOrg(map1.get("NAME").toString());
+                    task.setWxOrgId(map1.get("ID").toString());
+                    task.setWxOrg(map1.get("NAME").toString());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -337,6 +346,8 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                 task.setPlanEndTime(DateUtil.getPlanStartTime(endTime));
                 task.setUserId(userId);
                 task.setCount(1);
+                task.setYwOrgId(site.getTdywOrgId());
+                task.setWxOrgId(site.getWxOrgId());
                 task.setWxOrg(site.getWxOrg());
                 task.setTdywOrg(cycle.getTdywOrg());
                 task.setCreateTime(new Date());

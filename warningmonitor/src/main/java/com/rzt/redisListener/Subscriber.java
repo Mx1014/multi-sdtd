@@ -50,6 +50,7 @@ public class Subscriber extends JedisPubSub {
             }
             if("TWO".equals(messages[0])){  //表示告警任务生成，插入到二级单位表中
                 try{
+
                     monitorcheckej.saveCheckEj(messages);
                     String key = "ONE+"+messages[1]+"+"+messages[2]+"+"+messages[3]+"+"+messages[4]+"+"+messages[5]+"+"+messages[6];
                     redisService.setex(key);
@@ -57,8 +58,11 @@ public class Subscriber extends JedisPubSub {
                     LOGGER.error("插入数据失败："+e.getMessage());
                 }
             }else if("ONE".equals(messages[0])){  //表示告警任务过期 插入到一级单位表中
-
-                monitorcheckyj.saveCheckYj(messages);
+                if(Integer.parseInt(messages[3])==3 || Integer.parseInt(messages[3])==11){
+                    monitorcheckyj.saveCheckYjWdw(messages);
+                }else{
+                    monitorcheckyj.saveCheckYj(messages);
+                }
 
             }
 

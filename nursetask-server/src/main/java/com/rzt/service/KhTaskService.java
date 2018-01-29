@@ -41,7 +41,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
     @Autowired
     private KhSiteRepository siteRepository;
 
-    public Object listAllKhTask(KhTaskModel task, String status, Pageable pageable, int roleType, String yworg,String currentUserId) {
+    public Object listAllKhTask(KhTaskModel task, String status, Pageable pageable, int roleType, String yworg, String currentUserId) {
         task = timeUtil(task);
         String result = "k.id as id, k.task_name as taskName,k.tdyw_org as yworg,k.CREATE_TIME as createTime,k.plan_start_time as startTime,k.plan_end_time as endTime,k.status as status,u.realname as userName,d.DEPTNAME as class,k.task_type as type";
         List params = new ArrayList<>();
@@ -73,6 +73,10 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
             buffer.append(" and k.tdyw_org like ? ");
             params.add("%" + yworg + "%");
         }
+        if (task.getTdOrg() != null && !task.getTdOrg().equals("")) {
+            buffer.append(" and k.yworg_id = ?");
+            params.add((task.getTdOrg()));
+        }
         String sql = "";
 
         if (roleType == 1 || roleType == 2) {
@@ -94,9 +98,9 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         //String sql = "select * from listAllKhTask "+buffer.toString();
         Page<Map<String, Object>> maps = execSqlPage(pageable, sql, params.toArray());
         List<Map<String, Object>> content1 = maps.getContent();
-        for (Map map : content1) {
+        /*for (Map map : content1) {
             map.put("ID", map.get("ID") + "");
-        }
+        }*/
         return maps;
     }
 
@@ -408,7 +412,13 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         this.reposiotry.updateSite(startTime, endTime, site.getId(), count);
         KhTask task = new KhTask();
         task.setId();
-        task.setWxOrg(site.getWxOrg());
+        try {
+            task.setWxOrg(site.getWxOrg());
+            task.setWxOrgId(site.getWxOrgId());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        task.setYwOrgId(site.getTdywOrgId());
         task.setSiteId(site.getId());
         task.setTdywOrg(site.getTdywOrg());
         task.setCount(count);
@@ -420,7 +430,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         task.setYhId(site.getYhId());
         task.setStatus(0);
         this.reposiotry.addTask(task.getId(), task.getSiteId(), task.getUserId(), task.getTaskName(), task.getYhId(),
-                task.getPlanStartTime(), task.getPlanEndTime(), task.getWxOrg(), task.getCount(), task.getTdywOrg(), 0);
+                task.getPlanStartTime(), task.getPlanEndTime(), task.getWxOrg(), task.getCount(), task.getTdywOrg(), 0, task.getYwOrgId(), task.getWxOrgId());
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     }
 
@@ -447,6 +457,48 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
 
     public void deleteTaskById(long id) {
         this.reposiotry.deleteTaskById(id);
+    }
+
+    public WebApiResponse listTowerPoint(long id) {
+        try {
+            String sql = "select y.id as id,y.radius as ROUND,y.jd as jd,y.wd as wd from kh_yh_history y left join kh_task k on y.id = k.yh_id where k.id=?";
+            Map<String, Object> map = this.execSqlSingleResult(sql, id);
+            sql = "SELECT section,START_TOWER,END_TOWER,LINE_NAME,LINE_ID \n" +
+                    "FROM KH_YH_HISTORY where id=?";
+            Map<String, Object> yh = this.execSqlSingleResult(sql, Long.parseLong(map.get("ID").toString()));
+            String[] split = yh.get("SECTION").toString().split("-");
+            int start = Integer.parseInt(split[0]);
+            int end = Integer.parseInt(split[1]);
+            for (int i = 0; i <= end - start; i++) {
+                sql = "SELECT ID,NAME,LONGITUDE lon,LATITUDE lat FROM CM_TOWER WHERE LINE_ID=? and NAME=?";
+                Map<String, Object> tower = this.execSqlSingleResult(sql, Long.parseLong(yh.get("LINE_ID").toString()), start + i);
+                tower.put("LINENAME", yh.get("LINE_NAME"));
+                map.put("tower" + i, tower);
+            }
+            return WebApiResponse.success(map);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("");
+        }
+    }
+
+    public WebApiResponse listTowerPoint2(long id) {
+        try {
+            String sql = "select y.id,section,START_TOWER,END_TOWER,LINE_NAME,LINE_ID from kh_yh_history y left join kh_task k on y.id = k.yh_id where k.id=?";
+            Map<String, Object> map = this.execSqlSingleResult(sql, id);
+            sql = "SELECT LATITUDE lat,LONGITUDE lon,NAME\n" +
+                    "FROM CM_TOWER WHERE id=?";
+            Map<String, Object> start = this.execSqlSingleResult(sql, Long.parseLong(map.get("START_TOWER").toString()));
+            Map<String, Object> end = this.execSqlSingleResult(sql, Long.parseLong(map.get("END_TOWER").toString()));
+            map.put("STARTLON", start.get("LON").toString());
+            map.put("STARTLAT", start.get("LAT").toString());
+            map.put("ENDLON", end.get("LON").toString());
+            map.put("ENDLAT", end.get("LAT").toString());
+            return WebApiResponse.success(map);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("");
+        }
     }
 }
 
