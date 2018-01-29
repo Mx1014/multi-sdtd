@@ -1,16 +1,22 @@
 package com.rzt.activiti.controller;
 
 import com.rzt.activiti.service.impl.XSCycleServiceImpl;
+import com.rzt.entity.TimedTask;
 import com.rzt.util.WebApiResponse;
+import com.rzt.utils.RedisUtil;
 import org.activiti.engine.runtime.ProcessInstance;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.jeecgframework.poi.excel.ExcelExportUtil;
+import org.jeecgframework.poi.excel.entity.ExportParams;
+import org.jeecgframework.poi.excel.entity.params.ExcelExportEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.FileOutputStream;
+import java.util.*;
 
 /**
  * 巡视周期审核
@@ -23,15 +29,13 @@ public class XSCycleController {
     @Autowired
     private XSCycleServiceImpl xsCycleService;
 
-    @Autowired
-    private RedisTemplate redisTemplate;
 
     /**
      * 开启流程
      * @return
      */
     @GetMapping("/start")
-    public WebApiResponse start(String key , String userName,String currentUserId,String XSID,String flag,String info){
+    public WebApiResponse start(String key , String userName,String XSID,String flag,String info){
         HashMap<Object, Object> map = new HashMap<>();
         map.put("userName",userName);
         map.put("flag",flag);
@@ -52,6 +56,10 @@ public class XSCycleController {
      */
     @GetMapping("/complete")
     public WebApiResponse complete(String taskId,String XSID,String flag,String info,String currentUserId){
+        if(null != flag && "0".equals(flag)){
+        //说明不同意变更计划取消任务
+            System.out.println("取消了变更计划");
+        }
         Map<String, Object> map = new HashMap<>();
         map.put("taskId",taskId);
         map.put("XSID",XSID);
@@ -62,29 +70,43 @@ public class XSCycleController {
         return WebApiResponse.success("");
     }
 
-
-
+    @GetMapping("/history")
+    public WebApiResponse gethi(String currentUserId,Integer page,Integer size
+            ,String tdId,String lineName,String vLevel,String startTime,String endTime){
+        if(null == currentUserId || "".equals(currentUserId)){
+            return WebApiResponse.erro("当前用户没有权限查看记录");
+        }
+        return xsCycleService.historyActInstanceList(currentUserId,page,size,tdId,lineName,vLevel,startTime,endTime);
+    }
 
     /**
      * 查看所有待办任务
-     * @param userId   传入当前节点名
+     * @param currentUserId 登录人
+     * @param page
+     * @param size
+     * @param tdId   通道公司
+     * @param lineName  线路名称
+     * @param vLevel    电压等级
+     * @param startTime  开始时间
+     * @param endTime    结束时间
      * @return
      */
     @GetMapping("/findTaskByUserName")
-    public WebApiResponse toTask(String userId,Integer page,Integer size){
-        return xsCycleService.checkTask(userId,page,size);
+    public WebApiResponse toTask(String currentUserId,Integer page,Integer size
+            ,String tdId,String lineName,String vLevel,String startTime,String endTime){
+        return xsCycleService.checkTasks(currentUserId,page,size,tdId,lineName,vLevel,startTime,endTime);
 
     }
 
     /**
      * 查看待办任务
-     * @param userName 执行人
+     * @param currentUserId 执行人
      * @param taskId   当前任务
      * @return
      */
     @GetMapping("/task")
-    public WebApiResponse task(String userName,String taskId){
-        return WebApiResponse.success(xsCycleService.checkTask(taskId,userName));
+    public WebApiResponse task(String currentUserId,String taskId){
+        return WebApiResponse.success(xsCycleService.checkTask(taskId,currentUserId));
 
     }
 
