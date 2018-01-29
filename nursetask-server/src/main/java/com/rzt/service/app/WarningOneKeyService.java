@@ -1,9 +1,11 @@
 package com.rzt.service.app;
 
+import com.rzt.eureka.CensusServer;
 import com.rzt.repository.WarningOneKeyRepository;
 import com.rzt.entity.WarningOneKey;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DateUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +17,9 @@ import java.util.Date;
 
 @Service
 public class WarningOneKeyService extends CurdService<WarningOneKey, WarningOneKeyRepository> {
+
+    @Autowired
+    private CensusServer censusServer;
 
     @Transactional
     public WebApiResponse saveWarning(WarningOneKey warn, String ids) {
@@ -28,6 +33,11 @@ public class WarningOneKeyService extends CurdService<WarningOneKey, WarningOneK
             }
             warn.setCreateTime(DateUtil.dateNow());
             this.add(warn);
+            try {
+                censusServer.warningKey(warn.getId());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             return WebApiResponse.success("数据保存成功");
         } catch (Exception e) {
             e.printStackTrace();

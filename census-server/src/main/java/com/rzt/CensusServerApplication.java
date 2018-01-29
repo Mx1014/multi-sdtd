@@ -87,4 +87,39 @@ public class CensusServerApplication {
     public ListDataServerEndpoint ListData() {
         return new ListDataServerEndpoint();
     }
+
+    /**
+     * 一键告警
+     *
+     * @return
+     */
+    @Bean
+    public warningMonitorServerEndpoint warningMonitor() {
+        return new warningMonitorServerEndpoint();
+    }
+
+    /**
+     * 二级运检部
+     *
+     * @return
+     */
+    @Bean
+    public TwoLevelCommandServerEndpoint twolevelcommand() {
+        return new TwoLevelCommandServerEndpoint();
+    }
+
+    /**
+     * 一级运检部
+     *
+     * @return
+     */
+    @Bean
+    public FirstLevelCommandServerEndpoint firstlevelcommand() {
+        return new FirstLevelCommandServerEndpoint();
+    }
+
+    @Bean
+    public ErJiServerEndpoint erjiserver() {
+        return new ErJiServerEndpoint();
+    }
 }

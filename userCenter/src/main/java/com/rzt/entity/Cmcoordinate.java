@@ -6,13 +6,8 @@
  */
 package com.rzt.entity;
 
-import com.rzt.utils.SnowflakeIdWorker;
-import org.hibernate.annotations.GenericGenerator;
-
 import javax.persistence.*;
-import java.io.Serializable;
 import java.util.Date;
-import java.util.UUID;
 
 /**
  * 类名称：Cmcoordinate
@@ -53,6 +48,27 @@ public class Cmcoordinate {
     //字段描述: 在线 离线
     @Column(name = "on_line")
     private Integer onLine;
+
+    @Transient
+    private String DEPT;
+    @Transient
+    private String DEPTID;
+
+    public String getDEPT() {
+        return DEPT;
+    }
+
+    public void setDEPT(String DEPT) {
+        this.DEPT = DEPT;
+    }
+
+    public String getDEPTID() {
+        return DEPTID;
+    }
+
+    public void setDEPTID(String DEPTID) {
+        this.DEPTID = DEPTID;
+    }
 
     public String getId() {
         return id;

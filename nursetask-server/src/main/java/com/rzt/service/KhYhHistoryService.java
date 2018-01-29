@@ -11,6 +11,7 @@ import com.netflix.ribbon.proxy.annotation.Http;
 import com.rzt.entity.KhCycle;
 import com.rzt.entity.KhSite;
 import com.rzt.entity.XsSbYh;
+import com.rzt.eureka.MonitorService;
 import com.rzt.repository.KhYhHistoryRepository;
 import com.rzt.entity.KhYhHistory;
 import com.rzt.repository.XsSbYhRepository;
@@ -54,18 +55,11 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
     private XsSbYhRepository xsRepository;
     @Autowired
     private KhSiteService siteService;
-
-    public WebApiResponse list() {
-        try {
-
-            return WebApiResponse.success("");
-        } catch (Exception e) {
-            return WebApiResponse.erro("数据获取失败");
-        }
-    }
+    @Autowired
+    private MonitorService monitorService;
 
     @Transactional
-    public WebApiResponse saveYh(KhYhHistory yh, String startTowerName, String endTowerName, String pictureId) {
+    public WebApiResponse saveYh(XsSbYh yh, String startTowerName, String endTowerName, String pictureId) {
         try {
             yh.setYhfxsj(DateUtil.dateNow());
             yh.setId(0l);
@@ -117,8 +111,12 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                     this.reposiotry.updateYhPicture(Long.parseLong(split[i]), yh.getId(), yh.getXstaskId());
                 }
             }
-            this.add(yh);
-
+            this.xsService.add(yh);
+            try {
+                monitorService.start("wtsh", yh.getTbrid(), yh.getId() + "", "1", "", "");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             return WebApiResponse.success("数据保存成功");
         } catch (Exception e) {
             e.printStackTrace();
@@ -130,6 +128,13 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         try {
             if (!radius.contains(".")) {
                 radius = radius + ".0";
+            }
+            try {
+                if (Double.parseDouble(radius) > 500) {
+                    radius = 500.0 + "";
+                }
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
             }
             // this.reposiotry.updateYh(Long.parseLong(yhId), lat, lon, radius);
             this.reposiotry.updateCycle(Long.parseLong(yhId), lat, lon, radius);
@@ -143,7 +148,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         try {
             StringBuffer buffer = new StringBuffer();
             List<Object> params = new ArrayList<>();
-            buffer.append(" where trunc(create_time)=trunc(sysdate) ");
+            buffer.append(" where s.YH_ID=y.ID ");
             if (yhjb != null && !yhjb.equals("")) {
                 buffer.append(" and yhjb1 like");
                 params.add("%" + yhjb + "%");
@@ -153,7 +158,8 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 params.add("%" + yhlb + "%");
             }
             buffer.append(" and yhzt = 0 ");
-            String sql = "select * from kh_yh_history " + buffer.toString();
+            String sql = "SELECT DISTINCT(s.yh_id),y.* " +
+                    "FROM KH_YH_HISTORY y ,KH_SITE s " + buffer.toString();
             List<Map<String, Object>> list = this.execSql(sql, params.toArray());
             List<Object> list1 = new ArrayList<>();
             for (Map map : list) {
@@ -205,7 +211,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         }
     }
 
-    public WebApiResponse exportYhHistory(HttpServletResponse response, Object josn, String userId) {
+    public WebApiResponse exportYhHistory(HttpServletResponse response, Object josn, String currentUserId) {
         String sql1 = "select y.* from kh_yh_history y left join kh_site c on y.id=c.yh_id where y.yhzt=0 ";
         Map jsonObject = JSON.parseObject(josn.toString(), Map.class);
         Integer roleType = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
@@ -223,7 +229,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             sql1 += " and y.class_id=" + classid;
         }
         if (roleType == 5) {
-            sql1 += " and c.user_id=" + userId;
+            sql1 += " and c.user_id=" + currentUserId;
         }
 
         List<Map<String, Object>> yhList = this.execSql(sql1);
@@ -436,20 +442,6 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 if (task.get("GKCS") != null) {
                     row.createCell(26).setCellValue(task.get("GKCS").toString());
                 }
-
-               /* int status = Integer.parseInt(task.get("STATUS").toString());
-                //该次执行状态(0待办,1进行中,2完成)
-
-                if (status == 0) {
-                    row.createCell(8).setCellValue("未开始");
-                } else if (status == 1) {
-                    row.createCell(8).setCellValue("进行中");
-                } else if (status == 2) {
-                    row.createCell(8).setCellValue("已完成");
-                } else {
-                    row.createCell(8).setCellValue("已取消");
-                }*/
-
             }
             OutputStream output = response.getOutputStream();
             response.reset();
@@ -536,7 +528,6 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
     public WebApiResponse reviewYh(long yhId) {
@@ -602,12 +593,25 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
 
     public WebApiResponse deleteYhById(long yhId) {
         try {
-            String sql = "SELECT * FROM KH_CYCLE WHERE YH_ID=? and STATUS IN (1,0)";
+            String sql = "SELECT * FROM KH_CYCLE WHERE YH_ID=? and STATUS =0";
             List<Map<String, Object>> maps = this.execSql(sql, yhId);
             if (maps.size() > 0) {
                 throw new Exception();
             } else {
-                this.reposiotry.deleteYhById(yhId);
+                sql = "SELECT * FROM KH_SITE WHERE YH_ID=? and STATUS =1";
+                List<Map<String, Object>> maps1 = this.execSql(sql, yhId);
+                if (maps1.size() > 0) {
+                    throw new Exception();
+                } else {
+                    sql = "SELECT * FROM KH_TASK WHERE YH_ID=? and STATUS IN(0,1) AND (trunc(PLAN_START_TIME)=trunc(sysdate) OR trunc(PLAN_END_TIME)=trunc(sysdate))";
+                    List<Map<String, Object>> maps2 = this.execSql(sql, yhId);
+                    if (maps2.size() > 0) {
+                        throw new Exception();
+                    } else {
+                        this.reposiotry.deleteYhById(yhId);
+                        this.reposiotry.updateKhCycle(yhId);
+                    }
+                }
             }
             return WebApiResponse.success("删除成功");
         } catch (Exception e) {
@@ -1038,4 +1042,48 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         return linename1;
     }
 
+
+    public WebApiResponse updateTowerById(long id, String lon, String lat) {
+        try {
+            this.reposiotry.updateTowerById(id, lon, lat);
+            return WebApiResponse.success("修改成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("修改失败");
+        }
+    }
+
+    public WebApiResponse findLineOrg(long towerId) {
+        try {
+            String sql = "SELECT S.TD_ORG_NAME,S.LINE_NAME,S.LINE_ID\n" +
+                    "FROM CM_LINE_SECTION S LEFT JOIN CM_TOWER T ON T.LINE_ID = S.LINE_ID where T.ID = ? ";// and S.TD_ORG_NAME not in ('通州公司')
+            List<Map<String, Object>> maps = this.execSql(sql, towerId);
+            if (maps.size() > 0) {
+                return WebApiResponse.success("可以采集");
+            } else {
+                return WebApiResponse.erro("不可以采集");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("不可以采集");
+        }
+    }
+
+    public WebApiResponse findYhPicture(long yhId) {
+        try {
+            String sql = "SELECT * FROM PICTURE_YH where yh_id=? and  trunc(CREATE_TIME)>=TRUNC(sysdate-7) ";
+            return WebApiResponse.erro("获取成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("获取失败");
+        }
+
+    }
+
+    public void addTdOrgId(long id, String td, Object wx) {
+        this.reposiotry.addTdOrgId(id,td,wx);
+    }
+    public void addTdOrgId2(long id, String td) {
+        this.reposiotry.addTdOrgId2(id,td);
+    }
 }

@@ -98,7 +98,7 @@ public class CheckLiveTask  implements Serializable{
 		this.planEndTime = planEndTime;
 	}
 
-	public void setId(){
+	public void setId(Long id){
 		if(id==null||id==0){
 			SnowflakeIdWorker instance = SnowflakeIdWorker.getInstance(8, 1);
 			this.id = instance.nextId();

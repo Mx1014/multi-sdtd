@@ -33,8 +33,6 @@ public class KhLsCycleService extends CurdService<KhLsCycle, KhLsCycleRepository
     private KhTaskRepository taskRepository;
     @Autowired
     private XsSbYhRepository yhRepository;
-    @Autowired
-    private MonitorService monitorService;
 
     @Transactional
     public WebApiResponse saveLsCycle(String yhId) {
@@ -60,7 +58,7 @@ public class KhLsCycleService extends CurdService<KhLsCycle, KhLsCycleRepository
             cycle.setSection(yh.getSection());
             cycle.setTaskName(taskName);
             this.reposiotry.save(cycle);
-            monitorService.start("wtsh", yh.getTbrid(), yhId, "1", "", "");
+
             return WebApiResponse.success(cycle.getId());
         } catch (Exception e) {
             e.printStackTrace();
@@ -145,6 +143,7 @@ public class KhLsCycleService extends CurdService<KhLsCycle, KhLsCycleRepository
                     String wxname = map1.get("NAME").toString();
                     String wxid = map1.get("ID").toString();
                     task.setWxOrg(wxname);
+                    task.setWxOrgId(wxid);
                     this.reposiotry.updateCycle(wxname, wxid, cycle.getId());
                 } catch (Exception e) {
 
@@ -152,6 +151,7 @@ public class KhLsCycleService extends CurdService<KhLsCycle, KhLsCycleRepository
                 task.setTaskType(1);
                 task.setId();
                 task.setTdywOrg(cycle.getTdywOrg());
+                task.setYwOrgId(cycle.getTdywOrgId());
                 task.setPlanStartTime(DateUtil.getPlanStartTime(startTime));
                 task.setPlanEndTime(DateUtil.getPlanStartTime(endTime));
                 task.setZxysNum(0);

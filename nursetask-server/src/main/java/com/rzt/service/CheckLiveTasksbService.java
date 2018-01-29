@@ -136,6 +136,42 @@ public class CheckLiveTasksbService extends CurdService<CheckLiveTasksb,CheckLiv
         return execSqlPage(pageable, sql, params.toArray());
     }
 
+
+    @Transactional
+    public void sendCheckLiveTasksb(String id, String userId, String planStartTime, String planEndTime) {
+        reposiotry.updateCheckLiveTasksb(Long.valueOf(id),userId, DateTool.parse(planStartTime),DateTool.parse(planEndTime));
+    }
+
+    @Transactional
+    public void addCheckLiveTasksb(CheckLiveTasksb object) {
+        object.setId(null);
+        object.setCreateTime(new Date());
+        object.setStatus(0);
+        //object.setTaskName();
+        reposiotry.save(object);
+    }
+
+    public Page<Map<String,Object>> appChecksbList(Pageable pageable, String userId, String taskType) {
+        if("0,0".equals(taskType)){
+
+        }
+        String sql = "";
+
+        List params = new ArrayList<>();
+
+        //通道单位查询
+        if (!StringUtils.isEmpty(userId)) {
+            params.add(userId);
+            sql += " AND t.td_org_id =?";
+        }
+        sql += "  order by t.create_time ";
+        return execSqlPage(pageable, sql, params.toArray());
+    }
+    public void checkLiveTasksbComplete(Long id) {
+
+    }
+
+
     public Map<String, Object> userInfoFromRedis(String userId) {
         HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
 
@@ -155,17 +191,5 @@ public class CheckLiveTasksbService extends CurdService<CheckLiveTasksb,CheckLiv
         return jsonObject;
     }
 
-    @Transactional
-    public void sendCheckLiveTasksb(String id, String userId, String planStartTime, String planEndTime) {
-        reposiotry.updateCheckLiveTasksb(Long.valueOf(id),userId, DateTool.parse(planStartTime),DateTool.parse(planEndTime));
-    }
 
-    @Transactional
-    public void addCheckLiveTasksb(CheckLiveTasksb object) {
-        object.setId(null);
-        object.setCreateTime(new Date());
-        object.setStatus(0);
-        //object.setTaskName();
-        reposiotry.save(object);
-    }
 }

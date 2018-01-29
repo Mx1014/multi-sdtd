@@ -69,9 +69,9 @@ public interface KhTaskRepository extends JpaRepository<KhTask, String> {
 
     @Modifying
     @Transactional
-    @Query(value = "INSERT INTO KH_TASK (ID,SITE_ID,USER_ID,TASK_NAME,YH_ID,CREATE_TIME,STATUS,PLAN_START_TIME,PLAN_END_TIME,WX_ORG,COUNT,TDYW_ORG,ZXYS_NUM,TASK_TYPE) " +
-            " VALUES (?1,?2,?3,?4,?5,sysdate,0,?6,?7,?8,?9,?10,0,?11)", nativeQuery = true)
-    void addTask(Long id, Long siteId, String userId, String taskName, Long yhId, Date planStartTime, Date planEndTime, String wxOrg, int count, String tdywOrg,int taskType);
+    @Query(value = "INSERT INTO KH_TASK(ID,SITE_ID,USER_ID,TASK_NAME,YH_ID,CREATE_TIME,STATUS,PLAN_START_TIME,PLAN_END_TIME,WX_ORG,COUNT,TDYW_ORG,ZXYS_NUM,TASK_TYPE,YWORG_ID,WXORG_ID)  " +
+            " VALUES(?1,?2,?3,?4,?5,sysdate,0,?6,?7,?8,?9,?10,0,?11,?12,?13 )", nativeQuery = true)
+    void addTask(Long id, Long siteId, String userId, String taskName, Long yhId, Date planStartTime, Date planEndTime, String wxOrg, int count, String tdywOrg, int taskType, String ywOrgId, String wxOrgId);
 
     @Modifying
     @Transactional
@@ -82,4 +82,9 @@ public interface KhTaskRepository extends JpaRepository<KhTask, String> {
     @Transactional
     @Query(value = "DELETE FROM KH_TASK where id=?1", nativeQuery = true)
     void deleteTaskById(long id);
+
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE KH_TASK SET WXORG_ID=?3,YWORG_ID=?2 where id=?1", nativeQuery = true)
+    void updateKhTASK(long id, Object deptid, Object companyid);
 }

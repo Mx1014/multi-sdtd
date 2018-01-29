@@ -22,11 +22,11 @@ public class OverdueController extends CurdController<RztSysUser, CommonService>
     private RedisTemplate<String, Object> redisTemplate;
 
     @RequestMapping("overdueList")
-    public WebApiResponse overdueList(Integer page, Integer size, String userId, String startTime, String endTime, String deptId) {
+    public WebApiResponse overdueList(Integer page, Integer size, String currentUserId, String startTime, String endTime, String deptId) {
         Pageable pageable = new PageRequest(page, size);
         List listLike = new ArrayList();
         String s = "";
-        JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", userId).toString());
+        JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", currentUserId).toString());
         int roletype = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
         Object deptid = jsonObject.get("DEPTID");
         if (roletype == 1 || roletype == 2) {

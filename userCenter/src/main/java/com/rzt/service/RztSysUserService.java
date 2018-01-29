@@ -223,7 +223,7 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
             /**
              * 修改Redis人员信息
              */
-            String sql1 = " SELECT * FROM USERINFO where id=?1 and USERDELETE = 1 ";
+            String sql1 = " SELECT * FROM USERINFO where id=?1 ";
             Map<String, Object> stringObjectMap = this.execSqlSingleResult(sql1, id);
             HashOperations hashOperations = redisTemplate.opsForHash();
             hashOperations.put("UserInformation", id, stringObjectMap);

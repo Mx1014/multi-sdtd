@@ -86,8 +86,8 @@ public class RztSysRoleController extends
     }
 
     @GetMapping("roleDistribution")
-    public WebApiResponse roleDistribution(String userId) {
-        return this.service.roleDistribution(userId);
+    public WebApiResponse roleDistribution(String currentUserId) {
+        return this.service.roleDistribution(currentUserId);
     }
 
 }

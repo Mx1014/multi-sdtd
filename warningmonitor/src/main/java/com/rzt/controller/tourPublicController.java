@@ -13,8 +13,8 @@ public class tourPublicController extends CurdController<Monitorcheckej, tourPub
 
     //未到杆塔半径5米内(无法到位)
     @GetMapping("xsTourScope")
-    public WebApiResponse xsTourScope(Long taskid, String userid) {
-        return this.service.xsTourScope(taskid, userid);
+    public WebApiResponse xsTourScope(Long taskid, String userid,String reason) {
+        return this.service.xsTourScope(taskid, userid,reason);
     }
 
     //巡视未按标准速率拍照
@@ -29,11 +29,11 @@ public class tourPublicController extends CurdController<Monitorcheckej, tourPub
     }
 
     //看护不到位
-   /* @GetMapping("khWFDW")
+    @GetMapping("khWFDW")
     public void khWFDW(Long taskid, String userid){
         this.service.khWFDW(taskid,userid);
 
-    }*/
+    }
 
     /**
      * 看护脱岗
@@ -82,11 +82,16 @@ public class tourPublicController extends CurdController<Monitorcheckej, tourPub
         }
     }
 
-   /* @Autowired
-    private RedisService redisService;
-    @GetMapping("del")
-    public String del(String key){
-        redisService.delKey(key);
-        return "success";
-    }*/
+    //看护脱岗
+    @GetMapping("khtgang")
+    public WebApiResponse khtgang(Long taskId){
+        try{
+           return WebApiResponse.success(service.khtgang(taskId));
+        }catch (Exception e){
+           return WebApiResponse.erro("fail:"+e.getMessage());
+        }
+
+    }
+
+
 }

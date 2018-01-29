@@ -50,12 +50,8 @@ public class KhTaskController extends
             //分页参数 page size
             HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
             JSONObject jsonObject = new JSONObject();
-            if (currentUserId != null) {
                 jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", currentUserId).toString());
-            } else {
-                jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", task.getUserId()).toString());
-            }
-            Object o = this.service.listAllKhTask(task, status, pageable, Integer.valueOf(jsonObject.get("ROLETYPE").toString()), yworg);
+            Object o = this.service.listAllKhTask(task, status, pageable, Integer.valueOf(jsonObject.get("ROLETYPE").toString()), yworg,currentUserId);
             //Object o = this.service.listAllKhTask(	task, status,pageable,0);
             return WebApiResponse.success(o);
         } catch (Exception e) {
@@ -63,7 +59,6 @@ public class KhTaskController extends
             return WebApiResponse.erro("数据查询失败" + e.getMessage());
         }
     }
-
     /**
      * 修改已安排任务
      */
@@ -101,11 +96,11 @@ public class KhTaskController extends
 
     //任务查询页面的导出文件
     @GetMapping("/exportKhTask.do")
-    public void exportKhTask(HttpServletRequest request, HttpServletResponse response, String userId) {
+    public void exportKhTask(HttpServletRequest request, HttpServletResponse response, String currentUserId) {
         try {
             HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
-            JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", userId).toString());
-            List<Map<String, Object>> taskList = this.service.findAlls(jsonObject, userId);
+            JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", currentUserId).toString());
+            List<Map<String, Object>> taskList = this.service.findAlls(jsonObject, currentUserId);
             this.service.exportNursePlan(taskList, request, response);
             //return WebApiResponse.success("");
         } catch (Exception e) {

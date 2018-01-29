@@ -22,8 +22,8 @@ public class HistoryController extends CurdController<RztSysUser, CommonService>
     private RedisTemplate<String, Object> redisTemplate;
 
     @RequestMapping("historyList")
-    public WebApiResponse historyList(String userId, String startTime, String endTime, String deptId) {
-        JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", userId).toString());
+    public WebApiResponse historyList(String currentUserId, String startTime, String endTime, String deptId) {
+        JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", currentUserId).toString());
         int roletype = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
         Object deptid = jsonObject.get("DEPTID");
         List listLike = new ArrayList();
@@ -60,25 +60,25 @@ public class HistoryController extends CurdController<RztSysUser, CommonService>
             s += " AND CREATE_TIME<= to_date(?" + listLike.size() + ",'yyyy-MM-dd hh24:mi:ss')";
             listLike.add(startTime);
             s += " AND CREATE_TIME>= to_date( ?" + listLike.size() + ",'yyyy-MM-dd hh24:mi:ss')";
-        }/* else {
-            s += "  AND CREATE_TIME = sysdate ";
-        }*/
+        } else {
+            s += "  AND CREATE_TIME is not null ";
+        }
         if (!StringUtils.isEmpty(startTime) && !StringUtils.isEmpty(endTime)) {
             listLike1.add(endTime);
             s1 += " AND UPDATE_TIME<= to_date(?" + listLike1.size() + ",'yyyy-MM-dd hh24:mi:ss')";
             listLike1.add(startTime);
             s1 += " AND UPDATE_TIME>= to_date( ?" + listLike1.size() + ",'yyyy-MM-dd hh24:mi:ss')";
-        } /*else {
-            s1 += "  AND UPDATE_TIME = sysdate ";
-        }*/
+        } else {
+            s1 += "  AND UPDATE_TIME is not null ";
+        }
         if (!StringUtils.isEmpty(startTime) && !StringUtils.isEmpty(endTime)) {
             listLike2.add(endTime);
             s2 += " AND YHXQ_TIME<= to_date(?" + listLike2.size() + ",'yyyy-MM-dd hh24:mi:ss')";
             listLike2.add(startTime);
             s2 += " AND YHXQ_TIME>= to_date( ?" + listLike2.size() + ",'yyyy-MM-dd hh24:mi:ss')";
-        } /*else {
-            s2 += "  AND YHXQ_TIME = sysdate ";
-        }*/
+        } else {
+            s2 += "  AND YHXQ_TIME is not null ";
+        }
 
         String creatHistory = " SELECT " +
                 "  sum(decode(YHJB1, '树木隐患', 1, 0)) as creatshu, " +
@@ -113,16 +113,25 @@ public class HistoryController extends CurdController<RztSysUser, CommonService>
         Map<String, Map> map1 = new HashMap();
         Map<String, Map> map2 = new HashMap();
         for (int i = 0; i < list.size(); i++) {
-            map.put(list.get(i).get("YWORG_ID").toString(), list.get(i));
+            Object yworg_id = list.get(i).get("YWORG_ID");
+            if (!StringUtils.isEmpty(yworg_id)) {
+                map.put(yworg_id.toString(), list.get(i));
+            }
         }
         for (int i = 0; i < list1.size(); i++) {
-            map1.put(list1.get(i).get("YWORG_ID").toString(), list1.get(i));
+            Object yworg_id = list1.get(i).get("YWORG_ID");
+            if (!StringUtils.isEmpty(yworg_id)) {
+                map1.put(yworg_id.toString(), list1.get(i));
+            }
         }
         for (int i = 0; i < list2.size(); i++) {
-            map2.put(list2.get(i).get("YWORG_ID").toString(), list2.get(i));
+            Object yworg_id = list2.get(i).get("YWORG_ID");
+            if (!StringUtils.isEmpty(yworg_id)) {
+                map2.put(yworg_id.toString(), list2.get(i));
+            }
         }
         for (Map map3 : list3) {
-            Map id = map.get(map.get("ID"));
+            Map id = map.get(map3.get("ID"));
             if (id == null) {
                 map3.put("CREATSHU", 0);
                 map3.put("CREATJIAN", 0);
@@ -131,21 +140,23 @@ public class HistoryController extends CurdController<RztSysUser, CommonService>
             } else {
                 map3.putAll(id);
             }
-            if (id == null) {
+            Map id1 = map1.get(map3.get("ID"));
+            if (id1 == null) {
                 map3.put("UPDATESHU", 0);
                 map3.put("UPDATEJIAN", 0);
                 map3.put("UPDATEYI", 0);
                 map3.put("UPDATESHI", 0);
             } else {
-                map3.putAll(id);
+                map3.putAll(id1);
             }
-            if (id == null) {
+            Map id2 = map2.get(map3.get("ID"));
+            if (id2 == null) {
                 map3.put("YHXQSHU", 0);
                 map3.put("YHXQJIAN", 0);
                 map3.put("YHXQYI", 0);
                 map3.put("YHXQSHI", 0);
             } else {
-                map3.putAll(id);
+                map3.putAll(id2);
             }
         }
         try {
@@ -157,8 +168,8 @@ public class HistoryController extends CurdController<RztSysUser, CommonService>
     }
 
     @RequestMapping("historyLm")
-    public WebApiResponse historyLm(String userId, String startTime, String endTime, String deptId) {
-        JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", userId).toString());
+    public WebApiResponse historyLm(String currentUserId, String startTime, String endTime, String deptId) {
+        JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", currentUserId).toString());
         int roletype = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
         Object deptid = jsonObject.get("DEPTID");
         List list = new ArrayList();

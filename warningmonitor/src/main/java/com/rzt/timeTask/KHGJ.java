@@ -99,7 +99,7 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
      */
     public void KHWKH() {
         String sql = " SELECT kh.ID,d.ID AS TDYW_ORG,kh.PLAN_START_TIME,kh.TASK_NAME,kh.USER_ID FROM  KH_TASK kh LEFT JOIN RZTSYSDEPARTMENT  d" +
-                "    ON kh.TDYW_ORG = d.DEPTNAME WHERE trunc(kh.PLAN_START_TIME) = trunc(sysdate) AND REAL_START_TIME IS NULL";
+                "    ON kh.TDYW_ORG = d.DEPTNAME WHERE trunc(kh.PLAN_START_TIME) = trunc(sysdate) AND (kh.REAL_START_TIME IS NULL OR kh.PLAN_START_TIME<kh.REAL_START_TIME)";
         List<Object> list = new ArrayList<>();
         List<Map<String, Object>> maps = execSql(sql);
         for (Map<String, Object> map : maps) {
@@ -133,6 +133,16 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
                     resp.saveCheckEj(SnowflakeIdWorker.getInstance(0,0).nextId(),Long.valueOf(map.get("ID").toString()),2,10,map.get("USER_ID").toString(),map.get("TDYW_ORG").toString(),map.get("TASK_NAME").toString());
                     String key = "ONE+"+map.get("ID").toString()+"+2+10+"+map.get("USER_ID")+"+"+map.get("TDYW_ORG")+"+"+map.get("TASK_NAME");
                     redisService.setex(key);
+                    /*String[] message = new String[7];
+                    message[0] = "ONE";
+                    message[1] = map.get("ID").toString();
+                    message[2] = "2";
+                    message[3] = "10";
+                    message[4] = map.get("USER_ID").toString();
+                    message[5] = map.get("TDYW_ORG").toString();
+                    message[6] = map.get("TASK_NAME").toString();
+
+                    monitorcheckyj.saveCheckYj(message);*/
                 }
             }
     }
@@ -140,7 +150,7 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
     private Monitorcheckyjservice monitorcheckyj;
     //巡视未按规定时间接任务 定时拉去数据用
     public void XSWJRW(){
-        String sql = "SELECT ID,TD_ORG,PLAN_START_TIME,CM_USER_ID,TASK_NAME FROM XS_ZC_TASK WHERE PLAN_END_TIME >= trunc(SYSDATE) AND PLAN_START_TIME <= trunc(sysdate + 1)  AND REAL_START_TIME IS NULL";
+        String sql = "SELECT ID,TD_ORG,PLAN_START_TIME,CM_USER_ID,TASK_NAME FROM XS_ZC_TASK WHERE PLAN_END_TIME >= trunc(SYSDATE) AND PLAN_START_TIME <= trunc(sysdate + 1)  AND (REAL_START_TIME IS NULL OR PLAN_START_TIME<REAL_START_TIME)";
         List<Map<String, Object>> maps = execSql(sql);
         List<Object> list = new ArrayList<>();
         for (Map<String, Object> map : maps) {
@@ -191,8 +201,76 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
     }
 
 
+    /**
+     * 稽查超期
+     */
+    public void JCOutOfTime(){
+        String sql=" SELECT t.ID,t.USER_ID,t.TASK_NAME,t.PLAN_START_TIME,u.DEPTID FROM CHECK_LIVE_TASK t " +
+                "LEFT JOIN RZTSYSUSER u ON t.USER_ID=u.ID " +
+                "WHERE trunc(t.CREATE_TIME)=trunc(sysdate-1) AND STATUS=3 ";
+        List<Map<String, Object>> maps = execSql(sql);
+        for (Map<String, Object> map : maps) {
+            resp.saveCheckEj(SnowflakeIdWorker.getInstance(0,0).nextId(),Long.valueOf(map.get("ID").toString()),3,12,map.get("USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString());
+            String key = "ONE+" + map.get("ID") + "+3+12+" + map.get("USER_ID") + "+" + map.get("DEPTID") + "+" + map.get("TASK_NAME");
+           redisService.setex(key);
+        }
+    }
+
+    /**
+     * 稽查人员未上线 定时拉取数据使用
+     */
+    public void JCWsx(){
+        String sql=" SELECT t.ID,t.USER_ID,t.TASK_NAME,t.PLAN_START_TIME,u.DEPTID FROM CHECK_LIVE_TASK t " +
+                "LEFT JOIN RZTSYSUSER u ON t.USER_ID=u.ID " +
+                "WHERE trunc(t.CREATE_TIME)=trunc(sysdate) AND STATUS!=2 ";
+        List<Map<String, Object>> maps = execSql(sql);
+        maps.forEach(map ->{
+            Jedis jedis = jedisPool.getResource();
+            String key = "TWO+"+map.get("ID")+"+3+13+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
+            jedis.select(1);
+            Date plan_start_time = (Date) map.get("PLAN_START_TIME");
+            try {
+                Long time = plan_start_time.getTime() - new Date().getTime();
+                if(time>0){
+                    jedis.psetex(key,time,"稽查未上线");
+                }
+            } catch (Exception e) {
+                //System.out.println(e.getMessage());
+                //throw new RuntimeException(e.getMessage()+"巡视未上线");
+            }finally {
+                jedis.close();
+            }
+        });
+    }
+
+    /**
+     * 稽查未到达现场 定时拉取数据用
+     */
+    public void JCWdxc(){
+        String sql=" SELECT t.ID,t.USER_ID,t.TASK_NAME,t.PLAN_END_TIME,u.DEPTID FROM CHECK_LIVE_TASK t " +
+                "LEFT JOIN RZTSYSUSER u ON t.USER_ID=u.ID " +
+                "WHERE trunc(t.CREATE_TIME)=trunc(sysdate) AND STATUS!=2 ";
+        List<Map<String, Object>> maps = execSql(sql);
+        maps.forEach(map ->{
+            Jedis jedis = jedisPool.getResource();
+            String key = "TWO+"+map.get("ID")+"+3+14+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
+            jedis.select(1);
+            Date plan_end_time = (Date) map.get("PLAN_END_TIME");
+            try {
+                Long time = plan_end_time.getTime() - new Date().getTime();
+                if(time>0){
+                    jedis.psetex(key,time,"稽查未到达现场");
+                }
+            } catch (Exception e) {
+                //System.out.println(e.getMessage());
+                //throw new RuntimeException(e.getMessage()+"巡视未上线");
+            }finally {
+                jedis.close();
+            }
+        });
 
 
+    }
 
 
 

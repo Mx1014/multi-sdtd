@@ -22,6 +22,16 @@ public class KhTaskModel {
 
     private String taskType;
 
+    private String tdOrg;
+
+    public void setTdOrg(String tdOrg) {
+        this.tdOrg = tdOrg;
+    }
+
+    public String getTdOrg() {
+        return tdOrg;
+    }
+
     public String getTaskType() {
         return taskType;
     }

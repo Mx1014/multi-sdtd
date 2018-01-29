@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.RztSysUser;
 import com.rzt.service.CommonService;
 import com.rzt.util.WebApiResponse;
+import com.rzt.utils.DateUtil;
 import javafx.beans.binding.ObjectExpression;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
@@ -17,10 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequestMapping("CompanyNumTasks")
@@ -158,6 +156,10 @@ public class CompanyNumTasksController extends CurdController<RztSysUser, Common
     public WebApiResponse deptZhu(String id, Date day, String currentUserId) {
         try {
             Map map = new HashMap();
+           /* if (startDate == null && endDate == null) {
+                startDate = timeUtil(1);
+                endDate = timeUtil(2);
+            }*/
             if (day == null) {
                 day = new Date();
             }
@@ -173,9 +175,11 @@ public class CompanyNumTasksController extends CurdController<RztSysUser, Common
 
             //正常
             String xszc = " SELECT nvl(sum(decode(stauts, 0, 1, 0)),0) XSWKS,nvl(sum(decode(stauts, 1, 1, 0)),0) XSJXZ,nvl(sum(decode(stauts, 2, 1, 0)),0) XSYWC FROM XS_ZC_TASK WHERE PLAN_END_TIME >= trunc(?2) and  PLAN_START_TIME <= trunc(?2+1) AND " + xsField + " = ?1 ";
+            //String xszc = " SELECT nvl(sum(decode(stauts, 0, 1, 0)),0) XSWKS,nvl(sum(decode(stauts, 1, 1, 0)),0) XSJXZ,nvl(sum(decode(stauts, 2, 1, 0)),0) XSYWC FROM XS_ZC_TASK WHERE  PLAN_START_TIME between ?2 and ?3 AND " + xsField + " = ?1 ";
             Map<String, Object> xszcMap = this.service.execSqlSingleResult(xszc, id, day);
             //保电
             String txbd = " SELECT nvl(sum(decode(stauts, 0, 1, 0)),0) XSWKS,nvl(sum(decode(stauts, 1, 1, 0)),0) XSJXZ,nvl(sum(decode(stauts, 2, 1, 0)),0) XSYWC FROM XS_txbd_TASK WHERE PLAN_END_TIME >= trunc(?2) and  PLAN_START_TIME <= trunc(?2+1) AND " + xsField + " = ?1 ";
+            // String txbd = " SELECT nvl(sum(decode(stauts, 0, 1, 0)),0) XSWKS,nvl(sum(decode(stauts, 1, 1, 0)),0) XSJXZ,nvl(sum(decode(stauts, 2, 1, 0)),0) XSYWC FROM XS_txbd_TASK WHERE  PLAN_START_TIME between ?2 and ?3 AND" + xsField + " = ?1 ";
             Map<String, Object> txbdMap = this.service.execSqlSingleResult(txbd, id, day);
             //看护
             String kh = "SELECT nvl(sum(decode(status, 0, 1, 0)),0) KHWKS,nvl(sum(decode(status, 1, 1, 0)),0) KHJXZ,nvl(sum(decode(status, 2, 1, 0)),0) KHYWC FROM KH_TASK k JOIN RZTSYSUSER u ON k.USER_ID = u.ID and PLAN_END_TIME >= trunc(?2) and  PLAN_START_TIME <= trunc(?2+1) and u." + khField + " = ?1 ";
@@ -289,6 +293,21 @@ public class CompanyNumTasksController extends CurdController<RztSysUser, Common
 
     }
 
+    public static Date timeUtil(int i) {
+        String date = "";
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+        Calendar c = Calendar.getInstance();
+        c.setTime(new Date());
+        Date m = c.getTime();
+        String mon = df.format(m);
+        if (i == 1) {
+            date = mon + " 00:00:00";
+        } else {
+            date = mon + " 23:59:59";
+        }
+        //  task.setPlanEndTime(df.format(new Date()) + " 23:59");
+        return DateUtil.parseDate(date);
+    }
 
 }
 
