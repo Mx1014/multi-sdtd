@@ -51,8 +51,7 @@ public class KhTaskController extends
         try {
             //分页参数 page size
             HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
-            JSONObject jsonObject = new JSONObject();
-            jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", currentUserId).toString());
+            JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", currentUserId).toString());
             Object o = this.service.listAllKhTask(task, status, pageable, Integer.valueOf(jsonObject.get("ROLETYPE").toString()), yworg, currentUserId);
             return WebApiResponse.success(o);
         } catch (Exception e) {
