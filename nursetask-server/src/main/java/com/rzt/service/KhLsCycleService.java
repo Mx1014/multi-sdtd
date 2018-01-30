@@ -164,6 +164,7 @@ public class KhLsCycleService extends CurdService<KhLsCycle, KhLsCycleRepository
                 task.setTaskName(cycle.getTaskName());
                 taskRepository.save(task);
             }
+            this.reposiotry.updateStatus(cycle.getId());
             return WebApiResponse.success("保存成功");
         } catch (Exception e) {
             e.printStackTrace();

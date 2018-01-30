@@ -25,4 +25,8 @@ public interface KhLsCycleRepository extends JpaRepository<KhLsCycle,String> {
     @Modifying
     @Query(value = "UPDATE  KH_LS_CYCLE SET WX_ORG=?1,WX_ORGID=?2 WHERE id=?3",nativeQuery = true)
     void updateCycle(String wxname, String wxid, long id);
+
+    @Modifying
+    @Query(value = "UPDATE  KH_LS_CYCLE SET PF_TIME=sysdate,STATUS=1 WHERE id=?1",nativeQuery = true)
+    void updateStatus(Long id);
 }

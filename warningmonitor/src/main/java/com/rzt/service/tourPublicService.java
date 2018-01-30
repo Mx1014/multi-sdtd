@@ -49,10 +49,9 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
 
     //看护脱岗 给脱岗用
     public void KHTG(String userId,Long taskId){
-        String sql = "SELECT kh.TASK_NAME,d.ID AS TDYW_ORG FROM KH_TASK kh LEFT JOIN RZTSYSDEPARTMENT d " +
-                " ON kh.TDYW_ORG = d.DEPTNAME  WHERE kh.ID =?2 AND kh.USER_ID=?1";
+        String sql = "SELECT kh.TASK_NAME,kh.YWORG_ID AS TDYW_ORG FROM KH_TASK kh WHERE kh.ID =?1";
         try {
-            Map<String, Object> map = execSqlSingleResult(sql, userId, taskId);
+            Map<String, Object> map = execSqlSingleResult(sql, taskId);
             //直接存到二级单位
             resp.saveCheckEj(SnowflakeIdWorker.getInstance(0,0).nextId(),taskId,2,7,userId,map.get("TDYW_ORG").toString(),map.get("TASK_NAME").toString());
             String key = "ONE+"+taskId+"+2+7+"+userId+"+"+map.get("TDYW_ORG").toString()+"+"+map.get("TASK_NAME").toString();
@@ -66,8 +65,7 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
     //看护未到位
     public void khWFDW(Long taskid, String userid) {
         try {
-            String sql = "   SELECT  kh.TASK_NAME AS TASKNAME,d.ID AS TDYW_ORG,kh.REASON  FROM KH_TASK kh LEFT JOIN RZTSYSDEPARTMENT d ON d.DEPTNAME=kh.TDYW_ORG  " +
-                    "WHERE kh.ID=? ";
+            String sql = "   SELECT  kh.TASK_NAME AS TASKNAME,kh.YWORG_ID AS TDYW_ORG,kh.REASON  FROM KH_TASK kh WHERE kh.ID=?1 ";
             Map<String, Object> map = this.execSqlSingleResult(sql, taskid);
             //往二级单位插入未到位
             resp.saveCheckEjWdw(SnowflakeIdWorker.getInstance(10, 12).nextId(),taskid,2,11,userid,map.get("TDYW_ORG").toString(),map.get("TASKNAME").toString(),map.get("REASON").toString());

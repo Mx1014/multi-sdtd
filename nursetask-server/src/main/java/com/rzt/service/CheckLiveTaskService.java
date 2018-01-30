@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -25,10 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**      
  * 类名称：CHECKLIVETASKService    
@@ -298,6 +296,21 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
     public void updateGoodsInfo(Long id, String taskType,String str) {
         //0看护 1巡视 0待稽查 1已稽查
         if("0,0".equals(taskType)){
+            String s = "TWO+"+id+"+3+14+*";
+            RedisConnection connection = null;
+            try {
+                connection = redisTemplate.getConnectionFactory().getConnection();
+                connection.select(1);
+                Set<byte[]> keys = connection.keys(s.getBytes());
+                byte[][] ts = keys.toArray(new byte[][]{});
+                if(ts.length > 0) {
+                    connection.del(ts);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                connection.close();
+            }
             reposiotry.updateWptsById(id,str);
         }else if("1,0".equals(taskType)){
             checkLiveTaskDetailRepository.updateWptsById(id,str);

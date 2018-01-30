@@ -1,6 +1,10 @@
 server:
     port: 8098
     context-path: /userCenter/
+    tomcat:
+      max-threads: 500
+      max-connections: 500
+      accept-count: 500
 token:
   expiretime: 300000000
 spring:

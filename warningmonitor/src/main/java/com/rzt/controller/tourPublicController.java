@@ -3,9 +3,14 @@ package com.rzt.controller;
 import com.rzt.entity.Monitorcheckej;
 import com.rzt.service.tourPublicService;
 import com.rzt.util.WebApiResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Set;
 
 @RestController
 @RequestMapping("GJKH")
@@ -93,5 +98,26 @@ public class tourPublicController extends CurdController<Monitorcheckej, tourPub
 
     }
 
+    @Autowired
+    private RedisTemplate<String,Object> redisTemplate;
+    //Long id
+    @GetMapping("remoceKey12")
+    public void removeKey(){
+        String s = "TWO+*+2+8+*";
+        RedisConnection connection = null;
+        try {
+            connection = redisTemplate.getConnectionFactory().getConnection();
+            connection.select(1);
+            Set<byte[]> keys = connection.keys(s.getBytes());
+            byte[][] ts = keys.toArray(new byte[][]{});
+            if(ts.length > 0) {
+                connection.del(ts);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            connection.close();
+        }
+    }
 
 }

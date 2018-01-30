@@ -34,7 +34,6 @@ public class KhLsCycleController extends
         HashOperations<String, Object, Object> hash = redisTemplate.opsForHash();
         Object userInformation = hash.get("UserInformation", currentUserId);
         JSONObject jsonObject = JSONObject.parseObject(userInformation.toString());
-
         return this.service.listLsNotDo(taskName,yworg,startTime,endTime,jsonObject,pageable,yhjb);
     }
 

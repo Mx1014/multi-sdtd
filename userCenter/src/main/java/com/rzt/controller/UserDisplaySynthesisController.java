@@ -150,8 +150,18 @@ public class UserDisplaySynthesisController extends CurdController<RztSysUser, C
                     " WHERE  USERDELETE = 1  " + buffer.toString() +
                     " GROUP BY z.USER_ID,DEPTID,CLASSNAME,LOGINSTATUS ) GROUP BY DEPTID ";
             String htjcLogin = "";
-            Map<String, Object> xsLoginMap = this.service.execSqlSingleResult(xsLogin, listLike.toArray());
-            Map<String, Object> khLoginMap = this.service.execSqlSingleResult(khLogin, listLike.toArray());
+            Map<String, Object> xsLoginMap = null;
+            try {
+                xsLoginMap = this.service.execSqlSingleResult(xsLogin, listLike.toArray());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            Map<String, Object> khLoginMap = null;
+            try {
+                khLoginMap = this.service.execSqlSingleResult(khLogin, listLike.toArray());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             Map<Object, Object> map = new HashMap<>();
             map.put("xcjclx",0);
             map.put("xcjczx",0);
@@ -165,15 +175,42 @@ public class UserDisplaySynthesisController extends CurdController<RztSysUser, C
 
             }
 
-            map.put("xsls", Integer.parseInt(xsLoginMap.get("XSLX").toString()));
-            map.put("xszx", Integer.parseInt(xsLoginMap.get("XSZX").toString()));
-            map.put("khlx", Integer.parseInt(khLoginMap.get("KHLX").toString()));
-            map.put("khzx", Integer.parseInt(khLoginMap.get("KHZX").toString()));
+            map.put("xsls", Integer.parseInt(xsLoginMap == null?"0":xsLoginMap.get("XSLX").toString()));
+            map.put("xszx", Integer.parseInt(xsLoginMap == null?"0":xsLoginMap.get("XSZX").toString()));
+            map.put("khlx", Integer.parseInt(khLoginMap == null?"0":khLoginMap.get("KHLX").toString()));
+            map.put("khzx", Integer.parseInt(khLoginMap == null?"0":khLoginMap.get("KHZX").toString()));
 
             return WebApiResponse.success(map);
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("失败");
         }
+    }
+
+    @GetMapping("userLoginTypeList")
+    public Object userLoginTypeList(String currentUserId, String startTime, String endTime, String deptId) {
+        new StringBuffer("select ");
+        JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", currentUserId).toString());
+        int roletype = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
+        Object deptid = jsonObject.get("DEPTID");
+        List listLike = new ArrayList();
+        StringBuffer buffer = new StringBuffer();
+        if (!StringUtils.isEmpty(startTime) && !StringUtils.isEmpty(endTime)) {
+            listLike.add(endTime);
+            buffer.append(" AND z.PLAN_END_TIME >= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ");
+            listLike.add(startTime);
+            buffer.append("AND PLAN_START_TIME <= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ");
+        } else {
+            buffer.append(" AND PLAN_END_TIME >= trunc( SYSDATE ) AND PLAN_START_TIME <= trunc(sysdate+1) ");
+        }
+        if (roletype == 1 || roletype == 2) {
+            listLike.add(deptid);
+            buffer.append(" AND r.DEPTID= ?" + listLike.size());
+        }
+        if (!StringUtils.isEmpty(deptId)) {
+            listLike.add(deptId);
+            buffer.append(" AND r.DEPTID= ?" + listLike.size());
+        }
+        return 1;
     }
 }
