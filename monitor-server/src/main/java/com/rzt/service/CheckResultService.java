@@ -205,7 +205,7 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
                 if (null != maps.get(0)) {
                     String photo_ids = (String) maps.get(0).get("PHOTO_IDS");
                     if (null != photo_ids && !"".equals(photo_ids)) {
-                        String phs = checkResult.getPhotoIds() + photo_ids;
+                        String phs = checkResult.getPhotoIds()+"," + photo_ids;
                         String[] split = phs.split(",");
                         HashSet<String> set = new HashSet<>();
                         for (String s : split) {
