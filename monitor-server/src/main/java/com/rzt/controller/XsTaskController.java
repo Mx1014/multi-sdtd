@@ -109,15 +109,13 @@ public class XsTaskController extends
      * @param deptId         部门id
      * @param startTime      开始时间
      * @param endTime        结束时间
-     * @param dayUserId      白班人选
-     * @param nightUserId    夜班人选
      * @return
      */
     @GetMapping("/updateWorkings")
     public WebApiResponse updateWorkings(String currentUserId,String deptId,String startTime
-                    ,String endTime,String dayUserId,String nightUserId){
+                    ,String endTime){
 
-            return service.updateWorkings(currentUserId,deptId,startTime,endTime,dayUserId,nightUserId);
+            return service.updateWorkings(currentUserId,deptId,startTime,endTime);
     }
 
 

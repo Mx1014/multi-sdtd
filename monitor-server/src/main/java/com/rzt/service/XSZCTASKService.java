@@ -690,14 +690,14 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
 
     }
 
-    public WebApiResponse updateWorkings(String currentUserId, String deptId, String startTime, String endTime, String dayUserId, String nightUserId) {
+    public WebApiResponse updateWorkings(String currentUserId, String deptId, String startTime, String endTime) {
 
         if(null == deptId || "".equals(deptId) ){
             return WebApiResponse.erro("参数错误 deptId="+deptId);
         }
         try {
             //修改倒班信息
-            timedConfigRepository.updateWorkings(deptId,startTime,endTime,dayUserId,nightUserId);
+            timedConfigRepository.updateWorkings(deptId,startTime,endTime);
             LOGGER.info("修改倒班信息成功");
         }catch (Exception e){
             LOGGER.error("修改倒班信息失败"+e.getMessage());
