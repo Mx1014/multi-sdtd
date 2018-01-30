@@ -113,9 +113,9 @@ public class XsTaskController extends
      */
     @GetMapping("/updateWorkings")
     public WebApiResponse updateWorkings(String currentUserId,String deptId,String startTime
-                    ,String endTime){
+                    ,String endTime,String dayUserId,String nightUserId){
 
-            return service.updateWorkings(currentUserId,deptId,startTime,endTime);
+            return service.updateWorkings(currentUserId,deptId,startTime,endTime,dayUserId,nightUserId);
     }
 
 
