@@ -47,7 +47,7 @@ public class TemporarilyController extends CurdController<RztSysUser, CommonServ
             s += " AND DEPTID= ?" + listLike.size();
         }
         String sql = " SELECT t.START_TIME,t.END_TIME,t.STATUS,k.TASK_NAME,u.COMPANYNAME,u.CLASSNAME,u.REALNAME,u.DEPT,u.PHONE FROM ( SELECT u.TASK_ID, u.STATUS, t.START_TIME, t.END_TIME FROM WARNING_OFF_POST_USER u LEFT JOIN WARNING_OFF_POST_USER_TIME t ON u.USER_ID=t.FK_USER_ID AND u.TASK_ID=t.FK_TASK_ID WHERE 1=1 " + s1 +
-                " )t LEFT JOIN KH_TASK k ON t.TASK_ID = k.ID LEFT JOIN USERINFO u ON k.USER_ID = u.ID " + s;
+                " )t LEFT JOIN KH_TASK k ON t.TASK_ID = k.ID JOIN USERINFO u ON k.USER_ID = u.ID " + s;
         return WebApiResponse.success(this.service.execSqlPage(pageable, sql, listLike.toArray()));
     }
 }
