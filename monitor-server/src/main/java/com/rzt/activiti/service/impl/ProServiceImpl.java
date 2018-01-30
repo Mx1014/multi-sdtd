@@ -66,9 +66,10 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
     }
 
     @Override
-    public WebApiResponse checkTask(String userName, Integer page, Integer size) {
+    public WebApiResponse checkTask(String userName, Integer page, Integer size, Object... values) {
         return null;
     }
+
 
     /**
      * 查看任务

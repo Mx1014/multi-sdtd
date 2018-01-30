@@ -68,9 +68,10 @@ public class XSCycleServiceImpl  extends CurdService<CheckResult, CheckResultRep
     }
 
     @Override
-    public WebApiResponse checkTask(String userName, Integer page, Integer size) {
+    public WebApiResponse checkTask(String userName, Integer page, Integer size, Object... values) {
         return null;
     }
+
 
     /**
      * 查看所有待办任务
@@ -84,7 +85,8 @@ public class XSCycleServiceImpl  extends CurdService<CheckResult, CheckResultRep
      * @param endTime    结束时间
      * @return
      */
-    public WebApiResponse checkTasks(String userId,Integer page,Integer size
+
+    public WebApiResponse checkTask(String userId,Integer page,Integer size
             ,String tdId,String lineName,String vLevel,String startTime,String endTime) {
         Page<Map<String, Object>> maps = null;
         try{

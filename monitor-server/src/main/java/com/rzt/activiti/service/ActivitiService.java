@@ -19,7 +19,15 @@ public interface ActivitiService {
 
 	List<ProcessInstance> checkStatus();
 
-	WebApiResponse checkTask(String userName,Integer page,Integer size);
+	/**
+	 *
+	 * @param userName    用户  判断节点使用
+	 * @param page
+	 * @param size
+	 * @param values      可能多的参数
+	 * @return
+	 */
+	WebApiResponse checkTask(String userName,Integer page,Integer size,Object... values);
 
 	void deploy();
 
