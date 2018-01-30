@@ -57,7 +57,7 @@ public class DefectController {
      */
     @GetMapping("/findTaskByUserName")
     public WebApiResponse toTask(String currentUserId,Integer page,Integer size){
-        return defectService.checkTask(currentUserId,page,size);
+        return defectService.checkTasks(currentUserId,page,size);
 
     }
 
