@@ -261,9 +261,35 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                 String comSum = map2.get("COMSUM").toString();
                 String date =  map3.get("TIME").toString();
 
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("YYYY-MM-dd HH");
+                //任务抽查时间
+                Date parse = simpleDateFormat.parse(date);
                 //插入到记录表中
                 String uuid = UUID.randomUUID().toString();
-                timedConfigRepository.insertTaskRecord(uuid,date1,date,sum,comSum,deptId);
+
+                // 查询当前时间值班人    查询出值班人id
+                //   当前部门    deptId
+                  String workingSql = "SELECT * " +
+                          "           FROM WORKING_TIMED WHERE DEPT_ID = '"+deptId+"'";
+                  Map<String, Object> map4 = this.execSqlSingleResult(workingSql, null);
+                  // 逻辑是  开始时间和结束时间之内属于白班    之外属于夜班
+                  //倒班白天开始时间
+                  String start_time = map4.get("START_TIME").toString();
+                  //倒班白班结束时间
+                  String end_time = map4.get("END_TIME").toString();
+                  //白班用户id
+                  String day_user = map4.get("DAY_USER").toString();
+                  //夜班用户id
+                  String night_user = map4.get("NIGHT_USER").toString();
+                  //获取到当前抽查时间的小时位   查看这条抽查任务稽查人
+                  int hours = parse.getHours();
+                  String JCID = night_user;
+                  //判断证明是白班用户
+                  if(hours <= Integer.parseInt(end_time)&& hours >= Integer.parseInt(start_time)){
+                      JCID = day_user;
+                  }
+                  timedConfigRepository.insertTaskRecord(uuid,date1,sum,comSum,deptId,parse,JCID);
+
                 LOGGER.info(deptId+ "单位本周期查询情况添加");
             }
 

@@ -86,7 +86,7 @@ public class XSCycleServiceImpl  extends CurdService<CheckResult, CheckResultRep
      * @return
      */
 
-    public WebApiResponse checkTask(String userId,Integer page,Integer size
+    public WebApiResponse checkTasks(String userId,Integer page,Integer size
             ,String tdId,String lineName,String vLevel,String startTime,String endTime) {
         Page<Map<String, Object>> maps = null;
         try{
