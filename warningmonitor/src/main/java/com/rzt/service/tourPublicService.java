@@ -31,7 +31,7 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
     @Transactional(rollbackFor = Exception.class)
     public WebApiResponse xsTourScope(Long taskid, String userid,String reason) {
         try {
-            String sql = "   SELECT TASK_NAME AS TASKNAME,TD_ORG FROM XS_ZC_TASK WHERE ID=? ";
+            String sql = "   SELECT TASK_NAME AS TASKNAME,TD_ORG FROM XS_ZC_TASK WHERE ID=?1 ";
             Map<String, Object> map = this.execSqlSingleResult(sql, taskid);
             //往二级单位插数据
             resp.saveCheckEjWdw(SnowflakeIdWorker.getInstance(10, 12).nextId(),taskid,1,3,userid,map.get("TD_ORG").toString(),map.get("TASKNAME").toString(),reason);
@@ -65,10 +65,10 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
     //看护未到位
     public void khWFDW(Long taskid, String userid) {
         try {
-            String sql = "   SELECT  kh.TASK_NAME AS TASKNAME,kh.YWORG_ID AS TDYW_ORG,kh.REASON  FROM KH_TASK kh WHERE kh.ID=?1 ";
+            String sql = "   SELECT  kh.TASK_NAME AS TASKNAME,kh.YWORG_ID AS TDYW_ORG,nvl(kh.REASON,'未填写') AS REASON  FROM KH_TASK kh WHERE kh.ID=?1 ";
             Map<String, Object> map = this.execSqlSingleResult(sql, taskid);
             //往二级单位插入未到位
-            resp.saveCheckEjWdw(SnowflakeIdWorker.getInstance(10, 12).nextId(),taskid,2,11,userid,map.get("TDYW_ORG").toString(),map.get("TASKNAME").toString(),map.get("REASON").toString());
+            resp.saveCheckEjWdw(SnowflakeIdWorker.getInstance(10, 12).nextId(),taskid,2,11,userid,map.get("TDYW_ORG").toString(),map.get("TASKNAME").toString(),map.get("REASON"));
             String key = "ONE+" + taskid + "+2+11+" + userid + "+" + map.get("TDYW_ORG").toString() + "+" + map.get("TASKNAME").toString()+"+"+map.get("REASON").toString();
 
             redisService.setex(key);
@@ -112,16 +112,16 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
                     //如果用户在任务时间内退出登录，则直接往往二级推，并设置往一级推送时间
                     String key = "";
                     if (taskType==2){
-                        key = "ONE+"+map.get("ID")+"+2+8+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
-                        resp.saveCheckEj(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(map.get("ID").toString()),2,8,map.get("USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString());
+                        key = "TWO+"+map.get("ID")+"+2+8+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
+                        //resp.saveCheckEj(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(map.get("ID").toString()),2,8,map.get("USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString());
                     }else if (taskType==1){
-                        key = "ONE+"+map.get("ID")+"+1+2+"+map.get("CM_USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
-                        resp.saveCheckEj(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(map.get("ID").toString()),1,2,map.get("CM_USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString());
+                        key = "TWO+"+map.get("ID")+"+1+2+"+map.get("CM_USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
+                        //resp.saveCheckEj(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(map.get("ID").toString()),1,2,map.get("CM_USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString());
                     }else if(taskType==3){
-                        key = "ONE+"+map.get("ID")+"+3+13+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
-                        resp.saveCheckEj(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(map.get("ID").toString()),3,13,map.get("USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString());
+                        key = "TWO+"+map.get("ID")+"+3+13+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
+                        //resp.saveCheckEj(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(map.get("ID").toString()),3,13,map.get("USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString());
                     }
-                    redisService.setex(key);
+                    redisService.psetex(key,5400000L);
                 }else if(new Date().getTime()<startDate){
                     String key = "";
                     if (taskType==2){
@@ -134,6 +134,7 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
                         key = "TWO+"+map.get("ID")+"+3+13+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
                     }
                     Long time = plan_start_time.getTime() - new Date().getTime();
+                    time = time+5400000L;
                     redisService.psetex(key,time);
                 }
             } catch (Exception e) {

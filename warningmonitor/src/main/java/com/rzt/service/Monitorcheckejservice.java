@@ -142,16 +142,19 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
             //巡视的sql
             if(type==1){
                 sql = "SELECT   j.TASK_ID, j.CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,xs.PLAN_START_TIME FROM MONITOR_CHECK_YJ j " +
-                        "  LEFT JOIN XS_ZC_TASK xs ON j.TASK_ID=xs.ID where j.STATUS=0 and j.TASK_TYPE=" + type;
+                        " LEFT JOIN RZTSYSUSER u ON j.USER_ID=u.ID " +
+                        "  LEFT JOIN XS_ZC_TASK xs ON j.TASK_ID=xs.ID where j.STATUS=0 AND j.USER_ID is NOT NULL AND u.USERDELETE=1 and j.TASK_TYPE=" + type;
             }else if(type==2){
                 //看护的sql
                 sql = "SELECT   j.TASK_ID, j.CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,kh.PLAN_START_TIME FROM MONITOR_CHECK_YJ j " +
-                        "  LEFT JOIN KH_TASK kh ON j.TASK_ID=kh.ID where j.STATUS=0 and j.TASK_TYPE=" + type;
+                        "  LEFT JOIN RZTSYSUSER u ON j.USER_ID=u.ID " +
+                        "  LEFT JOIN KH_TASK kh ON j.TASK_ID=kh.ID where j.STATUS=0 AND j.USER_ID is NOT NULL AND u.USERDELETE=1 and j.TASK_TYPE=" + type;
 
             }else if(type==3){
                 //现场稽查
                 sql = "SELECT   j.TASK_ID, j.CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,cl.PLAN_START_TIME FROM MONITOR_CHECK_YJ j " +
-                        "  LEFT JOIN CHECK_LIVE_TASK cl ON j.TASK_ID=cl.ID where j.STATUS=0 and j.TASK_TYPE=" + type;
+                        " LEFT JOIN RZTSYSUSER u ON j.USER_ID=u.ID " +
+                        "  LEFT JOIN CHECK_LIVE_TASK cl ON j.TASK_ID=cl.ID where j.STATUS=0 AND j.USER_ID is NOT NULL AND u.USERDELETE=1 and j.TASK_TYPE=" + type;
             }
             //查询所有
             String sql1 = "SELECT * FROM ( " + sql + " ) where 1=1 " + s;
@@ -162,16 +165,19 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
             String sql="";
             if(type==1){
                 sql = "SELECT   j.TASK_ID, j.CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,xs.PLAN_START_TIME FROM MONITOR_CHECK_EJ j " +
-                        "  LEFT JOIN XS_ZC_TASK xs ON j.TASK_ID=xs.ID where j.STATUS=0 and j.TASK_TYPE=" + type;
+                        " LEFT JOIN RZTSYSUSER u ON j.USER_ID=u.ID " +
+                        "  LEFT JOIN XS_ZC_TASK xs ON j.TASK_ID=xs.ID where j.STATUS=0 AND j.USER_ID is NOT NULL AND u.USERDELETE=1 and j.TASK_TYPE=" + type;
             }else if(type==2){
                 //看护的sql
                 sql = "SELECT   j.TASK_ID, j.CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,kh.PLAN_START_TIME FROM MONITOR_CHECK_EJ j " +
-                        "  LEFT JOIN KH_TASK kh ON j.TASK_ID=kh.ID where j.STATUS=0 and j.TASK_TYPE=" + type;
+                        " LEFT JOIN RZTSYSUSER u ON j.USER_ID=u.ID " +
+                        "  LEFT JOIN KH_TASK kh ON j.TASK_ID=kh.ID where j.STATUS=0  AND j.USER_ID is NOT NULL AND u.USERDELETE=1 and j.TASK_TYPE=" + type;
 
             }else if(type==3){
                 //现场稽查
                 sql = "SELECT   j.TASK_ID, j.CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,cl.PLAN_START_TIME FROM MONITOR_CHECK_EJ j " +
-                        "  LEFT JOIN CHECK_LIVE_TASK cl ON j.TASK_ID=cl.ID where j.STATUS=0 and j.TASK_TYPE=" + type;
+                        " LEFT JOIN RZTSYSUSER u ON j.USER_ID=u.ID " +
+                        "  LEFT JOIN CHECK_LIVE_TASK cl ON j.TASK_ID=cl.ID where j.STATUS=0  AND j.USER_ID is NOT NULL AND u.USERDELETE=1 and j.TASK_TYPE=" + type;
             }
             //查询该deptId下的
             list.add(deptId);
@@ -194,6 +200,7 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
             if (userInformation == null) {
                 continue;
             }
+
             JSONObject jsonObject = JSONObject.parseObject(userInformation.toString());
             if (jsonObject != null) {
                 next.put("DEPT", jsonObject.get("DEPT"));

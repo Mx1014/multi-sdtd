@@ -124,7 +124,8 @@ public class Monitorcheckyjservice extends CurdService<Monitorcheckyj, Monitorch
         if("0".equals(deptID)){
 
                 //查询未出理
-                String sql1 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE TASK_TYPE=?1 AND trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =0 AND USER_ID IS NOT NULL GROUP BY DEPTID ";
+                String sql1 = "SELECT count(1) AS sum,yj.DEPTID FROM MONITOR_CHECK_YJ yj LEFT JOIN RZTSYSUSER u ON yj.USER_ID=u.ID " +
+                        "WHERE TASK_TYPE=?1 AND u.USERDELETE=1 AND trunc(yj.CREATE_TIME)=trunc(sysdate) AND STATUS =0 AND yj.USER_ID IS NOT NULL GROUP BY yj.DEPTID ";
                 //查询处理中
                 String sql2 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE TASK_TYPE=?1 AND trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =1 AND USER_ID IS NOT NULL GROUP BY DEPTID  ";
                 //查询已处理
@@ -168,7 +169,7 @@ public class Monitorcheckyjservice extends CurdService<Monitorcheckyj, Monitorch
 
         }else{
             String sql = "SELECT count(1) AS sum,u.CLASSNAME FROM MONITOR_CHECK_EJ ej LEFT JOIN RZTSYSUSER u ON ej.USER_ID=u.ID  " +
-                    "WHERE ej.TASK_TYPE=?2  AND trunc(ej.CREATE_TIME)=trunc(sysdate) AND ej.STATUS =0 AND ej.DEPTID=?1 AND ej.USER_ID IS NOT NULL " +
+                    "WHERE ej.TASK_TYPE=?2  AND u.USERDELETE=1  AND trunc(ej.CREATE_TIME)=trunc(sysdate) AND ej.STATUS =0 AND ej.DEPTID=?1 AND ej.USER_ID IS NOT NULL " +
                     "GROUP BY u.CLASSNAME";
             String sql2 = "SELECT count(1) AS sum,u.CLASSNAME FROM MONITOR_CHECK_EJ ej LEFT JOIN RZTSYSUSER u ON ej.USER_ID=u.ID  " +
                     "  WHERE ej.TASK_TYPE=?2  AND trunc(ej.CREATE_TIME)=trunc(sysdate) AND ej.STATUS =1 AND ej.DEPTID=?1  AND ej.USER_ID IS NOT NULL " +
@@ -236,7 +237,9 @@ public class Monitorcheckyjservice extends CurdService<Monitorcheckyj, Monitorch
         List<Map<String, Object>> result = new ArrayList<>();
         if("0".equals(deptID)){
             //查询未出理
-            String sql1 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =0  AND USER_ID IS NOT NULL GROUP BY DEPTID ";
+            String sql1 = "SELECT count(1) AS sum,yj.DEPTID FROM MONITOR_CHECK_YJ yj LEFT JOIN RZTSYSUSER u ON yj.USER_ID=u.ID " +
+                    " WHERE trunc(yj.CREATE_TIME)=trunc(sysdate) AND u.USERDELETE=1 " +
+                    "    AND yj.STATUS =0  AND yj.USER_ID IS NOT NULL GROUP BY yj.DEPTID";
             //查询处理中
             String sql2 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =1  AND USER_ID IS NOT NULL GROUP BY DEPTID  ";
             //查询已处理
@@ -281,7 +284,7 @@ public class Monitorcheckyjservice extends CurdService<Monitorcheckyj, Monitorch
 
         }else{
             String sql = "SELECT count(1) AS sum,u.CLASSNAME FROM MONITOR_CHECK_EJ ej LEFT JOIN RZTSYSUSER u ON ej.USER_ID=u.ID  " +
-                    "WHERE trunc(ej.CREATE_TIME)=trunc(sysdate) AND ej.STATUS =0 AND ej.DEPTID=?1  AND ej.USER_ID IS NOT NULL " +
+                    "WHERE trunc(ej.CREATE_TIME)=trunc(sysdate)  AND u.USERDELETE=1  AND ej.STATUS =0 AND ej.DEPTID=?1  AND ej.USER_ID IS NOT NULL " +
                     "GROUP BY u.CLASSNAME";
             String sql2 = "SELECT count(1) AS sum,u.CLASSNAME FROM MONITOR_CHECK_EJ ej LEFT JOIN RZTSYSUSER u ON ej.USER_ID=u.ID  " +
                     "  WHERE  trunc(ej.CREATE_TIME)=trunc(sysdate) AND ej.STATUS =1 AND ej.DEPTID=?1  AND ej.USER_ID IS NOT NULL " +

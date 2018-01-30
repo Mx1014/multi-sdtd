@@ -77,14 +77,15 @@ public class WarningOneKeyservice extends CurdService<WarningOneKey, WarningOneK
         }
         Page<Map<String, Object>> pageResult = null;
 
-        String sql =" SELECT k.*,u.DEPTID FROM WARNING_ONE_KEY k LEFT JOIN RZTSYSUSER u ON k.USER_ID=u.ID " +
-                " WHERE STATUS=0 ";
         if ("0".equals(DeptId)) {
+            String sql =" SELECT k.*,u.DEPTID FROM WARNING_ONE_KEY k LEFT JOIN RZTSYSUSER u ON k.USER_ID=u.ID " +
+                    " WHERE STATUS_YJ=0 ";
             //查询所有
             String sql1 = "SELECT * FROM ( " + sql + " ) where 1=1 " + s;
             pageResult = execSqlPage(pageable, sql1, list.toArray());
         } else {
-
+            String sql =" SELECT k.*,u.DEPTID FROM WARNING_ONE_KEY k LEFT JOIN RZTSYSUSER u ON k.USER_ID=u.ID " +
+                    " WHERE STATUS_EJ=0 ";
             //查询该deptId下的
             list.add(DeptId);
             s += " AND DEPTID = ?" + list.size();
@@ -148,13 +149,15 @@ public class WarningOneKeyservice extends CurdService<WarningOneKey, WarningOneK
         }
         Page<Map<String, Object>> pageResult = null;
 
-        String sql =" SELECT k.*,u.DEPTID FROM WARNING_ONE_KEY k LEFT JOIN RZTSYSUSER u ON k.USER_ID=u.ID " +
-                " WHERE STATUS=1 ";
         if ("0".equals(DeptId)) {
+            String sql =" SELECT k.*,u.DEPTID FROM WARNING_ONE_KEY k LEFT JOIN RZTSYSUSER u ON k.USER_ID=u.ID " +
+                    " WHERE STATUS_YJ=1 ";
             //查询所有
             String sql1 = "SELECT * FROM ( " + sql + " ) where 1=1 " + s;
             pageResult = execSqlPage(pageable, sql1, list.toArray());
         } else {
+            String sql =" SELECT k.*,u.DEPTID FROM WARNING_ONE_KEY k LEFT JOIN RZTSYSUSER u ON k.USER_ID=u.ID " +
+                    " WHERE STATUS_EJ=1 ";
 
             //查询该deptId下的
             list.add(DeptId);
@@ -219,13 +222,15 @@ public class WarningOneKeyservice extends CurdService<WarningOneKey, WarningOneK
         }
         Page<Map<String, Object>> pageResult = null;
 
-        String sql =" SELECT k.*,u.DEPTID  FROM WARNING_ONE_KEY k LEFT JOIN RZTSYSUSER u ON k.USER_ID=u.ID " +
-                " WHERE STATUS=2 ";
         if ("0".equals(DeptId)) {
+            String sql =" SELECT k.*,u.DEPTID  FROM WARNING_ONE_KEY k LEFT JOIN RZTSYSUSER u ON k.USER_ID=u.ID " +
+                    " WHERE STATUS_YJ=2 ";
             //查询所有
             String sql1 = "SELECT * FROM ( " + sql + " ) where 1=1 " + s;
             pageResult = execSqlPage(pageable, sql1, list.toArray());
         } else {
+            String sql =" SELECT k.*,u.DEPTID  FROM WARNING_ONE_KEY k LEFT JOIN RZTSYSUSER u ON k.USER_ID=u.ID " +
+                    " WHERE STATUS_EJ=2 ";
             //查询该deptId下的
             list.add(DeptId);
             s += " AND DEPTID = ?" + list.size();
@@ -271,17 +276,39 @@ public class WarningOneKeyservice extends CurdService<WarningOneKey, WarningOneK
      * @param taskId
      * @return
      */
-    public Object GJcl(Long taskId,String checkInfo) {
+    public Object GJcl(Long taskId,String checkInfo,String currentUserId) {
+        String deptID = getDeptID(currentUserId);
+        if (deptID == null) {
+            return "该用户状态为null";
+        }
+        if ("-1".equals(deptID)) {
+            return "该用户无此权限";
+        }
         try {
-           return WebApiResponse.success(reposiotry.updateGj(taskId,checkInfo));
+            if("0".equals(deptID)){
+                return WebApiResponse.success(reposiotry.updateGjYj(taskId,checkInfo));
+            }else{
+                return WebApiResponse.success(reposiotry.updateGjEj(taskId,checkInfo));
+            }
         }catch (Exception e){
             return WebApiResponse.erro("fail:"+e.getMessage());
         }
     }
 
-    public Object GJclc(Long taskId, String checkInfo) {
+    public Object GJclc(Long taskId, String checkInfo,String currentUserId) {
+        String deptID = getDeptID(currentUserId);
+        if (deptID == null) {
+            return "该用户状态为null";
+        }
+        if ("-1".equals(deptID)) {
+            return "该用户无此权限";
+        }
         try {
-            return WebApiResponse.success(reposiotry.updateGjc(taskId,checkInfo));
+            if("0".equals(deptID)){
+                return WebApiResponse.success(reposiotry.updateGjYjc(taskId,checkInfo));
+            }else{
+                return WebApiResponse.success(reposiotry.updateGjEjc(taskId,checkInfo));
+            }
         }catch (Exception e){
             return WebApiResponse.erro("fail:"+e.getMessage());
         }
