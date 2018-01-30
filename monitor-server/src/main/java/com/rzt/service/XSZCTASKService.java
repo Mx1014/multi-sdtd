@@ -296,7 +296,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
 
             //巡视sql
             String findSql1 = "select x.TASK_NAME,x.STAUTS,x.ID,x.CM_USER_ID from XS_ZC_TASK x" +
-                    "  WHERE x.ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 1 ) AND  x.STAUTS != 0 ";
+                    "  WHERE x.ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 1 ) AND  x.STAUTS != 0  AND  x.STAUTS != 3 ";
             //看护sql
             String findSql2 = "SELECT kht.TASK_NAME,kht.ID,kht.STATUS,USER_ID FROM KH_TASK kht WHERE kht.ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 2 )  AND kht.STATUS != 0 ";
             List<Map<String, Object>> maps = this.execSql(findSql1, null);
@@ -414,7 +414,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                     "  LEFT JOIN KH_TASK k ON k.USER_ID = u.ID" +
                     "  WHERE WORKTYPE = 1 AND k.ID IS NOT  NULL AND k.CREATE_TIME =" +
                     "  (SELECT max(h.CREATE_TIME)" +
-                    "   FROM KH_TASK h WHERE h.USER_ID = u.ID) AND k.STATUS != 0" +
+                    "   FROM KH_TASK h WHERE h.USER_ID = u.ID) AND k.STATUS != 0 AND k.STATUS != 3"  +
                     "   AND k.ID NOT IN" +
                     "       (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 2 AND THREEDAY =1)  AND k.STATUS != 0";
             List<Map<String, Object>> maps = this.execSql(findSql1, null);
