@@ -24,6 +24,8 @@ public class KhTaskModel {
 
     private String tdOrg;
 
+    private String loginType;
+
     public void setTdOrg(String tdOrg) {
         this.tdOrg = tdOrg;
     }
@@ -86,5 +88,13 @@ public class KhTaskModel {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public void setLoginType(String loginType) {
+        this.loginType = loginType;
+    }
+
+    public String getLoginType() {
+        return loginType;
     }
 }

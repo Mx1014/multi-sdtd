@@ -496,7 +496,7 @@ public class PcMapShowController {
             if (day == null) {
                 day = new Date();
             }
-            String sql = "SELECT USER_ID,max(status) status from KH_TASK where PLAN_END_TIME >= trunc(?1) and  PLAN_START_TIME <= trunc(?1+1) group by USER_ID";
+            String sql = "SELECT USER_ID,max(status) status from KH_TASK where PLAN_END_TIME >= trunc(?1) and user_id is not null and PLAN_START_TIME <= trunc(?1+1) group by USER_ID";
             List<Map<String, Object>> userList = cmcoordinateService.execSql(sql, day);
             Map<String, Object> map = new HashMap<String, Object>();
             for (Map<String, Object> user : userList) {
@@ -506,6 +506,7 @@ public class PcMapShowController {
             valueOperations.set("khMenAll:" + DateUtil.dateFormatToDay(day), map);
             return WebApiResponse.success("成功了");
         } catch (Exception e) {
+            e.printStackTrace();
             return WebApiResponse.erro("数据查询失败" + e.getMessage());
         }
     }

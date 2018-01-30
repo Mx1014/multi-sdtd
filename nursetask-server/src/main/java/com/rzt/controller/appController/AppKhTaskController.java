@@ -61,7 +61,7 @@ public class AppKhTaskController extends
     @GetMapping("/appListkhTaskById.do")
     @ResponseBody
     public WebApiResponse appListkhTaskById(String taskId){
-        return this.service.appListkhTaskById(taskId);
+        return this.service.appListkhTaskById(Long.parseLong(taskId));
     }
 
     //任务详情 → 人员信息收集
@@ -133,7 +133,7 @@ public class AppKhTaskController extends
     //获取中心点坐标
     @GetMapping("/listYhPoint")
     public List<Map<String,Object>> listYhPoint(String taskId){
-        return this.service.getPoint(Long.parseLong(taskId));
+        return this.service.listYhPoint(Long.parseLong(taskId));
     }
 
     @GetMapping("/listPhone")

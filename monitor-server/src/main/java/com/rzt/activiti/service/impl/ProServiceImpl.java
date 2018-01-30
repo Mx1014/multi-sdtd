@@ -269,17 +269,17 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
             }
             Pageable pageable = new PageRequest(page, size, null);
             ArrayList<String> strings = new ArrayList<>();
-            strings.add(userId);
-            String sql = "SELECT y.ID,y.LINE_NAME,y.SECTION,y.CREATE_TIME,y.TDYW_ORG,y.TDWX_ORG,y.YHLB,y.YHMS,y.YHJB,y.YHJB1,h.TEXT_,t.ID_ as actaskid,t.PROC_INST_ID_,t.ASSIGNEE_," +
-                    "  (SELECT DISTINCT l.LINE_NAME1 FROM CM_LINE_SECTION l WHERE l.LINE_ID = y.LINE_ID) as linename1,t.END_TIME_,t.START_TIME_," +
-                    "  (SELECT DISTINCT  v.TEXT_ FROM ACT_HI_VARINST v WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'info') as info," +
-                    "  (SELECT DISTINCT  v.TEXT_ FROM ACT_HI_VARINST v WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'flag') as flag," +
-                    "  (SELECT DISTINCT  v.TEXT_ FROM ACT_HI_VARINST v WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'khid') as khid," +
-                    "  (SELECT DISTINCT  u.REALNAME FROM RZTSYSUSER u WHERE u.ID = y.TBRID) as tbrName," +
-                    "  (SELECT DISTINCT  u.PHONE FROM RZTSYSUSER u WHERE u.ID = y.TBRID) as phone" +
-                    "   FROM ACT_HI_ACTINST t LEFT JOIN ACT_RU_VARIABLE h ON t.PROC_INST_ID_ = h.PROC_INST_ID_" +
-                    "  LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_" +
-                    "   WHERE h.NAME_ = 'YHID' AND t.PROC_DEF_ID_ LIKE 'wtsh%'  AND ASSIGNEE_ = ?"+strings.size();
+            String sql = "SELECT  " +
+                    "    y.ID,y.LINE_NAME,y.SECTION,y.CREATE_TIME,y.TDYW_ORG,y.TDWX_ORG,y.YHLB,y.YHMS,y.YHJB,y.YHJB1,h.TEXT_,t.ID_ as actaskid,t.PROC_INST_ID_,t.ASSIGNEE_," +
+                    "    (SELECT DISTINCT l.LINE_NAME1 FROM CM_LINE_SECTION l WHERE l.LINE_ID = y.LINE_ID) as linename1,t.END_TIME_,t.START_TIME_," +
+                    "    (SELECT DISTINCT  v.TEXT_ FROM ACT_HI_VARINST v WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'info') as info," +
+                    "    (SELECT DISTINCT  v.TEXT_ FROM ACT_HI_VARINST v WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'flag') as flag," +
+                    "    (SELECT DISTINCT  v.TEXT_ FROM ACT_HI_VARINST v WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'khid') as khid," +
+                    "    (SELECT DISTINCT  u.REALNAME FROM RZTSYSUSER u WHERE u.ID = y.TBRID) as tbrName," +
+                    "    (SELECT DISTINCT  u.PHONE FROM RZTSYSUSER u WHERE u.ID = y.TBRID) as phone" +
+                    "     FROM ACT_HI_ACTINST t LEFT JOIN ACT_HI_VARINST h ON t.PROC_INST_ID_ = h.PROC_INST_ID_ AND  h.NAME_ = 'YHID'" +
+                    "    LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_" +
+                    "     WHERE  t.PROC_DEF_ID_ LIKE 'wtsh%'  AND ASSIGNEE_ = "+userId+"  AND t.END_TIME_ IS NOT  NULL ";
             sql += "  AND t.END_TIME_ IS NOT NULL ";
             if(null != YHLB && !"".equals(YHLB)){
                 strings.add(YHLB);

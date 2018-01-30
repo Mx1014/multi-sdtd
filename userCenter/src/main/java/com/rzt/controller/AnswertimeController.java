@@ -52,13 +52,13 @@ public class AnswertimeController extends CurdController<RztSysUser, CommonServi
                 "FROM (SELECT TASK_ID,USER_ID " +
                 "      FROM MONITOR_CHECK_EJ " +
                 "      WHERE WARNING_TYPE = 4 " + s1 + " ) e LEFT JOIN XS_ZC_TASK x ON e.TASK_ID = x.ID " +
-                "  LEFT JOIN USERINFO u ON e.USER_ID = u.ID WHERE 1=1 " + s + "  ";
+                "  LEFT JOIN USERINFO u ON e.USER_ID = u.ID WHERE 1=1 " + s + " ) ";
 
-        String khsql = " SELECT x.TASK_NAME,nvl(x.PLAN_START_TIME,sysdate-2) as PLAN_START_TIME,x.REAL_START_TIME,u.REALNAME,u.COMPANYNAME,u.DEPT,u.CLASSNAME,u.PHONE, X.STATUS as STAUTS " +
+        String khsql = " (SELECT x.TASK_NAME,nvl(x.PLAN_START_TIME,sysdate-2) as PLAN_START_TIME,x.REAL_START_TIME,u.REALNAME,u.COMPANYNAME,u.DEPT,u.CLASSNAME,u.PHONE, X.STATUS as STAUTS " +
                 " FROM (SELECT TASK_ID,USER_ID " +
                 "      FROM MONITOR_CHECK_EJ " +
                 "      WHERE WARNING_TYPE = 10 " + s1 + " ) e LEFT JOIN KH_TASK x ON e.TASK_ID = x.ID " +
-                "  LEFT JOIN USERINFO u ON e.USER_ID = u.ID WHERE 1=1 " + s + " ) ORDER BY  PLAN_START_TIME DESC ";
+                "  LEFT JOIN USERINFO u ON e.USER_ID = u.ID WHERE 1=1 " + s + " ) "/* + "ORDER BY  PLAN_START_TIME DESC "*/;
         allSql = xssql + " UNION ALL " + khsql;
         if (!StringUtils.isEmpty(taskType)) {
             switch (taskType) {

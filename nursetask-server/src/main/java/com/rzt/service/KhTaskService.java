@@ -15,6 +15,7 @@ import com.rzt.repository.KhTaskRepository;
 import com.rzt.entity.KhTask;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DateUtil;
+import io.swagger.models.auth.In;
 import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -41,15 +42,20 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
     @Autowired
     private KhSiteRepository siteRepository;
 
-    public Object listAllKhTask(KhTaskModel task, String status, Pageable pageable, int roleType, String yworg, String currentUserId) {
+    public Object listAllKhTask(KhTaskModel task, String status, Pageable pageable, int roleType, String yworg, String currentUserId,String home) {
         task = timeUtil(task);
-        String result = "k.id as id, k.task_name as taskName,k.tdyw_org as yworg,k.CREATE_TIME as createTime,k.plan_start_time as startTime,k.plan_end_time as endTime,k.status as status,u.realname as userName,d.DEPTNAME as class,k.task_type as type";
+        String result = "k.wx_org company,k.id as id, k.task_name as taskName,k.tdyw_org as yworg,k.CREATE_TIME as createTime,k.plan_start_time as startTime,k.plan_end_time as endTime,k.status as status,u.realname as userName,d.DEPTNAME as class,k.task_type as type,u.phone,u.loginstatus " +
+                " from kh_task k  left join rztsysuser u on u.id = k.user_id left join RZTSYSDEPARTMENT d on u.classname = d.id  ";
         List params = new ArrayList<>();
         StringBuffer buffer = new StringBuffer();
-        buffer.append(" where k.plan_start_time between to_date(?,'YYYY-MM-DD hh24:mi') and to_date(?,'YYYY-MM-DD hh24:mi') ");
-        params.add(task.getPlanStartTime());
+        buffer.append(" where k.plan_start_time <= trunc(to_date(?,'YYYY-MM-DD hh24:mi')+1) and plan_end_time>= trunc(to_date(?,'YYYY-MM-DD hh24:mi')) ");
         params.add(task.getPlanEndTime());
-
+        params.add(task.getPlanStartTime());
+        /*if (home!=null && home.equals("1")){
+            buffer = new StringBuffer();
+            buffer.append(" where  trunc(k.plan_start_time) = trunc(sysdate)");
+            params = new ArrayList<>();
+        }*/
         //查询框
         if (task.getTaskName() != null && !task.getTaskName().equals("")) {
             task.setTaskName("%" + task.getTaskName() + "%");
@@ -77,30 +83,34 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
             buffer.append(" and k.yworg_id = ?");
             params.add((task.getTdOrg()));
         }
+        if (task.getLoginType() != null && !task.getLoginType().equals("")) {
+            buffer.append(" and u.LOGINSTATUS = ? ");
+            params.add(Integer.parseInt(task.getLoginType()));
+        }
         String sql = "";
 
         if (roleType == 1 || roleType == 2) {
-            sql = "select " + result + " from kh_task k  left join rztsysuser u on u.id = k.user_id left join RZTSYSDEPARTMENT d on u.classname = d.id " + buffer.toString() + " and k.tdyw_org = (select d.deptname from rztsysuser u, RZTSYSDEPARTMENT d where d.id = u.deptid and u.id = ?)";
+            sql = "select " + result +  buffer.toString() + " and k.tdyw_org = (select d.deptname from rztsysuser u, RZTSYSDEPARTMENT d where d.id = u.deptid and u.id = ?)";
             params.add(currentUserId);
         } else if (roleType == 3) {
-            sql = "select " + result + " from kh_task k  left join rztsysuser u on u.id = k.user_id left join RZTSYSDEPARTMENT d on u.classname = d.id " + buffer.toString() + " and k.wx_org = (select d.COMPANYNAME from rztsysuser u,RZTSYSCOMPANY d where u.companyid = d.id and u.id = ?)";
+            sql = "select " + result  + buffer.toString() + " and k.wx_org = (select d.COMPANYNAME from rztsysuser u,RZTSYSCOMPANY d where u.companyid = d.id and u.id = ?)";
             params.add(currentUserId);
         } else if (roleType == 4) {
-            sql = "select " + result + " from kh_task k  left join rztsysuser u on u.id = k.user_id left join RZTSYSDEPARTMENT d on u.classname = d.id " + buffer.toString() + " and u.classname = (select u.classname from rztsysuser u, RZTSYSDEPARTMENT d where d.id = u.deptid and u.id = ?)";
+            sql = "select " + result +  buffer.toString() + " and u.classname = (select u.classname from rztsysuser u, RZTSYSDEPARTMENT d where d.id = u.deptid and u.id = ?)";
             params.add(currentUserId);
         } else if (roleType == 5) {
-            sql = "select " + result + " from kh_task k  left join rztsysuser u on u.id = k.user_id left join RZTSYSDEPARTMENT d on u.classname = d.id " + buffer.toString() + " and k.user_id = ?";
+            sql = "select " + result +  buffer.toString() + " and k.user_id = ?";
             params.add(currentUserId);
         } else {
-            sql = "select " + result + " from kh_task k  left join rztsysuser u on u.id = k.user_id left join RZTSYSDEPARTMENT d on u.classname = d.id " + buffer.toString();
+            sql = "select " + result + buffer.toString();
         }
-        sql = sql + " order by k.create_time desc";
+        sql += " order by k.id desc";
         //String sql = "select * from listAllKhTask "+buffer.toString();
-        Page<Map<String, Object>> maps = execSqlPage(pageable, sql, params.toArray());
+        Page<Map<String, Object>> maps = this.execSqlPage(pageable, sql, params.toArray());
         List<Map<String, Object>> content1 = maps.getContent();
-        /*for (Map map : content1) {
+        for (Map map : content1) {
             map.put("ID", map.get("ID") + "");
-        }*/
+        }
         return maps;
     }
 
@@ -109,7 +119,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
             SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
             Calendar c = Calendar.getInstance();
             c.setTime(new Date());
-            c.add(Calendar.DAY_OF_MONTH, -7);
+            //c.add(Calendar.DAY_OF_MONTH, -6);
             Date m = c.getTime();
             String mon = df.format(m);
             task.setPlanStartTime(mon + " 00:00");
