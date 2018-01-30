@@ -188,17 +188,20 @@ public class XSCycleServiceImpl  extends CurdService<CheckResult, CheckResultRep
                     "       (SELECT u.REALNAME FROM RZTSYSUSER u WHERE u.ID = x.CM_USER_ID ) as username," +
                     "       (SELECT u.DEPTID FROM RZTSYSUSER u WHERE u.ID = x.CM_USER_ID ) as DID," +
                     "       (SELECT d.DEPTNAME FROM RZTSYSUSER u LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID WHERE u.ID = x.CM_USER_ID ) as dept," +
+                    "       (SELECT DISTINCT u.REALNAME FROM ACT_HI_VARINST v LEFT JOIN RZTSYSUSER u  ON  u.ID = v.TEXT_ WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'userName') as v_user," +
+                    "       (SELECT DISTINCT u.PHONE FROM ACT_HI_VARINST v LEFT JOIN RZTSYSUSER u  ON  u.ID = v.TEXT_ WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'userName') as v_phone," +
                     "       (SELECT d.COMPANYNAME FROM RZTSYSUSER u LEFT JOIN RZTSYSCOMPANY d ON d.ID = u.COMPANYID WHERE u.ID = x.CM_USER_ID ) as wx," +
                     "       (SELECT DISTINCT v.TEXT_ FROM ACT_HI_VARINST v WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'info') as info," +
                     "       (SELECT DISTINCT v.TEXT_ FROM ACT_HI_VARINST v WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'flag') as flag," +
                     "       (SELECT DISTINCT u.PHONE FROM RZTSYSUSER u WHERE u.ID = x.CM_USER_ID) as phone," +
                     "       (SELECT l.LINE_NAME FROM XS_ZC_CYCLE cy LEFT JOIN CM_LINE l ON l.ID = cy.LINE_ID WHERE cy.ID = x.XS_ZC_CYCLE_ID ) as LINE_NAME," +
+                    "       (SELECT  c.TASK_NAME from XS_ZC_CYCLE  c WHERE c.ID = x.XS_ZC_CYCLE_ID ) as taskname," +
                     "       (SELECT l.V_LEVEL FROM XS_ZC_CYCLE cy LEFT JOIN CM_LINE l ON l.ID = cy.LINE_ID WHERE cy.ID = x.XS_ZC_CYCLE_ID ) as V_LEVEL," +
                     "       (SELECT l.SECTION FROM XS_ZC_CYCLE cy LEFT JOIN CM_LINE l ON l.ID = cy.LINE_ID WHERE cy.ID = x.XS_ZC_CYCLE_ID ) as SECTION" +
                     "            FROM ACT_HI_ACTINST t" +
                     "            LEFT JOIN ACT_HI_VARINST h ON t.PROC_INST_ID_ = h.PROC_INST_ID_ AND h.NAME_ = 'XSID'" +
                     "            LEFT JOIN XS_ZC_CYCLE_RECORD x ON x.XS_ZC_CYCLE_ID = h.TEXT_" +
-                    "            WHERE  t.PROC_DEF_ID_ LIKE 'xssh%' AND t.ASSIGNEE_ = "+userId+"  AND t.END_TIME_ IS NOT NULL  ) tt WHERE 1=1 ";
+                    "            WHERE  t.PROC_DEF_ID_ LIKE 'xssh%' AND t.ASSIGNEE_ = '"+userId+"'  AND t.END_TIME_ IS NOT NULL  ORDER BY t.END_TIME_ DESC  ) tt WHERE 1=1 ";
 
 
             if(null != lineName && !"".equals(lineName) ){

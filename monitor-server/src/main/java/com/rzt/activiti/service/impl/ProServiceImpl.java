@@ -279,7 +279,7 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
                     "    (SELECT DISTINCT  u.PHONE FROM RZTSYSUSER u WHERE u.ID = y.TBRID) as phone" +
                     "     FROM ACT_HI_ACTINST t LEFT JOIN ACT_HI_VARINST h ON t.PROC_INST_ID_ = h.PROC_INST_ID_ AND  h.NAME_ = 'YHID'" +
                     "    LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_" +
-                    "     WHERE  t.PROC_DEF_ID_ LIKE 'wtsh%'  AND ASSIGNEE_ = "+userId+"  AND t.END_TIME_ IS NOT  NULL ";
+                    "     WHERE  t.PROC_DEF_ID_ LIKE 'wtsh%'  AND ASSIGNEE_ = '"+userId+"'  AND t.END_TIME_ IS NOT  NULL ";
             sql += "  AND t.END_TIME_ IS NOT NULL ";
             if(null != YHLB && !"".equals(YHLB)){
                 strings.add(YHLB);
@@ -306,7 +306,9 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
             if(null != end && !"".equals(end)){
                 sql += "   AND  y.CREATE_TIME <=  to_date('"+end+":00','YYYY-MM-dd HH24:mi:ss')  ";
             }
-
+            if(null != sql && sql.length()>0){
+                sql += "   ORDER BY t.END_TIME_ DESC   ";
+            }
 
                 maps = this.execSqlPage(pageable, sql, strings.toArray());
                 LOGGER.info("历史记录查询成功");
