@@ -42,7 +42,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
     @Autowired
     private KhSiteRepository siteRepository;
 
-    public Object listAllKhTask(KhTaskModel task, String status, Pageable pageable, int roleType, String yworg, String currentUserId) {
+    public Object listAllKhTask(KhTaskModel task, String status, Pageable pageable, int roleType, String yworg, String currentUserId,String home) {
         task = timeUtil(task);
         String result = "k.wx_org company,k.id as id, k.task_name as taskName,k.tdyw_org as yworg,k.CREATE_TIME as createTime,k.plan_start_time as startTime,k.plan_end_time as endTime,k.status as status,u.realname as userName,d.DEPTNAME as class,k.task_type as type,u.phone,u.loginstatus " +
                 " from kh_task k  left join rztsysuser u on u.id = k.user_id left join RZTSYSDEPARTMENT d on u.classname = d.id  ";
@@ -51,7 +51,11 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         buffer.append(" where k.plan_start_time <= trunc(to_date(?,'YYYY-MM-DD hh24:mi')+1) and plan_end_time>= trunc(to_date(?,'YYYY-MM-DD hh24:mi')) ");
         params.add(task.getPlanEndTime());
         params.add(task.getPlanStartTime());
-
+        /*if (home!=null && home.equals("1")){
+            buffer = new StringBuffer();
+            buffer.append(" where  trunc(k.plan_start_time) = trunc(sysdate)");
+            params = new ArrayList<>();
+        }*/
         //查询框
         if (task.getTaskName() != null && !task.getTaskName().equals("")) {
             task.setTaskName("%" + task.getTaskName() + "%");
@@ -115,7 +119,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
             SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
             Calendar c = Calendar.getInstance();
             c.setTime(new Date());
-            c.add(Calendar.DAY_OF_MONTH, -6);
+            //c.add(Calendar.DAY_OF_MONTH, -6);
             Date m = c.getTime();
             String mon = df.format(m);
             task.setPlanStartTime(mon + " 00:00");
