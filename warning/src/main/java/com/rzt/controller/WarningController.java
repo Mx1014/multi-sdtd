@@ -41,12 +41,12 @@ public class WarningController extends CurdController<OffPostUser,WarningOffPost
 			if(offPostUser!=null){
 				OffPostUser offUser = service.findByUserIdAndTaskId(offPostUser.getUserId(),offPostUser.getTaskId());
 				if(offUser==null){
-					//添加OffPostUser
-					offPostUser.setCreateTime(new Date());
-					service.addUser(offPostUser);
-					//添加OffPostUserTime
-					timeService.addOffUserTime(offPostUser.getUserId(),offPostUser.getTaskId());
 					if(offPostUser.getStatus()==1){
+						//添加OffPostUser
+						offPostUser.setCreateTime(new Date());
+						service.addUser(offPostUser);
+						//添加OffPostUserTime
+						timeService.addOffUserTime(offPostUser.getUserId(),offPostUser.getTaskId());
 						try {
 							staffLine.khtg(offPostUser.getUserId(),offPostUser.getTaskId());
 						} catch (Exception e) {
