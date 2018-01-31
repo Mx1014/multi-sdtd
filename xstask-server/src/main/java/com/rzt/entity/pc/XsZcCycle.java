@@ -89,6 +89,17 @@ public class XsZcCycle implements Serializable{
 	//字段描述 是否跨天 0 跨 1 不跨
 	@Column(name = "is_kt")
 	private Integer isKt = 0;
+	//字段描述 0 新增审批 1 修改审批 2审批完成
+	@Column(name = "PROPOSER_STATUS")
+	private Integer proposerStatus = 0;
+
+	public Integer getProposerStatus() {
+		return proposerStatus;
+	}
+
+	public void setProposerStatus(Integer proposerStatus) {
+		this.proposerStatus = proposerStatus;
+	}
 
 	public String getCmUserId() {
 		return cmUserId;
