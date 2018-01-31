@@ -5,31 +5,11 @@ import com.rzt.service.CheckDetailService;
 import com.rzt.service.TimedService;
 import com.rzt.service.XSZCTASKService;
 import com.rzt.util.WebApiResponse;
-import io.swagger.annotations.ApiOperation;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.*;
-import org.jeecgframework.poi.excel.ExcelExportUtil;
-import org.jeecgframework.poi.excel.entity.ExportParams;
-import org.jeecgframework.poi.excel.entity.params.ExcelExportEntity;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.BoundHashOperations;
-import org.springframework.data.redis.core.HashOperations;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.OutputStream;
-import java.net.URLEncoder;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
 
 
 @RestController
@@ -136,7 +116,7 @@ public class XsTaskController extends
      * @param TD
      * @param targetType
      */
-    @GetMapping("/useEasyPoiByTimedTask")
+    /*@GetMapping("/useEasyPoiByTimedTask")
     public void useEasyPoi(HttpServletResponse response,String taskType,String currentUserId,String userName,String TD,String targetType){
       try {
           List<Map<String, Object>> maps = service.usePoi(taskType, currentUserId, userName, TD, targetType);
@@ -214,7 +194,7 @@ public class XsTaskController extends
       }
 
     }
-
+*/
 
 
 
