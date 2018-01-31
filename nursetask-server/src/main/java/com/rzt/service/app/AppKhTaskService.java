@@ -3,15 +3,22 @@ package com.rzt.service.app;
 import com.rzt.entity.KhTask;
 import com.rzt.entity.KhTaskWpqr;
 import com.rzt.repository.AppKhTaskRepository;
+import com.rzt.repository.KhTaskWpqrRepository;
 import com.rzt.service.CurdService;
 import com.rzt.service.KhTaskWpqrService;
 import com.rzt.util.WebApiResponse;
+import com.rzt.utils.Constances;
 import com.rzt.utils.DateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.geo.Point;
+import org.springframework.data.redis.core.GeoOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -169,13 +176,14 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
                     }
                     map.put("ROUND", round + ".0");
                 }
-            }else {
-                map.put("ROUND","300.0");
+            } else {
+                map.put("ROUND", "300.0");
             }
             map.put("URL", "http://39.106.206.129:8097/warningServer/warning/KHOffPost");
         }
         return list;
     }
+
 
     public WebApiResponse listPhone(long taskId) {
         try {
