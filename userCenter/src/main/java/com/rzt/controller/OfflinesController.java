@@ -57,7 +57,7 @@ public class OfflinesController extends CurdController<RztSysUser, CommonService
         if (!StringUtils.isEmpty(taskType)) {
             s += " and TASK_TYPE = " + taskType;
         }
-        String sql = " SELECT\n" +
+        /*String sql = " SELECT\n" +
                 "  e.USER_ID,\n" +
                 "  u.REALNAME,\n" +
                 "  u.CLASSNAME,\n" +
@@ -80,7 +80,33 @@ public class OfflinesController extends CurdController<RztSysUser, CommonService
                 "nvl(to_char( MAX (ONLINE_TIME), 'yyyy-MM-dd hh24:mi:ss'), '人员未上线') as ONLINE_TIME\n" +
                 "FROM MONITOR_CHECK_EJ\n" +
                 "WHERE (WARNING_TYPE = 8 OR WARNING_TYPE = 2) " + s + " GROUP BY USER_ID) e LEFT JOIN USERINFO u\n" +
-                "ON e.USER_ID = u.ID ";
+                "ON e.USER_ID = u.ID ";*/
+        String sql = "SELECT DISTINCT ce.USER_ID,ce.REASON,ch.* FROM(\n" +
+                " SELECT\n" +
+                "   e.USER_ID,\n" +
+                "    u.REALNAME,\n" +
+                "    u.CLASSNAME,\n" +
+                "    u.DEPT,\n" +
+                "    u.COMPANYNAME,\n" +
+                "    CASE u.WORKTYPE\n" +
+                "    WHEN 1\n" +
+                "      THEN '看护'\n" +
+                "    WHEN 2\n" +
+                "      THEN '巡视'\n" +
+                "    WHEN 3\n" +
+                "      THEN '现场稽查' END AS WORKTYPE,\n" +
+                "    e.a          AS MORE,\n" +
+                "    u.DEPTID,\n" +
+                "    e.CREATE_TIME,\n" +
+                "    e.ONLINE_TIME\n" +
+                "     FROM (SELECT\n" +
+                "     count(1) as a,\n" +
+                "     USER_ID, MAX (CREATE_TIME) AS CREATE_TIME,\n" +
+                "     nvl(to_char( MAX (ONLINE_TIME), 'yyyy-MM-dd hh24:mi:ss'), '人员未上线') as ONLINE_TIME\n" +
+                "     FROM MONITOR_CHECK_EJ\n" +
+                "     WHERE (WARNING_TYPE = 8 OR WARNING_TYPE = 2)  " + s + "  GROUP BY USER_ID) e LEFT JOIN USERINFO u\n" +
+                "     ON e.USER_ID = u.ID) ch LEFT JOIN MONITOR_CHECK_EJ ce\n" +
+                "ON ch.USER_ID=ce.USER_ID AND ch.CREATE_TIME=ce.CREATE_TIME";
         try {
             return WebApiResponse.success(this.service.execSqlPage(pageable, sql, listLike.toArray()));
         } catch (Exception e) {
