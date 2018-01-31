@@ -80,9 +80,12 @@ public class CmcoordinateController extends
             //4.为每个用户每天创建一个key，用于保存当天的坐标  暂定三天失效
             ZSetOperations setOperations = redisTemplate.opsForZSet();
             String key = currentDate + ":" + cmcoordinate.getUserid();
-            setOperations.add(key, cmcoordinate, date.getTime());
+            long time = date.getTime();
+            setOperations.add(key, cmcoordinate, time);
             redisTemplate.expire(key, 2, TimeUnit.DAYS);
 
+            //5.存一个zset 用来判断在线离线
+            setOperations.add("currentUser",myCoordinate.getID(),time);
             this.service.add(cmcoordinate);
             return WebApiResponse.success("添加成功");
         } catch (Exception e) {

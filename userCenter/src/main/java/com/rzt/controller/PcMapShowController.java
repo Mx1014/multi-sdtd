@@ -539,6 +539,22 @@ public class PcMapShowController {
         }
     }
 
+    @GetMapping("flushRztSysdata")
+    public Object flushRztSysdata(){
+        String sql = " SELECT * FROM RZTSYSDATA ";
+        List<Map<String, Object>> maps = cmcoordinateService.execSql(sql);
+        HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
+
+        for (Map map : maps) {
+            Object roleid = map.get("ROLEID");
+            if(roleid == null) {
+                break;
+            }
+            hashOperations.put("RZTSYSDATA", roleid, map);
+        }
+        return WebApiResponse.success("yes");
+    }
+
     //两个定时计划
     @Scheduled(cron = "0 25 0 ? * *")
     public void Scheduled() {

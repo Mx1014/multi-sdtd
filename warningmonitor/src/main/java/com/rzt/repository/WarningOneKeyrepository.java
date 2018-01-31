@@ -12,11 +12,19 @@ public interface WarningOneKeyrepository extends JpaRepository<WarningOneKey,Str
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE WARNING_ONE_KEY SET STATUS=1, CHECK_INFO_Z=?2 WHERE ID=?1",nativeQuery = true)
-    int updateGj(Long taskId, String checkInfo);
+    @Query(value = "UPDATE WARNING_ONE_KEY SET STATUS_EJ=1, CHECK_INFO_EJ_Z=?2 WHERE ID=?1",nativeQuery = true)
+    int updateGjEj(Long taskId, String checkInfo);
+    @Transactional
+    @Modifying
+    @Query(value = "UPDATE WARNING_ONE_KEY SET STATUS_YJ=1, CHECK_INFO_YJ_Z=?2 WHERE ID=?1",nativeQuery = true)
+    int updateGjYj(Long taskId, String checkInfo);
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE WARNING_ONE_KEY SET STATUS=2 ,CHECK_INFO_C=?2 WHERE ID=?1",nativeQuery = true)
-    int updateGjc(Long taskId, String checkInfo);
+    @Query(value = "UPDATE WARNING_ONE_KEY SET STATUS_EJ=2 ,CHECK_INFO_EJ_C=?2 WHERE ID=?1",nativeQuery = true)
+    int updateGjEjc(Long taskId, String checkInfo);
+    @Transactional
+    @Modifying
+    @Query(value = "UPDATE WARNING_ONE_KEY SET STATUS_YJ=2 ,CHECK_INFO_YJ_C=?2 WHERE ID=?1",nativeQuery = true)
+    int updateGjYjc(Long taskId, String checkInfo);
 }

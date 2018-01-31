@@ -261,18 +261,44 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                 String comSum = map2.get("COMSUM").toString();
                 String date =  map3.get("TIME").toString();
 
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("YYYY-MM-dd HH");
+                //任务抽查时间
+                Date parse = simpleDateFormat.parse(date);
                 //插入到记录表中
                 String uuid = UUID.randomUUID().toString();
-                timedConfigRepository.insertTaskRecord(uuid,date1,date,sum,comSum,deptId);
+
+                // 查询当前时间值班人    查询出值班人id
+                //   当前部门    deptId
+                  String workingSql = "SELECT * " +
+                          "           FROM WORKING_TIMED WHERE DEPT_ID = '"+deptId+"'";
+                  Map<String, Object> map4 = this.execSqlSingleResult(workingSql, null);
+                  // 逻辑是  开始时间和结束时间之内属于白班    之外属于夜班
+                  //倒班白天开始时间
+                  String start_time = map4.get("START_TIME").toString();
+                  //倒班白班结束时间
+                  String end_time = map4.get("END_TIME").toString();
+                  //白班用户id
+                  String day_user = map4.get("DAY_USER").toString();
+                  //夜班用户id
+                  String night_user = map4.get("NIGHT_USER").toString();
+                  //获取到当前抽查时间的小时位   查看这条抽查任务稽查人
+                  int hours = parse.getHours();
+                  String JCID = night_user;
+                  //判断证明是白班用户
+                  if(hours <= Integer.parseInt(end_time)&& hours >= Integer.parseInt(start_time)){
+                      JCID = day_user;
+                  }
+                  timedConfigRepository.insertTaskRecord(uuid,date1,sum,comSum,deptId,parse,JCID);
+
                 LOGGER.info(deptId+ "单位本周期查询情况添加");
             }
 
 
             //巡视sql
             String findSql1 = "select x.TASK_NAME,x.STAUTS,x.ID,x.CM_USER_ID from XS_ZC_TASK x" +
-                    "  WHERE x.ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 1 ) AND  x.STAUTS != 0 ";
+                    "  WHERE x.ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 1 ) AND  x.STAUTS != 0  AND  x.STAUTS != 3 ";
             //看护sql
-            String findSql2 = "SELECT kht.TASK_NAME,kht.ID,kht.STATUS,USER_ID FROM KH_TASK kht WHERE kht.ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 2 )  AND kht.STATUS != 0 ";
+            String findSql2 = "SELECT kht.TASK_NAME,kht.ID,kht.STATUS,USER_ID FROM KH_TASK kht WHERE kht.ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 2 )  AND kht.STATUS != 0  AND  kht.STATUS != 3  ";
             List<Map<String, Object>> maps = this.execSql(findSql1, null);
             List<Map<String, Object>> maps2 = this.execSql(findSql2, null);
             Iterator<Map<String, Object>> iterator = maps.iterator();
@@ -381,16 +407,16 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                     "  WHERE WORKTYPE = 2 AND k.ID IS NOT  NULL AND k.REAL_START_TIME =" +
                     "   (SELECT max(h.REAL_START_TIME)" +
                     "   FROM XS_ZC_TASK h WHERE h.CM_USER_ID = u.ID) AND k.STAUTS != 0 AND" +
-                    "   k.ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 1 AND THREEDAY = 1) AND  k.STAUTS != 0";
+                    "   k.ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 1 AND THREEDAY = 1) AND  k.STAUTS != 0   AND k.STAUTS != 0";
             //看护sql
             String findSql2 = "SELECT k.TASK_NAME,k.ID,k.STATUS,k.USER_ID" +
                     "  FROM RZTSYSUSER u" +
                     "  LEFT JOIN KH_TASK k ON k.USER_ID = u.ID" +
                     "  WHERE WORKTYPE = 1 AND k.ID IS NOT  NULL AND k.CREATE_TIME =" +
                     "  (SELECT max(h.CREATE_TIME)" +
-                    "   FROM KH_TASK h WHERE h.USER_ID = u.ID) AND k.STATUS != 0" +
+                    "   FROM KH_TASK h WHERE h.USER_ID = u.ID) AND k.STATUS != 0 AND k.STATUS != 3"  +
                     "   AND k.ID NOT IN" +
-                    "       (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 2 AND THREEDAY =1)  AND k.STATUS != 0";
+                    "       (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 2 AND THREEDAY =1)";
             List<Map<String, Object>> maps = this.execSql(findSql1, null);
             List<Map<String, Object>> maps2 = this.execSql(findSql2, null);
             Iterator<Map<String, Object>> iterator = maps.iterator();

@@ -67,17 +67,24 @@ public class WarningOneKeyController  extends
     }
 
     /**
-     *
+     *处理中
      * @param taskId
      * @return
      */
     @GetMapping("GJcl")
-    public WebApiResponse GJcl(Long taskId,String checkInfo) {
-        return WebApiResponse.success(service.GJcl(taskId,checkInfo));
+    public WebApiResponse GJcl(Long taskId,String checkInfo,String currentUserId) {
+        return WebApiResponse.success(service.GJcl(taskId,checkInfo,currentUserId));
     }
+
+    /**
+     * 已处理
+     * @param taskId
+     * @param checkInfo
+     * @return
+     */
     @GetMapping("GJclc")
-    public WebApiResponse GJclc(Long taskId,String checkInfo) {
-        return WebApiResponse.success(service.GJclc(taskId,checkInfo));
+    public WebApiResponse GJclc(Long taskId,String checkInfo,String currentUserId) {
+        return WebApiResponse.success(service.GJclc(taskId,checkInfo,currentUserId));
     }
 
 
