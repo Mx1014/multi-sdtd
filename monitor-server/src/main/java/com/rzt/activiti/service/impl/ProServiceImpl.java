@@ -89,10 +89,10 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
            String td = redisUtil.findTDByUserId(userId);
            userId = redisUtil.findRoleIdByUserId(userId);
            if(null == userId || "".equals(userId)){
-                return WebApiResponse.erro("问题审核待办查询失败");
+                return WebApiResponse.success("问题审核待办查询失败");
            }
            if(null == td || "".equals(td)){
-               return WebApiResponse.erro("问题审核待办查询失败");
+               return WebApiResponse.success("问题审核待办查询失败");
            }
            Pageable pageable = new PageRequest(page, size, null);
            ArrayList<String> strings = new ArrayList<>();
@@ -142,7 +142,7 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
 
        }catch (Exception e){
             LOGGER.error("当前节点待办信息查询失败"+e.getMessage());
-           return WebApiResponse.erro("当前节点待办信息查询失败"+e.getMessage());
+           return WebApiResponse.success("当前节点待办信息查询失败"+e.getMessage());
        }
 
         return WebApiResponse.success(maps);
@@ -263,10 +263,10 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
             String td = redisUtil.findTDByUserId(userId);
             userId = redisUtil.findRoleIdByUserId(userId);
             if(null == userId || "".equals(userId)){
-                return WebApiResponse.erro("问题审核待办查询失败");
+                return WebApiResponse.success("问题审核待办查询失败");
             }
             if(null == td || "".equals(td)){
-                return WebApiResponse.erro("问题审核待办查询失败");
+                return WebApiResponse.success("问题审核待办查询失败");
             }
             Pageable pageable = new PageRequest(page, size, null);
             ArrayList<String> strings = new ArrayList<>();
@@ -315,7 +315,7 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
                 LOGGER.info("历史记录查询成功");
             }catch (Exception e){
                 LOGGER.error("查询历史记录失败"+e.getMessage());
-                return WebApiResponse.erro("查询历史记录失败"+e.getMessage());
+                return WebApiResponse.success("查询历史记录失败"+e.getMessage());
             }
 
         return WebApiResponse.success(maps);
