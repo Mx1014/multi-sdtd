@@ -25,7 +25,7 @@ import java.util.Date;
  * @version
  */
 @Entity
-@Table(name="CM_TOERT_UPDATE_RECORD")
+@Table(name="CM_TOWER_UPDATE_RECORD")
 public class CmTowerUpdateRecord implements Serializable {
     //字段描述:
     @Id

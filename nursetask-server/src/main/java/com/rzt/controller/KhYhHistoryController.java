@@ -135,8 +135,8 @@ public class KhYhHistoryController extends
 
     @ApiOperation(value = "杆塔坐标采集", notes = "杆塔坐标采集")
     @GetMapping("updateTowerById")
-    public WebApiResponse updateTowerById(long id, String lon, String lat,String userId, String lineId,String detailId) {
-        return this.service.updateTowerById(id, lon, lat,userId,lineId,detailId);
+    public WebApiResponse updateTowerById(long id, String lon, String lat,String userId, String lineName,String detailId) {
+        return this.service.updateTowerById(id, lon, lat,userId,lineName,detailId);
     }
 
     @ApiOperation(value = "判断线路是否属于通州公司、门头沟公司", notes = "隐患台账删除")

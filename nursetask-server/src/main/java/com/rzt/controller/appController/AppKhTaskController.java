@@ -56,7 +56,7 @@ public class AppKhTaskController extends
     @GetMapping("/appListkhTaskById.do")
     @ResponseBody
     public WebApiResponse appListkhTaskById(String taskId){
-        return this.service.appListkhTaskById(Long.parseLong(taskId));
+        return this.service.appListkhTaskById(taskId);
     }
 
     //任务详情 → 人员信息收集

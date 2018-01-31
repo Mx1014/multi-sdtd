@@ -153,7 +153,7 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
     }
 
     //获取中心点坐标  现获取看护点的坐标  如果不存在，就用隐患的坐标
-    public List<Map<String, Object>> getPoint(long taskId) {
+    public List<Map<String, Object>> listYhPoint(long taskId) {
         String sql = "select c.radius as ROUND,c.longitude as jd,c.latitude as wd from kh_cycle c left join kh_site s on s.yh_id = c.yh_id left join kh_task k on k.site_id = s.id where k.id = ?";
         List<Map<String, Object>> list = this.execSql(sql, taskId);
         if (!list.isEmpty()) {
