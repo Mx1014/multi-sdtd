@@ -360,16 +360,19 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
 
         StringBuffer sqlBuffer = new StringBuffer();
         ArrayList arrList = new ArrayList();
-        sqlBuffer.append("SELECT * FROM xs_zc_task where 1 = 1 and is_delete = 0 ");
+        sqlBuffer.append("select t.*,tt.phone,tt.realname,tt.loginstatus,c.companyname,d.deptname from  (SELECT * FROM xs_zc_task where 1 = 1 and is_delete = 0 ");
         sqlBuffer.append(authoritySql);//拼上权限的sql
         //开始日期 结束日期
         Date startDate = xsTaskSch.getStartDate();
         Date endDate = xsTaskSch.getEndDate();
-        if (startDate != null && endDate != null) {
-            sqlBuffer.append("and plan_start_time between ? and ? ");
+        if (startDate != null) {
+            sqlBuffer.append(" and PLAN_END_TIME >= trunc(?) and  PLAN_START_TIME <= trunc(?+1)");
             arrList.add(startDate);
-            arrList.add(endDate);
+            arrList.add(startDate);
+        } else {
+            sqlBuffer.append(" and PLAN_END_TIME >= trunc(sysdate) and  PLAN_START_TIME <= trunc(sysdate+1)");
         }
+
 
         //状态 0 未开始 1 巡视中 2 已完成
         Integer status = xsTaskSch.getStatus();
@@ -432,7 +435,11 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
             arrList.add(tdOrg);
         }
         //排个序
-        sqlBuffer.append(" order by pd_time desc");
+        sqlBuffer.append(" order by pd_time desc ) t left join rztsysuser tt on t.cm_user_id = tt.id left join rztsysdepartment d on d.id=tt.deptid left join rztsyscompany c on c.id= tt.companyid ");
+        if (!StringUtils.isEmpty(xsTaskSch.getLoginType())){
+            sqlBuffer.append(" where tt.loginstatus=?");
+            arrList.add(Integer.parseInt(xsTaskSch.getLoginType()));
+        }
         Page<Map<String, Object>> maps = this.execSqlPage(pageable, sqlBuffer.toString(), arrList.toArray());
         List<Map<String, Object>> content = maps.getContent();
         for(Map<String,Object> con:content) {
@@ -440,7 +447,6 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
             if(cm_user_id != null) {
                 Map<String, Object> map = userInfoFromRedis(cm_user_id.toString());
                 Object realname = map.get("REALNAME");
-                con.put("realName",realname);
             } else {
                 con.put("realName",null);
             }
@@ -1025,7 +1031,7 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
 
 
 
-    public Object listPlanForMap(Pageable pageable,XsTaskSCh xsTaskSch, String currentUserId) {
+    public Object listPlanForMap(Pageable pageable,XsTaskSCh xsTaskSch, String currentUserId,String home) {
 
         StringBuffer sqlBuffer = new StringBuffer();
         ArrayList arrList = new ArrayList();
@@ -1039,6 +1045,10 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
             arrList.add(startDate);
         } else {
             sqlBuffer.append(" and PLAN_END_TIME >= trunc(sysdate) and  PLAN_START_TIME <= trunc(sysdate+1)");
+        }
+        if (home!=null && home.equals("1")){
+            sqlBuffer = new StringBuffer();
+            sqlBuffer.append("SELECT * FROM xs_zc_task where is_delete = 0 AND trunc(PLAN_START_TIME) = trunc(sysdate)");
         }
 
         //状态 0 未开始 1 巡视中 2 已完成
@@ -1066,19 +1076,7 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
             arrList.add(tdOrg);
         }
 
-        /*//线路id
-        Long lineId = xsTaskSch.getLineId();
-        if (lineId != null) {
-            sqlBuffer.append("and line_id = ? ");
-            arrList.add(userId);
-        }
-
-        //任务名
-        String taskName = xsTaskSch.getTaskName();
-        if (taskName != null) {
-            sqlBuffer.append(" and task_name like ?");
-            arrList.add("%" + taskName + "%");
-        }*/
+        //
 
         Page<Map<String, Object>> maps = this.execSqlPage(pageable, sqlBuffer.toString(), arrList.toArray());
         return maps;
