@@ -89,17 +89,16 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
            String td = redisUtil.findTDByUserId(userId);
            userId = redisUtil.findRoleIdByUserId(userId);
            if(null == userId || "".equals(userId)){
-                return WebApiResponse.erro("问题审核待办查询失败");
+                return WebApiResponse.success("问题审核待办查询失败");
            }
            if(null == td || "".equals(td)){
-               return WebApiResponse.erro("问题审核待办查询失败");
+               return WebApiResponse.success("问题审核待办查询失败");
            }
            Pageable pageable = new PageRequest(page, size, null);
            ArrayList<String> strings = new ArrayList<>();
            strings.add(userId);
            String sql = "SELECT y.ID,y.SECTION,y.CREATE_TIME,y.TDYW_ORG,y.TDWX_ORG,y.YHLB,y.YHMS,y.YHJB,y.YHJB1,h.TEXT_,t.ID_ as actaskid,t.PROC_INST_ID_,t.ASSIGNEE_," +
                    "   y.YHTDQX,y.YHTDXZJD,y.YHTDC,y.GKCS,y.LINE_NAME,y.YWORG_ID,  " +
-                   " (SELECT DISTINCT l.LINE_NAME1 FROM CM_LINE_SECTION l WHERE l.LINE_ID = y.LINE_ID) as linename1,"+
                   "  (SELECT DISTINCT v.TEXT_ FROM ACT_HI_VARINST v WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'info') as info," +
                    "    (SELECT DISTINCT v.TEXT_ FROM ACT_HI_VARINST v WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'khid') as khid,"+
                   "  (SELECT DISTINCT u.REALNAME FROM ACT_HI_VARINST v LEFT JOIN RZTSYSUSER u ON u.ID = v.TEXT_ WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'userName' ) as squsername," +
@@ -142,7 +141,7 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
 
        }catch (Exception e){
             LOGGER.error("当前节点待办信息查询失败"+e.getMessage());
-           return WebApiResponse.erro("当前节点待办信息查询失败"+e.getMessage());
+           return WebApiResponse.success("当前节点待办信息查询失败"+e.getMessage());
        }
 
         return WebApiResponse.success(maps);
@@ -263,16 +262,15 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
             String td = redisUtil.findTDByUserId(userId);
             userId = redisUtil.findRoleIdByUserId(userId);
             if(null == userId || "".equals(userId)){
-                return WebApiResponse.erro("问题审核待办查询失败");
+                return WebApiResponse.success("问题审核待办查询失败");
             }
             if(null == td || "".equals(td)){
-                return WebApiResponse.erro("问题审核待办查询失败");
+                return WebApiResponse.success("问题审核待办查询失败");
             }
             Pageable pageable = new PageRequest(page, size, null);
             ArrayList<String> strings = new ArrayList<>();
             String sql = "SELECT  " +
-                    "    y.ID,y.LINE_NAME,y.SECTION,y.CREATE_TIME,y.TDYW_ORG,y.TDWX_ORG,y.YHLB,y.YHMS,y.YHJB,y.YHJB1,h.TEXT_,t.ID_ as actaskid,t.PROC_INST_ID_,t.ASSIGNEE_," +
-                    "    (SELECT DISTINCT l.LINE_NAME1 FROM CM_LINE_SECTION l WHERE l.LINE_ID = y.LINE_ID) as linename1,t.END_TIME_,t.START_TIME_," +
+                    "    y.ID,y.LINE_NAME,y.SECTION,y.CREATE_TIME,y.TDYW_ORG,y.TDWX_ORG,y.YHLB,y.YHMS,y.YHJB,y.YHJB1,h.TEXT_,t.ID_ as actaskid,t.PROC_INST_ID_,t.ASSIGNEE_,t.END_TIME_,t.START_TIME_," +
                     "    (SELECT DISTINCT  v.TEXT_ FROM ACT_HI_VARINST v WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'info') as info," +
                     "    (SELECT DISTINCT  v.TEXT_ FROM ACT_HI_VARINST v WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'flag') as flag," +
                     "    (SELECT DISTINCT  v.TEXT_ FROM ACT_HI_VARINST v WHERE v.PROC_INST_ID_ = h.PROC_INST_ID_ AND v.NAME_ = 'khid') as khid," +
@@ -315,7 +313,7 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
                 LOGGER.info("历史记录查询成功");
             }catch (Exception e){
                 LOGGER.error("查询历史记录失败"+e.getMessage());
-                return WebApiResponse.erro("查询历史记录失败"+e.getMessage());
+                return WebApiResponse.success("查询历史记录失败"+e.getMessage());
             }
 
         return WebApiResponse.success(maps);

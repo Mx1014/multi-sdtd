@@ -93,10 +93,10 @@ public class XSCycleServiceImpl  extends CurdService<CheckResult, CheckResultRep
             String td = redisUtil.findTDByUserId(userId);
             userId = redisUtil.findRoleIdByUserId(userId);
             if(null == userId || "".equals(userId)){
-                return WebApiResponse.erro("巡视审核历史查询失败  登录人节点 = "+userId);
+                return WebApiResponse.success("巡视审核历史查询失败  登录人节点 = "+userId);
             }
             if(null == td || "".equals(td)){
-                return WebApiResponse.erro("巡视审核历史查询失败 通道公司="+td);
+                return WebApiResponse.success("巡视审核历史查询失败 通道公司="+td);
             }
             Pageable pageable = new PageRequest(page, size, null);
             String sql = "SELECT *" +
@@ -149,7 +149,7 @@ public class XSCycleServiceImpl  extends CurdService<CheckResult, CheckResultRep
 
         }catch (Exception e){
             LOGGER.error(userId+"当前节点待办信息查询失败"+e.getMessage());
-            return WebApiResponse.erro(userId+"当前节点待办信息查询失败"+e.getMessage());
+            return WebApiResponse.success(userId+"当前节点待办信息查询失败"+e.getMessage());
         }
 
         return WebApiResponse.success(maps);
@@ -177,10 +177,10 @@ public class XSCycleServiceImpl  extends CurdService<CheckResult, CheckResultRep
             String td = redisUtil.findTDByUserId(userId);
             userId = redisUtil.findRoleIdByUserId(userId);
             if(null == userId || "".equals(userId)){
-                return WebApiResponse.erro("巡视审核历史查询失败  登录人节点 = "+userId);
+                return WebApiResponse.success("巡视审核历史查询失败  登录人节点 = "+userId);
             }
             if(null == td || "".equals(td)){
-                return WebApiResponse.erro("巡视审核历史查询失败 通道公司="+td);
+                return WebApiResponse.success("巡视审核历史查询失败 通道公司="+td);
             }
             Pageable pageable = new PageRequest(page, size, null);
             String sql = "SELECT *" +
@@ -234,7 +234,7 @@ public class XSCycleServiceImpl  extends CurdService<CheckResult, CheckResultRep
 
         }catch (Exception e){
             LOGGER.error(userId+"当前节点历史信息查询失败"+e.getMessage());
-            return WebApiResponse.erro(userId+"当前节点历史信息查询失败"+e.getMessage());
+            return WebApiResponse.success(userId+"当前节点历史信息查询失败"+e.getMessage());
         }
 
         return WebApiResponse.success(maps);
