@@ -1,9 +1,5 @@
 package com.rzt.utils;
 
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-
-import java.util.concurrent.atomic.AtomicInteger;
-
 /**
  * Twitter_Snowflake<br>
  * SnowFlake的结构如下(每部分用-分开):<br>
@@ -60,6 +56,15 @@ public class SnowflakeIdWorker {
 
     /** 上次生成ID的时间截 */
     private long lastTimestamp = -1L;
+
+    private static SnowflakeIdWorker instance = null;
+    //静态工厂方法法
+    public static synchronized SnowflakeIdWorker  getInstance(long workerId, long datacenterId) {
+        if (instance == null) {
+            instance = new SnowflakeIdWorker(workerId,datacenterId);
+        }
+        return instance;
+    }
 
     //==============================Constructors=====================================
     /**
@@ -139,16 +144,16 @@ public class SnowflakeIdWorker {
 
 
     public static void main(String[] args) {
-        SnowflakeIdWorker idWorker = new SnowflakeIdWorker(0, 0);
-        /*for (int i = 0; i < 1000; i++) {
+/*        SnowflakeIdWorker idWorker = new SnowflakeIdWorker(31, 31);
+        *//*for (int i = 0; i < 1000; i++) {
             long id = idWorker.nextId();
             System.out.println(Long.toBinaryString(id));
             System.out.println(id);
-        }*/
+        }*//*
 
-       /* for (int i = 0; i < (1 << 100); i++) {
+       *//* for (int i = 0; i < (1 << 100); i++) {
             System.out.println(snowFlake.nextId());
-        }*/
+        }*//*
 
 
         final AtomicInteger failCount = new AtomicInteger(0);
@@ -184,7 +189,7 @@ public class SnowflakeIdWorker {
         }
         executor.destroy();
         System.out.println("success count: " + count.get());
-        System.out.println("fail count: " + failCount.get());
+        System.out.println("fail count: " + failCount.get());*/
 
     }
 }

@@ -44,10 +44,10 @@ public class CMLINETOWER implements Serializable{
     	//字段描述: 顺序
    	 @Column(name = "SORT")
      private String sort;
-    
+
 	public void setId(Long id){
 		if(id==null||id==0){
-			this.id = new SnowflakeIdWorker(1,3).nextId();
+			this.id = SnowflakeIdWorker.getInstance(9,4).nextId();
 		}else{
 			this.id = id;
 		}
