@@ -324,12 +324,12 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
                     Map userid1 = this.execSqlSingleResult(userAccout, String.valueOf(stringObjectMap.get("USERID")));
 
                     hashOperations.put("UserInformation", stringObjectMap.get("USERID"), userid1);
-                    Object roleid = userid1.get("ROLEID");
+                   /* Object roleid = userid1.get("ROLEID");
                     if (!StringUtils.isEmpty(roleid)) {
                         Object object = hashOperations.get("RZTSYSDATA", roleid);
                         JSONObject jsonObject = JSONObject.parseObject(object.toString());
                         userid1.put("ROLETYPE", jsonObject.get("TYPE"));
-                    }
+                    }*/
                     access_token = JwtHelper.createJWT(userid1,
                             tokenProp.getExpireTime()).getAccess_token();
                     hashOperations.put("USERTOKEN", "USER:" + userid1.get("ID") + "," + userid1.get("REALNAME"), access_token);
