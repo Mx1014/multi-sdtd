@@ -1,27 +1,21 @@
 package com.rzt.controller.appController;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
 import com.rzt.controller.CurdController;
 import com.rzt.entity.KhTask;
 import com.rzt.entity.KhTaskWpqr;
-import com.rzt.service.KhTaskService;
 import com.rzt.service.app.AppKhTaskService;
 import com.rzt.util.WebApiResponse;
-import com.rzt.utils.Constances;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.geo.Point;
 import org.springframework.data.redis.core.GeoOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.security.Key;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -91,8 +85,8 @@ public class AppKhTaskController extends
     @ApiOperation(value = "看护提醒", notes = "车辆回显  ")
     @GetMapping("/appListCl.do")
     @ResponseBody
-    public WebApiResponse appListZl(String taskId){
-        return this.service.appListZl(taskId);
+    public WebApiResponse appListCl(String taskId){
+        return this.service.appListCl(taskId);
     }
 
     // 开始看护 →  交接班   现场环境照片保存

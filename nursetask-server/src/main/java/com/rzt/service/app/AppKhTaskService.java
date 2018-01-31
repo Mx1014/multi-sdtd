@@ -3,22 +3,15 @@ package com.rzt.service.app;
 import com.rzt.entity.KhTask;
 import com.rzt.entity.KhTaskWpqr;
 import com.rzt.repository.AppKhTaskRepository;
-import com.rzt.repository.KhTaskWpqrRepository;
 import com.rzt.service.CurdService;
 import com.rzt.service.KhTaskWpqrService;
 import com.rzt.util.WebApiResponse;
-import com.rzt.utils.Constances;
 import com.rzt.utils.DateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.geo.Point;
-import org.springframework.data.redis.core.GeoOperations;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -49,7 +42,7 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
             List<Map<String, Object>> list = this.execSql(sql, Long.parseLong(taskId));
             return WebApiResponse.success(list);
         } catch (Exception e) {
-            return WebApiResponse.erro("数据获取失败"+e.getMessage());
+            return WebApiResponse.erro("数据获取失败" + e.getMessage());
         }
     }
 
@@ -80,7 +73,7 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
         }
     }
 
-    public WebApiResponse appListZl(String taskId) {
+    public WebApiResponse appListCl(String taskId) {
         try {
             String sql = "select cl_zt from kh_task_wpqr where taskId=?";
             Map<String, Object> map = this.execSqlSingleResult(sql, taskId);
@@ -107,8 +100,6 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
             return WebApiResponse.erro("数据获取失败");
         }
     }
-
-
 
 
     public WebApiResponse getYbCount(String userId) {
@@ -163,14 +154,6 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
                 if (map.get("WD") == null || map.get("JD") == null) {
                     sql = "select y.radius as ROUND,y.jd as jd,y.wd as wd from kh_yh_history y left join kh_task k on y.id = k.yh_id where k.id=?";
                     list = this.execSql(sql, taskId);
-                }else{
-                    String round = map.get("ROUND").toString();
-                    if (!round.contains(".")){
-                        if (Long.parseLong(round)>500){
-                            round="500";
-                        }
-                        map.put("ROUND",round+".0");
-                    }
                 }
             }
         } else {
@@ -178,12 +161,19 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
             list = this.execSql(sql, taskId);
         }
         for (Map map : list) {
+            if (map.get("ROUND") != null) {
+                String round = map.get("ROUND").toString();
+                if (!round.contains(".")) {
+                    if (Long.parseLong(round) > 500) {
+                        round = "500";
+                    }
+                    map.put("ROUND", round + ".0");
+                }
+            }else {
+                map.put("ROUND","300.0");
+            }
             map.put("URL", "http://39.106.206.129:8097/warningServer/warning/KHOffPost");
         }
-       /* Point point = null;
-        for (Map map : list) {
-            point = new Point(Double.parseDouble(map.get("WD").toString()), Double.parseDouble(map.get("JD").toString()));
-        }*/
         return list;
     }
 

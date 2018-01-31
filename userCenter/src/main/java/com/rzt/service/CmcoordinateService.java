@@ -60,21 +60,46 @@ public class CmcoordinateService extends CurdService<Cmcoordinate, CmcoordinateR
     * @date 2018/1/17 18:36
     * @author nwz
     */
-    public List<Map<String, Object>> getMenAboutLine(String deptId, Long lineId, String currentUserId, Date startDate) throws Exception {
+    public List<Map<String, Object>> getMenAboutLine(String deptId, Long lineId) throws Exception {
         List<Map<String, Object>> maps;
         String sql = "";
         if("err".equals(deptId)) {
             throw new Exception();
         } else if("all".equals(deptId)) {
-            sql = "SELECT DISTINCT userid from (select CM_USER_ID userid from xs_zc_cycle where LINE_ID = ?\n" +
+            sql = "SELECT DISTINCT userid from (select CM_USER_ID userid from xs_zc_cycle where is_delete = 0  LINE_ID = ?\n" +
                     "union all\n" +
                     "select USER_ID userid from KH_SITE where LINE_ID = ?) t where t.userid is not null ";
             maps = this.execSql(sql, lineId, lineId);
         } else {
-            sql = "SELECT DISTINCT userid from (select CM_USER_ID userid from xs_zc_cycle where LINE_ID = ? and TD_ORG = ?\n" +
+            sql = "SELECT DISTINCT userid from (select CM_USER_ID userid from xs_zc_cycle is_delete = 0  where LINE_ID = ? and TD_ORG = ?\n" +
                     "union all\n" +
                     "select USER_ID userid from KH_SITE where LINE_ID = ? and TDYW_ORGID = ?) t where t.userid is not null ";
             maps = this.execSql(sql,lineId,deptId,lineId,deptId);
+
+        }
+        return maps;
+    }
+
+    public List<Map<String, Object>> getMenAboutLines(String lineId,String deptId) throws Exception {
+        List<Map<String, Object>> maps = new ArrayList<>();
+        String sql = "";
+        String[] split = lineId.split(",");
+        List<Long> lineIds = new ArrayList<>();
+        for (String hehe:split) {
+            lineIds.add(Long.parseLong(hehe));
+        }
+        if("err".equals(deptId)) {
+            throw new Exception();
+        } else if("all".equals(deptId)) {
+            sql = "SELECT DISTINCT userid from (select CM_USER_ID userid from xs_zc_cycle where is_delete = 0 and LINE_ID in (?1) \n" +
+                    "union all\n" +
+                    "select USER_ID userid from KH_SITE where LINE_ID in (?1) ) t where t.userid is not null ";
+            maps.addAll(this.execSql(sql, lineIds));
+        } else {
+            sql = "SELECT DISTINCT userid from (select CM_USER_ID userid from xs_zc_cycle where is_delete = 0 and  LINE_ID in (?) and TD_ORG = ?\n" +
+                    "union all\n" +
+                    "select USER_ID userid from KH_SITE where LINE_ID in (?) and TDYW_ORGID = ?) t where t.userid is not null ";
+            maps.addAll(this.execSql(sql,lineIds,deptId,lineIds,deptId));
 
         }
         return maps;

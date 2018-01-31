@@ -48,10 +48,11 @@ public class CmFile implements Serializable{
 
    	 @Column(name = "FK_ID_STR")
    	 private String fkIdStr;
-    
+
 	public void setId(Long id){
 		if(id==null||id==0){
-			this.id = new SnowflakeIdWorker(5,5).nextId();
+			SnowflakeIdWorker instance = SnowflakeIdWorker.getInstance(5, 5);
+			this.id = instance.nextId();
 		}else{
 			this.id = id;
 		}

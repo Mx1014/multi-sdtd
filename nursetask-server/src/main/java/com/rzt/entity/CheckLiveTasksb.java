@@ -67,15 +67,16 @@ public class CheckLiveTasksb  implements Serializable{
 
    	 @Column(name = "TD_ORG_ID")
      private String tdOrgId;
-    
+
 	public void setId(Long id){
-		if(id==null){
-			this.id = new SnowflakeIdWorker(3,5).nextId();
+		if(id==null||id==0){
+			SnowflakeIdWorker instance = SnowflakeIdWorker.getInstance(8, 6);
+			this.id = instance.nextId();
 		}else{
 			this.id = id;
 		}
-
 	}
+
 	public Long getId(){
 		return this.id;
 	}

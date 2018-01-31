@@ -13,12 +13,12 @@ import com.rzt.repository.CheckLiveTaskDetailRepository;
 import com.rzt.repository.CheckLiveTaskRepository;
 import com.rzt.repository.CheckLiveTaskXsRepository;
 import com.rzt.repository.KhYhHistoryRepository;
-import com.rzt.utils.DateTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -26,10 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**      
  * 类名称：CHECKLIVETASKService    
@@ -185,13 +182,18 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
     @Transactional
     public void paifaKhCheckTask(CheckLiveTask task , String username) throws Exception {
 
-        task.setId();
+        task.setId(null);
         task.setCreateTime(new Date());
         task.setStatus(0);//任务派发状态  0未接单 1进行中 2已完成 3超期
         task.setCheckType(0); //0 看护  1巡视
         //task.setTaskType(0);//（0 正常 1保电 2 特殊）
         task.setCheckCycle(1);
-        task.setTaskName(username+ DateTool.format(task.getPlanStartTime(),"yyyy-MM-dd")+"稽查任务");
+        String taskname = "";
+        List<Map<String, Object>> tasknames = execSql("select TDYW_ORG||line_name||section taskname from KH_YH_HISTORY where id in (" + task.getTaskId() + ")");
+        for (int i = 0; i <tasknames.size() ; i++) {
+            taskname += tasknames.get(i).get("TASKNAME")+",";
+        }
+        task.setTaskName(taskname);
         CheckLiveTask save = reposiotry.save(task);
         String[] split = save.getTaskId().split(",");//隐患ids
         for (int i = 0; i < split.length; i++) {
@@ -218,13 +220,13 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
         String sql = "";
         //0看护 1巡视 0待稽查 1已稽查
         if("0,0".equals(taskType)){
-            sql = "select t.id,t.TASK_ID,t.TASK_NAME,u.REALNAME, " +
+            sql = "select t.id,t.TASK_ID,t.TASK_NAME,u.REALNAME,t.plan_start_time, " +
                     " t.TASK_TYPE , t.STATUS " +
                     "from CHECK_LIVE_TASK t " +
                     "  LEFT JOIN  rztsysuser u on u.id=t.USER_ID " +
                     " where t.status !=3 and t.status !=2 ";
         }else if("0,1".equals(taskType)){
-            sql = "select t.id,t.TASK_ID,t.TASK_NAME,u.REALNAME, t.TASK_TYPE " +
+            sql = "select t.id,t.TASK_ID,t.TASK_NAME,u.REALNAME, t.TASK_TYPE,t.plan_start_time " +
                     " from CHECK_LIVE_TASK t " +
                     "  LEFT JOIN  rztsysuser u on u.id=t.USER_ID " +
                     " where t.status =2 and trunc(t.PLAN_START_TIME) <= trunc(sysdate) and trunc(t.PLAN_END_TIME) >= trunc(sysdate) ";
@@ -294,6 +296,21 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
     public void updateGoodsInfo(Long id, String taskType,String str) {
         //0看护 1巡视 0待稽查 1已稽查
         if("0,0".equals(taskType)){
+            String s = "TWO+"+id+"+3+14+*";
+            RedisConnection connection = null;
+            try {
+                connection = redisTemplate.getConnectionFactory().getConnection();
+                connection.select(1);
+                Set<byte[]> keys = connection.keys(s.getBytes());
+                byte[][] ts = keys.toArray(new byte[][]{});
+                if(ts.length > 0) {
+                    connection.del(ts);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                connection.close();
+            }
             reposiotry.updateWptsById(id,str);
         }else if("1,0".equals(taskType)){
             checkLiveTaskDetailRepository.updateWptsById(id,str);
@@ -350,7 +367,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
     }
 
     public List<Map<String,Object>> listKhCheckTaskDetail(Long id) {
-        String sql = " select d.CREATE_TIME,d.PLAN_START_TIME,d.PLAN_END_TIME,t.task_name,t.task_type,d.status,u.REALNAME,h.yhms,h.TDYW_ORG,h.TDWX_ORG,h.yhjb,h.yhjb1,h.YHZRDW,h.YHZRDWLXR,h.YHZRDWDH,h.YHFXSJ,h.gkcs," +
+        String sql = " select d.id detail_id,d.CREATE_TIME,d.PLAN_START_TIME,d.PLAN_END_TIME,replace(h.vtype,'kV')||h.line_name||' '||h.section task_name,t.task_type,d.status,u.REALNAME,h.yhms,h.TDYW_ORG,h.TDWX_ORG,h.yhjb,h.yhjb1,h.YHZRDW,h.YHZRDWLXR,h.YHZRDWDH,h.YHFXSJ,h.gkcs," +
                 " h.YHXCYY , h.XLZYCD,h.classname " +
                 " from CHECK_LIVE_TASK_DETAIL d " +
                 " left join CHECK_LIVE_TASK t on t.id=d.task_id " +
@@ -392,5 +409,30 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
             list = execSql(sql);
         }
         return list;
+    }
+
+    @Transactional
+    public void updateKhCheckUser(Long id, String userId, String userName) {
+        reposiotry.updateKhCheckUser(id,userId,userName);
+    }
+
+    public List<Map<String,Object>> listKhCheckTaskDetailPicture(String id,String detailId) {
+        String sql = "select process_name,CREATE_TIME,FILE_SMALL_PATH,FILE_PATH from PICTURE_JC " +
+                " where task_id=?  order by CREATE_TIME ASC " ;
+        List<Map<String, Object>> listAll = new ArrayList<>();
+        List<Map<String, Object>> list1 = new ArrayList<>();
+        List<Map<String, Object>> list2 = new ArrayList<>();
+
+        if(!StringUtils.isEmpty(id)){
+            String sql1 = sql.replace("?",id);
+            list1 = execSql(sql1);
+        }
+        if(!StringUtils.isEmpty(detailId)){
+            String sql2 = sql.replace("?",detailId);
+            list2 = execSql(sql2);
+        }
+        listAll.addAll(list1);
+        listAll.addAll(list2);
+        return listAll;
     }
 }

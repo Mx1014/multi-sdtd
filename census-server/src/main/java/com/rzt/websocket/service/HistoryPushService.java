@@ -18,7 +18,7 @@ public class HistoryPushService extends CurdService<websocket, websocketReposito
     @Autowired
     historyServerEndpoint historyServerEndpoint;
 
-    @Scheduled(fixedRate = 3000)
+//    @Scheduled(fixedRate = 3000)
     public void sendMsgs() {
         Map<String, HashMap> sendMsg = historyServerEndpoint.sendMsg();
         String sql = " select  " +

@@ -16,6 +16,7 @@ import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DateUtil;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -45,18 +46,13 @@ public class KhTaskController extends
      */
     @GetMapping("/listAllKhTask.do")
     @ResponseBody
-    public WebApiResponse listAllKhTask(KhTaskModel task, String status, Pageable pageable, String yworg, String currentUserId) {
+    public WebApiResponse listAllKhTask(KhTaskModel task, String status, Integer page,Integer size, String yworg, String currentUserId,String home) {
+        Pageable pageable = new PageRequest(page, size);
         try {
             //分页参数 page size
             HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
-            JSONObject jsonObject = new JSONObject();
-            if (currentUserId != null) {
-                jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", currentUserId).toString());
-            } else {
-                jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", task.getUserId()).toString());
-            }
-            Object o = this.service.listAllKhTask(task, status, pageable, Integer.valueOf(jsonObject.get("ROLETYPE").toString()), yworg);
-            //Object o = this.service.listAllKhTask(	task, status,pageable,0);
+            JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", currentUserId).toString());
+            Object o = this.service.listAllKhTask(task, status, pageable, Integer.valueOf(jsonObject.get("ROLETYPE").toString()), yworg, currentUserId,home);
             return WebApiResponse.success(o);
         } catch (Exception e) {
             e.printStackTrace();
@@ -101,11 +97,11 @@ public class KhTaskController extends
 
     //任务查询页面的导出文件
     @GetMapping("/exportKhTask.do")
-    public void exportKhTask(HttpServletRequest request, HttpServletResponse response, String userId) {
+    public void exportKhTask(HttpServletRequest request, HttpServletResponse response, String currentUserId) {
         try {
             HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
-            JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", userId).toString());
-            List<Map<String, Object>> taskList = this.service.findAlls(jsonObject, userId);
+            JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", currentUserId).toString());
+            List<Map<String, Object>> taskList = this.service.findAlls(jsonObject, currentUserId);
             this.service.exportNursePlan(taskList, request, response);
             //return WebApiResponse.success("");
         } catch (Exception e) {
@@ -174,10 +170,10 @@ public class KhTaskController extends
                     this.service.deleteSiteById(Long.parseLong(split[i]));
                 }
             }
-            return WebApiResponse.success("任务消缺成功");
+            return WebApiResponse.success("任务删除成功");
         } catch (Exception e) {
-            e.printStackTrace();
-            return WebApiResponse.erro("任务消缺失败" + e.getMessage());
+            //e.printStackTrace();
+            return WebApiResponse.erro("任务删除成功" + e.getMessage());
         }
     }
 
@@ -192,10 +188,32 @@ public class KhTaskController extends
                     this.service.deleteTaskById(Long.parseLong(split[i]));
                 }
             }
-            return WebApiResponse.success("任务消缺成功");
+            return WebApiResponse.success("任务删除成功");
         } catch (Exception e) {
             e.printStackTrace();
-            return WebApiResponse.erro("任务消缺失败" + e.getMessage());
+            return WebApiResponse.erro("任务删除失败" + e.getMessage());
+        }
+    }
+
+    @GetMapping("/listTowerPoint")
+    @ResponseBody
+    public WebApiResponse listTowerPoint(String id) {
+        try {
+            return this.service.listTowerPoint(Long.parseLong(id));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("");
+        }
+    }
+
+    @GetMapping("/listTowerPoint2")
+    @ResponseBody
+    public WebApiResponse listTowerPoint2(String id) {
+        try {
+            return this.service.listTowerPoint2(Long.parseLong(id));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("");
         }
     }
 }

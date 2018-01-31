@@ -147,12 +147,21 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
         HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
         JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", userId).toString());
         if (Integer.parseInt(jsonObject.get("ROLETYPE").toString()) == 0) {
-            String sql = " SELECT * FROM RZTSYSCOMPANY ";
+            String sql = " SELECT COMPANYNAME,ID FROM RZTSYSCOMPANY ";
             try {
                 return WebApiResponse.success(this.execSql(sql));
             } catch (Exception e) {
                 e.printStackTrace();
                 return WebApiResponse.erro("erro");
+            }
+        } else if (Integer.parseInt(jsonObject.get("ROLETYPE").toString()) == 2 || Integer.parseInt(jsonObject.get("ROLETYPE").toString()) == 1) {
+            String sql = " SELECT COMPANYNAME,ID FROM RZTSYSCOMPANY WHERE ORGID LIKE ?1";
+            Object deptid = jsonObject.get("DEPTID");
+            try {
+                return WebApiResponse.success(this.execSql(sql, "%" + deptid + "%"));
+            } catch (Exception e) {
+                e.printStackTrace();
+                return WebApiResponse.erro("");
             }
         }
         return WebApiResponse.success("");
@@ -214,7 +223,7 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
             /**
              * 修改Redis人员信息
              */
-            String sql1 = " SELECT * FROM USERINFO where id=?1 and USERDELETE = 1 ";
+            String sql1 = " SELECT * FROM USERINFO where id=?1 ";
             Map<String, Object> stringObjectMap = this.execSqlSingleResult(sql1, id);
             HashOperations hashOperations = redisTemplate.opsForHash();
             hashOperations.put("UserInformation", id, stringObjectMap);

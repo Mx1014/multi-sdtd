@@ -24,13 +24,13 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 /***
-* @Class PcMapShowController
-* @Description
-* @param
-* @return
-* @date 2017/12/25 13:57
-* @author nwz
-*/
+ * @Class PcMapShowController
+ * @Description
+ * @param
+ * @return
+ * @date 2017/12/25 13:57
+ * @author nwz
+ */
 @RestController
 @RequestMapping("pcMapShow")
 public class PcMapShowController {
@@ -50,10 +50,10 @@ public class PcMapShowController {
      * @author nwz
      */
     @GetMapping("menInMap")
-    public Object menInMap(String tdOrg,Integer workType,String userId,Date startDate,String currentUserId,Integer loginStatus /*,@RequestParam(value = "userIds[]") String[] userIds*/) {
+    public Object menInMap(String tdOrg, String workType, String userId, Date startDate, String currentUserId, Integer loginStatus,String lineId) {
         try {
             Date date = new Date();
-            if(startDate == null) {
+            if (startDate == null) {
                 startDate = date;
             }
             String needDateString = DateUtil.dateFormatToDay(startDate);
@@ -63,30 +63,46 @@ public class PcMapShowController {
             HashOperations<String, String, Map> hashOperations = redisTemplate.opsForHash();
             ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
             //0 根据人查 有人就直接结束
-            if(userId != null) {
-                menInMap.add(hashOperations.get("menInMap",userId));
+            String dept = pcMapShowService.dataAccessByUserId(currentUserId).toString();
+            if (userId != null) {
+                String[] split = userId.split(",");
+                Set<String> keys = new HashSet<String>(Arrays.asList(split));
+
+                menInMap = hashOperations.multiGet("menInMap", keys);
+                //-->去除list中为null的元素
+                menInMap.removeAll(Collections.singleton(null));
+            } else if (lineId != null) {
+                List<Map<String, Object>> menAboutLine = cmcoordinateService.getMenAboutLines(lineId, dept);
+                Set<String> keys = new HashSet<String>();
+                for (Map<String, Object> user : menAboutLine) {
+                    String id = user.get("USERID").toString();
+                    keys.add(id);
+                }
+                menInMap = hashOperations.multiGet("menInMap", keys);
+                //-->去除list中为null的元素
+                menInMap.removeAll(Collections.singleton(null));
             } else {
                 String deptId = "";
-                if(!StringUtils.isEmpty(tdOrg)) {
+                if (!StringUtils.isEmpty(tdOrg)) {
                     deptId = tdOrg;
                 } else {
-                    deptId = pcMapShowService.dataAccessByUserId(currentUserId).toString();
+                    deptId = dept;
                 }
                 //1.初始数据权限
-                if("err".equals(deptId)) {
+                if ("err".equals(deptId)) {
 
-                } else if("all".equals(deptId)) {
+                } else if ("all".equals(deptId)) {
                     menInMap = hashOperations.values("menInMap");
                 } else {
                     //1.1 根据部门筛选
                     List<Map<String, Object>> userList = pcMapShowService.deptMenFromRedis(deptId);
                     Set<String> keys = new HashSet();
                     //单位 外协 组织 班组 都走这里
-                    for (Map<String,Object> user: userList) {
+                    for (Map<String, Object> user : userList) {
                         String id = user.get("ID").toString();
                         keys.add(id);
                     }
-                    menInMap = hashOperations.multiGet("menInMap",keys);
+                    menInMap = hashOperations.multiGet("menInMap", keys);
                     //-->去除list中为null的元素
                     menInMap.removeAll(Collections.singleton(null));
                 }
@@ -102,34 +118,40 @@ public class PcMapShowController {
         }
     }
 
-    private void chouYiXia(Integer workType, Integer loginStatus, String needDateString, long timeSecond, List<Map> menInMap, ValueOperations<String, Object> valueOperations) {
+    private void chouYiXia(String workTypes, Integer loginStatus, String needDateString, long timeSecond, List<Map> menInMap, ValueOperations<String, Object> valueOperations) {
         JSONObject allMen = new JSONObject();
-        if(workType == null || workType == 1)  {
+        if (workTypes == null || workTypes.contains("1")) {
             JSONObject khMenAll = JSONObject.parseObject(valueOperations.get("khMenAll:" + needDateString).toString());
             allMen.putAll(khMenAll);
         }
-        if(workType == null || workType == 2)  {
+        if (workTypes == null || workTypes.contains("2")) {
             JSONObject xsMenAll = JSONObject.parseObject(valueOperations.get("xsMenAll:" + needDateString).toString());
             allMen.putAll(xsMenAll);
         }
-        if(workType == null || workType == 3)  {
+        if (workTypes == null || workTypes.contains("3")) {
 
         }
         Iterator<Map> iterator = menInMap.iterator();
-        while(iterator.hasNext()){
+        while (iterator.hasNext()) {
             Map men = iterator.next();
             String userid = men.get("userid").toString();
 
             Long createtime = Long.parseLong(men.get("createtime").toString());
-
-            if(timeSecond - createtime > 600000) {
-                //大于十分钟 离线
+            //默认90分钟
+            int offLineJudgeNum = 5400000;
+            //如果redis有配置 则用redis的数据
+            Object offLineJudge = valueOperations.get("offLineJudge");
+            if(offLineJudge != null) {
+                offLineJudgeNum = Integer.parseInt(offLineJudge.toString()) * 60 * 1000;
+            }
+            if (timeSecond - createtime > offLineJudgeNum) {
+                //大于九十分钟 离线
                 //显示在线
-                if(loginStatus == 1) {
+                if (loginStatus == 1) {
                     iterator.remove();
                     continue;
                 }
-                men.put("loginStatus",0);
+                men.put("loginStatus", 0);
             } else {
                 //小于十分钟 在线
                 //显示离线
@@ -137,14 +159,14 @@ public class PcMapShowController {
                     iterator.remove();
                     continue;
                 }
-                men.put("loginStatus",1);
+                men.put("loginStatus", 1);
             }
 
-            if(!allMen.containsKey(userid)) {
+            if (!allMen.containsKey(userid)) {
                 //注意这个地方
                 iterator.remove();
             } else {
-                men.put("statuts",allMen.get(userid));
+                men.put("statuts", allMen.get(userid));
             }
         }
     }
@@ -159,13 +181,13 @@ public class PcMapShowController {
      * @author nwz
      */
     @GetMapping("menAboutLine")
-    public Object menAboutLine(Long lineId,String currentUserId,Date startDate) {
+    public Object menAboutLine(Long lineId, String currentUserId, Date startDate) {
         try {
-            Map<String,Object> res = new HashMap<String,Object>();
+            Map<String, Object> res = new HashMap<String, Object>();
             //拿到线路上的所有的杆塔
-            List<Map<String,Object>> coordinateList =  cmcoordinateService.lineCoordinateList(lineId);
+            List<Map<String, Object>> coordinateList = cmcoordinateService.lineCoordinateList(lineId);
             Date date = new Date();
-            if(startDate == null) {
+            if (startDate == null) {
                 startDate = date;
             }
             String needDateString = DateUtil.dateFormatToDay(startDate);
@@ -176,19 +198,19 @@ public class PcMapShowController {
             HashOperations<String, String, Map> hashOperations = redisTemplate.opsForHash();
             String deptId = pcMapShowService.dataAccessByUserId(currentUserId).toString();
             //显示改线路当天关联的人
-            List<Map<String, Object>> menAboutLine = cmcoordinateService.getMenAboutLine(deptId, lineId, currentUserId, startDate);
+            List<Map<String, Object>> menAboutLine = cmcoordinateService.getMenAboutLine(deptId, lineId);
             Set<String> keys = new HashSet();
             //单位 外协 组织 班组 都走这里
-              for (Map<String,Object> user: menAboutLine) {
+            for (Map<String, Object> user : menAboutLine) {
                 String id = user.get("USERID").toString();
                 keys.add(id);
             }
-            menInMap = hashOperations.multiGet("menInMap",keys);
+            menInMap = hashOperations.multiGet("menInMap", keys);
             //-->去除list中为null的元素
             menInMap.removeAll(Collections.singleton(null));
             chouYiXia(null, 2, needDateString, timeSecond, menInMap, valueOperations);
-            res.put("menInMap",menInMap);
-            res.put("coordinateList",coordinateList);
+            res.put("menInMap", menInMap);
+            res.put("coordinateList", coordinateList);
             return WebApiResponse.success(res);
         } catch (Exception e) {
             e.printStackTrace();
@@ -226,15 +248,15 @@ public class PcMapShowController {
      * @author nwz
      */
     @GetMapping("menPath")
-    public Object menPath(String userId,Date startTime,Date endTime) {
+    public Object menPath(String userId, Date startTime, Date endTime) {
         try {
             ZSetOperations<String, Object> zSetOperations = redisTemplate.opsForZSet();
             String prefixDate = DateUtil.dateFormatToDay(startTime);
             Set<Object> set;
-            if(endTime == null) {
+            if (endTime == null) {
                 endTime = DateUtil.dateNow();
             }
-            set = zSetOperations.rangeByScore( prefixDate + ":" + userId, startTime.getTime(), endTime.getTime());
+            set = zSetOperations.rangeByScore(prefixDate + ":" + userId, startTime.getTime(), endTime.getTime());
             return WebApiResponse.success(set);
         } catch (Exception e) {
             return WebApiResponse.erro("失败" + e.getMessage());
@@ -250,18 +272,18 @@ public class PcMapShowController {
      * @author nwz
      */
     @GetMapping("menPoint")
-    public Object menPoint(String userId,Date startTime,Date endTime,Integer lOrR) {
+    public Object menPoint(String userId, Date startTime, Date endTime, Integer lOrR) {
         try {
             ZSetOperations<String, Object> zSetOperations = redisTemplate.opsForZSet();
             String prefixDate = DateUtil.dateFormatToDay(startTime);
             Set<Object> set;
-            if(endTime == null) {
+            if (endTime == null) {
                 endTime = DateUtil.dateNow();
             }
-            if(lOrR == 0) {
-                set = zSetOperations.reverseRangeByScore( prefixDate + ":" + userId, startTime.getTime(), endTime.getTime(),0,1);
+            if (lOrR == 0) {
+                set = zSetOperations.reverseRangeByScore(prefixDate + ":" + userId, startTime.getTime(), endTime.getTime(), 0, 1);
             } else {
-                set = zSetOperations.rangeByScore( prefixDate + ":" + userId, startTime.getTime(), endTime.getTime(),0,1);
+                set = zSetOperations.rangeByScore(prefixDate + ":" + userId, startTime.getTime(), endTime.getTime(), 0, 1);
             }
             return WebApiResponse.success(set);
         } catch (Exception e) {
@@ -281,7 +303,7 @@ public class PcMapShowController {
     @GetMapping("lineCoordinateList")
     public Object lineCoordinateList(Long lineId) {
         try {
-            List<Map<String,Object>> coordinateList =  cmcoordinateService.lineCoordinateList(lineId);
+            List<Map<String, Object>> coordinateList = cmcoordinateService.lineCoordinateList(lineId);
             return WebApiResponse.success(coordinateList);
         } catch (Exception e) {
             e.printStackTrace();
@@ -300,7 +322,7 @@ public class PcMapShowController {
     @GetMapping("towerCoordinate")
     public Object towerCoordinate(Long towerId) {
         try {
-            Map<String,Object> coordinate =  cmcoordinateService.towerCoordinate(towerId);
+            Map<String, Object> coordinate = cmcoordinateService.towerCoordinate(towerId);
             return WebApiResponse.success(coordinate);
         } catch (Exception e) {
             e.printStackTrace();
@@ -309,38 +331,39 @@ public class PcMapShowController {
     }
 
     @GetMapping("menNameLike")
-    public Object menNameLike(String userName,Integer workType) {
+    public Object menNameLike(String userName, Integer workType) {
         try {
             userName = "%" + userName + "%";
             StringBuffer menNameLikesql = new StringBuffer("select id,classname,realname from rztsysuser where USERDELETE = 1 and realname like ?");
             ArrayList list = new ArrayList();
             list.add(userName);
-            if(workType != null) {
+            if (workType != null) {
                 menNameLikesql.append(" and worktype = ?");
                 list.add(workType);
             }
-            List<Map<String, Object>> maps = cmcoordinateService.execSql(menNameLikesql.toString(),list.toArray());
+            List<Map<String, Object>> maps = cmcoordinateService.execSql(menNameLikesql.toString(), list.toArray());
             return WebApiResponse.success(maps);
         } catch (Exception e) {
             return WebApiResponse.erro("数据查询失败" + e.getMessage());
         }
     }
+
     /***
-    * @Method menInLine
-    * @Description 线路上的人
-    * @param [lineId, currentUserId]
-    * @return java.lang.Object
-    * @date 2018/1/14 17:37
-    * @author nwz
-    */
+     * @Method menInLine
+     * @Description 线路上的人
+     * @param [lineId, currentUserId]
+     * @return java.lang.Object
+     * @date 2018/1/14 17:37
+     * @author nwz
+     */
     @GetMapping("menInLine")
-    public Object menInLine(Long lineId,String currentUserId) {
+    public Object menInLine(Long lineId, String currentUserId) {
         try {
             Map<String, Object> map = pcMapShowService.userInfoFromRedis(currentUserId);
             String tempTable = "";
             ArrayList list = new ArrayList();
             Integer roletype = Integer.parseInt(map.get("ROLETYPE").toString());
-            if(roletype == 0) {
+            if (roletype == 0) {
                 tempTable = "SELECT DISTINCT userid from (select CM_USER_ID userid from xs_zc_cycle where LINE_ID = ?\n" +
                         "union all\n" +
                         "select USER_ID userid from KH_SITE where LINE_ID = ?) t where t.userid is not null ";
@@ -349,7 +372,8 @@ public class PcMapShowController {
             } else {
                 tempTable = "SELECT DISTINCT userid from (select CM_USER_ID userid from xs_zc_cycle where LINE_ID = ? and TD_ORG = ?\n" +
                         "union all\n" +
-                        "select USER_ID userid from KH_SITE where LINE_ID = ? and TDYW_ORGID = ?) t where t.userid is not null ";;
+                        "select USER_ID userid from KH_SITE where LINE_ID = ? and TDYW_ORGID = ?) t where t.userid is not null ";
+                ;
                 list.add(lineId);
                 list.add(map.get("DEPTID"));
                 list.add(lineId);
@@ -357,7 +381,7 @@ public class PcMapShowController {
 
             }
             StringBuffer menInLineSql = new StringBuffer("select t.USERID,tt.REALNAME,tt.LOGINSTATUS from (" + tempTable + ") t join RZTSYSUSER tt on t.userid = tt.ID");
-            List<Map<String, Object>> userMaps = cmcoordinateService.execSql(menInLineSql.toString(),list.toArray());
+            List<Map<String, Object>> userMaps = cmcoordinateService.execSql(menInLineSql.toString(), list.toArray());
             return WebApiResponse.success(userMaps);
         } catch (Exception e) {
             return WebApiResponse.erro("数据查询失败" + e.getMessage());
@@ -388,17 +412,17 @@ public class PcMapShowController {
     public Object menCurrentDayxs(Date day) {
         try {
             ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
-            if(day == null) {
+            if (day == null) {
                 day = new Date();
             }
             String sql = "SELECT cm_user_id,min(stauts) status from XS_ZC_TASK where PLAN_END_TIME >= trunc(?1) and  PLAN_START_TIME <= trunc(?1+1) group by CM_USER_ID";
-            List<Map<String, Object>> userList = cmcoordinateService.execSql(sql,day);
-            Map<String,Object> map = new HashMap<String, Object>();
-            for (Map<String,Object> user: userList) {
+            List<Map<String, Object>> userList = cmcoordinateService.execSql(sql, day);
+            Map<String, Object> map = new HashMap<String, Object>();
+            for (Map<String, Object> user : userList) {
                 String id = user.get("CM_USER_ID").toString();
-                map.put(id,user.get("STATUS"));
+                map.put(id, user.get("STATUS"));
             }
-            valueOperations.set("xsMenAll:" + DateUtil.dateFormatToDay(day),map);
+            valueOperations.set("xsMenAll:" + DateUtil.dateFormatToDay(day), map);
             return WebApiResponse.success("成功了");
         } catch (Exception e) {
             return WebApiResponse.erro("数据查询失败" + e.getMessage());
@@ -419,9 +443,9 @@ public class PcMapShowController {
             HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
             String sql = "SELECT * from USERINFO";
             List<Map<String, Object>> maps = cmcoordinateService.execSql(sql);
-            for (Map<String,Object> map: maps) {
+            for (Map<String, Object> map : maps) {
                 String id = map.get("ID").toString();
-                hashOperations.put("UserInformation",id,map);
+                hashOperations.put("UserInformation", id, map);
             }
             return WebApiResponse.success("成功了");
         } catch (Exception e) {
@@ -445,17 +469,16 @@ public class PcMapShowController {
             String deptListSql = "SELECT id from RZTSYSDEPARTMENT";
             String userListSql = "select id,worktype from RZTSYSUSER where USERDELETE = 1 and (DEPTID = ?1 or COMPANYID = ?1 or GROUPID = ?1 or CLASSNAME = ?1 ) ";
             List<Map<String, Object>> deptList = cmcoordinateService.execSql(deptListSql);
-            for (Map<String,Object> dept: deptList) {
+            for (Map<String, Object> dept : deptList) {
                 String id = dept.get("ID").toString();
                 List<Map<String, Object>> userList = cmcoordinateService.execSql(userListSql, id);
-                hashOperations.put("menInDept",id,userList);
+                hashOperations.put("menInDept", id, userList);
             }
             return WebApiResponse.success("成功了");
         } catch (Exception e) {
             return WebApiResponse.erro("数据查询失败" + e.getMessage());
         }
     }
-
 
 
     /***
@@ -470,19 +493,20 @@ public class PcMapShowController {
     public Object menCurrentDayKh(Date day) {
         try {
             ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
-            if(day == null) {
+            if (day == null) {
                 day = new Date();
             }
-            String sql = "SELECT USER_ID,min(status) status from KH_TASK where PLAN_END_TIME >= trunc(?1) and  PLAN_START_TIME <= trunc(?1+1) group by USER_ID";
-            List<Map<String, Object>> userList = cmcoordinateService.execSql(sql,day);
-            Map<String,Object> map = new HashMap<String, Object>();
-            for (Map<String,Object> user: userList) {
+            String sql = "SELECT USER_ID,max(status) status from KH_TASK where PLAN_END_TIME >= trunc(?1) and user_id is not null and PLAN_START_TIME <= trunc(?1+1) group by USER_ID";
+            List<Map<String, Object>> userList = cmcoordinateService.execSql(sql, day);
+            Map<String, Object> map = new HashMap<String, Object>();
+            for (Map<String, Object> user : userList) {
                 String id = user.get("USER_ID").toString();
-                map.put(id,user.get("STATUS"));
+                map.put(id, user.get("STATUS"));
             }
-            valueOperations.set("khMenAll:" + DateUtil.dateFormatToDay(day),map);
+            valueOperations.set("khMenAll:" + DateUtil.dateFormatToDay(day), map);
             return WebApiResponse.success("成功了");
         } catch (Exception e) {
+            e.printStackTrace();
             return WebApiResponse.erro("数据查询失败" + e.getMessage());
         }
     }
@@ -503,12 +527,12 @@ public class PcMapShowController {
         if (khMenAllString == null) {
         } else {
             JSONObject khMenAll = JSONObject.parseObject(khMenAllString.toString());
-            String sql = "SELECT USER_ID,min(status) status from kh_task where PLAN_END_TIME >= trunc(sysdate) and  PLAN_START_TIME <= trunc(sysdate+1) and USER_ID = ? group by user_id";
+            String sql = "SELECT USER_ID,max(status) status from kh_task where PLAN_END_TIME >= trunc(sysdate) and  PLAN_START_TIME <= trunc(sysdate+1) and USER_ID = ? group by user_id";
             try {
-                Map<String, Object> map = cmcoordinateService.execSqlSingleResult(sql,userId);
+                Map<String, Object> map = cmcoordinateService.execSqlSingleResult(sql, userId);
                 Object status = map.get("STATUS");
-                khMenAll.put(userId,status);
-                valueOperations.set(key,khMenAll);
+                khMenAll.put(userId, status);
+                valueOperations.set(key, khMenAll);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -522,5 +546,6 @@ public class PcMapShowController {
         menCurrentDayKh(day);
         menCurrentDayxs(day);
     }
+
 
 }

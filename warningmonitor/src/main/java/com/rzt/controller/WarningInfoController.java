@@ -38,9 +38,9 @@ public class WarningInfoController extends
      * type 任务类型
      */
     @GetMapping("/sumInfo")
-    public WebApiResponse sumInfo(String userId,Integer type){
+    public WebApiResponse sumInfo(String currentUserId,Integer type){
         try {
-            return WebApiResponse.success(service.sumInfo(userId,type));
+            return WebApiResponse.success(service.sumInfo(currentUserId,type));
         }catch (Exception e){
             return WebApiResponse.erro(e.getMessage());
         }
@@ -51,9 +51,9 @@ public class WarningInfoController extends
      * type 任务类型
      */
     @GetMapping("/totalSumInfo")
-    public WebApiResponse totalSumInfo(String userId,Integer type){
+    public WebApiResponse totalSumInfo(String currentUserId,Integer type){
         try {
-            return WebApiResponse.success(service.totalSumInfo(userId,type));
+            return WebApiResponse.success(service.totalSumInfo(currentUserId,type));
         }catch (Exception e){
             return WebApiResponse.erro(e.getMessage());
         }

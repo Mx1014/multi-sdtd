@@ -36,5 +36,9 @@ public interface Monitorcheckyjrepository extends JpaRepository<Monitorcheckyj,S
             "VALUES(?1,sysdate,?2,?3,?4,?5,?6,?7)",nativeQuery = true)
     void saveCheckYj(long ID, Long taskId, Integer taskType, Integer warnintType, String userId, String deptId, String taskName);
 
-
+  @Transactional
+  @Modifying
+  @Query(value = "INSERT INTO MONITOR_CHECK_YJ (ID,CREATE_TIME,TASK_ID,TASK_TYPE,WARNING_TYPE,USER_ID,DEPTID,TASK_NAME,REASON) " +
+          "VALUES(?1,sysdate,?2,?3,?4,?5,?6,?7,?8)",nativeQuery = true)
+    void saveCheckYjWdw(long ID, Long taskId, Integer taskType, Integer warnintType, String userId, String deptId, String taskName, String reason);
 }

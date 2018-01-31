@@ -80,7 +80,7 @@ public class AppKhUpdateService extends CurdService<KhTask, AppKhUpdateRepositor
             this.reposiotry.updateWp(task.getWpzt(), task.getTaskId());
             return WebApiResponse.success("修改成功");
         } catch (Exception e) {
-            task.setId();
+            task.setId(0L);
             wpqrService.add(task);
             this.reposiotry.updateWpqrTime(task.getTaskId(), DateUtil.dateNow());
             this.reposiotry.updateZxnum(3, task.getTaskId());

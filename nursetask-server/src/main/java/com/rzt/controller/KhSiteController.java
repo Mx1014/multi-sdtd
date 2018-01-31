@@ -63,7 +63,6 @@ public class KhSiteController extends
     private RedisTemplate<String, Object> redisTemplate;
 
 
-    //  数据没有设置完成  稽查任务实体类有部分修改
     @PostMapping("/saveYh.do")
     @ResponseBody
     public WebApiResponse saveYh(KhYhHistory yh, String fxtime, String startTowerName, String endTowerName, String pictureId) {
@@ -77,13 +76,13 @@ public class KhSiteController extends
      */
     @GetMapping("/listAllTaskNotDo.do")
     @ResponseBody
-    public WebApiResponse listAllTaskNotDo(String yhjb,String yworg,KhTaskModel task, Pageable pageable, String userName) {
+    public WebApiResponse listAllTaskNotDo(String yhjb,String yworg,KhTaskModel task, Pageable pageable, String userName,String currentUserId) {
         try {
             HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
-            Object userInformation = hashOperations.get("UserInformation", task.getUserId());
+            Object userInformation = hashOperations.get("UserInformation", currentUserId);
             JSONObject jsonObject = JSONObject.parseObject(userInformation.toString());
             String roleType = jsonObject.get("ROLETYPE").toString();
-            return WebApiResponse.success(this.service.listAllTaskNotDo(task, pageable, userName, roleType,yhjb,yworg));
+            return WebApiResponse.success(this.service.listAllTaskNotDo(task, pageable, userName, roleType,yhjb,yworg,currentUserId));
 //            return WebApiResponse.success(this.service.listAllTaskNotDo(task, pageable, userName,"0",yhjb,yworg));
         } catch (Exception e) {
             e.printStackTrace();
@@ -182,14 +181,12 @@ public class KhSiteController extends
      * @param response
      */
     @GetMapping("/exportNursePlan.do")
-    public void exportNursePlan(HttpServletRequest request, HttpServletResponse response, String userId) {
+    public void exportNursePlan(HttpServletRequest request, HttpServletResponse response, String currentUserId) {
 
         try {
             HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
-            JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", userId).toString());
-
-            // Object jsonObject = new Object();
-            this.service.exportNursePlan(request, response, jsonObject, userId);
+            JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", currentUserId).toString());
+            this.service.exportNursePlan(request, response, jsonObject, currentUserId);
         } catch (Exception e) {
             e.printStackTrace();
         }

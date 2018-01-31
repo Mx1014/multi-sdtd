@@ -178,8 +178,8 @@ public class RztSysMenuController extends
      * @return
      */
     @GetMapping("treeQuerys")
-    public List<Map<String, Object>> treeQuerys(String userId) {
-        return this.service.treeQuerys(userId);
+    public List<Map<String, Object>> treeQuerys(String currentUserId) {
+        return this.service.treeQuerys(currentUserId);
     }
 
     /**

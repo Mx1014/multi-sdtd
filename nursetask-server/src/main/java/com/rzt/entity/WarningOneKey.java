@@ -30,10 +30,10 @@ public class WarningOneKey implements Serializable {
     //字段描述: 创建时间
     @Column(name = "CREATE_TIME")
     private Date createTime;
-    //字段描述: 经度
+    //字段描述: 纬度
     @Column(name = "LAT")
     private String lat;
-    //字段描述: 纬度
+    //字段描述: 经度
     @Column(name = "LON")
     private String lon;
     //字段描述: 告警类型
@@ -43,13 +43,15 @@ public class WarningOneKey implements Serializable {
     @Column(name = "GJMS")
     private String gjms;
 
-    public void setId() {
-        if (id == null || id == 0) {
-            this.id = new SnowflakeIdWorker(1, 5).nextId();
-        } else {
+    public void setId(Long id){
+        if(id==null||id==0){
+            SnowflakeIdWorker instance = SnowflakeIdWorker.getInstance(8, 20);
+            this.id = instance.nextId();
+        }else{
             this.id = id;
         }
     }
+
 
     public Long getId() {
         return this.id;

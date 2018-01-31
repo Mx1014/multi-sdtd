@@ -30,11 +30,10 @@ public class KhLsCycleController extends
     }
 
     @GetMapping("/listLsNotDo")
-    public WebApiResponse listLsNotDo(String taskName, String yworg, String startTime, String endTime, String userId, Pageable pageable, String yhjb){
+    public WebApiResponse listLsNotDo(String taskName, String yworg, String startTime, String endTime, String currentUserId, Pageable pageable, String yhjb){
         HashOperations<String, Object, Object> hash = redisTemplate.opsForHash();
-        Object userInformation = hash.get("UserInformation", userId);
+        Object userInformation = hash.get("UserInformation", currentUserId);
         JSONObject jsonObject = JSONObject.parseObject(userInformation.toString());
-
         return this.service.listLsNotDo(taskName,yworg,startTime,endTime,jsonObject,pageable,yhjb);
     }
 

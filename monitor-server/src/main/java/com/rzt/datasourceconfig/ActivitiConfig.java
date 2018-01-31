@@ -1,6 +1,5 @@
-package com.rzt.config;
+package com.rzt.datasourceconfig;
 
-import com.alibaba.druid.pool.DruidDataSource;
 import org.activiti.spring.SpringProcessEngineConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -11,6 +10,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
+
 @SuppressWarnings({"ALL", "AlibabaCommentsMustBeJavadocFormat"})
 @EnableTransactionManagement
 @EnableJpaRepositories(

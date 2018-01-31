@@ -76,6 +76,11 @@ public class RedisUtil  extends CurdService<CheckResult, CheckResultRepository> 
         return null;
     }
 
+    /**
+     * 根据用户id  获取当前通道公司汉字名
+     * @param userId
+     * @return
+     */
    public  String findTDByUserId(String userId) {
        Jedis resource = null;
         try {
@@ -97,4 +102,33 @@ public class RedisUtil  extends CurdService<CheckResult, CheckResultRepository> 
         return null;
 
     }
+
+
+    /**
+     * 根据用户id  获取当前通道公司ID
+     * @param userId
+     * @return
+     */
+    public  String findTDIDByUserId(String userId) {
+        Jedis resource = null;
+        try {
+            resource = redisTemplate.getResource();
+            String userInformation = resource.hget("UserInformation", userId);
+            JSONObject jsonObject1 = JSONObject.parseObject(userInformation);
+            String DEPT = (String) jsonObject1.get("DEPTID");
+            if (null != DEPT && !"".equals(DEPT)) {
+                return DEPT;
+            }
+
+        } catch (Exception e) {
+            return null;
+        }finally {
+            if(null != resource){
+                resource.close();
+            }
+        }
+        return null;
+
+    }
+
 }

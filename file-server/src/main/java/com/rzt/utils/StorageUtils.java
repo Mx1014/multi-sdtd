@@ -54,6 +54,7 @@ public class StorageUtils {
             bol = true;
         }
 
+        o.close();
         return bol;
     }
 
@@ -69,51 +70,60 @@ public class StorageUtils {
         if(file.isEmpty()){
             throw new IOException("上传文件为空！");
         }
-        String fileName = file.getOriginalFilename();
-        String picType="";
-        String picName="";
-        picType = fileName.substring(fileName.lastIndexOf(".")+1,fileName.length());
-        picName = fileName.substring(0,fileName.lastIndexOf("."));
+        //String fileName = file.getOriginalFilename();
+        String fileName = UUID.randomUUID()+".jpg";//todo
+        String picType = fileName.substring(fileName.lastIndexOf(".")+1,fileName.length());
+        String picName = fileName.substring(0,fileName.lastIndexOf("."));
         if(!"jpg".equals(picType)){
             throw new IOException("上传文件不是jpg图片！");
         }
         double ratio = 0; //缩放比例
         InputStream o = file.getInputStream();
         String currentDate = DateUtil.getCurrentDate();
-        String baseDir = picDir + currentDate + File.separator + targetDir + File.separator;
-        String targetPath = baseDir+picName+"."+picType;
-        String thumPath = baseDir+"thum"+File.separator+picName+thumHeight+"x"+thumWidth+"."+picType;
+        StringBuilder baseDir = new StringBuilder();
+        baseDir.append(picDir).append(currentDate).append(File.separator).append(targetDir).append(File.separator);
+
+        StringBuilder targetPath = new StringBuilder();
+        targetPath.append(baseDir).append(picName).append(".").append(picType);
+
+        StringBuilder thumPath = new StringBuilder();
+        thumPath.append(baseDir).append("thum").append(File.separator).append(picName).append(thumHeight).append("x").append(thumWidth).append(".").append(picType);
 
         //原文件存放路径
-        File targetFile = new File(targetPath);
+        File targetFile = new File(targetPath.toString());
         //缩略图存放路径
-        File thumFile = new File(thumPath);
+        File thumFile = new File(thumPath.toString());
         //目标目录是否存在
         File folder = new File(baseDir + "thum");
         if(!folder.exists()&&!folder.isDirectory()){
             folder.mkdirs();
         }
 
-        int width = Integer.parseInt(thumWidth);
-        int height = Integer.parseInt(thumHeight);
-        BufferedImage bi;
-        bi = ImageIO.read(o);
-        Image itemp = bi.getScaledInstance(width, height, BufferedImage.SCALE_SMOOTH);
-        int itempWidth = bi.getWidth();
-        int itempHeight = bi.getHeight();
-
-        //计算比例
-        if ((itempHeight > height) || (itempWidth > width)) {
-            ratio = Math.min((new Integer(height)).doubleValue() / itempHeight, (new Integer(width)).doubleValue() / itempWidth);
-            AffineTransformOp op = new AffineTransformOp(AffineTransform.getScaleInstance(ratio, ratio), null);
-            itemp = op.filter(bi, null);
-            ImageIO.write((BufferedImage) itemp,picType, thumFile);
-        }
-
+//        int width = Integer.parseInt(thumWidth);
+//        int height = Integer.parseInt(thumHeight);
+//        BufferedImage bi;
+//        bi = ImageIO.read(o);
+//
+//        Image itemp = bi.getScaledInstance(width, height, BufferedImage.SCALE_SMOOTH);
+//        int itempWidth = bi.getWidth();
+//        int itempHeight = bi.getHeight();
+//
+//        //计算比例
+//        if ((itempHeight > height) || (itempWidth > width)) {
+//            ratio = Math.min((new Integer(height)).doubleValue() / itempHeight, (new Integer(width)).doubleValue() / itempWidth);
+//            AffineTransformOp op = new AffineTransformOp(AffineTransform.getScaleInstance(ratio, ratio), null);
+//            itemp = op.filter(bi, null);
+//            ImageIO.write((BufferedImage) itemp,picType, thumFile);
+//        }
+        o.close();
         //保存原图到指定路径
         file.transferTo(targetFile);
-        String picUrl = File.separator + currentDate + File.separator + targetDir + File.separator + picName+"."+picType;
-        String thumUrl = File.separator + currentDate + File.separator + targetDir + File.separator + "thum"+File.separator+picName+thumHeight+"x"+thumWidth+"."+picType;
+        StringBuilder picUrl = new StringBuilder();
+        picUrl.append(File.separator).append(currentDate).append(File.separator).append(targetDir).append(File.separator).append(picName).append(".").append(picType);
+
+        StringBuilder thumUrl = new StringBuilder();
+        thumUrl.append(File.separator).append(currentDate).append(File.separator).append(targetDir).append(File.separator).append("thum").append(File.separator).append(picName).append(thumHeight).append("x").append(thumWidth).append(".").append(picType);
+
         result.put("picName",picName+"."+picType);
         result.put("picPath",picUrl);
         result.put("thumPath",thumUrl);
@@ -174,26 +184,28 @@ public class StorageUtils {
             throw new IOException("上传文件为空！");
         }
         String fileName = file.getOriginalFilename();
-        String fileType="";
-        fileType = fileName.substring(fileName.lastIndexOf(".")+1,fileName.length());
-
+        String fileType = fileName.substring(fileName.lastIndexOf(".")+1,fileName.length());
 
         String currentDate = DateUtil.getCurrentDate();
         String saveName = String.valueOf(UUID.randomUUID());
-        String baseDir = picDir + currentDate + File.separator + fileType + File.separator;
-        String targetPath = baseDir+saveName+"."+fileType;
+
+        StringBuilder baseDir = new StringBuilder();
+        baseDir.append(picDir).append(currentDate).append(File.separator).append(fileType).append(File.separator);
+        StringBuilder targetPath = new StringBuilder();
+        targetPath.append(baseDir).append(saveName).append(".").append(fileType);
 
         //原文件存放路径
-        File targetFile = new File(targetPath);
+        File targetFile = new File(targetPath.toString());
         //目标目录是否存在
-        File folder = new File(baseDir);
+        File folder = new File(baseDir.toString());
         if(!folder.exists()&&!folder.isDirectory()){
             folder.mkdirs();
         }
 
         //保存原图到指定路径
         file.transferTo(targetFile);
-        String url = File.separator + currentDate + File.separator + fileType + File.separator + saveName+"."+fileType;
+        StringBuilder url = new StringBuilder();
+        url.append(File.separator).append(currentDate).append(File.separator).append(fileType).append(File.separator).append(saveName).append(".").append(fileType);
         result.put("fileName",saveName+"."+fileType);
         result.put("filePath",url);
         result.put("success",true);
@@ -235,6 +247,7 @@ public class StorageUtils {
 
 
     public static void main(String[] args) throws IOException{
+
         //pressImage("D:\\images\\444.jpg", "D:\\images\\wmlogo.gif", 100, 50, 0.5f);
 //        pressText("D:\\\\images\\\\444.jpg", "旺仔之印", "宋体", Font.BOLD|Font.ITALIC, 20, Color.red, 50, 50,.8f);
         //resizeWidth("c:\\test\\VIP3.png","c:\\test\\VIP3_1.png", 90, 245);

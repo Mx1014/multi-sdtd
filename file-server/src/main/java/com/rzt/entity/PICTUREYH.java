@@ -130,7 +130,8 @@ public class PICTUREYH implements Serializable{
 
 	public void setId(Long id){
 		if(id==null||id==0){
-			this.id = new SnowflakeIdWorker(5,4).nextId();
+			SnowflakeIdWorker instance = SnowflakeIdWorker.getInstance(5, 6);
+			this.id = instance.nextId();
 		}else{
 			this.id = id;
 		}

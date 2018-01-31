@@ -35,9 +35,9 @@ public class CMLINESECTIONController extends
 
 	@ApiOperation(value = "通道单位线路维护",notes = "通道单位线路维护的分页查询，条件搜索")
 	@GetMapping("getLineInfoByOrg")
-    public WebApiResponse getLineInfoByOrg(@RequestParam(value = "page",defaultValue = "0") Integer page, @RequestParam(value = "size",defaultValue = "15") Integer size, String tdOrg, String kv, String lineId){
+    public WebApiResponse getLineInfoByOrg(@RequestParam(value = "page",defaultValue = "0") Integer page, @RequestParam(value = "size",defaultValue = "15") Integer size, String tdOrg, String kv, String lineId,String currentUserId){
 		Pageable pageable = new PageRequest(page, size);
-		return service.getLineInfoByOrg(pageable,tdOrg,kv,lineId);
+		return service.getLineInfoByOrg(pageable,tdOrg,kv,lineId,currentUserId);
 	}
 
 	@ApiOperation(value = "公共接口--获取属地单位线路信息",notes = "根据电压等级、通道单位id获取线路信息")

@@ -52,12 +52,12 @@ public class DefectController {
 
     /**
      * 查看所有待办任务
-     * @param userId   传入当前节点名
+     * @param currentUserId   传入当前节点名
      * @return
      */
     @GetMapping("/findTaskByUserName")
-    public WebApiResponse toTask(String userId,Integer page,Integer size){
-        return defectService.checkTask(userId,page,size);
+    public WebApiResponse toTask(String currentUserId,Integer page,Integer size){
+        return defectService.checkTasks(currentUserId,page,size);
 
     }
 

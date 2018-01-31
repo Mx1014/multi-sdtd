@@ -17,7 +17,7 @@ public interface WarningmonitorServerService {
     * @author nwz
     */
     @GetMapping(value = "warningmonitorServer/GJKH/xsTourScope")
-    WebApiResponse xsTourScope(@RequestParam("taskid") Long taskid, @RequestParam("userid") String userid);
+    WebApiResponse xsTourScope(@RequestParam("taskid") Long taskid, @RequestParam("userid") String userid, @RequestParam("reason") String reason);
 
 
     /***

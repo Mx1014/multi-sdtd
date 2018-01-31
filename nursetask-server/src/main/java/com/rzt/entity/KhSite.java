@@ -5,17 +5,12 @@
  * Copyright 融智通科技(北京)股份有限公司 版权所有    
  */
 package com.rzt.entity;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import com.rzt.entity.BaseEntity;
 import com.rzt.util.excelUtil.ExcelResources;
 import com.rzt.utils.SnowflakeIdWorker;
-import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
-import java.util.UUID;
 
 /**
  * 类名称：KhSite
@@ -111,9 +106,15 @@ public class KhSite  implements Serializable{
 		this.isDelete = isDelete;
 	}*/
 
-	public void setId(){
-		this.id = new SnowflakeIdWorker(1,1).nextId();
+	public void setId(Long id){
+		if(id==null||id==0){
+			SnowflakeIdWorker instance = SnowflakeIdWorker.getInstance(8, 12);
+			this.id = instance.nextId();
+		}else{
+			this.id = id;
+		}
 	}
+
 	@ExcelResources(title="看护点id",order=1)
 	public Long getId(){
 		return this.id;

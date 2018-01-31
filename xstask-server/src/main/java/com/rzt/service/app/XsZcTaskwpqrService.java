@@ -289,7 +289,7 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
         } else {
             try {
                 if(sfdw == 1) {
-                    warningmonitorServerService.xsTourScope(taskid,userid);
+                    warningmonitorServerService.xsTourScope(taskid,userid,reason);
                 }
             } catch (Exception e) {
                 e.printStackTrace();

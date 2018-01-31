@@ -87,17 +87,17 @@ public class ProController {
      * @return
      */
     @GetMapping("/proClick")
-    public WebApiResponse chuLi(String taskId,String YHID,String flag,String isKH,String info,String proId,String userName
+    public WebApiResponse chuLi(String taskId,String YHID,String flag,String isKH,String info,String proId,String currentUserId
     ,String LINE_NAME,String TDYW_ORG,String YWORG_ID){
         String dept = "";
-        if(null == userName || "".equals(userName)){
+        if(null == currentUserId || "".equals(currentUserId)){
             return WebApiResponse.erro("当前用户权限获取失败 ");
         }
 
       try {
-          if(null != userName && !"".equals(userName)){
-               dept = redisUtil.findTDByUserId(userName);
-              userName = redisUtil.findRoleIdByUserId(userName);
+          if(null != currentUserId && !"".equals(currentUserId)){
+               dept = redisUtil.findTDByUserId(currentUserId);
+              currentUserId = redisUtil.findRoleIdByUserId(currentUserId);
           }
 
           //将稽查和看护任务派发     完成后拿到看护任务的id  进入下一个节点 稽查节点
@@ -122,7 +122,7 @@ public class ProController {
           //获取节点前进后的id   用流程实例id做条件
           String id = proService.findIdByProId(proId);
           //测试稽查  sdid 代表属地监控中心   jkid 代表公司监控中心
-          if("sdid".equals(userName) || "jkid".equals(userName)){
+          if("sdid".equals(currentUserId) || "jkid".equals(currentUserId)){
             // 当dept.equals(TDYW_ORG)?"2":"1"   等于时代表是第二次派出稽查   不等于是派出第一次稽查
               /*nurseTaskService.addCheckLiveTasksb(id,
                       "0",LINE_NAME+"隐患点",YHID,YWORG_ID,
@@ -170,25 +170,25 @@ public class ProController {
     }
     /**
      * 查看所有待办任务
-     * @param userId   传入当前节点名
+     * @param currentUserId   传入当前节点名
      * @return
      */
     @GetMapping("/findTaskByUserName")
-    public WebApiResponse toTask(String userId,Integer page,Integer size){
-        String roleIdByUserId = redisUtil.findRoleIdByUserId(userId);
-        return proService.checkTask(roleIdByUserId,page,size);
+    public WebApiResponse toTask(String currentUserId,Integer page,Integer size,String YHLB,String YHJB,String start,String end,String deptId){
+
+        return proService.checkTasks(currentUserId,page,size,YHLB,YHJB,start,end,deptId);
 
     }
 
     /**
      * 查看待办任务
-     * @param userName 执行人
+     * @param currentUserId 执行人
      * @param taskId   当前任务
      * @return
      */
     @GetMapping("/task")
-    public WebApiResponse task(String userName,String taskId){
-        return WebApiResponse.success(proService.checkTask(taskId,userName));
+    public WebApiResponse task(String currentUserId,String taskId){
+        return WebApiResponse.success(proService.checkTask(taskId,currentUserId));
 
     }
 
@@ -206,12 +206,11 @@ public class ProController {
 
 
     @GetMapping("/history")
-    public WebApiResponse gethi(String userId,Integer page,Integer size){
-        userId = redisUtil.findRoleIdByUserId(userId);
-        if(null == userId || "".equals(userId)){
+    public WebApiResponse gethi(String currentUserId,Integer page,Integer size,String YHLB,String YHJB,String start,String end,String deptId){
+        if(null == currentUserId || "".equals(currentUserId)){
             return WebApiResponse.erro("当前用户没有权限查看记录");
         }
-        return proService.historyActInstanceList(userId, page, size);
+        return proService.historyActInstanceList(currentUserId, page, size,YHLB,YHJB,start,end,deptId);
     }
 
 
@@ -240,6 +239,34 @@ public class ProController {
     @GetMapping("/tree")
     public WebApiResponse tree(){
         return proService.tree();
+    }
+
+    @GetMapping("/findLB")
+    public WebApiResponse findLB(){
+        return proService.findLB();
+    }
+
+    /**
+     * 页面 通道单位框权限接口
+     * 返回0 不显示 代表二级单位   返回1时显示代表顶级单位
+     * @param currentUserId
+     * @return
+     */
+    @GetMapping("/auth")
+    public String auth(String currentUserId){
+        try{
+            String roleIdByUserId = redisUtil.findRoleIdByUserId(currentUserId);
+            if("sdid".equals(roleIdByUserId) || "sdyjid".equals(roleIdByUserId)){
+                return "0";
+            }else if("jkid".equals(roleIdByUserId) || "yjid".equals(roleIdByUserId)){
+                return "1";
+            }else {
+                return "";
+            }
+        }catch (Exception e){
+
+            return "权限查询失败"+e.getMessage();
+        }
     }
 
 

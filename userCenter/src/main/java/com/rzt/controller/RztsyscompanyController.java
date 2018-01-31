@@ -6,19 +6,16 @@
  */
 package com.rzt.controller;
 
-import com.rzt.entity.RztSysUser;
 import com.rzt.entity.Rztsyscompany;
 import com.rzt.entity.Rztsyscompanyfile;
 import com.rzt.service.RztsyscompanyService;
 import com.rzt.service.RztsyscompanyfileService;
 import com.rzt.util.WebApiResponse;
 import io.swagger.annotations.ApiOperation;
-import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-import com.rzt.controller.CurdController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
@@ -93,9 +90,9 @@ public class RztsyscompanyController extends
      */
     @GetMapping("queryRztsyscompany")
     @ApiOperation(value = "外协队伍分页查询", notes = "外协队伍分页查询")
-    public WebApiResponse queryRztsyscompany(Integer page, Integer size, String userId, String companyname, String orgid) {
+    public WebApiResponse queryRztsyscompany(Integer page, Integer size, String currentUserId, String companyname, String orgid) {
         try {
-            return WebApiResponse.success(this.service.queryRztsyscompany(page, size, userId, companyname, orgid));
+            return WebApiResponse.success(this.service.queryRztsyscompany(page, size, currentUserId, companyname, orgid));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("Data Error");
@@ -248,9 +245,9 @@ public class RztsyscompanyController extends
                 row = sheet.createRow(i + 1);
                 Map<String, Object> map = list1.get(i);
                 row.createCell(0).setCellValue(String.valueOf(map.get("COMPANYNAME")));
-                row.createCell(1).setCellValue(String.valueOf(map.get("CREATETIME")));
-                row.createCell(2).setCellValue(String.valueOf(map.get("UPDATETIME")));
-                row.createCell(3).setCellValue(String.valueOf(map.get("ORGNAME")));
+                row.createCell(1).setCellValue(String.valueOf(map.get("ORGNAME")));
+                row.createCell(2).setCellValue((Date) map.get("CREATETIME"));
+                row.createCell(3).setCellValue(String.valueOf(map.get("UPDATETIME")) == null ? "无修改时间" : String.valueOf(map.get("UPDATETIME")).split(".")[0]);
             }
             OutputStream output = response.getOutputStream();
             response.reset();

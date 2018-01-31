@@ -33,4 +33,8 @@ public interface CheckLiveTaskXsRepository extends JpaRepository<CheckLiveTaskXs
     @Modifying
     @Query(value = "update xs_zc_task set JC_STATUS=?1 where id = ?2 ",nativeQuery = true)
     void updateTaskStatus(int i, Long id);
+
+    @Modifying
+    @Query(value = "update check_live_taskxs set USER_ID=?2,task_name = concat(?3,substr(task_name,instr(task_name,extract(year from sysdate)))) where id=?1",nativeQuery = true)
+    void updateXsCheckUser(Long id, String userId, String userName);
 }

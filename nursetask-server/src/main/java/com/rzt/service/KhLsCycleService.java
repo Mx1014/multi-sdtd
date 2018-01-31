@@ -33,8 +33,6 @@ public class KhLsCycleService extends CurdService<KhLsCycle, KhLsCycleRepository
     private KhTaskRepository taskRepository;
     @Autowired
     private XsSbYhRepository yhRepository;
-    @Autowired
-    private MonitorService monitorService;
 
     @Transactional
     public WebApiResponse saveLsCycle(String yhId) {
@@ -54,13 +52,13 @@ public class KhLsCycleService extends CurdService<KhLsCycle, KhLsCycleRepository
             cycle.setTdywOrgId(yh.getTdorgId());
 //            cycle.setWxOrg(yh.getTdwxOrg());
 //            cycle.setWxOrgId(yh.getWxorgId());
-            cycle.setId();
+            cycle.setId(0L);
             cycle.setLineId(yh.getLineId());
             cycle.setStatus(0);
             cycle.setSection(yh.getSection());
             cycle.setTaskName(taskName);
             this.reposiotry.save(cycle);
-            monitorService.start("wtsh",yh.getTbrid(),yhId,"1","","");
+
             return WebApiResponse.success(cycle.getId());
         } catch (Exception e) {
             e.printStackTrace();
@@ -102,13 +100,13 @@ public class KhLsCycleService extends CurdService<KhLsCycle, KhLsCycleRepository
 
             //权限
             if (roleType != null) {
-                if (roleType.equals("1") || roleType.equals("2")) {
+                if (roleType == 1 || roleType == 2) {
                     buffer.append(" and k.TDYW_ORGID = " + tdId);
                 }
-                if (roleType.equals("3")) {
+                if (roleType == 3) {
                     buffer.append(" and k.WX_ORGID = " + companyid);
                 }
-                if (roleType.equals("0")) {
+                if (roleType == 0) {
 
                 } else {
                     buffer.append(" and y.id=0 ");
@@ -116,7 +114,7 @@ public class KhLsCycleService extends CurdService<KhLsCycle, KhLsCycleRepository
             }
 
 
-            String sql = "select " + result + " from kh_ls_cycle k left join xs_sb_yh y on k.yh_id=y.id where status=0 ";
+            String sql = "select " + result + " from kh_ls_cycle k left join xs_sb_yh y on k.yh_id=y.id where status=0 " + buffer.toString();
             Page<Map<String, Object>> maps = this.execSqlPage(pageable, sql, params.toArray());
             List<Map<String, Object>> content1 = maps.getContent();
             for (Map map : content1) {
@@ -145,13 +143,15 @@ public class KhLsCycleService extends CurdService<KhLsCycle, KhLsCycleRepository
                     String wxname = map1.get("NAME").toString();
                     String wxid = map1.get("ID").toString();
                     task.setWxOrg(wxname);
-                    this.reposiotry.updateCycle(wxname,wxid,cycle.getId());
+                    task.setWxOrgId(wxid);
+                    this.reposiotry.updateCycle(wxname, wxid, cycle.getId());
                 } catch (Exception e) {
 
                 }
                 task.setTaskType(1);
                 task.setId();
                 task.setTdywOrg(cycle.getTdywOrg());
+                task.setYwOrgId(cycle.getTdywOrgId());
                 task.setPlanStartTime(DateUtil.getPlanStartTime(startTime));
                 task.setPlanEndTime(DateUtil.getPlanStartTime(endTime));
                 task.setZxysNum(0);
@@ -164,6 +164,7 @@ public class KhLsCycleService extends CurdService<KhLsCycle, KhLsCycleRepository
                 task.setTaskName(cycle.getTaskName());
                 taskRepository.save(task);
             }
+            this.reposiotry.updateStatus(cycle.getId());
             return WebApiResponse.success("保存成功");
         } catch (Exception e) {
             e.printStackTrace();

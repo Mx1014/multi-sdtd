@@ -58,13 +58,18 @@ public class DefectServiceImpl   extends CurdService<CheckResult, CheckResultRep
         return runtimeService.createProcessInstanceQuery().list();
     }
 
+    @Override
+    public WebApiResponse checkTask(String userName, Integer page, Integer size, Object... values) {
+        return null;
+    }
+
     /**
      * 查看任务
      * @param userName
      * @return
      */
-    @Override
-    public WebApiResponse checkTask(String userName,Integer page,Integer size) {
+
+    public WebApiResponse checkTasks(String userName,Integer page,Integer size) {
 
         //分页数据容错
         if(null == page || 0 == page){

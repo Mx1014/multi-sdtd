@@ -8,7 +8,6 @@ package com.rzt.service;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.netflix.discovery.converters.Auto;
 import com.rzt.entity.*;
 import com.rzt.entity.model.KhTaskModel;
 import com.rzt.repository.KhCycleRepository;
@@ -18,28 +17,19 @@ import com.rzt.repository.KhYhHistoryRepository;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DateUtil;
 import com.rzt.utils.MapUtil;
-import com.rzt.utils.RedisUtil;
 import com.rzt.utils.SnowflakeIdWorker;
-import com.sun.tools.internal.ws.wsdl.document.soap.SOAPUse;
 import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.geo.Distance;
-import org.springframework.data.geo.Metrics;
-import org.springframework.data.geo.Point;
-import org.springframework.data.redis.core.GeoOperations;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import redis.clients.jedis.Jedis;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.OutputStream;
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -68,7 +58,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
     private KhCycleRepository cycleRepository;
 
 
-    public Object listAllTaskNotDo(KhTaskModel task, Pageable pageable, String userName, String roleType, String yhjb, String yworg) {
+    public Object listAllTaskNotDo(KhTaskModel task, Pageable pageable, String userName, String roleType, String yhjb, String yworg, String currentUserId) {
         List params = new ArrayList<>();
         StringBuffer buffer = new StringBuffer();
         String result = " k.id as id,k.task_name as taskName,k.tdyw_org as yworg,y.yhms as ms,y.yhjb as jb,k.create_time as createTime,k.COUNT as COUNT,u.realname as username,k.jbd as jbd,k.plan_start_time as starttime,k.plan_end_time as endtime,u.id as userId";
@@ -102,7 +92,10 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             buffer.append(" and k.tdyw_org like ?");
             params.add(("%" + yworg + "%"));
         }
-
+        if (task.getTdOrg() != null && !task.getTdOrg().equals("")) {
+            buffer.append(" and k.yworg_id = ?");
+            params.add((task.getTdOrg()));
+        }
         String sql = "";
 
         //公司本部、属地公司权限
@@ -112,7 +105,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             } else {
                 sql = "select " + result1 + "from kh_cycle k,kh_yh_history y " + buffer.toString() + " and k.yh_id = y.id  and k.tdyw_org = (select d.deptname FROM RZTSYSUSER u,RZTSYSDEPARTMENT d where d.id= u.deptid and u.id =?) ";
             }
-            params.add(task.getUserId());
+            params.add(currentUserId);
 
             //部门权限
         } else if (roleType.equals("3")) {
@@ -121,7 +114,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             } else {
                 sql = "select " + result1 + "from kh_cycle k,kh_yh_history y " + buffer.toString() + " and k.yh_id = y.id and k.WX_ORG = (select d.COMPANYNAME FROM RZTSYSUSER u,RZTSYSCOMPANY d where d.id= u.COMPANYID and u.id =?) ";
             }
-            params.add(task.getUserId());
+            params.add(currentUserId);
 
             //组织权限
         } else if (roleType.equals("4")) {
@@ -131,7 +124,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                 // sql = "select " + result1 + "from kh_cycle k,kh_yh_history y " + buffer.toString()+" and k.yh_id = y.id and k.tdyw_org = d.deptname and k.tdyw_org = (select d.deptname FROM RZTSYSUSER u,RZTSYSDEPARTMENT d where d.id= u.deptid and u.id =?) ";
                 return new ArrayList<>();
             }
-            params.add(task.getUserId());
+            params.add(currentUserId);
 
             //个人权限
         } else if (roleType.equals("5")) {
@@ -141,7 +134,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                 // sql = "select " + result1 + "from kh_cycle k,kh_yh_history y,RZTSYSDEPARTMENT d " + buffer.toString()+" and k.yh_id = y.id and k.tdyw_org = d.deptname and k.tdyw_org = (select d.deptname FROM RZTSYSUSER u,RZTSYSDEPARTMENT d where d.id= u.deptid and u.id =?) ";
                 return new ArrayList<>();
             }
-            params.add(task.getUserId());
+            params.add(currentUserId);
 
             //所有权限
         } else {
@@ -181,7 +174,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
     }
 
     //导出返回List<Map>
-    public List<Map<String, Object>> findAlls(Object josn, String userId) {
+    public List<Map<String, Object>> findAlls(Object josn, String currentUserId) {
         Map jsonObject = JSON.parseObject(josn.toString(), Map.class);
         Integer roleType = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
         Object tdId = jsonObject.get("DEPTID");
@@ -193,9 +186,9 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
         } else if (roleType == 3) {
             sql += " where s.wx_orgId= '" + companyid.toString() + "'";
         } else if (roleType == 4) {
-            sql += ",rztsysuser u where u.id= s.user_id and u.classname = (select classname FROM RZTSYSUSER where id ='" + userId + "')";
+            sql += ",rztsysuser u where u.id= s.user_id and u.classname = (select classname FROM RZTSYSUSER where id ='" + currentUserId + "')";
         } else if (roleType == 5) {
-            sql += " where s.user_id= '" + userId + "'";
+            sql += " where s.user_id= '" + currentUserId + "'";
         }
         List<Map<String, Object>> maps = this.execSql(sql);
         return maps;
@@ -212,39 +205,39 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
         try {
             KhCycle task = new KhCycle();
             String kv = "";
-            if (null == yh.getId()) {
-                yh.setYhfxsj(DateUtil.parseDate(fxtime));
-                yh.setSfdj(0);
-                try {
-                    if (!yh.getStartTower().isEmpty()) {
-                        String startTower = "select longitude,latitude from cm_tower where id = ?";
-                        String endTower = "select longitude,latitude from cm_tower where id = ?";
-                        Map<String, Object> map = execSqlSingleResult(startTower, Long.parseLong(yh.getStartTower()));
-                        Map<String, Object> map1 = execSqlSingleResult(endTower, Long.parseLong(yh.getEndTower()));
-                        //经度
-                        double jd = (Double.parseDouble(map.get("LONGITUDE").toString()) + Double.parseDouble(map1.get("LONGITUDE").toString())) / 2;
-                        double wd = (Double.parseDouble(map.get("LATITUDE").toString()) + Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
-                        double radius = MapUtil.GetDistance(Double.parseDouble(map.get("LONGITUDE").toString()), Double.parseDouble(map.get("LATITUDE").toString()), Double.parseDouble(map1.get("LONGITUDE").toString()), Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
-                        yh.setRadius("150.0");
-                        yh.setJd(map.get("LONGITUDE").toString());
-                        yh.setWd(map.get("LATITUDE").toString());
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
+            yh.setYhfxsj(DateUtil.parseDate(fxtime));
+            yh.setSfdj(1);
+            try {
+                if (!yh.getStartTower().isEmpty()) {
+                    String startTower = "select longitude,latitude from cm_tower where id = ?";
+                    String endTower = "select longitude,latitude from cm_tower where id = ?";
+                    Map<String, Object> map = execSqlSingleResult(startTower, Long.parseLong(yh.getStartTower()));
+                    Map<String, Object> map1 = execSqlSingleResult(endTower, Long.parseLong(yh.getEndTower()));
+                    //经度
+                    double jd = (Double.parseDouble(map.get("LONGITUDE").toString()) + Double.parseDouble(map1.get("LONGITUDE").toString())) / 2;
+                    double wd = (Double.parseDouble(map.get("LATITUDE").toString()) + Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
+                    double radius = MapUtil.GetDistance(Double.parseDouble(map.get("LONGITUDE").toString()), Double.parseDouble(map.get("LATITUDE").toString()), Double.parseDouble(map1.get("LONGITUDE").toString()), Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
+                    yh.setRadius("150.0");
+                    yh.setJd(map.get("LONGITUDE").toString());
+                    yh.setWd(map.get("LATITUDE").toString());
                 }
-
-                task.setId();
-                kv = yh.getVtype();
-                if (yh.getVtype().contains("kV")) {
-                    kv = kv.substring(0, kv.indexOf("k"));
-                }
-                yh.setTaskId(task.getId());
-                yh.setYhzt(0);//隐患未消除
-                yh.setId(0L);
-                yh.setCreateTime(DateUtil.dateNow());
-                yh.setSection(startTowerName + "-" + endTowerName);
-                yhservice.add(yh);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
+
+            task.setId(0L);
+            kv = yh.getVtype();
+            if (yh.getVtype().contains("kV")) {
+                kv = kv.substring(0, kv.indexOf("k"));
+            }
+            yh.setTaskId(task.getId());
+            yh.setYhzt(0);//隐患未消除
+            if (yh.getId() == null) {
+                yh.setId(0L);
+            }
+            yh.setCreateTime(DateUtil.dateNow());
+            yh.setSection(startTowerName + "-" + endTowerName);
+            yhservice.add(yh);
             String taskName = kv + "-" + yh.getLineName() + " " + yh.getSection() + " 号杆塔看护任务";
             task.setVtype(yh.getVtype());
             task.setLineName(yh.getLineName());
@@ -259,7 +252,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             task.setYhId(yh.getId());
             task.setCreateTime(DateUtil.dateNow());
             this.cycleService.add(task);
-            long id = new SnowflakeIdWorker(2, 4).nextId();
+            long id = new SnowflakeIdWorker(8, 24).nextId();
             this.reposiotry.addCheckSite(id, task.getId(), 0, task.getTaskName(), 0, task.getLineId(), task.getTdywOrgId(), task.getWxOrgId(), task.getYhId());
             if (null != pictureId && !pictureId.equals("")) {
                 String[] split = pictureId.split(",");
@@ -310,12 +303,14 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                 String userId = map.get("userId").toString();
                 String startTime = map.get("planStartTime").toString();
                 String endTime = map.get("planEndTime").toString();
-                site.setId();
+                site.setId(0L);
                 try {
                     String sql = "select c.COMPANYNAME name,c.id id FROM RZTSYSCOMPANY C LEFT JOIN RZTSYSUSER U ON C.ID=U.COMPANYID where U.ID=?";
                     Map<String, Object> map1 = this.execSqlSingleResult(sql, userId);
                     site.setWxOrgId(map1.get("ID").toString());
                     site.setWxOrg(map1.get("NAME").toString());
+                    task.setWxOrgId(map1.get("ID").toString());
+                    task.setWxOrg(map1.get("NAME").toString());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -347,6 +342,8 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                 task.setPlanEndTime(DateUtil.getPlanStartTime(endTime));
                 task.setUserId(userId);
                 task.setCount(1);
+                task.setYwOrgId(site.getTdywOrgId());
+                task.setWxOrgId(site.getWxOrgId());
                 task.setWxOrg(site.getWxOrg());
                 task.setTdywOrg(cycle.getTdywOrg());
                 task.setCreateTime(new Date());
@@ -403,9 +400,9 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
         }
     }
 
-    public void exportNursePlan(HttpServletRequest request, HttpServletResponse response, Object json, String userId) {
+    public void exportNursePlan(HttpServletRequest request, HttpServletResponse response, Object json, String currentUserId) {
         try {
-            List<Map<String, Object>> taskList = this.findAlls(json, userId);
+            List<Map<String, Object>> taskList = this.findAlls(json, currentUserId);
             //this.service.exportExcel(response);
             //String ecxcelModelPath = rootpath + "excelModels"+File.separator+"看护任务导出表.xlsx";
             //InputStream in = new FileInputStream(ecxcelModelPath);
@@ -540,5 +537,11 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static void main(String[] args) {
+        KhYhHistory yh = new KhYhHistory();
+        yh.setId(0l);
+        System.out.println(yh.getId() != null);
     }
 }

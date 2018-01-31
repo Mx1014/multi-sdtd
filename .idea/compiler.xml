@@ -18,6 +18,7 @@
         <module name="nursetask-server" />
         <module name="userCenter" />
         <module name="warning" />
+        <module name="warningmonitor" />
         <module name="xstask-server" />
         <module name="zull" />
       </profile>
@@ -42,6 +43,7 @@
       <module name="sdtd2-task" target="1.8" />
       <module name="userCenter" target="1.8" />
       <module name="warning" target="1.8" />
+      <module name="warningmonitor" target="1.8" />
       <module name="xstask-server" target="1.8" />
       <module name="xstask-server (1)" target="1.8" />
       <module name="zull" target="1.8" />
