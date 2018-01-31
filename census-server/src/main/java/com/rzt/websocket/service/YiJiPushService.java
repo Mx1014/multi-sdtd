@@ -45,7 +45,7 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
                 "      FROM MONITOR_CHECK_EJ\n" +
                 "      WHERE CREATE_TIME > trunc(sysdate) and DEPTID = " + deptId + ") t\n" +
                 "  JOIN rztsysuser tt ON t.USER_ID = tt.id join RZTSYSDEPARTMENT ttt on ttt.id = tt.CLASSNAME group by ttt.DEPTNAME,ttt.deptsort order by ttt.deptsort";
-        if(roletype == 0) {
+        if(1 == 1 /**roletype == 0*/) {
             deptId = "admin";
             module1 = "SELECT\n" +
                     "  tt.DEPTNAME,\n" +
@@ -90,7 +90,7 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
         Integer roletype = Integer.parseInt(session.get("ROLETYPE").toString());
         String deptId;
         String module2;
-        if(roletype == 0) {
+        if(1 == 1 /**roletype == 0*/) {
             deptId = "admin";
             module2 = "select sum(decode(STATUS,1,1,0)) ywc,count(1) total from TIMED_TASK where CREATETIME > trunc(sysdate)";
         } else {
@@ -127,7 +127,7 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
         Integer roletype = Integer.parseInt(session.get("ROLETYPE").toString());
         String deptId;
         String module3;
-        if(roletype == 0) {
+        if(1 == 1 /**roletype == 0*/) {
             deptId = "admin";
             module3 = "SELECT sum(decode(QUESTION_TYPE,1,1,0)) a,sum(decode(QUESTION_TYPE,2,1,0)) b,sum(decode(QUESTION_TYPE,3,1,0)) c,sum(decode(QUESTION_TYPE,4,1,0)) d from CHECK_RESULT";
         } else {
@@ -179,7 +179,7 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
         Integer roletype = Integer.parseInt(session.get("ROLETYPE").toString());
         String deptId = session.get("DEPTID").toString();
         String xSql = " and deptid = " + deptId;
-        if (roletype == 0) {
+        if (1 == 1 /**roletype == 0*/) {
             deptId = "admin";
             xSql = "";
         }
