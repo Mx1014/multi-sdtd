@@ -7,11 +7,13 @@ import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 
 /***
  * @Class DateUtil
@@ -136,8 +138,18 @@ public class DateUtil {
         return DateUtil.parseDate(s).getTime();
     }
 
-    public static void main(String[] args) {
+    public static Date getNextDate(){
+        Date date = new Date();
+        Calendar calendar = new GregorianCalendar();
+        calendar.setTime(date);
+        calendar.add(Calendar.DATE, 1);
+        date = calendar.getTime();
+        System.out.println(date);
+        return date;
+    }
 
+    public static void main(String[] args) {
+        getNextDate();
     }
 
     /**

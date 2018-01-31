@@ -8,12 +8,9 @@ package com.rzt.service;
 
 import com.alibaba.fastjson.JSON;
 import com.netflix.ribbon.proxy.annotation.Http;
-import com.rzt.entity.KhCycle;
-import com.rzt.entity.KhSite;
-import com.rzt.entity.XsSbYh;
+import com.rzt.entity.*;
 import com.rzt.eureka.MonitorService;
 import com.rzt.repository.KhYhHistoryRepository;
-import com.rzt.entity.KhYhHistory;
 import com.rzt.repository.XsSbYhRepository;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DateUtil;
@@ -1042,10 +1039,22 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         return linename1;
     }
 
+    @Autowired
+    private CmTowerUpdateRecordService recordService;
 
-    public WebApiResponse updateTowerById(long id, String lon, String lat) {
+    @Transactional
+    public WebApiResponse updateTowerById(long id, String lon, String lat, String userId, String lineName,String detailId) {
         try {
             this.reposiotry.updateTowerById(id, lon, lat);
+            CmTowerUpdateRecord record = new CmTowerUpdateRecord();
+            record.setId(0l);
+            record.setLat(lat);
+            record.setLon(lon);
+            record.setLineName(lineName);
+            record.setTowerId(id);
+            record.setUserId(userId);
+            record.setDetailId(Long.parseLong(detailId));
+            recordService.reposiotry.save(record);
             return WebApiResponse.success("修改成功");
         } catch (Exception e) {
             e.printStackTrace();
