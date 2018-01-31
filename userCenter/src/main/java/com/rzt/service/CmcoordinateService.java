@@ -96,10 +96,10 @@ public class CmcoordinateService extends CurdService<Cmcoordinate, CmcoordinateR
                     "select USER_ID userid from KH_SITE where LINE_ID in (?1) ) t where t.userid is not null ";
             maps.addAll(this.execSql(sql, lineIds));
         } else {
-            sql = "SELECT DISTINCT userid from (select CM_USER_ID userid from xs_zc_cycle where is_delete = 0 and  LINE_ID in (?) and TD_ORG = ?\n" +
+            sql = "SELECT DISTINCT userid from (select CM_USER_ID userid from xs_zc_cycle where is_delete = 0 and  LINE_ID in (?1) and TD_ORG = ?2\n" +
                     "union all\n" +
-                    "select USER_ID userid from KH_SITE where LINE_ID in (?) and TDYW_ORGID = ?) t where t.userid is not null ";
-            maps.addAll(this.execSql(sql,lineIds,deptId,lineIds,deptId));
+                    "select USER_ID userid from KH_SITE where LINE_ID in (?1) and TDYW_ORGID = ?2) t where t.userid is not null ";
+            maps.addAll(this.execSql(sql,lineIds,deptId));
 
         }
         return maps;
