@@ -66,7 +66,7 @@ public class CmcoordinateService extends CurdService<Cmcoordinate, CmcoordinateR
         if("err".equals(deptId)) {
             throw new Exception();
         } else if("all".equals(deptId)) {
-            sql = "SELECT DISTINCT userid from (select CM_USER_ID userid from xs_zc_cycle where is_delete = 0  LINE_ID = ?\n" +
+            sql = "SELECT DISTINCT userid from (select CM_USER_ID userid from xs_zc_cycle where is_delete = 0 and LINE_ID = ?\n" +
                     "union all\n" +
                     "select USER_ID userid from KH_SITE where LINE_ID = ?) t where t.userid is not null ";
             maps = this.execSql(sql, lineId, lineId);
