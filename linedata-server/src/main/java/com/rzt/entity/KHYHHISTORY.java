@@ -8,13 +8,13 @@ package com.rzt.entity;
 
 import com.rzt.util.excelUtil.ExcelResources;
 import com.rzt.utils.SnowflakeIdWorker;
-import org.hibernate.annotations.GenericGenerator;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.Date;
-import java.util.UUID;
 
 /**
  * 类名称：KhYhHistory
@@ -529,10 +529,10 @@ public class KHYHHISTORY implements Serializable {
 		return this.tdwxOrg;
 	}
 
-	public void setId(Long id) {
-		if (id == null || id == 0) {
-			this.id = new SnowflakeIdWorker(1, 4).nextId();
-		} else {
+	public void setId(Long id){
+		if(id==null||id==0){
+			this.id = SnowflakeIdWorker.getInstance(9,9).nextId();
+		}else{
 			this.id = id;
 		}
 	}

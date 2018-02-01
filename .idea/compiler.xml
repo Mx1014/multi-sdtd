@@ -1,23 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <wildcardResourcePatterns />
     <annotationProcessing>
       <profile name="Maven default annotation processors profile" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="census-server" />
         <module name="eureka-server" />
         <module name="exam-server" />
-        <module name="examserver" />
         <module name="file-server" />
-        <module name="fileserver" />
         <module name="linedata-server" />
         <module name="monitor-server" />
         <module name="nursetask-server" />
         <module name="userCenter" />
-        <module name="warning" />
         <module name="warningmonitor" />
         <module name="xstask-server" />
         <module name="zull" />
@@ -31,18 +26,14 @@
       <module name="eureka-server" target="1.8" />
       <module name="eureka-server (1)" target="1.8" />
       <module name="exam-server" target="1.8" />
-      <module name="examserver" target="1.8" />
       <module name="file-server" target="1.8" />
       <module name="fileserver" target="1.8" />
       <module name="fileserver1" target="1.8" />
-      <module name="getting-server" target="1.8" />
       <module name="linedata-server" target="1.8" />
       <module name="monitor-server" target="1.8" />
-      <module name="multi-sdtd" target="1.8" />
       <module name="nursetask-server" target="1.8" />
       <module name="sdtd2-task" target="1.8" />
       <module name="userCenter" target="1.8" />
-      <module name="warning" target="1.8" />
       <module name="warningmonitor" target="1.8" />
       <module name="xstask-server" target="1.8" />
       <module name="xstask-server (1)" target="1.8" />
