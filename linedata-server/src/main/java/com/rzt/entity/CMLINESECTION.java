@@ -95,7 +95,7 @@ public class CMLINESECTION implements Serializable{
 
 	public void setId(Long id){
 		if(id==null||id==0){
-			this.id = new SnowflakeIdWorker(1,2).nextId();
+			this.id = SnowflakeIdWorker.getInstance(9,3).nextId();
 		}else{
 			this.id = id;
 		}

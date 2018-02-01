@@ -111,7 +111,7 @@ public class AppKhUpdateService extends CurdService<KhTask, AppKhUpdateRepositor
                 this.reposiotry.updateIsDz(taskId, Integer.parseInt(isdw), reason);
             }
             try {
-                if (isdw.equals("1") && userId != null) {
+                if (isdw.equals("0") && userId != null) {
                     warningServer.khWFDW(taskId, userId);
                 }
             } catch (Exception e) {

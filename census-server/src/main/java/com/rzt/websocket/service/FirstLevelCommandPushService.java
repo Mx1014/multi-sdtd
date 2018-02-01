@@ -98,28 +98,28 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
             String xsZxUser = " SELECT count(1) SM " +
                     "FROM (SELECT z.CM_USER_ID " +
                     "      FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID " +
-                    "      WHERE LOGINSTATUS = 1 AND USERDELETE = 1 AND z.PLAN_START_TIME< = sysdate AND z.PLAN_END_TIME >= sysdate " +
+                    "      WHERE z.is_delete = 0 and LOGINSTATUS = 1 AND USERDELETE = 1 AND z.PLAN_START_TIME< = trunc(sysdate+1) AND z.PLAN_END_TIME >= trunc(sysdate) " +
                     "      GROUP BY z.CM_USER_ID) ";
             /**
              * 巡视离线人员
              */
             String xsLxUser = " SELECT count(1) SM  FROM (SELECT z.CM_USER_ID " +
                     "  FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID " +
-                    "  WHERE LOGINSTATUS = 0 AND USERDELETE = 1  AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= sysdate " +
+                    "  WHERE z.is_delete = 0 and LOGINSTATUS = 0 AND USERDELETE = 1  AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate) " +
                     "  GROUP BY z.CM_USER_ID) ";
             /**
              * 看护在线人员
              */
             String khZxUser = " SELECT count(1) SM FROM (SELECT count(u.ID) " +
                     "FROM RZTSYSUSER u LEFT JOIN KH_TASK k ON u.ID = k.USER_ID " +
-                    "WHERE LOGINSTATUS = 1 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= sysdate " +
+                    "WHERE LOGINSTATUS = 1 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate) " +
                     "GROUP BY k.USER_ID) ";
             /**
              * 看护离线人员
              */
             String khLxUser = " SELECT count(1) SM FROM (SELECT count(u.ID) " +
                     "FROM RZTSYSUSER u LEFT JOIN KH_TASK k ON u.ID = k.USER_ID " +
-                    "WHERE LOGINSTATUS = 0 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= sysdate " +
+                    "WHERE LOGINSTATUS = 0 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate) " +
                     "GROUP BY k.USER_ID) ";
 
             /**
@@ -228,19 +228,19 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
              */
             String zcXsWks = "SELECT count(1)  " +
                     "FROM XS_ZC_TASK " +
-                    "WHERE STAUTS = 0 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+                    "WHERE is_delete = 0 and STAUTS = 0 AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
             /**
              * 保电巡视未开始
              */
             String bdXsWks = "SELECT count(1)  " +
                     "FROM XS_TXBD_TASK " +
-                    "WHERE STAUTS = 0 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+                    "WHERE STAUTS = 0 AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
             /**
              * 看护未开始
              */
             String khWks = "SELECT count(1)  " +
                     "FROM KH_TASK " +
-                    "WHERE STATUS = 0 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+                    "WHERE STATUS = 0 AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
             /**
              * 现场稽查未开始
              */
@@ -252,19 +252,19 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
              */
             String zcXsJxz = "SELECT count(1)  " +
                     "FROM XS_ZC_TASK " +
-                    "WHERE STAUTS = 1 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+                    "WHERE is_delete = 0 and STAUTS = 1 AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
             /**
              * 保电巡视进行中
              */
             String bdXsJxz = "SELECT count(1)  " +
                     "FROM XS_TXBD_TASK " +
-                    "WHERE STAUTS = 1 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+                    "WHERE STAUTS = 1 AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
             /**
              * 看护进行中
              */
             String khJxz = "SELECT count(1)  " +
                     "FROM KH_TASK " +
-                    "WHERE STATUS = 1 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+                    "WHERE STATUS = 1 AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
             /**
              * 现场稽查进行中
              */
@@ -276,19 +276,19 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
              */
             String zcXsYwc = "SELECT count(1)  " +
                     "FROM XS_ZC_TASK " +
-                    "WHERE STAUTS = 2 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+                    "WHERE is_delete = 0 and STAUTS = 2 AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
             /**
              * 保电巡视已完成
              */
             String bdXsYwc = "SELECT count(1)  " +
                     "FROM XS_TXBD_TASK " +
-                    "WHERE STAUTS = 2 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+                    "WHERE STAUTS = 2 AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
             /**
              * 看护已完成
              */
             String khYwc = "SELECT count(1)  " +
                     "FROM KH_TASK " +
-                    "WHERE STATUS = 2 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+                    "WHERE STATUS = 2 AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
             /**
              *现场稽查已完成
              */

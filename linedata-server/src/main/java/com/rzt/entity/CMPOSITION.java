@@ -46,10 +46,10 @@ public class CMPOSITION implements Serializable{
     	//字段描述: 表标识
    	 @Column(name = "TABLE_TYPE")
      private String tableType;
-    
+
 	public void setId(Long id){
 		if(id==null||id==0){
-			this.id = new SnowflakeIdWorker(1,2).nextId();
+			this.id = SnowflakeIdWorker.getInstance(9,5).nextId();
 		}else{
 			this.id = id;
 		}
