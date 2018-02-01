@@ -1,21 +1,27 @@
 package com.rzt.controller.appController;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import com.rzt.controller.CurdController;
 import com.rzt.entity.KhTask;
 import com.rzt.entity.KhTaskWpqr;
+import com.rzt.service.KhTaskService;
 import com.rzt.service.app.AppKhTaskService;
 import com.rzt.util.WebApiResponse;
+import com.rzt.utils.Constances;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.geo.Point;
 import org.springframework.data.redis.core.GeoOperations;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.security.Key;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -39,11 +45,6 @@ public class AppKhTaskController extends
         }catch (Exception e){
             return WebApiResponse.erro("数据获取失败");
         }
-    }
-    @GetMapping("/getYbCount.do")
-    @ResponseBody
-    public WebApiResponse getYbCount(String userId){
-        return this.service.getYbCount(userId);
     }
     @GetMapping("/getDbCount.do")
     @ResponseBody
@@ -127,7 +128,7 @@ public class AppKhTaskController extends
     //获取中心点坐标
     @GetMapping("/listYhPoint")
     public List<Map<String,Object>> listYhPoint(String taskId){
-        return this.service.getPoint(Long.parseLong(taskId));
+        return this.service.listYhPoint(Long.parseLong(taskId));
     }
 
     @GetMapping("/listPhone")

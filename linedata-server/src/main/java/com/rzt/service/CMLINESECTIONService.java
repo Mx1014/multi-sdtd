@@ -29,7 +29,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.web.multipart.MultipartFile;
@@ -269,7 +268,7 @@ public class CMLINESECTIONService extends CurdService<CMLINESECTION,CMLINESECTIO
         return jsonObject;
     }
 
-    @Transactional(isolation = Isolation.READ_COMMITTED)
+    @Transactional
     public Map<String,Object> addLineSection(CMLINESECTION cmlinesection) {
         Map<String, Object> map = new HashMap<>();
 
@@ -347,6 +346,15 @@ public class CMLINESECTIONService extends CurdService<CMLINESECTION,CMLINESECTIO
 
             reposiotry.deleteCmLineTower(cmlinesection.getLineId());
 
+            /*TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+                  @Override
+                  public void afterCommit() {
+                      System.out.println("send email after transaction commit...");
+                      addCmLineTower(String.valueOf(cmlinesection.getLineId()));
+
+                  }
+              }
+            );*/
             //reposiotry.addCmLineTower(cmlinesection.getLineId());
             map.put("success",true);
             map.put("lineId",cmlinesection.getLineId());
