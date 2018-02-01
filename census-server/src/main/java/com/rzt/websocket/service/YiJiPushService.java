@@ -457,16 +457,8 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
         Map<Object, Object> returnMap = new HashMap<>();
         returnMap.put("dqsj", DateUtil.getWebsiteDatetime());
         Date yjcreatetime = DateUtil.parseDate(threeDay.get("CREATETIME").toString());
-//        Date ercreatetime = DateUtil.parseDate(towHour.get("CREATETIME").toString());
         returnMap.put("xcsjyj", DateUtil.addDate(yjcreatetime, 72));
         returnMap.put("yjjg", "72小时/次");
-        /*if (ercreatetime.getTime() >= DateUtil.getScheduleTime(timeConfig.get("START_TIME").toString())) {
-            returnMap.put("xcsjej", DateUtil.addDate(ercreatetime, Double.parseDouble(timeConfig.get("DAY_ZQ").toString())));
-            returnMap.put("ejjg", timeConfig.get("DAY_ZQ") + "小时/次");
-        } else if (ercreatetime.getTime() <= DateUtil.getScheduleTime(timeConfig.get("END_TIME").toString())) {
-            returnMap.put("xcsjej", DateUtil.addDate(ercreatetime, Double.parseDouble(timeConfig.get("NIGHT_ZQ").toString())));
-            returnMap.put("ejjg", timeConfig.get("NIGHT_ZQ") + "小时/次");
-        }*/
         message.put("data", returnMap);
         Set<Map.Entry<String, HashMap>> entries = map.entrySet();
         for (Map.Entry<String, HashMap> entry : entries) {
@@ -502,37 +494,4 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
         message.put("data", returnMap);
         wuDServerEndpoint.sendText((Session) session.get("session"), message);
     }
-    /*public void module22() throws Exception {
-        String timed = "select START_TIME,END_TIME,DAY_ZQ,NIGHT_ZQ from TIMED_CONFIG where id = 'TIME_CONFIG'";
-        Map<String, Object> timedMap = this.execSqlSingleResult(timed);
-        int start_time = Integer.parseInt(timedMap.get("START_TIME").toString());
-        int end_time = Integer.parseInt(timedMap.get("END_TIME").toString());
-        int day_zq = Integer.parseInt(timedMap.get("DAY_ZQ").toString());
-        int night_zq = Integer.parseInt(timedMap.get("NIGHT_ZQ").toString());
-        Date date = new Date();
-        Date start = DateUtils.setHours(date, start_time);
-        Calendar calendar = Calendar.getInstance();
-        Date time = calendar.getTime();
-//        if(date.before(start)) {
-//            while(true) {
-//                int hour = start_time;
-//                if(date.after(DateUtils.setHours(date,hour -= night_zq))) {
-//
-//                }
-//            }
-//        } else if(time > time1) {
-//            while() {
-//
-//            }
-//        }
-//        for(int i = start_time;i<=night_zq;i+=day_zq ) {
-//            Date date1 = DateUtils.setHours(date, i);
-//            if() {
-//
-//            }
-//        }
-        String s = timedMap.get("START_TIME").toString();
-
-
-    }*/
 }
