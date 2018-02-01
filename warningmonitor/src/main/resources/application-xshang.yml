@@ -13,7 +13,7 @@ spring:
       password: sdtd27
       driver-class-name: oracle.jdbc.driver.OracleDriver
       minIdle: 10
-      maxActive: 50
+      maxActive: 200
       initialSize: 5
       maxWait: 60000
       timeBetweenEvictionRunsMillis: 3000

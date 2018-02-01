@@ -143,7 +143,7 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
             if(type==1){
                 sql = "SELECT   j.TASK_ID, j.CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,xs.PLAN_START_TIME FROM MONITOR_CHECK_YJ j " +
                         " LEFT JOIN RZTSYSUSER u ON j.USER_ID=u.ID " +
-                        "  LEFT JOIN XS_ZC_TASK xs ON j.TASK_ID=xs.ID where j.STATUS=0 AND j.USER_ID is NOT NULL AND u.USERDELETE=1 and j.TASK_TYPE=" + type;
+                        "  LEFT JOIN XS_ZC_TASK xs ON j.TASK_ID=xs.ID where j.STATUS=0 AND j.USER_ID is NOT NULL AND u.USERDELETE=1  AND xs.IS_DELETE=0  and j.TASK_TYPE=" + type;
             }else if(type==2){
                 //看护的sql
                 sql = "SELECT   j.TASK_ID, j.CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,kh.PLAN_START_TIME FROM MONITOR_CHECK_YJ j " +
@@ -561,11 +561,6 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
     public Object warningType(String taskType) {
         String sql = "";
         sql = "SELECT * FROM WARNING_TYPE WHERE TASK_TYPE=?1";
-       /* if (!StringUtils.isEmpty(taskType) && "1".equals(taskType)) {
-            return execSql(sql, 1);
-        } else if (!StringUtils.isEmpty(taskType) && "2".equals(taskType)) {
-            return execSql(sql, 2);
-        }*/
        if(!StringUtils.isEmpty(taskType)){
            return execSql(sql, taskType);
        }

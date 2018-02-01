@@ -78,6 +78,17 @@ public class Monitorcheckyj implements Serializable{
 	@Column(name = "CHECK_DEPTID")
 	private String checkDeptId;
 
+	@Column(name = "REASON")
+	private String reason;
+
+	public String getReason() {
+		return reason;
+	}
+
+	public void setReason(String reason) {
+		this.reason = reason;
+	}
+
 	public String getCheckUserId() {
 		return checkUserId;
 	}

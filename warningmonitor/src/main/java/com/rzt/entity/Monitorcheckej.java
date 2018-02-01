@@ -80,6 +80,17 @@ public class Monitorcheckej implements Serializable{
 	@Column(name = "ONLINE_TIME")
 	private Date onLineTime;
 
+	@Column(name = "REASON")
+	private String reason;
+
+	public String getReason() {
+		return reason;
+	}
+
+	public void setReason(String reason) {
+		this.reason = reason;
+	}
+
 	public Date getOnLineTime() {
 		return onLineTime;
 	}
