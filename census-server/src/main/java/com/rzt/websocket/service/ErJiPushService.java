@@ -243,7 +243,7 @@ public class ErJiPushService extends CurdService<websocket, websocketRepository>
             Object deptid = session.get("DEPTID");
             Map message = new HashMap<String, Object>();
             message.put("module", 7);
-            String module7 = "select count(1) total from MONITOR_CHECK_YJ where CREATE_TIME > trunc(sysdate) AND DEPTID='" + deptid + "'";
+            String module7 = "select count(1) total from MONITOR_CHECK_YJ where CREATE_TIME > trunc(sysdate) AND DEPTID='" + deptid + "' and status = 0";
             Map<String, Object> map1 = this.execSqlSingleResult(module7);
             message.put("data", map1);
             erJiServerEndpoint.sendText((Session) session.get("session"), message);
