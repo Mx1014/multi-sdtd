@@ -36,4 +36,5 @@ public interface CMLINESECTIONRepository extends JpaRepository<CMLINESECTION,Str
     void updateTowerSort(Long lineId);
 
     void deleteById(Long id);
+
 }
