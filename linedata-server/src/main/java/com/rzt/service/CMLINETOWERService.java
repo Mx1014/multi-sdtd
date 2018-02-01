@@ -49,7 +49,7 @@ public class CMLINETOWERService extends CurdService<CMLINETOWER,CMLINETOWERRepos
                 " left join cm_line l on s.line_id=l.id " +
                 " left join cm_line_tower lt on lt.line_id=l.id " +
                 " left join cm_tower t on lt.tower_id=t.id  " +
-                " where  and to_number(regexp_substr(name,'[0-9]*[0-9]',1)) between to_number(regexp_substr(s.start_sort,'[0-9]*[0-9]',1)) and to_number(regexp_substr(s.end_sort,'[0-9]*[0-9]',1)) " ;
+                " where to_number(regexp_substr(name,'[0-9]*[0-9]',1)) between to_number(regexp_substr(s.start_sort,'[0-9]*[0-9]',1)) and to_number(regexp_substr(s.end_sort,'[0-9]*[0-9]',1)) " ;
         if(StringUtils.isNotEmpty(currentUserId)){
             Map<String, Object> map = userInfoFromRedis(currentUserId);
             Integer roletype = Integer.parseInt(map.get("ROLETYPE").toString());
