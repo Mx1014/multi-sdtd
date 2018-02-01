@@ -155,7 +155,7 @@ public class KhTaskController extends
     //定时任务
     @GetMapping("/createTask")
     @ResponseBody
-    public void createTask(String taskId) {
+    public void createTask() {
         this.service.createTask();
     }
 

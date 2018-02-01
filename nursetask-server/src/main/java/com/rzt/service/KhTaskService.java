@@ -467,6 +467,8 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
 
     public void deleteTaskById(long id) {
         this.reposiotry.deleteTaskById(id);
+        this.reposiotry.deleteYjById(id);
+        this.reposiotry.deleteEjById(id);
     }
 
     public WebApiResponse listTowerPoint(long id) {
