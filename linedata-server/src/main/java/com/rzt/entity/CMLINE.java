@@ -45,10 +45,10 @@ public class CMLINE implements Serializable{
     	//字段描述: 是否删除0未删除 1已删除
    	 @Column(name = "IS_DEL")
      private Integer isDel;
-    
+
 	public void setId(Long id){
 		if(id==null||id==0){
-			this.id = new SnowflakeIdWorker(1,1).nextId();
+			this.id = SnowflakeIdWorker.getInstance(9,2).nextId();
 		}else{
 			this.id = id;
 		}

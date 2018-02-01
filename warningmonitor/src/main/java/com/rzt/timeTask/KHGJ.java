@@ -35,7 +35,7 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
 
     //超期任务
     public void inspectionMissionOverdue() {
-        String sql = " SELECT ID,TASK_NAME,CM_USER_ID,TD_ORG  FROM XS_ZC_TASK  WHERE PLAN_END_TIME BETWEEN trunc(sysdate-1) and trunc(sysdate) AND STAUTS !=2 ";
+        String sql = " SELECT ID,TASK_NAME,CM_USER_ID,TD_ORG  FROM XS_ZC_TASK  WHERE PLAN_END_TIME BETWEEN trunc(sysdate-1) and trunc(sysdate)  AND IS_DELETE=0  AND STAUTS !=2 ";
         List<Map<String, Object>> list = this.execSql(sql);
         for (int i = 0; i < list.size(); i++) {
             Map<String, Object> map = list.get(i);
@@ -75,7 +75,7 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
     //巡视未上线 给定时拉取数据用
     public void XSWSX(){
         String sql="SELECT ID,PLAN_START_TIME,TASK_NAME,CM_USER_ID,PLAN_END_TIME,TD_ORG FROM XS_ZC_TASK " +
-                "WHERE  trunc(PLAN_START_TIME) = trunc(sysdate)  ";
+                "WHERE  trunc(PLAN_START_TIME) = trunc(sysdate)  AND IS_DELETE=0  ";
         List<Map<String, Object>> maps = execSql(sql);
         maps.forEach(map ->{
             Jedis jedis = jedisPool.getResource();
@@ -153,7 +153,7 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
     private Monitorcheckyjservice monitorcheckyj;
     //巡视未按规定时间接任务 定时拉去数据用
     public void XSWJRW(){
-        String sql = "SELECT ID,TD_ORG,PLAN_START_TIME,CM_USER_ID,TASK_NAME FROM XS_ZC_TASK WHERE PLAN_END_TIME >= trunc(SYSDATE) AND PLAN_START_TIME <= trunc(sysdate + 1)  AND (REAL_START_TIME IS NULL OR PLAN_START_TIME<REAL_START_TIME)";
+        String sql = "SELECT ID,TD_ORG,PLAN_START_TIME,CM_USER_ID,TASK_NAME FROM XS_ZC_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate)  AND (REAL_START_TIME IS NULL OR PLAN_START_TIME<REAL_START_TIME)  AND IS_DELETE=0 ";
         List<Map<String, Object>> maps = execSql(sql);
         List<Object> list = new ArrayList<>();
         for (Map<String, Object> map : maps) {
@@ -212,12 +212,31 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
         String sql=" SELECT t.ID,t.USER_ID,t.TASK_NAME,t.PLAN_START_TIME,u.DEPTID FROM CHECK_LIVE_TASK t " +
                 "LEFT JOIN RZTSYSUSER u ON t.USER_ID=u.ID " +
                 "WHERE trunc(t.CREATE_TIME)=trunc(sysdate-1) AND STATUS=3 ";
+        String sql1 = " SELECT t.ID,t.USER_ID,t.TASK_NAME,t.PLAN_START_TIME,u.DEPTID FROM CHECK_LIVE_TASKSB t " +
+                "      LEFT JOIN RZTSYSUSER u ON t.USER_ID=u.ID " +
+                "      WHERE trunc(t.CREATE_TIME)=trunc(sysdate-1) AND STATUS=3";
+        String sql2 = " SELECT t.ID,t.USER_ID,t.TASK_NAME,d.PLAN_START_TIME,u.DEPTID FROM CHECK_LIVE_TASKXS t " +
+                "      LEFT JOIN RZTSYSUSER u ON t.USER_ID=u.ID LEFT JOIN CHECK_LIVE_TASK_DETAILXS d ON d.TASK_ID=t.ID " +
+                "      WHERE trunc(t.CREATE_TIME)=trunc(sysdate-1) AND t.STATUS=3";
         List<Map<String, Object>> maps = execSql(sql);
+        List<Map<String, Object>> maps1 = execSql(sql1);
+        List<Map<String, Object>> maps2 = execSql(sql2);
         for (Map<String, Object> map : maps) {
             resp.saveCheckEj(SnowflakeIdWorker.getInstance(0,0).nextId(),Long.valueOf(map.get("ID").toString()),3,12,map.get("USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString());
             String key = "ONE+" + map.get("ID") + "+3+12+" + map.get("USER_ID") + "+" + map.get("DEPTID") + "+" + map.get("TASK_NAME");
            redisService.setex(key);
         }
+        for (Map<String, Object> map : maps1) {
+            resp.saveCheckEj(SnowflakeIdWorker.getInstance(0,0).nextId(),Long.valueOf(map.get("ID").toString()),3,12,map.get("USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString());
+            String key = "ONE+" + map.get("ID") + "+3+12+" + map.get("USER_ID") + "+" + map.get("DEPTID") + "+" + map.get("TASK_NAME");
+           redisService.setex(key);
+        }
+        for (Map<String, Object> map : maps2) {
+            resp.saveCheckEj(SnowflakeIdWorker.getInstance(0,0).nextId(),Long.valueOf(map.get("ID").toString()),3,12,map.get("USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString());
+            String key = "ONE+" + map.get("ID") + "+3+12+" + map.get("USER_ID") + "+" + map.get("DEPTID") + "+" + map.get("TASK_NAME");
+           redisService.setex(key);
+        }
+
     }
 
     /**
@@ -225,8 +244,16 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
      */
     public void JCWsx(){
         String sql=" SELECT t.ID,t.USER_ID,t.TASK_NAME,t.PLAN_START_TIME,u.DEPTID FROM CHECK_LIVE_TASK t " +
-                "LEFT JOIN RZTSYSUSER u ON t.USER_ID=u.ID " +
-                "WHERE trunc(t.CREATE_TIME)=trunc(sysdate) AND STATUS!=2 ";
+                "   LEFT JOIN RZTSYSUSER u ON t.USER_ID=u.ID " +
+                "  WHERE trunc(t.CREATE_TIME)=trunc(sysdate) AND STATUS!=2 " +
+                "UNION ALL " +
+                " SELECT t.ID,t.USER_ID,t.TASK_NAME,t.PLAN_START_TIME,u.DEPTID FROM CHECK_LIVE_TASKSB t " +
+                "      LEFT JOIN RZTSYSUSER u ON t.USER_ID=u.ID " +
+                "      WHERE trunc(t.CREATE_TIME)=trunc(sysdate) AND STATUS!=2 " +
+                "UNION ALL  " +
+                " SELECT t.ID,t.USER_ID,t.TASK_NAME,d.PLAN_START_TIME,u.DEPTID FROM CHECK_LIVE_TASKXS t " +
+                "      LEFT JOIN RZTSYSUSER u ON t.USER_ID=u.ID LEFT JOIN CHECK_LIVE_TASK_DETAILXS d ON d.TASK_ID=t.ID " +
+                "      WHERE trunc(t.CREATE_TIME)=trunc(sysdate) AND t.STATUS!=2";
         List<Map<String, Object>> maps = execSql(sql);
         maps.forEach(map ->{
             Jedis jedis = jedisPool.getResource();
@@ -252,9 +279,17 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
      * 稽查未到达现场 定时拉取数据用
      */
     public void JCWdxc(){
-        String sql=" SELECT t.ID,t.USER_ID,t.TASK_NAME,t.PLAN_END_TIME,u.DEPTID FROM CHECK_LIVE_TASK t " +
-                "LEFT JOIN RZTSYSUSER u ON t.USER_ID=u.ID " +
-                "WHERE trunc(t.CREATE_TIME)=trunc(sysdate) AND STATUS!=2 ";
+        String sql=" SELECT t.ID,t.USER_ID,t.TASK_NAME,t.PLAN_END_TIME,u.DEPTID FROM CHECK_LIVE_TASK t\n" +
+                " LEFT JOIN RZTSYSUSER u ON t.USER_ID=u.ID\n" +
+                " WHERE trunc(t.CREATE_TIME)=trunc(sysdate) AND STATUS!=2\n" +
+                "UNION ALL\n" +
+                " SELECT t.ID,t.USER_ID,t.TASK_NAME,t.PLAN_END_TIME,u.DEPTID FROM CHECK_LIVE_TASKSB t\n" +
+                "      LEFT JOIN RZTSYSUSER u ON t.USER_ID=u.ID\n" +
+                "      WHERE trunc(t.CREATE_TIME)=trunc(sysdate) AND STATUS!=2\n" +
+                "UNION ALL \n" +
+                " SELECT t.ID,t.USER_ID,t.TASK_NAME,d.PLAN_END_TIME,u.DEPTID FROM CHECK_LIVE_TASKXS t\n" +
+                "      LEFT JOIN RZTSYSUSER u ON t.USER_ID=u.ID LEFT JOIN CHECK_LIVE_TASK_DETAILXS d ON d.TASK_ID=t.ID\n" +
+                "      WHERE trunc(t.CREATE_TIME)=trunc(sysdate) AND t.STATUS!=2 ";
         List<Map<String, Object>> maps = execSql(sql);
         maps.forEach(map ->{
             Jedis jedis = jedisPool.getResource();

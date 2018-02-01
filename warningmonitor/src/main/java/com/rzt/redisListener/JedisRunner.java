@@ -36,7 +36,7 @@ public class JedisRunner implements ApplicationListener<ContextRefreshedEvent> {
                         Jedis jedis= jedisPool.getResource();
                         try {
                             System.out.println("============");
-                            jedis.psubscribe(subscriber , "__keyevent@1__:expired");
+                            //jedis.psubscribe(subscriber , "__keyevent@1__:expired");
                         } catch (Exception e) {
                             e.printStackTrace();
                         }finally {
