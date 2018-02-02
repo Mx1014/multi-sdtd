@@ -100,7 +100,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                                 "    FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
                                 "   LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID LEFT JOIN XS_ZC_TASK xs ON xs.ID = t.TASKID" +
                                 "    WHERE t.CREATETIME >  ( select sysdate - (3 * 24 * 60 * 60 + 60 * 60) / (1 * 24 * 60 * 60)   from  dual)" +
-                                "     AND t.STATUS = 0 AND t.THREEDAY = 0 AND t.TASKTYPE = 1" +
+                                "     AND t.STATUS = 0 AND t.THREEDAY = 1 AND t.TASKTYPE = 1" +
                                 "  UNION ALL" +
                                 "   SELECT DISTINCT t.TASKID," +
                                 "  t.ID," +
@@ -113,7 +113,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                                 "   FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
                                 "  LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID LEFT JOIN KH_TASK kh ON kh.ID = t.TASKID" +
                                 "   WHERE t.CREATETIME >  ( select sysdate - (3 * 24 * 60 * 60 + 60 * 60) / (1 * 24 * 60 * 60)   from  dual)  " +
-                                "   AND t.STATUS = 0 AND t.THREEDAY = 0 AND t.TASKTYPE = 2 ) WHERE 1=1";
+                                "   AND t.STATUS = 0 AND t.THREEDAY = 1 AND t.TASKTYPE = 2 ) WHERE 1=1";
                         break;
                     }case 1 :{//二级单位   显示全部周期为两小时的任务
                         if(null != deptid && !"".equals(deptid)){//当前用户单位信息获取成功，进入流程
