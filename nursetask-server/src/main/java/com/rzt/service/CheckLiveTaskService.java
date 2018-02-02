@@ -95,7 +95,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
             sql += " and trunc(s.CREATE_TIME)=trunc(sysdate) and s.task_type=2 ";
             sql += " AND s.TDYW_ORGID =?";
         }else{
-            sql += " s.task_type=1 and trunc(s.CREATE_TIME)>trunc(sysdate-3) ";
+            sql += " and s.task_type=1 and trunc(s.CREATE_TIME)>trunc(sysdate-3) ";
         }
         return execSqlPage(pageable, sql, params.toArray());
     }
