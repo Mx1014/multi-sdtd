@@ -35,8 +35,8 @@ public class PictureController extends
      * @return
      */
     @GetMapping("/getPictureAndLines")
-    public WebApiResponse getPictureAndLines(String taskId,String TASKTYPE){
-        return service.getPictureAndLines(taskId,TASKTYPE);
+    public WebApiResponse getPictureAndLines(String taskId,String TASKTYPE,String currentUserId){
+        return service.getPictureAndLines(taskId,TASKTYPE,currentUserId);
     }
 
     /**
