@@ -62,7 +62,7 @@ public class MapFanWailiPushService extends CurdService<websocket, websocketRepo
         String deptId = "";
         //1.初始数据权限
         //1.1 根据部门筛选
-        String sql = "select DISTINCT t.USER_ID id from MONITOR_CHECK_EJ t where t.STATUS = 0 and CREATE_TIME > trunc(sysdate)";
+        String sql = "select DISTINCT t.USER_ID id from MONITOR_CHECK_EJ t where t.STATUS = 0 and CREATE_TIME > trunc(sysdate) and t.user_id is not null";
         List<Map<String, Object>> userList = this.execSql(sql);
         Set<String> keys = new HashSet();
         //单位 外协 组织 班组 都走这里
