@@ -70,7 +70,7 @@ public class YiJiServerEndpoint {
         yiJiPushService.module8(sessionId);
         yiJiPushService.module9(sessionId);
         yiJiPushService.module10(sessionId);
-
+        yiJiPushService.module11(sessionId);
     }
 
 

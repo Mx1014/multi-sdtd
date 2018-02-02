@@ -169,4 +169,21 @@ public class DateUtil {
         double hour = diff / nh;
         return  hour;
     }
+    public static Long getScheduleTime(String i) {
+        SimpleDateFormat format = new SimpleDateFormat(FORTER_DATE);
+        String format1 = format.format(new Date());
+        if (Integer.parseInt(i) > 9) {
+            format1 = format1 + " " + i + ":00:00";
+        } else {
+            format1 = format1 + " 0" + i + ":00:00";
+        }
+        return DateUtil.parseDate(format1).getTime();
+    }
+
+    public static final String getNowDate() {
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String cdate = sdf.format(cal.getTime());
+        return cdate;
+    }
 }

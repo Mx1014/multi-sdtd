@@ -98,7 +98,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
             String xsZxUser = " SELECT count(1) SM " +
                     "FROM (SELECT z.CM_USER_ID " +
                     "      FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID " +
-                    "      WHERE z.is_delete = 0 and LOGINSTATUS = 1 AND USERDELETE = 1 AND z.PLAN_START_TIME< = trunc(sysdate+1) AND z.PLAN_END_TIME >= trunc(sysdate) " +
+                    "      WHERE  z.is_delete = 0 and LOGINSTATUS = 1 AND USERDELETE = 1 AND z.PLAN_START_TIME< = sysdate AND z.PLAN_END_TIME >= sysdate " +
                     "      GROUP BY z.CM_USER_ID) ";
             /**
              * 巡视离线人员
@@ -184,7 +184,8 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
             /**
              *未按时开始任务
              */
-            String answertime = "SELECT count(1) as ANSWERTIME  FROM MONITOR_CHECK_EJ WHERE (WARNING_TYPE = 4 OR WARNING_TYPE = 10) AND trunc(CREATE_TIME) = trunc(sysdate)";
+            String answertime = "SELECT sum(ANSWERTIME) ANSWERTIME FROM (SELECT count(1) AS ANSWERTIME FROM MONITOR_CHECK_EJ e   LEFT JOIN KH_TASK t ON e.TASK_ID = t.ID WHERE (e.WARNING_TYPE = 4 OR e.WARNING_TYPE = 10) AND trunc(e.CREATE_TIME) = trunc(sysdate) AND     trunc(t.PLAN_START_TIME) = trunc(sysdate) UNION ALL SELECT count(1) AS ANSWERTIME FROM MONITOR_CHECK_EJ e  LEFT JOIN XS_ZC_TASK t ON e.TASK_ID = t.ID WHERE (e.WARNING_TYPE = 4 OR e.WARNING_TYPE = 10) AND trunc(e.CREATE_TIME) = trunc(sysdate) AND trunc(t.PLAN_START_TIME) = trunc(sysdate))";
+
             /**
              * 超期任务
              */

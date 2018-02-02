@@ -240,6 +240,12 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 		}
 	}
 
+	@ApiOperation(value = "生成稽查看护待派发",notes = "生成稽查看护待派发")
+	@GetMapping("/checkDetailDone")
+	public void generalKhSite(){
+		service.generalKhSite();
+	}
+
 
 
 }

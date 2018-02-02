@@ -3,6 +3,7 @@ package com.rzt.websocket.service;
 import com.rzt.entity.websocket;
 import com.rzt.repository.websocketRepository;
 import com.rzt.service.CurdService;
+import com.rzt.util.DateUtil;
 import com.rzt.websocket.serverendpoint.ErJiServerEndpoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -243,7 +244,7 @@ public class ErJiPushService extends CurdService<websocket, websocketRepository>
             Object deptid = session.get("DEPTID");
             Map message = new HashMap<String, Object>();
             message.put("module", 7);
-            String module7 = "select count(1) total from MONITOR_CHECK_YJ where CREATE_TIME > trunc(sysdate) AND DEPTID='" + deptid + "' and status = 0";
+            String module7 = "select count(1) total from MONITOR_CHECK_YJ where CREATE_TIME > trunc(sysdate) AND DEPTID='" + deptid + "'";
             Map<String, Object> map1 = this.execSqlSingleResult(module7);
             message.put("data", map1);
             erJiServerEndpoint.sendText((Session) session.get("session"), message);
@@ -322,5 +323,61 @@ public class ErJiPushService extends CurdService<websocket, websocketRepository>
             message.put("data", map1);
             erJiServerEndpoint.sendText((Session) session.get("session"), message);
         }
+    }
+
+    @Scheduled(fixedRate = 30000)
+    public void module11() throws Exception {
+        Map<String, HashMap> map = erJiServerEndpoint.sendMsg();
+        if (map.size() == 0) {
+            return;
+        }
+        Map message = new HashMap<String, Object>();
+        message.put("module", 11);
+        String module11 = "select * from TIMED_CONFIG where id LIKE 'TIME_CONFIG'";
+        Map<String, Object> timeConfig = this.execSqlSingleResult(module11);
+        String newTime = "SELECT THREEDAY,CREATETIME FROM (SELECT * FROM TIMED_TASK where THREEDAY=? ORDER BY CREATETIME DESC ) WHERE rownum =1 ";
+        Map<String, Object> towHour = this.execSqlSingleResult(newTime, 0);
+        Map<String, Object> threeDay = this.execSqlSingleResult(newTime, 1);
+        Map<Object, Object> returnMap = new HashMap<>();
+        returnMap.put("dqsj", DateUtil.getWebsiteDatetime());
+        Date ercreatetime = DateUtil.parseDate(towHour.get("CREATETIME").toString());
+        if (ercreatetime.getTime() >= DateUtil.getScheduleTime(timeConfig.get("START_TIME").toString())) {
+            returnMap.put("xcsjyj", DateUtil.addDate(ercreatetime, Double.parseDouble(timeConfig.get("DAY_ZQ").toString())));
+            returnMap.put("yjjg", timeConfig.get("DAY_ZQ") + "小时/次");
+        } else if (ercreatetime.getTime() <= DateUtil.getScheduleTime(timeConfig.get("END_TIME").toString())) {
+            returnMap.put("xcsjyj", DateUtil.addDate(ercreatetime, Double.parseDouble(timeConfig.get("NIGHT_ZQ").toString())));
+            returnMap.put("yjjg", timeConfig.get("NIGHT_ZQ") + "小时/次");
+        }
+        message.put("data", returnMap);
+        Set<Map.Entry<String, HashMap>> entries = map.entrySet();
+        for (Map.Entry<String, HashMap> entry : entries) {
+            String sessionId = entry.getKey();
+            HashMap session = map.get(sessionId);
+            erJiServerEndpoint.sendText((Session) session.get("session"), message);
+        }
+    }
+
+    public void module11(String sessionId) throws Exception {
+        Map<String, HashMap> map = erJiServerEndpoint.sendMsg();
+        HashMap session = map.get(sessionId);
+        Map message = new HashMap<String, Object>();
+        message.put("module", 11);
+        String module11 = "select * from TIMED_CONFIG where id LIKE 'TIME_CONFIG'";
+        Map<String, Object> timeConfig = this.execSqlSingleResult(module11);
+        String newTime = "SELECT THREEDAY,CREATETIME FROM (SELECT * FROM TIMED_TASK where THREEDAY=? ORDER BY CREATETIME DESC ) WHERE rownum =1 ";
+        Map<String, Object> towHour = this.execSqlSingleResult(newTime, 0);
+        Map<String, Object> threeDay = this.execSqlSingleResult(newTime, 1);
+        Map<Object, Object> returnMap = new HashMap<>();
+        returnMap.put("dqsj", DateUtil.getWebsiteDatetime());
+        Date ercreatetime = DateUtil.parseDate(towHour.get("CREATETIME").toString());
+        if (ercreatetime.getTime() >= DateUtil.getScheduleTime(timeConfig.get("START_TIME").toString())) {
+            returnMap.put("xcsjyj", DateUtil.addDate(ercreatetime, Double.parseDouble(timeConfig.get("DAY_ZQ").toString())));
+            returnMap.put("yjjg", timeConfig.get("DAY_ZQ") + "小时/次");
+        } else if (ercreatetime.getTime() <= DateUtil.getScheduleTime(timeConfig.get("END_TIME").toString())) {
+            returnMap.put("xcsjyj", DateUtil.addDate(ercreatetime, Double.parseDouble(timeConfig.get("NIGHT_ZQ").toString())));
+            returnMap.put("yjjg", timeConfig.get("NIGHT_ZQ") + "小时/次");
+        }
+        message.put("data", returnMap);
+        erJiServerEndpoint.sendText((Session) session.get("session"), message);
     }
 }

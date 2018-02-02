@@ -58,7 +58,7 @@ public class Subscriber extends JedisPubSub {
                     LOGGER.error("插入数据失败："+e.getMessage());
                 }
             }else if("ONE".equals(messages[0])){  //表示告警任务过期 插入到一级单位表中
-                if(Integer.parseInt(messages[3])==3 || Integer.parseInt(messages[3])==11){
+                if(messages.length>7){
                     monitorcheckyj.saveCheckYjWdw(messages);
                 }else{
                     monitorcheckyj.saveCheckYj(messages);

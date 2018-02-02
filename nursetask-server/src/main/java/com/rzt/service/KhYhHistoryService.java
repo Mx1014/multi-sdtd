@@ -1053,7 +1053,11 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             record.setLineName(lineName);
             record.setTowerId(id);
             record.setUserId(userId);
-            record.setDetailId(Long.parseLong(detailId));
+            try {
+                record.setDetailId(Long.parseLong(detailId));
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+            }
             record.setCreateTime(DateUtil.dateNow());
             recordService.add(record);
             return WebApiResponse.success("修改成功");
