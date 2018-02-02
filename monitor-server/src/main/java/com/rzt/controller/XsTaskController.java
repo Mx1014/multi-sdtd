@@ -41,7 +41,6 @@ public class XsTaskController extends
      */
     @GetMapping("/getXsTaskAll")
     public WebApiResponse getXsTaskAll(Integer page,Integer size, String taskType,String currentUserId,String userName,String TD,String targetType){
-        service.xsTaskAddAndFindThree();
         return service.getXsTaskAll(page,size,taskType,currentUserId,userName,TD,targetType);
     }
     @GetMapping("/findDeptAuth")
