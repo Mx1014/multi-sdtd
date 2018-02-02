@@ -129,4 +129,16 @@ public class MonitorCheckeJController extends
 		return ejService.GJCLC(currentUserId,taskId,type,warningType,checkInfo,createTime);
 	}
 
+	/**
+	 * 异常监视 告警总览
+	 */
+	@GetMapping("GJZL")
+	public WebApiResponse GJZL( String currentUserId){
+		try {
+			return WebApiResponse.success(ejService.GJZL(currentUserId));
+		}catch (Exception e){
+			return WebApiResponse.erro("巡视告警已处理查询失败"+e.getMessage());
+		}
+	}
+
 }

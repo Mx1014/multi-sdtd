@@ -145,13 +145,13 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
                 if(startDate<currentDate && currentDate<endDate){
                     String key = "";
                     if (taskType==2){
-                        key = "ONE+"+map.get("ID")+"+2+8+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME")+reason;
+                        key = "ONE+"+map.get("ID")+"+2+8+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME")+"+"+reason;
                         resp.saveCheckEjWdw(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(map.get("ID").toString()),2,8,map.get("USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString(),reason);
                     }else if (taskType==1){
-                        key = "ONE+"+map.get("ID")+"+1+2+"+map.get("CM_USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME")+reason;
+                        key = "ONE+"+map.get("ID")+"+1+2+"+map.get("CM_USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME")+"+"+reason;
                         resp.saveCheckEjWdw(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(map.get("ID").toString()),1,2,map.get("CM_USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString(),reason);
                     }else if(taskType==3){
-                        key = "ONE+"+map.get("ID")+"+3+13+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME")+reason;
+                        key = "ONE+"+map.get("ID")+"+3+13+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME")+"+"+reason;
                         resp.saveCheckEjWdw(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(map.get("ID").toString()),3,13,map.get("USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString(),reason);
                     }
                     redisService.setex(key);

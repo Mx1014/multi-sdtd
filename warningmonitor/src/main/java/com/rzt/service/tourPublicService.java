@@ -5,6 +5,8 @@ import com.rzt.repository.Monitorcheckejrepository;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.SnowflakeIdWorker;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import redis.clients.jedis.Jedis;
@@ -13,6 +15,7 @@ import redis.clients.jedis.JedisPool;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 public class tourPublicService extends CurdService<Monitorcheckej, Monitorcheckejrepository> {
@@ -24,6 +27,9 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
 
     @Autowired
     private RedisService redisService;
+
+    @Autowired
+    private RedisTemplate<String,Object> redisTemplate;
 
     /**
      * 巡视人员未到杆塔半径5米范围内
@@ -191,14 +197,21 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
                 if(currentDate<endDate){
                     //主要是删除定时拉取数据，存放在redis中的key
                     String key = "";
-                    if(taskType==2){
+                    /*if(taskType==2){
                         key = "TWO+"+map.get("ID")+"+2+8+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
                     }else if(taskType==1){
                         key = "TWO+"+map.get("ID")+"+1+2+"+map.get("CM_USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
                     }else if(taskType==3){
                         key = "TWO+"+map.get("ID")+"+3+13+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
+                    }*/
+                    if(taskType==2){
+                        key = "TWO+*+2+8+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+*";
+                    }else if(taskType==1){
+                        key = "TWO+*+1+2+"+map.get("CM_USER_ID")+"+"+map.get("DEPTID")+"+*";
+                    }else if(taskType==3){
+                        key = "TWO+*+3+13+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+*";
                     }
-                    jedis.del(key);
+                    removeKey(key);
                    resp.updateOnlineTime(userId,Long.parseLong(map.get("ID").toString()));
                 }
             } catch (Exception e) {
@@ -207,6 +220,23 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
             }finally {
                 jedis.close();
             }
+        }
+    }
+    public void removeKey(String s){
+        //String s = "TWO+*+2+8+*";
+        RedisConnection connection = null;
+        try {
+            connection = redisTemplate.getConnectionFactory().getConnection();
+            connection.select(1);
+            Set<byte[]> keys = connection.keys(s.getBytes());
+            byte[][] ts = keys.toArray(new byte[][]{});
+            if(ts.length > 0) {
+                connection.del(ts);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            connection.close();
         }
     }
 
