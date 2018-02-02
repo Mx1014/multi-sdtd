@@ -699,13 +699,14 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
     @Transactional
     public void checkOff(String id,String picTime,String currentUserId){
         try {
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
-            Date parse = simpleDateFormat.parse(picTime);
-            repository.xsTaskUpdate(id,parse,currentUserId);
+            /*SimpleDateFormat simpleDateFormat = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
+            Date parse = simpleDateFormat.parse(picTime);*/
+            repository.xsTaskUpdate(id);
+            LOGGER.info("任务审核成功");
         }catch (Exception e){
             LOGGER.error("任务审核失败"+e.getMessage());
         }
-        LOGGER.error("任务审核成功");
+
     }
 
 
