@@ -97,11 +97,10 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                                 "   t.TASKNAME," +
                                 "    t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did," +
                                 "  d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE,(SELECT COMPANYNAME FROM RZTSYSCOMPANY WHERE ID = xs.WX_ORG) AS COMPANYNAME" +
-                                "  ,xs.WX_ORG" +
                                 "    FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
                                 "   LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID LEFT JOIN XS_ZC_TASK xs ON xs.ID = t.TASKID" +
                                 "    WHERE t.CREATETIME >  ( select sysdate - (3 * 24 * 60 * 60 + 60 * 60) / (1 * 24 * 60 * 60)   from  dual)" +
-                                "     AND t.STATUS = 0 AND t.THREEDAY = 0 AND t.TASKTYPE = 1" +
+                                "     AND t.STATUS = 0 AND t.THREEDAY = 1 AND t.TASKTYPE = 1" +
                                 "  UNION ALL" +
                                 "   SELECT DISTINCT t.TASKID," +
                                 "  t.ID," +
@@ -109,12 +108,12 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                                 "  t.USER_ID," +
                                 "  t.TASKNAME," +
                                 "  t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did," +
-                                "    d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE,(SELECT COMPANYNAME FROM RZTSYSCOMPANY WHERE ID = kh.WX_ORG) AS COMPANYNAME" +
-                                "  ,kh.WX_ORG" +
+                                "    d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE" +
+                                "  ,kh.WX_ORG  AS COMPANYNAME" +
                                 "   FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
                                 "  LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID LEFT JOIN KH_TASK kh ON kh.ID = t.TASKID" +
                                 "   WHERE t.CREATETIME >  ( select sysdate - (3 * 24 * 60 * 60 + 60 * 60) / (1 * 24 * 60 * 60)   from  dual)  " +
-                                "   AND t.STATUS = 0 AND t.THREEDAY = 0 AND t.TASKTYPE = 2 ) WHERE 1=1";
+                                "   AND t.STATUS = 0 AND t.THREEDAY = 1 AND t.TASKTYPE = 2 ) WHERE 1=1";
                         break;
                     }case 1 :{//二级单位   显示全部周期为两小时的任务
                         if(null != deptid && !"".equals(deptid)){//当前用户单位信息获取成功，进入流程
@@ -126,7 +125,6 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                                     "   t.TASKNAME," +
                                     "    t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did," +
                                     "  d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE,(SELECT COMPANYNAME FROM RZTSYSCOMPANY WHERE ID = xs.WX_ORG) AS COMPANYNAME" +
-                                    "  ,xs.WX_ORG" +
                                     "    FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
                                     "   LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID LEFT JOIN XS_ZC_TASK xs ON xs.ID = t.TASKID" +
                                     "    WHERE t.CREATETIME > ( SELECT max(CREATETIME) -  600   / (1 * 24 * 60 * 60)" +
@@ -138,8 +136,8 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                                     "  t.USER_ID," +
                                     "  t.TASKNAME," +
                                     "  t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as DID," +
-                                    "    d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE,(SELECT COMPANYNAME FROM RZTSYSCOMPANY WHERE ID = kh.WX_ORG) AS COMPANYNAME" +
-                                    "  ,kh.WX_ORG" +
+                                    "    d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE" +
+                                    "  ,kh.WX_ORG  AS COMPANYNAME" +
                                     "   FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
                                     "  LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID LEFT JOIN KH_TASK kh ON kh.ID = t.TASKID" +
                                     "   WHERE t.CREATETIME > ( SELECT max(CREATETIME) -  600   / (1 * 24 * 60 * 60)" +
@@ -160,7 +158,6 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                                     "   t.TASKNAME," +
                                     "    t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did," +
                                     "  d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE,(SELECT COMPANYNAME FROM RZTSYSCOMPANY WHERE ID = xs.WX_ORG) AS COMPANYNAME" +
-                                    "  ,xs.WX_ORG" +
                                     "    FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
                                     "   LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID LEFT JOIN XS_ZC_TASK xs ON xs.ID = t.TASKID" +
                                     "    WHERE t.CREATETIME > ( SELECT max(CREATETIME) -  600   / (1 * 24 * 60 * 60)" +
@@ -172,8 +169,8 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                                     "  t.USER_ID," +
                                     "  t.TASKNAME," +
                                     "  t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did," +
-                                    "    d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE,(SELECT COMPANYNAME FROM RZTSYSCOMPANY WHERE ID = kh.WX_ORG) AS COMPANYNAME" +
-                                    "  ,kh.WX_ORG" +
+                                    "    d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE" +
+                                    "  ,kh.WX_ORG  AS COMPANYNAME" +
                                     "   FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
                                     "  LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID LEFT JOIN KH_TASK kh ON kh.ID = t.TASKID" +
                                     "    WHERE t.CREATETIME > ( SELECT max(CREATETIME) -  600   / (1 * 24 * 60 * 60)" +
@@ -191,20 +188,20 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
             }
         }
         if(taskType!=null && !"".equals(taskType.trim())){// 判断当前任务类型  巡视1   看护2  看护稽查3  巡视稽查4
-            sql+= "  AND t.TASKTYPE = "+taskType;
+            sql+= "  AND TASKTYPE = "+taskType;
         }
 
         //查询责任人
             if(null != userName && !"".equals(userName)){
-            sql += "  AND  t.USER_ID in (SELECT ru.ID from RZTSYSUSER ru WHERE ru.REALNAME LIKE '%"+userName+"%')";
+            sql += "  AND  USER_ID in (SELECT ru.ID from RZTSYSUSER ru WHERE ru.REALNAME LIKE '%"+userName+"%')";
             }
             //通道单位
             if(null != TD && !"".equals(TD)){
-            sql += "  AND  d.ID = '"+TD+"'";
+            sql += "  AND  DID = '"+TD+"'";
             }
             //任务状态
             if(null != targetType && !"".equals(targetType)){
-                sql += "  AND  t.TARGETSTATUS =  "+targetType;
+                sql += "  AND  TARGETSTATUS =  "+targetType;
             }
 
         if(null != sql && !"".equals(sql)){
