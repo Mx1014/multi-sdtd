@@ -188,7 +188,7 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
             message = allMap.get(deptId);
         } else {
             try {
-                /*for (int warningType = 0; warningType <= 4; warningType++) {
+                for (int warningType = 0; warningType <= 5; warningType++) {
                     switch (warningType) {
                         case 0:
                             statusSql.set("(WARNING_TYPE = 4 or WARNING_TYPE = 10)");
@@ -205,29 +205,17 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
                         case 4:
                             statusSql.set("WARNING_TYPE = 7");
                             break;
-                        *//*case 5:
+                        case 5:
                             statusSql.set("WARNING_TYPE = 6");
-                            break;*//*
+                            break;
                     }
                     StringBuffer module_4 = new StringBuffer("select nvl(sum(decode(STATUS,0,1,0)),0) wcl,nvl(sum(decode(STATUS,1,1,0)),0) clz,nvl(sum(decode(STATUS,2,1,0)),0) ycl,count(1) total from MONITOR_CHECK_EJ where " + statusSql + " and CREATE_TIME > trunc(sysdate) ");
                     module_4.append(xSql);
                     Map<String, Object> res = this.execSqlSingleResult(module_4.toString());
                     list.add(res);
-                }*/
-                String sql="select nvl(sum(decode(y.STATUS,0,1,0)),0) wcl,nvl(sum(decode(y.STATUS,1,1,0)),0)\n" +
-                        "  clz,nvl(sum(decode(y.STATUS,2,1,0)),0) ycl,count(1) total,WARNING_TYPE from\n" +
-                        "   MONITOR_CHECK_YJ y JOIN XS_ZC_TASK t ON t.ID=y.TASK_ID\n" +
-                        "where y.WARNING_TYPE IN (1,4,3,5) and y.CREATE_TIME > trunc(sysdate) AND t.IS_DELETE=0\n" +
-                        "GROUP BY WARNING_TYPE\n" +
-                        "UNION ALL\n" +
-                        "select nvl(sum(decode(y.STATUS,0,1,0)),0) wcl,nvl(sum(decode(y.STATUS,1,1,0)),0)\n" +
-                        "  clz,nvl(sum(decode(y.STATUS,2,1,0)),0) ycl,count(1) total,WARNING_TYPE from\n" +
-                        "   MONITOR_CHECK_YJ y JOIN KH_TASK t ON t.ID=y.TASK_ID\n" +
-                        "where y.WARNING_TYPE IN (10,7) and y.CREATE_TIME > trunc(sysdate) AND t.STATUS!=3\n" +
-                        "GROUP BY WARNING_TYPE ";
-                List<Map<String, Object>> maps = execSql(sql);
+                }
                 message.put("module", 4);
-                message.put("data", maps);
+                message.put("data", list);
                 allMap.put(deptId, message);
             } catch (Exception e) {
                 e.printStackTrace();
