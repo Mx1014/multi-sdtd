@@ -21,7 +21,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -382,7 +381,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
      * 每天根据看护点生成待派发的看护稽查
      */
     //@Scheduled(cron = "0/5 * *  * * ? ")
-    @Scheduled(cron = "0 5 0 ? * *")
+//    @Scheduled(cron = "0 5 0 ? * *")
     @Transactional
     public void generalKhSite(){
         //更新check_live_task没完成的状态为超期

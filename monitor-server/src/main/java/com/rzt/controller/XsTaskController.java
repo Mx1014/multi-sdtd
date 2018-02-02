@@ -67,7 +67,7 @@ public class XsTaskController extends
      * @return
      */
     @GetMapping("checkOff")
-    public WebApiResponse checkOff(CheckDetail checkDetail,String timedTaskId,String currentUserId){
+    public WebApiResponse checkOff(CheckDetail checkDetail,String timedTaskId,String currentUserId,String picTime){
         try {
             checkDetail.setCheckUser(currentUserId);
             //根据审核人id和问题任务id查询该条审核记录是否存在
@@ -76,7 +76,7 @@ public class XsTaskController extends
                  detailService.addCheckDetail(checkDetail);
             }
 
-            service.checkOff(timedTaskId);
+            service.checkOff(timedTaskId,picTime,currentUserId);
             return WebApiResponse.success("success");
         }catch (Exception e){
             return WebApiResponse.erro("更改状态失败："+e.getMessage());

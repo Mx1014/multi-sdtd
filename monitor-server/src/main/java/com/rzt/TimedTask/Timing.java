@@ -89,8 +89,8 @@ public class Timing  extends
 
     /**
      * 一级单位数据抓取
-     * 每1天刷新一次
-     * 3点刷新
+     * 每3天刷新一次
+     * 0点刷新
      */
     @Scheduled(cron="0 0 0 0/3 * ? ")
     private void threeDayScheduledTask(){
