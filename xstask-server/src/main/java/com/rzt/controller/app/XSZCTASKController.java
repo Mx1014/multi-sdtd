@@ -174,6 +174,17 @@ public class XSZCTASKController extends
         }
     }
 
+    @GetMapping("getImgsByExecId")
+    @ApiOperation(value = "巡视已办", notes = "execId")
+//    @DataEncode(includes = {"ID","TOWER_NAME"})
+    public Object getImgsByExecId(String execId) {
+        try {
+            return this.service.getImgsByExecId(execId);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("数据库请求失败" + e.getMessage());
+        }
+    }
 
     @GetMapping("shangbaoYh")
     @ApiOperation(value = "上报隐患", notes = "上报隐患")
@@ -185,6 +196,5 @@ public class XSZCTASKController extends
             return WebApiResponse.erro("数据库请求失败" + e.getMessage());
         }
     }
-
 
 }

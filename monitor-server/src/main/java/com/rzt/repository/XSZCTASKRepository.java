@@ -18,8 +18,8 @@ public interface XSZCTASKRepository extends JpaRepository<TimedTask, String> {
 
 
     @Modifying
-    @Query(value = "update TIMED_TASK SET STATUS = 1 WHERE ID = ?1", nativeQuery = true)
-    int xsTaskUpdate(String ID);
+    @Query(value = "update TIMED_TASK SET STATUS = 1 , PIC_TIME = ?2 , CHECK_USER_ID = ?3 WHERE ID = ?1", nativeQuery = true)
+    int xsTaskUpdate(String ID,Date picTime,String currentUserId);
 
 
 }

@@ -31,6 +31,7 @@ public class DateUtil {
     private static Logger log = Logger.getLogger(DateUtil.class);
     private static final FastDateFormat SDF = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss");
     private static final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static final SimpleDateFormat formatter1 = new SimpleDateFormat("yyyy-MM-dd");
     private static String partterns[] = new String[5];
 
     static {
@@ -123,6 +124,14 @@ public class DateUtil {
         date = cal.getTime();
         // return format.format(date);
         return date;
+    }
+
+    /**
+     * 获取到天
+     * @return
+     */
+    public static String dateFormatToDay(Date date) {
+        return formatter1.format(date);
     }
 
     public static void main(String[] args) {
