@@ -10,6 +10,7 @@ import com.rzt.controller.CurdController;
 import com.rzt.entity.app.XSZCTASK;
 import com.rzt.entity.pc.XsZcCycle;
 import com.rzt.entity.sch.XsTaskSCh;
+import com.rzt.service.ScheduledTaskService;
 import com.rzt.service.app.XSZCTASKService;
 import com.rzt.service.pc.XsZcCycleService;
 import com.rzt.util.WebApiResponse;
@@ -40,6 +41,9 @@ import java.util.Date;
 @RequestMapping("XsZcCycle")
 public class XsZcCycleController extends
 		CurdController<XsZcCycle, XsZcCycleService> {
+
+	@Autowired
+	private ScheduledTaskService scheduledTaskService;
 
 	@Autowired
 	private XSZCTASKService xszctaskService;
@@ -310,7 +314,10 @@ public class XsZcCycleController extends
 		}
 	}
 
-
+	@GetMapping("autoInsertTourTask")
+	public void autoInsertTourTask(String sql,Long xsZcCycleId) {
+		scheduledTaskService.autoInsertTourTask();
+	}
 
 	@InitBinder
 	public void initBinder(ServletRequestDataBinder binder) {
