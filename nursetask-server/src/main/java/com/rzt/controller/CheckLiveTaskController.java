@@ -70,6 +70,7 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 			this.service.paifaKhCheckTask(task,username);
 			return WebApiResponse.success("任务派发成功");
 		}catch (Exception e){
+			LOGGER.error("任务派发失败",e);
 			return WebApiResponse.erro("任务派发失败");
 		}
 
@@ -241,7 +242,7 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 	}
 
 	@ApiOperation(value = "生成稽查看护待派发",notes = "生成稽查看护待派发")
-	@GetMapping("/checkDetailDone")
+	@GetMapping("/generalKhSite")
 	public void generalKhSite(){
 		service.generalKhSite();
 	}
