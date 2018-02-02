@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 
+import javax.annotation.Resource;
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
@@ -24,6 +25,11 @@ public class ErJiServerEndpoint {
     public void setRedisTemplate(RedisTemplate<String, Object> redisTemplate) {
         ErJiServerEndpoint.redisTemplate = redisTemplate;
     }
+    @Resource
+    public void setErJiPushService(ErJiPushService erJiPushService) {
+        ErJiServerEndpoint.erJiPushService = erJiPushService;
+    }
+
 
     /**
      * WebSocket服务器端通过一个线程安全的队列来保持所有客户端的Session

@@ -244,7 +244,7 @@ public class ErJiPushService extends CurdService<websocket, websocketRepository>
             Object deptid = session.get("DEPTID");
             Map message = new HashMap<String, Object>();
             message.put("module", 7);
-            String module7 = "select count(1) total from MONITOR_CHECK_YJ where CREATE_TIME > trunc(sysdate) AND DEPTID='" + deptid + "'";
+            String module7 = "select count(1) total from MONITOR_CHECK_ej where CREATE_TIME >= trunc(sysdate) AND DEPTID='" + deptid + "' and status = 0";
             Map<String, Object> map1 = this.execSqlSingleResult(module7);
             message.put("data", map1);
             erJiServerEndpoint.sendText((Session) session.get("session"), message);
@@ -285,8 +285,44 @@ public class ErJiPushService extends CurdService<websocket, websocketRepository>
             Object deptid = session.get("DEPTID");
             Map message = new HashMap<String, Object>();
             message.put("module", 9);
-            String module9 = "select sum(decode(WARNING_TYPE,5,1,0)) xsgj,sum(decode(WARNING_TYPE,7,1,0)) khgj,0 xcjc,0 yhgj  from MONITOR_CHECK_EJ WHERE DEPTID='" + deptid + "'";
+//            String module9 = "select nvl(sum(decode(WARNING_TYPE,5,1,0)),0) xsgj,nvl(sum(decode(WARNING_TYPE,7,1,0)),0) khgj,0 xcjc,0 yhgj  from MONITOR_CHECK_EJ WHERE DEPTID='" + deptid + "'";
+//            Map<String, Object> map1 = this.execSqlSingleResult(module9);
+            String module9 = "SELECT\n" +
+                    "  nvl(sum(decode(tt.TASK_TYPE, 1, 1, 0)),0) xsgj,\n" +
+                    "  nvl(sum(decode(tt.TASK_TYPE, 2, 1, 0)),0) khgj,\n" +
+                    "  nvl(sum(decode(tt.TASK_TYPE, 3, 1, 0)),0) xcjc,\n" +
+                    "  0                             yhgj\n" +
+                    "FROM MONITOR_CHECK_EJ tt where CREATE_TIME >= trunc(sysdate) and STATUS = 0 and deptid = '"+ deptid +"'";
             Map<String, Object> map1 = this.execSqlSingleResult(module9);
+            String module9Detail = "SELECT t.*,tt.DESCRIPTION from (SELECT\n" +
+                    "  t.WARNING_TYPE,\n" +
+                    "  t.REASON,\n" +
+                    "  t.TASK_NAME,\n" +
+                    "  t.USER_ID,\n" +
+                    "  t.TASK_TYPE\n" +
+                    "FROM MONITOR_CHECK_EJ t\n" +
+                    "WHERE t.id = (SELECT max(tt.ID)\n" +
+                    "              FROM MONITOR_CHECK_EJ tt\n" +
+                    "              WHERE tt.TASK_TYPE = t.TASK_TYPE AND tt.STATUS = 0 AND tt.CREATE_TIME >= trunc(sysdate) and deptid = '"+ deptid +"')) t join WARNING_TYPE tt on t.WARNING_TYPE = tt.WARNING_TYPE ";
+            List<Map<String, Object>> detail = this.execSql(module9Detail);
+            for (Map<String,Object> obj1:detail) {
+                try {
+
+
+                    Integer task_type = Integer.parseInt(obj1.get("TASK_TYPE").toString());
+                    Object description = obj1.get("DESCRIPTION");
+                    if(task_type == 1) {
+                        map1.put("xsgjDetail", description);
+                    } else if(task_type == 2) {
+                        map1.put("khgjDetail", description);
+                    } else if(task_type == 3) {
+                        map1.put("xcjcDetail", description);
+                    }
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                    continue;
+                }
+            }
             message.put("data", map1);
             erJiServerEndpoint.sendText((Session) session.get("session"), message);
         }
