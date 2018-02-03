@@ -21,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -118,7 +119,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
         return jsonObject;
     }
     //看护已派发稽查任务
-    public Page<Map<String,Object>> listKhCheckTaskPage(Pageable pageable, String userId, String tddwId,String currentUserId,String startTime,String endTime,String status) {
+    public Page<Map<String,Object>> listKhCheckTaskPage(Pageable pageable, String userId, String tddwId,String currentUserId,String startTime,String endTime,String status,String queryAll) {
 
         String sql = "select t.id,t.TASK_ID,t.CREATE_TIME,t.TASK_NAME,t.PLAN_START_TIME,t.PLAN_END_TIME,u.REALNAME,d.DEPTNAME, " +
                 "  t.status , t.TASK_TYPE " +
@@ -167,14 +168,17 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
             }
 
         }
-        //通道单位查询
-        if (!StringUtils.isEmpty(tddwId)) {
-            params.add(tddwId);
-            sql += " and t.CHECK_TYPE=2 ";
-            sql += " AND d.ID =?";
-        }else{
-            sql += " and t.CHECK_TYPE=1 ";
+        if(!"queryAll".equals(queryAll)){
+            //通道单位查询
+            if (!StringUtils.isEmpty(tddwId)) {
+                params.add(tddwId);
+                sql += " and t.CHECK_TYPE=2 ";
+                sql += " AND d.ID =?";
+            }else{
+                sql += " and t.CHECK_TYPE=1 ";
+            }
         }
+
         return execSqlPage(pageable, sql, params.toArray());
     }
     public Map<String, Object> khTaskDetail(String taskId) throws Exception {
@@ -420,7 +424,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
      * 每天根据看护点生成待派发的看护稽查
      */
     //@Scheduled(cron = "0/5 * *  * * ? ")
-//    @Scheduled(cron = "0 5 0 ? * *")
+    @Scheduled(cron = "0 5 0 ? * *")
     @Transactional
     public void generalKhSite(){
         //更新check_live_task,plan_end_time为昨天的没完成的状态为超期
