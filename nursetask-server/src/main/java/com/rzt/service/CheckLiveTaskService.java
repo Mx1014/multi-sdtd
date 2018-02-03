@@ -185,8 +185,34 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
     }
 
     @Transactional
-    public void paifaKhCheckTask(CheckLiveTask task , String username) throws Exception {
+    public void paifaKhCheckTask(CheckLiveTask task , String username,String currentUserId) throws Exception {
 
+        if(!StringUtils.isEmpty(currentUserId)){
+            Map<String, Object> map = userInfoFromRedis(currentUserId);
+            Integer roletype = Integer.parseInt(map.get("ROLETYPE").toString());
+            String deptid  = map.get("DEPTID").toString();
+            switch (roletype) {
+                case 0:
+                    task.setCheckType(1); //1一级单位 2二级单位
+                    break;
+                case 1:
+                    task.setCheckType(2); //1一级单位 2二级单位
+                    break;
+                case 2:
+                    task.setCheckType(2); //1一级单位 2二级单位
+                    break;
+                case 3:
+                    //外协角色
+                    break;
+                case 4:
+                    //班组角色
+                    break;
+                case 5:
+                    //个人角色
+                    break;
+            }
+
+        }
         task.setId(null);
         task.setCreateTime(new Date());
         task.setStatus(0);//任务派发状态  0未接单 1进行中 2已完成 3超期
