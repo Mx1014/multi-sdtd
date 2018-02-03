@@ -454,6 +454,18 @@ public class PcMapShowController {
         }
     }
 
+    @GetMapping("getGuZhang")
+    public Object getGuZhang() {
+        try {
+            String sql = "select t.*,tt.TOWER_NAME,ttt.LONGITUDE,ttt.LATITUDE from GUZHANG t join CM_LINE_TOWER tt on t.LINE_ID = tt.LINE_ID and t.GZ_TOWER is not NULL and tt.TOWER_NAME = substr(t.GZ_TOWER,0,instr(GZ_TOWER,'#',1,1)-1) join cm_tower ttt on ttt.id = tt.TOWER_ID";
+            List<Map<String, Object>> maps = cmcoordinateService.execSql(sql);
+            return WebApiResponse.success(maps);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro(e.getMessage());
+        }
+
+    }
 
     /***
      * @Method flushMenInDept
