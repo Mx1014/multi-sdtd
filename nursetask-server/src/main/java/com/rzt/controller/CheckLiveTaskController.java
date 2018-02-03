@@ -65,11 +65,12 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 
 	@ApiOperation(value = "看护稽查任务派发",notes = "看护稽查任务派发")
 	@GetMapping("/paifaKhCheckTask")
-	public WebApiResponse paifaKhCheckTask(CheckLiveTask task , String username){
+	public WebApiResponse paifaKhCheckTask(CheckLiveTask task , String username,String currentUserId){
 		try {
-			this.service.paifaKhCheckTask(task,username);
+			this.service.paifaKhCheckTask(task,username,currentUserId);
 			return WebApiResponse.success("任务派发成功");
 		}catch (Exception e){
+			LOGGER.error("任务派发失败",e);
 			return WebApiResponse.erro("任务派发失败");
 		}
 
@@ -238,6 +239,12 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 			LOGGER.error("稽查任务更新失败",e);
 			return WebApiResponse.erro("稽查任务更新失败");
 		}
+	}
+
+	@ApiOperation(value = "生成稽查看护待派发",notes = "生成稽查看护待派发")
+	@GetMapping("/generalKhSite")
+	public void generalKhSite(){
+		service.generalKhSite();
 	}
 
 

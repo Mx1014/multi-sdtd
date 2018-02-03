@@ -28,12 +28,21 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.web.context.ContextLoader;
+import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -60,6 +69,12 @@ public class CMLINESECTIONService extends CurdService<CMLINESECTION,CMLINESECTIO
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+
+    /**
+     * JpaTransactionManager事务管理 .
+     */
+    @Resource(name = "transactionManagerPrimary")
+    JpaTransactionManager tm;
 
     public WebApiResponse getLineInfoByOrg(Pageable pageable, String tdOrg, String kv, String lineId,String currentUserId) {
         List<String> list = new ArrayList<>();
@@ -269,7 +284,7 @@ public class CMLINESECTIONService extends CurdService<CMLINESECTION,CMLINESECTIO
         return jsonObject;
     }
 
-    @Transactional(isolation = Isolation.READ_COMMITTED)
+    @Transactional
     public Map<String,Object> addLineSection(CMLINESECTION cmlinesection) {
         Map<String, Object> map = new HashMap<>();
 
@@ -347,6 +362,13 @@ public class CMLINESECTIONService extends CurdService<CMLINESECTION,CMLINESECTIO
 
             reposiotry.deleteCmLineTower(cmlinesection.getLineId());
 
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+                  @Override
+                  public void afterCommit() {
+                        addCmLineTower(String.valueOf(cmlinesection.getLineId()));
+                  }
+              }
+            );
             //reposiotry.addCmLineTower(cmlinesection.getLineId());
             map.put("success",true);
             map.put("lineId",cmlinesection.getLineId());
@@ -357,10 +379,28 @@ public class CMLINESECTIONService extends CurdService<CMLINESECTION,CMLINESECTIO
         return map;
     }
 
-    @Transactional
     public void addCmLineTower(String lineId) {
-        reposiotry.addCmLineTower(Long.valueOf(lineId));
-        reposiotry.updateTowerSort(Long.valueOf(lineId));
+        //事务开始
+        DefaultTransactionDefinition def = new DefaultTransactionDefinition();
+        def.setReadOnly(false);
+        def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        def.setTimeout(30);
+//事务状态
+        TransactionStatus status = tm.getTransaction(def);
+        try {
+            //此处写持久层逻辑
+            reposiotry.addCmLineTower(Long.valueOf(lineId));
+            reposiotry.updateTowerSort(Long.valueOf(lineId));
+            tm.commit(status);
+        } catch (Exception e) {
+            LOGGER.error("出现异常，事务回滚", e);
+            if(!status.isCompleted()){
+                tm.rollback(status);
+            }
+        }
+
+
+
     }
 
     @Transactional

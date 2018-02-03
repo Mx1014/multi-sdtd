@@ -13,6 +13,7 @@ import com.rzt.entity.KhYhHistory;
 import com.rzt.entity.XsSbYh;
 import com.rzt.service.KhYhHistoryService;
 import com.rzt.util.WebApiResponse;
+import com.rzt.utils.DateUtil;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.HashOperations;
@@ -24,6 +25,8 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -135,8 +138,8 @@ public class KhYhHistoryController extends
 
     @ApiOperation(value = "杆塔坐标采集", notes = "杆塔坐标采集")
     @GetMapping("updateTowerById")
-    public WebApiResponse updateTowerById(long id, String lon, String lat) {
-        return this.service.updateTowerById(id, lon, lat);
+    public WebApiResponse updateTowerById(long id, String lon, String lat,String userId, String lineName,String detailId) {
+        return this.service.updateTowerById(id, lon, lat,userId,lineName,detailId);
     }
 
     @ApiOperation(value = "判断线路是否属于通州公司、门头沟公司", notes = "隐患台账删除")
@@ -171,9 +174,35 @@ public class KhYhHistoryController extends
             e.printStackTrace();
         }
     }
-    @ApiOperation(value = "隐患台账图片展示", notes = "隐患台账图片展示")
+    /*@ApiOperation(value = "隐患台账图片展示", notes = "隐患台账图片展示")
     @GetMapping("addadd")
-    public void addadd() {
-        this.service.list();
-    }
+    public Map addadd() {
+        try {
+            Map message = new HashMap<String, Object>();
+            message.put("module", 11);
+            String module11 = "select * from TIMED_CONFIG where id LIKE 'TIME_CONFIG'";
+            Map<String, Object> timeConfig = this.service.execSqlSingleResult(module11);
+            String newTime = "SELECT THREEDAY,CREATETIME FROM (SELECT * FROM TIMED_TASK where THREEDAY=? ORDER BY CREATETIME DESC ) WHERE rownum =1 ";
+            Map<String, Object> towHour = this.service.execSqlSingleResult(newTime, 0);
+            Map<String, Object> threeDay = this.service.execSqlSingleResult(newTime, 1);
+            Map<Object, Object> returnMap = new HashMap<>();
+            returnMap.put("dqsj",DateUtil.getNowDate());
+            Date yjcreatetime = DateUtil.parseDate(towHour.get("CREATETIME").toString());
+            Date ercreatetime = DateUtil.parseDate(towHour.get("CREATETIME").toString());
+            returnMap.put("xcsjyj",DateUtil.addDate(yjcreatetime,72));
+            returnMap.put("yjjg","72小时/次");
+            if (ercreatetime.getTime()>= DateUtil.getScheduleTime(timeConfig.get("START_TIME").toString())) {
+                returnMap.put("xcsjej",DateUtil.addDate(ercreatetime,Double.parseDouble(timeConfig.get("DAY_ZQ").toString())));
+                returnMap.put("ejjg",timeConfig.get("DAY_ZQ")+"小时/次");
+            }else if(ercreatetime.getTime() <=DateUtil.getScheduleTime(timeConfig.get("END_TIME").toString())){
+                returnMap.put("xcsjej",DateUtil.addDate(ercreatetime,Double.parseDouble(timeConfig.get("NIGHT_ZQ").toString())));
+                returnMap.put("ejjg",timeConfig.get("NIGHT_ZQ")+"小时/次");
+            }
+            message.put("data", returnMap);
+            return message;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new HashMap();
+        }
+    }*/
 }

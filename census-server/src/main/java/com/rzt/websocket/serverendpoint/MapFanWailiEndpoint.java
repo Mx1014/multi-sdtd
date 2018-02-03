@@ -1,7 +1,7 @@
 package com.rzt.websocket.serverendpoint;
 
 import com.alibaba.fastjson.JSONObject;
-import com.rzt.websocket.service.YiJiPushService;
+import com.rzt.websocket.service.MapFanWailiPushService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -24,19 +24,19 @@ import java.util.concurrent.ConcurrentHashMap;
  * 告警情况展示
  */
 @Component
-@ServerEndpoint("/serverendpoint/wuDServerEndpoint/{userId}")
-public class YiJiServerEndpoint {
+@ServerEndpoint("/serverendpoint/mapFanWaili/{userId}")
+public class MapFanWailiEndpoint {
 
     static RedisTemplate<String,Object> redisTemplate;
-    private static YiJiPushService yiJiPushService;
+    private static MapFanWailiPushService mapFanWailiPushService;
 
     @Autowired
     public void setRedisTemplate(RedisTemplate<String,Object> redisTemplate) {
-        YiJiServerEndpoint.redisTemplate = redisTemplate;
+        MapFanWailiEndpoint.redisTemplate = redisTemplate;
     }
     @Resource
-    public void setWuDPushService(YiJiPushService wuDPushService) {
-        YiJiServerEndpoint.yiJiPushService = wuDPushService;
+    public void setWuDPushService(MapFanWailiPushService mapFanWailiPushService) {
+        MapFanWailiEndpoint.mapFanWailiPushService = mapFanWailiPushService;
     }
     /**
      * WebSocket服务器端通过一个线程安全的队列来保持所有客户端的Session
@@ -60,19 +60,7 @@ public class YiJiServerEndpoint {
         String sessionId = session.getId();
         livingSessions.put(sessionId, jsonObject);
         //tui - tui - tui
-        yiJiPushService.module1Method(new HashMap<>(),jsonObject);
-        yiJiPushService.module2Method(new HashMap<>(),jsonObject);
-        yiJiPushService.module3Method(new HashMap<>(),jsonObject);
-        yiJiPushService.module4Method(new HashMap<>(),jsonObject);
-        yiJiPushService.module5(sessionId);
-        yiJiPushService.module6(sessionId);
-        yiJiPushService.module7(sessionId);
-        yiJiPushService.module8(sessionId);
-        yiJiPushService.module9(sessionId);
-        yiJiPushService.module10(sessionId);
-
-
-
+        mapFanWailiPushService.mapshow(new HashMap<>(),jsonObject);
     }
 
 

@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.lang.reflect.Array;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -88,38 +89,60 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
             if(null != roletype && !"".equals(roletype)){//证明当前用户信息正常
                 int i = Integer.parseInt(roletype);
                 switch (i){
-                    case 0 :{//一级单位   显示三天周期抽查的任务
-                         /*sql = " SELECT    TASKID," +
-                                 "  ID," +
-                                 "  CREATETIME," +
-                                 "  USER_ID," +
-                                 "  TASKNAME," +
-                                 "  TASKTYPE,CHECKSTATUS ,TARGETSTATUS" +
-                                 "   FROM TIMED_TASK" +*/
-                          sql = " SELECT  DISTINCT t.TASKID," +
-                                "    t.ID," +
-                                "    t.CREATETIME," +
-                                "    t.USER_ID," +
-                                "    t.TASKNAME," +
-                                "     t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did" +
-                                "     FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
-                                "    LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID" +
-                                 "   WHERE t.CREATETIME > ( select sysdate - (3 * 24 * 60 * 60 + 60 * 60) / (1 * 24 * 60 * 60)   from  dual)" +
-                                 "         AND t.STATUS = 0 AND t.THREEDAY = 1  ";
+                    case 0 :{//一级单位   显示三天周期抽查的任务   ( select sysdate - (3 * 24 * 60 * 60 + 60 * 60) / (1 * 24 * 60 * 60)   from  dual)
+
+                        sql = "  SELECT * FROM (  SELECT DISTINCT t.TASKID," +
+                                "   t.ID," +
+                                "   t.CREATETIME," +
+                                "   t.USER_ID," +
+                                "   t.TASKNAME," +
+                                "    t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did," +
+                                "  d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE,(SELECT COMPANYNAME FROM RZTSYSCOMPANY WHERE ID = xs.WX_ORG) AS COMPANYNAME" +
+                                "    FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
+                                "   LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID LEFT JOIN XS_ZC_TASK xs ON xs.ID = t.TASKID" +
+                                "    WHERE t.CREATETIME >  ( select sysdate - (3 * 24 * 60 * 60 + 60 * 60) / (1 * 24 * 60 * 60)   from  dual)" +
+                                "     AND t.STATUS = 0 AND t.THREEDAY = 1 AND t.TASKTYPE = 1" +
+                                "  UNION ALL" +
+                                "   SELECT DISTINCT t.TASKID," +
+                                "  t.ID," +
+                                "  t.CREATETIME," +
+                                "  t.USER_ID," +
+                                "  t.TASKNAME," +
+                                "  t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did," +
+                                "    d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE" +
+                                "  ,kh.WX_ORG  AS COMPANYNAME" +
+                                "   FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
+                                "  LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID LEFT JOIN KH_TASK kh ON kh.ID = t.TASKID" +
+                                "   WHERE t.CREATETIME >  ( select sysdate - (3 * 24 * 60 * 60 + 60 * 60) / (1 * 24 * 60 * 60)   from  dual)  " +
+                                "   AND t.STATUS = 0 AND t.THREEDAY = 1 AND t.TASKTYPE = 2 ) WHERE 1=1";
                         break;
                     }case 1 :{//二级单位   显示全部周期为两小时的任务
                         if(null != deptid && !"".equals(deptid)){//当前用户单位信息获取成功，进入流程
                             list.add(deptid);
-                            sql = " SELECT  DISTINCT t.TASKID," +
-                                    "    t.ID," +
-                                    "    t.CREATETIME," +
-                                    "    t.USER_ID," +
-                                    "    t.TASKNAME," +
-                                    "     t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did" +
-                                    "     FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
-                                    "    LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID" +
-                                    "     WHERE t.CREATETIME > ( SELECT max(CREATETIME) -  600   / (1 * 24 * 60 * 60)    " +
-                                    "    FROM TIMED_TASK  WHERE THREEDAY = 0 )     AND t.STATUS = 0 AND t.THREEDAY = 0  AND d.ID  = ?"+list.size();
+                            sql = "  SELECT * FROM (  SELECT DISTINCT t.TASKID," +
+                                    "   t.ID," +
+                                    "   t.CREATETIME," +
+                                    "   t.USER_ID," +
+                                    "   t.TASKNAME," +
+                                    "    t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did," +
+                                    "  d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE,(SELECT COMPANYNAME FROM RZTSYSCOMPANY WHERE ID = xs.WX_ORG) AS COMPANYNAME" +
+                                    "    FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
+                                    "   LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID LEFT JOIN XS_ZC_TASK xs ON xs.ID = t.TASKID" +
+                                    "    WHERE t.CREATETIME > ( SELECT max(CREATETIME) -  600   / (1 * 24 * 60 * 60)" +
+                                    "   FROM TIMED_TASK  WHERE THREEDAY = 0 )     AND t.STATUS = 0 AND t.THREEDAY = 0 AND t.TASKTYPE = 1" +
+                                    "  UNION ALL" +
+                                    "   SELECT DISTINCT t.TASKID," +
+                                    "  t.ID," +
+                                    "  t.CREATETIME," +
+                                    "  t.USER_ID," +
+                                    "  t.TASKNAME," +
+                                    "  t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as DID," +
+                                    "    d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE" +
+                                    "  ,kh.WX_ORG  AS COMPANYNAME" +
+                                    "   FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
+                                    "  LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID LEFT JOIN KH_TASK kh ON kh.ID = t.TASKID" +
+                                    "   WHERE t.CREATETIME > ( SELECT max(CREATETIME) -  600   / (1 * 24 * 60 * 60)" +
+                                    "      FROM TIMED_TASK  WHERE THREEDAY = 0 )     AND t.STATUS = 0 AND t.THREEDAY = 0 AND t.TASKTYPE = 2 )  WHERE DID  = ?"+list.size();
                         }else {
                             LOGGER.error("获取当前用户单位信息失败");
                             return WebApiResponse.erro("获取当前用户单位信息失败");
@@ -129,15 +152,30 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
 
                         if(null != deptid && !"".equals(deptid)){//当前用户单位信息获取成功，进入流程
                             list.add(deptid);
-                            sql = " SELECT DISTINCT t.TASKID," +
-                                    "    t.ID," +
-                                    "    t.CREATETIME," +
-                                    "    t.USER_ID," +
-                                    "    t.TASKNAME," +
-                                    "     t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did" +
-                                    "     FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
-                                    "    LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID" +
-                                    "     WHERE t.CREATETIME > ( SELECT max(CREATETIME) -  600   / (1 * 24 * 60 * 60)        FROM TIMED_TASK  WHERE THREEDAY = 0 )     AND t.STATUS = 0 AND t.THREEDAY = 0  AND d.ID  = ?"+list.size();
+                            sql = " SELECT * FROM ( SELECT DISTINCT t.TASKID," +
+                                    "   t.ID," +
+                                    "   t.CREATETIME," +
+                                    "   t.USER_ID," +
+                                    "   t.TASKNAME," +
+                                    "    t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did," +
+                                    "  d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE,(SELECT COMPANYNAME FROM RZTSYSCOMPANY WHERE ID = xs.WX_ORG) AS COMPANYNAME" +
+                                    "    FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
+                                    "   LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID LEFT JOIN XS_ZC_TASK xs ON xs.ID = t.TASKID" +
+                                    "    WHERE t.CREATETIME > ( SELECT max(CREATETIME) -  600   / (1 * 24 * 60 * 60)" +
+                                    "   FROM TIMED_TASK  WHERE THREEDAY = 0 )     AND t.STATUS = 0 AND t.THREEDAY = 0 AND t.TASKTYPE = 1" +
+                                    "  UNION ALL" +
+                                    "   SELECT DISTINCT t.TASKID," +
+                                    "  t.ID," +
+                                    "  t.CREATETIME," +
+                                    "  t.USER_ID," +
+                                    "  t.TASKNAME," +
+                                    "  t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did," +
+                                    "    d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE" +
+                                    "  ,kh.WX_ORG  AS COMPANYNAME" +
+                                    "   FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
+                                    "  LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID LEFT JOIN KH_TASK kh ON kh.ID = t.TASKID" +
+                                    "    WHERE t.CREATETIME > ( SELECT max(CREATETIME) -  600   / (1 * 24 * 60 * 60)" +
+                                    "      FROM TIMED_TASK  WHERE THREEDAY = 0 )     AND t.STATUS = 0 AND t.THREEDAY = 0 AND t.TASKTYPE = 2 ) WHERE DID  = ?"+list.size();
                         }else {
                             LOGGER.error("获取当前用户单位信息失败");
                             return WebApiResponse.erro("获取当前用户单位信息失败");
@@ -151,20 +189,20 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
             }
         }
         if(taskType!=null && !"".equals(taskType.trim())){// 判断当前任务类型  巡视1   看护2  看护稽查3  巡视稽查4
-            sql+= "  AND t.TASKTYPE = "+taskType;
+            sql+= "  AND TASKTYPE = "+taskType;
         }
 
         //查询责任人
             if(null != userName && !"".equals(userName)){
-            sql += "  AND  t.USER_ID in (SELECT ru.ID from RZTSYSUSER ru WHERE ru.REALNAME LIKE '%"+userName+"%')";
+            sql += "  AND  USER_ID in (SELECT ru.ID from RZTSYSUSER ru WHERE ru.REALNAME LIKE '%"+userName+"%')";
             }
             //通道单位
             if(null != TD && !"".equals(TD)){
-            sql += "  AND  d.ID = '"+TD+"'";
+            sql += "  AND  DID = '"+TD+"'";
             }
             //任务状态
             if(null != targetType && !"".equals(targetType)){
-                sql += "  AND  t.TARGETSTATUS =  "+targetType;
+                sql += "  AND  TARGETSTATUS =  "+targetType;
             }
 
         if(null != sql && !"".equals(sql)){
@@ -172,10 +210,10 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
         }
 
             pageResult = this.execSqlPage(pageable, sql, list.toArray());
-            Iterator<Map<String, Object>> iterator = pageResult.iterator();
-            HashOperations hashOperations = redisTemplate.opsForHash();
+            /*Iterator<Map<String, Object>> iterator = pageResult.iterator();
+            HashOperations hashOperations = redisTemplate.opsForHash();*/
 
-            while (iterator.hasNext()){
+           /* while (iterator.hasNext()){
 
                 Map<String, Object> next = iterator.next();
                 Object taskid = next.get("TASKID");
@@ -218,7 +256,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                     next.put("PHONE",jsonObject.get("PHONE"));
                     next.put("CHTYPE"," "); // 抽查类型
                 }
-            }
+            }*/
        }catch (Exception e){
             LOGGER.error("抽查任务查询失败"+e.getMessage());
             return WebApiResponse.erro("抽查任务查询失败"+e.getMessage());
@@ -296,7 +334,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
 
             //巡视sql
             String findSql1 = "select x.TASK_NAME,x.STAUTS,x.ID,x.CM_USER_ID from XS_ZC_TASK x" +
-                    "  WHERE x.ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 1 ) AND  x.STAUTS != 0  AND  x.STAUTS != 3 ";
+                    "  WHERE x.ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 1 ) AND  x.STAUTS != 0  AND  x.STAUTS != 3   AND x.IS_DELETE = 0 ";
             //看护sql
             String findSql2 = "SELECT kht.TASK_NAME,kht.ID,kht.STATUS,USER_ID FROM KH_TASK kht WHERE kht.ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 2 )  AND kht.STATUS != 0  AND  kht.STATUS != 3  ";
             List<Map<String, Object>> maps = this.execSql(findSql1, null);
@@ -407,7 +445,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                     "  WHERE WORKTYPE = 2 AND k.ID IS NOT  NULL AND k.REAL_START_TIME =" +
                     "   (SELECT max(h.REAL_START_TIME)" +
                     "   FROM XS_ZC_TASK h WHERE h.CM_USER_ID = u.ID) AND k.STAUTS != 0 AND" +
-                    "   k.ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 1 AND THREEDAY = 1) AND  k.STAUTS != 0   AND k.STAUTS != 0";
+                    "   k.ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 1 AND THREEDAY = 1) AND  k.STAUTS != 0   AND k.IS_DELETE = 0";
             //看护sql
             String findSql2 = "SELECT k.TASK_NAME,k.ID,k.STATUS,k.USER_ID" +
                     "  FROM RZTSYSUSER u" +
@@ -418,7 +456,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                     "   AND k.ID NOT IN" +
                     "       (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 2 AND THREEDAY =1)";
             List<Map<String, Object>> maps = this.execSql(findSql1, null);
-            List<Map<String, Object>> maps2 = this.execSql(findSql2, null);
+
             Iterator<Map<String, Object>> iterator = maps.iterator();
             while (iterator.hasNext()){
                 Map<String, Object> a = iterator.next();
@@ -434,7 +472,9 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                         null!=a.get("TASK_NAME")?a.get("TASK_NAME").toString():"",CheckStatus,"1");
             }
             LOGGER.info("巡视任务抽查完毕");
+            List<Map<String, Object>> maps2 = this.execSql(findSql2, null);
             Iterator<Map<String, Object>> iterator1 = maps2.iterator();
+
             while (iterator1.hasNext()){
                 Map<String, Object> b = iterator1.next();
                 Integer CheckStatus = 0;
@@ -636,17 +676,17 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
         Map<String, Object> stringMapHashMap = new HashMap<>();
         ArrayList<Object> strings1 = new ArrayList<>();
         HashMap<String, Object> OPERATE_NAME = new HashMap<>();
-        OPERATE_NAME.put("OPERATE_NAME","暂无数据");
+        OPERATE_NAME.put("OPERATE_NAME","暂无照片信息");
         OPERATE_NAME.put("START_TIME",simpleDateFormat.format(new Date()));
         OPERATE_NAME.put("END_TIME",simpleDateFormat.format(new Date()));
             strings1.add(OPERATE_NAME);
         ArrayList<Object> strings2 = new ArrayList<>();
         HashMap<String, Object> LINE_NAME = new HashMap<>();
-        LINE_NAME.put("LINE_NAME","暂无数据");
+        LINE_NAME.put("LINE_NAME","暂无照片信息");
             strings2.add(LINE_NAME);
         ArrayList<Object> strings3 = new ArrayList<>();
         HashMap<String, Object> YHMS = new HashMap<>();
-        YHMS.put("YHMS","暂无数据");
+        YHMS.put("YHMS","暂无照片信息");
              strings3.add(YHMS);
         // OPERATE_NAME  进度    LINE_NAME 位置   YHMS 隐患
         stringMapHashMap.put("YH",maps.size()>0?maps:strings3);
@@ -657,8 +697,16 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
 
 
     @Transactional
-    public void checkOff(String id) {
-        repository.xsTaskUpdate(id);
+    public void checkOff(String id,String picTime,String currentUserId){
+        try {
+            /*SimpleDateFormat simpleDateFormat = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
+            Date parse = simpleDateFormat.parse(picTime);*/
+            repository.xsTaskUpdate(id);
+            LOGGER.info("任务审核成功");
+        }catch (Exception e){
+            LOGGER.error("任务审核失败"+e.getMessage());
+        }
+
     }
 
 
@@ -706,4 +754,191 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
 
         return WebApiResponse.success("");
     }
+
+
+
+
+
+
+
+
+
+    /**
+     *   供poi使用
+     * @param taskType 任务类型  条件查询使用0
+     * @return
+     */
+    public List<Map<String, Object>> usePoi( String taskType ,String userId,String userName,String TD,String targetType){
+        /**
+         *   所有权限	    0
+         公司本部权限	1
+         属地单位权限	2
+         外协队伍权限	3
+         组织权限	    4
+         个人权限	    5
+
+         */
+        List<Object> list = new ArrayList<>();
+        //sql 中 拉取数据为刷新时间至刷新时间前10分钟
+        String sql = "";
+        List<Map<String, Object>> pageResult = null;
+        try {
+            if(null == userId || "".equals(userId)){
+                return null;
+            }
+
+            Object userInformation1 = redisTemplate.opsForHash().get("UserInformation", userId);
+            if(null != userInformation1 && !"".equals(userInformation1)){
+                JSONObject jsonObject1 = JSONObject.parseObject(userInformation1.toString());
+                String roletype = (String) jsonObject1.get("ROLETYPE");//用户权限信息  0 为1级单位  1为二级单位 2为单位 只展示当前单位的任务
+                String deptid = (String) jsonObject1.get("DEPTID");//当角色权限为3时需要只显示本单位的任务信息
+                if(null != roletype && !"".equals(roletype)){//证明当前用户信息正常
+                    int i = Integer.parseInt(roletype);
+                    switch (i){
+                        case 0 :{//一级单位   显示三天周期抽查的任务
+                         /*sql = " SELECT    TASKID," +
+                                 "  ID," +
+                                 "  CREATETIME," +
+                                 "  USER_ID," +
+                                 "  TASKNAME," +
+                                 "  TASKTYPE,CHECKSTATUS ,TARGETSTATUS" +
+                                 "   FROM TIMED_TASK" +*/
+                            sql = " SELECT  DISTINCT t.TASKID," +
+                                    "    t.ID," +
+                                    "    t.CREATETIME," +
+                                    "    t.USER_ID," +
+                                    "    t.TASKNAME," +
+                                    "     t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did" +
+                                    "     FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
+                                    "    LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID" +
+                                    "   WHERE t.CREATETIME > ( select sysdate - (3 * 24 * 60 * 60 + 60 * 60) / (1 * 24 * 60 * 60)   from  dual)" +
+                                    "         AND t.STATUS = 0 AND t.THREEDAY = 1  ";
+                            break;
+                        }case 1 :{//二级单位   显示全部周期为两小时的任务
+                            if(null != deptid && !"".equals(deptid)){//当前用户单位信息获取成功，进入流程
+                                list.add(deptid);
+                                sql = " SELECT  DISTINCT t.TASKID," +
+                                        "    t.ID," +
+                                        "    t.CREATETIME," +
+                                        "    t.USER_ID," +
+                                        "    t.TASKNAME," +
+                                        "     t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did" +
+                                        "     FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
+                                        "    LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID" +
+                                        "     WHERE t.CREATETIME > ( SELECT max(CREATETIME) -  600   / (1 * 24 * 60 * 60)    " +
+                                        "    FROM TIMED_TASK  WHERE THREEDAY = 0 )     AND t.STATUS = 0 AND t.THREEDAY = 0  AND d.ID  = ?"+list.size();
+                            }else {
+                                LOGGER.error("获取当前用户单位信息失败");
+                                return null;
+                            }
+                            break;
+                        }case 2 :{//三级单位   只显示本单位的任务
+
+                            if(null != deptid && !"".equals(deptid)){//当前用户单位信息获取成功，进入流程
+                                list.add(deptid);
+                                sql = " SELECT DISTINCT t.TASKID," +
+                                        "    t.ID," +
+                                        "    t.CREATETIME," +
+                                        "    t.USER_ID," +
+                                        "    t.TASKNAME," +
+                                        "     t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did" +
+                                        "     FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
+                                        "    LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID" +
+                                        "     WHERE t.CREATETIME > ( SELECT max(CREATETIME) -  600   / (1 * 24 * 60 * 60)        FROM TIMED_TASK  WHERE THREEDAY = 0 )     AND t.STATUS = 0 AND t.THREEDAY = 0  AND d.ID  = ?"+list.size();
+                            }else {
+                                LOGGER.error("获取当前用户单位信息失败");
+                                return null;
+                            }
+                            break;
+                        }default:{
+                            LOGGER.error("获取登录人权限失败,当前权限未知");
+                            return null;
+                        }
+                    }
+                }
+            }
+            if(taskType!=null && !"".equals(taskType.trim())){// 判断当前任务类型  巡视1   看护2  看护稽查3  巡视稽查4
+                sql+= "  AND t.TASKTYPE = "+taskType;
+            }
+
+            //查询责任人
+            if(null != userName && !"".equals(userName)){
+                sql += "  AND  t.USER_ID in (SELECT ru.ID from RZTSYSUSER ru WHERE ru.REALNAME LIKE '%"+userName+"%')";
+            }
+            //通道单位
+            if(null != TD && !"".equals(TD)){
+                sql += "  AND  d.ID = '"+TD+"'";
+            }
+            //任务状态
+            if(null != targetType && !"".equals(targetType)){
+                sql += "  AND  t.TARGETSTATUS =  "+targetType;
+            }
+
+            if(null != sql && !"".equals(sql)){
+                sql +="   ORDER BY CREATETIME DESC     ";
+            }
+
+            pageResult = this.execSql( sql, list.toArray());
+            Iterator<Map<String, Object>> iterator = pageResult.iterator();
+            HashOperations hashOperations = redisTemplate.opsForHash();
+
+            while (iterator.hasNext()){
+
+                Map<String, Object> next = iterator.next();
+                Object taskid = next.get("TASKID");
+                Object tasktype = next.get("TASKTYPE");
+                //巡视
+                if(tasktype!=null && tasktype.equals("1")){
+                    String sqll = "SELECT  c.LINE_ID FROM XS_ZC_TASK x LEFT JOIN XS_ZC_CYCLE c ON c.ID = x.XS_ZC_CYCLE_ID WHERE x.ID =?1";
+                    List<Map<String, Object>> maps = execSql(sqll,taskid);
+                    if(list.size()>0){
+                        next.put("LINE_ID",maps.get(0).get("LINE_ID"));
+                    }
+                }else if (tasktype!=null && tasktype.equals("2")){ //看护
+                    String sqlll = "SELECT LINE_ID FROM KH_YH_HISTORY WHERE TASK_ID =?1";
+                    List<Map<String, Object>> maps = execSql(sqlll, taskid);
+                    if(maps.size()>0){
+                        next.put("LINE_ID",maps.get(0).get("LINE_ID"));
+                    }
+                }else if (tasktype!=null && tasktype.equals("3")){ //看护稽查
+
+                }else if (tasktype!=null && tasktype.equals("4")){ //巡视稽查
+
+                }else {
+                    LOGGER.error("查询类型不明确");
+                    return null;
+                }
+                Object userInformation = null;
+                String userID =(String)next.get("USER_ID");
+                if(null !=userID && !"".equals(userID)){
+                    userInformation = hashOperations.get("UserInformation", userID);
+                }
+
+                if(userInformation==null){
+                    continue;
+                }
+                JSONObject jsonObject = JSONObject.parseObject(userInformation.toString());
+                if(jsonObject!=null){
+                    next.put("DEPT",jsonObject.get("DEPT"));
+                    next.put("COMPANYNAME",jsonObject.get("COMPANYNAME"));
+                    next.put("REALNAME",jsonObject.get("REALNAME"));
+                    next.put("PHONE",jsonObject.get("PHONE"));
+                    next.put("CHTYPE"," "); // 抽查类型
+                }
+            }
+        }catch (Exception e){
+            LOGGER.error("抽查任务查询失败"+e.getMessage());
+            return null;
+        }
+        return pageResult;
+    }
+
+
+
+
+
+
+
+
+
 }

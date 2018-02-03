@@ -3,6 +3,7 @@ package com.rzt.websocket.service;
 import com.rzt.entity.websocket;
 import com.rzt.repository.websocketRepository;
 import com.rzt.service.CurdService;
+import com.rzt.util.DateUtil;
 import com.rzt.websocket.serverendpoint.YiJiServerEndpoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -19,7 +20,7 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
 
     @Scheduled(fixedRate = 30000)
     public void module1() {
-        Map<String,Map> allMap = new HashMap<String, Map>();
+        Map<String, Map> allMap = new HashMap<String, Map>();
         Map<String, HashMap> map = wuDServerEndpoint.sendMsg();
         map.forEach((sessionId, session) -> {
             module1Method(allMap, session);
@@ -27,9 +28,8 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
     }
 
 
-
     public void module1Method(Map<String, Map> allMap, HashMap session) {
-        Map message = new HashMap<String,Object>();
+        Map message = new HashMap<String, Object>();
         Integer roletype = Integer.parseInt(session.get("ROLETYPE").toString());
         String deptId = session.get("DEPTID").toString();
         String module1 = "SELECT\n" +
@@ -45,7 +45,7 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
                 "      FROM MONITOR_CHECK_EJ\n" +
                 "      WHERE CREATE_TIME > trunc(sysdate) and DEPTID = " + deptId + ") t\n" +
                 "  JOIN rztsysuser tt ON t.USER_ID = tt.id join RZTSYSDEPARTMENT ttt on ttt.id = tt.CLASSNAME group by ttt.DEPTNAME,ttt.deptsort order by ttt.deptsort";
-        if(1 == 1 /**roletype == 0*/) {
+        if (1 == 1 /**roletype == 0*/) {
             deptId = "admin";
             module1 = "SELECT\n" +
                     "  tt.DEPTNAME,\n" +
@@ -58,16 +58,16 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
                     "        DEPTID\n" +
                     "      FROM MONITOR_CHECK_EJ\n" +
                     "      WHERE CREATE_TIME > trunc(sysdate)) t\n" +
-                    "  JOIN RZTSYSDEPARTMENT tt ON t.DEPTID = tt.id group by tt.DEPTNAME,tt.deptsort order by tt.deptsort";
+                    "  JOIN RZTSYSDEPARTMENT tt ON t.DEPTID = tt.id group by tt.DEPTNAME,tt.deptsort,tt.id order by tt.deptsort";
         }
-        if(allMap.containsKey(deptId)) {
+        if (allMap.containsKey(deptId)) {
             message = allMap.get(deptId);
         } else {
             try {
                 List<Map<String, Object>> resList = this.execSql(module1);
-                message.put("module",1);
-                message.put("data",resList);
-                allMap.put(deptId,message);
+                message.put("module", 1);
+                message.put("data", resList);
+                allMap.put(deptId, message);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -77,7 +77,7 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
 
     @Scheduled(fixedRate = 30000)
     public void module2() throws Exception {
-        Map<String,Map> allMap = new HashMap<String, Map>();
+        Map<String, Map> allMap = new HashMap<String, Map>();
         Map<String, HashMap> map = wuDServerEndpoint.sendMsg();
         map.forEach((String sessionId, HashMap session) -> {
             module2Method(allMap, session);
@@ -127,7 +127,7 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
         Integer roletype = Integer.parseInt(session.get("ROLETYPE").toString());
         String deptId;
         String module3;
-        if(1 == 1 /**roletype == 0*/) {
+        if (1 == 1 /**roletype == 0*/) {
             deptId = "admin";
             module3 = "SELECT sum(decode(QUESTION_TYPE,1,1,0)) a,sum(decode(QUESTION_TYPE,2,1,0)) b,sum(decode(QUESTION_TYPE,3,1,0)) c,sum(decode(QUESTION_TYPE,4,1,0)) d from CHECK_RESULT";
         } else {
@@ -140,14 +140,14 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
                     "FROM CHECK_RESULT t\n" +
                     "  JOIN CHECK_DETAIL tt ON t.CHECK_DETAIL_ID = tt.id join RZTSYSUSER ttt on tt.QUESTION_USER_ID = ttt.id and DEPTID = ?";
         }
-        if(allMap.containsKey(deptId)) {
+        if (allMap.containsKey(deptId)) {
             message = allMap.get(deptId);
         } else {
             try {
                 Map<String, Object> res = this.execSqlSingleResult(module3);
-                message.put("module",3);
-                message.put("data",res);
-                allMap.put(deptId,message);
+                message.put("module", 3);
+                message.put("data", res);
+                allMap.put(deptId, message);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -227,31 +227,31 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
     public void module5(String sessionId) {
         Map<String, HashMap> map = wuDServerEndpoint.sendMsg();
         HashMap session = map.get(sessionId);
-        Map message = new HashMap<String,Object>();
-        message.put("module",5);
+        Map message = new HashMap<String, Object>();
+        message.put("module", 5);
         Map module5Data = new HashMap();
-        module5Data.put("zx",0);
-        module5Data.put("lx",0);
-        module5Data.put("wsx",0);
-        message.put("data",module5Data);
+        module5Data.put("zx", 0);
+        module5Data.put("lx", 0);
+        module5Data.put("wsx", 0);
+        message.put("data", module5Data);
         wuDServerEndpoint.sendText((Session) session.get("session"), message);
     }
 
     @Scheduled(fixedRate = 30000)
     public void module5() {
         Map<String, HashMap> map = wuDServerEndpoint.sendMsg();
-        if(map.size() == 0) {
+        if (map.size() == 0) {
             return;
         }
-        Map message = new HashMap<String,Object>();
-        message.put("module",5);
+        Map message = new HashMap<String, Object>();
+        message.put("module", 5);
         Map module5Data = new HashMap();
-        module5Data.put("zx",0);
-        module5Data.put("lx",0);
-        module5Data.put("wsx",0);
-        message.put("data",module5Data);
+        module5Data.put("zx", 0);
+        module5Data.put("lx", 0);
+        module5Data.put("wsx", 0);
+        message.put("data", module5Data);
         Set<Map.Entry<String, HashMap>> entries = map.entrySet();
-        for (Map.Entry<String,HashMap> entry:entries) {
+        for (Map.Entry<String, HashMap> entry : entries) {
             String sessionId = entry.getKey();
             HashMap session = map.get(sessionId);
             wuDServerEndpoint.sendText((Session) session.get("session"), message);
@@ -261,20 +261,20 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
     public void module6(String sessionId) {
         Map<String, HashMap> map = wuDServerEndpoint.sendMsg();
         HashMap session = map.get(sessionId);
-        Map message = new HashMap<String,Object>();
-        message.put("module",6);
+        Map message = new HashMap<String, Object>();
+        message.put("module", 6);
         Map module6Data = new HashMap();
-        module6Data.put("zx",0);
-        module6Data.put("lx",0);
-        module6Data.put("wsx",0);
-        message.put("data",module6Data);
+        module6Data.put("zx", 0);
+        module6Data.put("lx", 0);
+        module6Data.put("wsx", 0);
+        message.put("data", module6Data);
         wuDServerEndpoint.sendText((Session) session.get("session"), message);
     }
 
     @Scheduled(fixedRate = 30000)
     public void module6() {
         Map<String, HashMap> map = wuDServerEndpoint.sendMsg();
-        if(map.size() == 0) {
+        if (map.size() == 0) {
             return;
         }
         Map message = new HashMap<String, Object>();
@@ -284,7 +284,7 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
         module6Data.put("lx", 0);
         module6Data.put("wsx", 0);
         Set<Map.Entry<String, HashMap>> entries = map.entrySet();
-        for (Map.Entry<String,HashMap> entry:entries) {
+        for (Map.Entry<String, HashMap> entry : entries) {
             String sessionId = entry.getKey();
             HashMap session = map.get(sessionId);
             message.put("data", module6Data);
@@ -297,7 +297,7 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
         HashMap session = map.get(sessionId);
         Map message = new HashMap<String,Object>();
         message.put("module",7);
-        String module7 = "select count(1) total from MONITOR_CHECK_YJ where CREATE_TIME > trunc(sysdate)";
+        String module7 = "select count(1) total from MONITOR_CHECK_YJ where CREATE_TIME > trunc(sysdate) and status = 0";
         Map<String, Object> map1 = this.execSqlSingleResult(module7);
         message.put("data",map1);
         wuDServerEndpoint.sendText((Session) session.get("session"), message);
@@ -314,7 +314,7 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
             HashMap session = map.get(sessionId);
             Map message = new HashMap<String,Object>();
             message.put("module",7);
-            String module7 = "select count(1) total from MONITOR_CHECK_YJ where CREATE_TIME > trunc(sysdate)";
+            String module7 = "select count(1) total from MONITOR_CHECK_YJ where CREATE_TIME > trunc(sysdate) and status = 0";
             Map<String, Object> map1 = this.execSqlSingleResult(module7);
             message.put("data",map1);
             wuDServerEndpoint.sendText((Session) session.get("session"), message);
@@ -356,8 +356,42 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
         HashMap session = map.get(sessionId);
         Map message = new HashMap<String,Object>();
         message.put("module",9);
-        String module9 = "select sum(decode(WARNING_TYPE,5,1,0)) xsgj,sum(decode(WARNING_TYPE,7,1,0)) khgj,0 xcjc,0 yhgj  from MONITOR_CHECK_EJ";
+        // 巡视超速  看护脱岗
+        String module9 = "SELECT\n" +
+                "  nvl(sum(decode(tt.TASK_TYPE, 1, 1, 0)),0) xsgj,\n" +
+                "  nvl(sum(decode(tt.TASK_TYPE, 2, 1, 0)),0) khgj,\n" +
+                "  nvl(sum(decode(tt.TASK_TYPE, 3, 1, 0)),0) xcjc,\n" +
+                "  0                             yhgj\n" +
+                "FROM MONITOR_CHECK_EJ tt where CREATE_TIME >= trunc(sysdate) and STATUS = 0";
         Map<String, Object> map1 = this.execSqlSingleResult(module9);
+        String module9Detail = "SELECT t.*,tt.DESCRIPTION from (SELECT\n" +
+                "  t.WARNING_TYPE,\n" +
+                "  t.REASON,\n" +
+                "  t.TASK_NAME,\n" +
+                "  t.USER_ID,\n" +
+                "  t.TASK_TYPE\n" +
+                "FROM MONITOR_CHECK_EJ t\n" +
+                "WHERE t.id = (SELECT max(tt.ID)\n" +
+                "              FROM MONITOR_CHECK_EJ tt\n" +
+                "              WHERE tt.TASK_TYPE = t.TASK_TYPE AND tt.STATUS = 0 AND tt.CREATE_TIME >= trunc(sysdate))) t join WARNING_TYPE tt on t.WARNING_TYPE = tt.WARNING_TYPE ";
+        List<Map<String, Object>> detail = this.execSql(module9Detail);
+        for (Map<String,Object> obj1:detail) {
+            try {
+                Integer task_type = Integer.parseInt(obj1.get("TASK_TYPE").toString());
+                Object description = obj1.get("DESCRIPTION");
+                if(task_type == 1) {
+                    map1.put("xsgjDetail", description);
+                } else if(task_type == 2) {
+                    map1.put("khgjDetail", description);
+                } else if(task_type == 3) {
+                    map1.put("xcjcDetail", description);
+                }
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+                continue;
+            }
+        }
+
         message.put("data",map1);
         wuDServerEndpoint.sendText((Session) session.get("session"), message);
     }
@@ -370,8 +404,43 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
         }
         Map message = new HashMap<String,Object>();
         message.put("module",9);
-        String module9 = "select sum(decode(WARNING_TYPE,5,1,0)) xsgj,sum(decode(WARNING_TYPE,7,1,0)) khgj,0 xcjc,0 yhgj  from MONITOR_CHECK_EJ";
+        String module9 = "SELECT\n" +
+                "  nvl(sum(decode(tt.TASK_TYPE, 1, 1, 0)),0) xsgj,\n" +
+                "  nvl(sum(decode(tt.TASK_TYPE, 2, 1, 0)),0) khgj,\n" +
+                "  nvl(sum(decode(tt.TASK_TYPE, 3, 1, 0)),0) xcjc,\n" +
+                "  0                             yhgj\n" +
+                "FROM MONITOR_CHECK_EJ tt where CREATE_TIME >= trunc(sysdate) and STATUS = 0";
         Map<String, Object> map1 = this.execSqlSingleResult(module9);
+        map1.put("xsgjDetail", "暂无");
+        map1.put("khgjDetail", "暂无");
+        map1.put("xcjcDetail", "暂无");
+        String module9Detail = "SELECT t.*,tt.DESCRIPTION from (SELECT\n" +
+                "  t.WARNING_TYPE,\n" +
+                "  t.REASON,\n" +
+                "  t.TASK_NAME,\n" +
+                "  t.USER_ID,\n" +
+                "  t.TASK_TYPE\n" +
+                "FROM MONITOR_CHECK_EJ t\n" +
+                "WHERE t.id = (SELECT max(tt.ID)\n" +
+                "              FROM MONITOR_CHECK_EJ tt\n" +
+                "              WHERE tt.TASK_TYPE = t.TASK_TYPE AND tt.STATUS = 0 AND tt.CREATE_TIME >= trunc(sysdate))) t join WARNING_TYPE tt on t.WARNING_TYPE = tt.WARNING_TYPE ";
+        List<Map<String, Object>> detail = this.execSql(module9Detail);
+        for (Map<String,Object> obj1:detail) {
+            try {
+                Integer task_type = Integer.parseInt(obj1.get("TASK_TYPE").toString());
+                Object description = obj1.get("DESCRIPTION");
+                if(task_type == 1) {
+                    map1.put("xsgjDetail", description);
+                } else if(task_type == 2) {
+                    map1.put("khgjDetail", description);
+                } else if(task_type == 3) {
+                    map1.put("xcjcDetail", description);
+                }
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+                continue;
+            }
+        }
         message.put("data",map1);
         Set<Map.Entry<String, HashMap>> entries = map.entrySet();
         for (Map.Entry<String, HashMap> entry:entries) {
@@ -388,18 +457,18 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
         Map message = new HashMap<String,Object>();
         message.put("module",10);
         String module7 = "SELECT\n" +
-                "  sum((CASE WHEN PROC_DEF_ID_ LIKE 'xssh%'\n" +
+                "  nvl(sum((CASE WHEN PROC_DEF_ID_ LIKE 'xssh%'\n" +
                 "    THEN 1\n" +
-                "   ELSE 0 END)) xssh,\n" +
-                "  sum((CASE WHEN PROC_DEF_ID_ LIKE 'wtsh%'\n" +
+                "   ELSE 0 END)),0) xssh,\n" +
+                "  nvl(sum((CASE WHEN PROC_DEF_ID_ LIKE 'wtsh%'\n" +
                 "    THEN 1\n" +
-                "   ELSE 0 END)) wtsh,\n" +
-                "  sum((CASE WHEN PROC_DEF_ID_ LIKE 'defect%'\n" +
+                "   ELSE 0 END)),0) wtsh,\n" +
+                "  nvl(sum((CASE WHEN PROC_DEF_ID_ LIKE 'defect%'\n" +
                 "    THEN 1\n" +
-                "   ELSE 0 END)) defect,\n" +
-                "  sum((CASE WHEN PROC_DEF_ID_ LIKE 'jcsh%'\n" +
+                "   ELSE 0 END)),0) defect,\n" +
+                "  nvl(sum((CASE WHEN PROC_DEF_ID_ LIKE 'jcsh%'\n" +
                 "    THEN 1\n" +
-                "   ELSE 0 END)) jcsh\n" +
+                "   ELSE 0 END)),0) jcsh\n" +
                 "FROM ACT_RU_TASK\n" +
                 "WHERE CREATE_TIME_ > trunc(sysdate)";
         Map<String, Object> map1 = this.execSqlSingleResult(module7);
@@ -420,18 +489,18 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
             Map message = new HashMap<String,Object>();
             message.put("module",10);
             String module7 = "SELECT\n" +
-                    "  sum((CASE WHEN PROC_DEF_ID_ LIKE 'xssh%'\n" +
+                    "  nvl(sum((CASE WHEN PROC_DEF_ID_ LIKE 'xssh%'\n" +
                     "    THEN 1\n" +
-                    "   ELSE 0 END)) xssh,\n" +
-                    "  sum((CASE WHEN PROC_DEF_ID_ LIKE 'wtsh%'\n" +
+                    "   ELSE 0 END)),0) xssh,\n" +
+                    "  nvl(sum((CASE WHEN PROC_DEF_ID_ LIKE 'wtsh%'\n" +
                     "    THEN 1\n" +
-                    "   ELSE 0 END)) wtsh,\n" +
-                    "  sum((CASE WHEN PROC_DEF_ID_ LIKE 'defect%'\n" +
+                    "   ELSE 0 END)),0) wtsh,\n" +
+                    "  nvl(sum((CASE WHEN PROC_DEF_ID_ LIKE 'defect%'\n" +
                     "    THEN 1\n" +
-                    "   ELSE 0 END)) defect,\n" +
-                    "  sum((CASE WHEN PROC_DEF_ID_ LIKE 'jcsh%'\n" +
+                    "   ELSE 0 END)),0) defect,\n" +
+                    "  nvl(sum((CASE WHEN PROC_DEF_ID_ LIKE 'jcsh%'\n" +
                     "    THEN 1\n" +
-                    "   ELSE 0 END)) jcsh\n" +
+                    "   ELSE 0 END)),0) jcsh\n" +
                     "FROM ACT_RU_TASK\n" +
                     "WHERE CREATE_TIME_ > trunc(sysdate)";
             Map<String, Object> map1 = this.execSqlSingleResult(module7);
@@ -440,37 +509,76 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
         }
     }
 
-    /*public void module22() throws Exception {
-        String timed = "select START_TIME,END_TIME,DAY_ZQ,NIGHT_ZQ from TIMED_CONFIG where id = 'TIME_CONFIG'";
-        Map<String, Object> timedMap = this.execSqlSingleResult(timed);
-        int start_time = Integer.parseInt(timedMap.get("START_TIME").toString());
-        int end_time = Integer.parseInt(timedMap.get("END_TIME").toString());
-        int day_zq = Integer.parseInt(timedMap.get("DAY_ZQ").toString());
-        int night_zq = Integer.parseInt(timedMap.get("NIGHT_ZQ").toString());
-        Date date = new Date();
-        Date start = DateUtils.setHours(date, start_time);
-        Calendar calendar = Calendar.getInstance();
-        Date time = calendar.getTime();
-//        if(date.before(start)) {
-//            while(true) {
-//                int hour = start_time;
-//                if(date.after(DateUtils.setHours(date,hour -= night_zq))) {
-//
-//                }
-//            }
-//        } else if(time > time1) {
-//            while() {
-//
-//            }
-//        }
-//        for(int i = start_time;i<=night_zq;i+=day_zq ) {
-//            Date date1 = DateUtils.setHours(date, i);
-//            if() {
-//
-//            }
-//        }
-        String s = timedMap.get("START_TIME").toString();
+    @Scheduled(fixedRate = 30000)
+    public void module11() throws Exception {
+        Map<String, HashMap> map = wuDServerEndpoint.sendMsg();
+        if (map.size() == 0) {
+            return;
+        }
+        Map message = new HashMap<String, Object>();
+        message.put("module", 11);
+        String module11 = "select * from TIMED_CONFIG where id LIKE 'TIME_CONFIG'";
+        Map<String, Object> timeConfig = this.execSqlSingleResult(module11);
+        String newTime = "SELECT THREEDAY,CREATETIME FROM (SELECT * FROM TIMED_TASK where THREEDAY=? ORDER BY CREATETIME DESC ) WHERE rownum =1 ";
+        Map<String, Object> towHour = this.execSqlSingleResult(newTime, 0);
+        Map<String, Object> threeDay = this.execSqlSingleResult(newTime, 1);
+        Map<Object, Object> returnMap = new HashMap<>();
+        returnMap.put("dqsj", DateUtil.getWebsiteDatetime());
+        Date yjcreatetime = DateUtil.parseDate(threeDay.get("CREATETIME").toString());
+        returnMap.put("xcsjyj", DateUtil.addDate(yjcreatetime, 72));
+        returnMap.put("yjjg", "72小时/次");
+        message.put("data", returnMap);
+        Set<Map.Entry<String, HashMap>> entries = map.entrySet();
+        for (Map.Entry<String, HashMap> entry : entries) {
+            String sessionId = entry.getKey();
+            HashMap session = map.get(sessionId);
+            wuDServerEndpoint.sendText((Session) session.get("session"), message);
+        }
+    }
 
+    public void module11(String sessionId) throws Exception {
+        Map<String, HashMap> map = wuDServerEndpoint.sendMsg();
+        HashMap session = map.get(sessionId);
+        Map message = new HashMap<String, Object>();
+        message.put("module", 11);
+        String module11 = "select * from TIMED_CONFIG where id LIKE 'TIME_CONFIG'";
+        Map<String, Object> timeConfig = this.execSqlSingleResult(module11);
+        String newTime = "SELECT THREEDAY,CREATETIME FROM (SELECT * FROM TIMED_TASK where THREEDAY=? ORDER BY CREATETIME DESC ) WHERE rownum =1 ";
+        Map<String, Object> towHour = this.execSqlSingleResult(newTime, 0);
+        Map<String, Object> threeDay = this.execSqlSingleResult(newTime, 1);
+        Map<Object, Object> returnMap = new HashMap<>();
+        returnMap.put("dqsj", DateUtil.getWebsiteDatetime());
+        Date yjcreatetime = DateUtil.parseDate(threeDay.get("CREATETIME").toString());
+//        Date ercreatetime = DateUtil.parseDate(towHour.get("CREATETIME").toString());
+        returnMap.put("xcsjyj", DateUtil.addDate(yjcreatetime, 72));
+        returnMap.put("yjjg", "72小时/次");
+        /*if (ercreatetime.getTime() >= DateUtil.getScheduleTime(timeConfig.get("START_TIME").toString())) {
+            returnMap.put("xcsjej", DateUtil.addDate(ercreatetime, Double.parseDouble(timeConfig.get("DAY_ZQ").toString())));
+            returnMap.put("ejjg", timeConfig.get("DAY_ZQ") + "小时/次");
+        } else if (ercreatetime.getTime() <= DateUtil.getScheduleTime(timeConfig.get("END_TIME").toString())) {
+            returnMap.put("xcsjej", DateUtil.addDate(ercreatetime, Double.parseDouble(timeConfig.get("NIGHT_ZQ").toString())));
+            returnMap.put("ejjg", timeConfig.get("NIGHT_ZQ") + "小时/次");
+        }*/
+        message.put("data", returnMap);
+        wuDServerEndpoint.sendText((Session) session.get("session"), message);
+    }
 
-    }*/
+    public static void main(String[] args) {
+        String a =  "SELECT\n" +
+                "  sum((CASE WHEN PROC_DEF_ID_ LIKE 'xssh%'\n" +
+                "    THEN 1\n" +
+                "   ELSE 0 END)) xssh,\n" +
+                "  sum((CASE WHEN PROC_DEF_ID_ LIKE 'wtsh%'\n" +
+                "    THEN 1\n" +
+                "   ELSE 0 END)) wtsh,\n" +
+                "  sum((CASE WHEN PROC_DEF_ID_ LIKE 'defect%'\n" +
+                "    THEN 1\n" +
+                "   ELSE 0 END)) defect,\n" +
+                "  sum((CASE WHEN PROC_DEF_ID_ LIKE 'jcsh%'\n" +
+                "    THEN 1\n" +
+                "   ELSE 0 END)) jcsh\n" +
+                "FROM ACT_RU_TASK\n" +
+                "WHERE CREATE_TIME_ > trunc(sysdate)";
+        System.out.println(a);
+    }
 }

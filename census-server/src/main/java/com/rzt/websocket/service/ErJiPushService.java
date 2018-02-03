@@ -3,6 +3,7 @@ package com.rzt.websocket.service;
 import com.rzt.entity.websocket;
 import com.rzt.repository.websocketRepository;
 import com.rzt.service.CurdService;
+import com.rzt.util.DateUtil;
 import com.rzt.websocket.serverendpoint.ErJiServerEndpoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -243,7 +244,7 @@ public class ErJiPushService extends CurdService<websocket, websocketRepository>
             Object deptid = session.get("DEPTID");
             Map message = new HashMap<String, Object>();
             message.put("module", 7);
-            String module7 = "select count(1) total from MONITOR_CHECK_YJ where CREATE_TIME > trunc(sysdate) AND DEPTID='" + deptid + "'";
+            String module7 = "select count(1) total from MONITOR_CHECK_ej where CREATE_TIME >= trunc(sysdate) AND DEPTID='" + deptid + "' and status = 0";
             Map<String, Object> map1 = this.execSqlSingleResult(module7);
             message.put("data", map1);
             erJiServerEndpoint.sendText((Session) session.get("session"), message);
@@ -284,8 +285,44 @@ public class ErJiPushService extends CurdService<websocket, websocketRepository>
             Object deptid = session.get("DEPTID");
             Map message = new HashMap<String, Object>();
             message.put("module", 9);
-            String module9 = "select sum(decode(WARNING_TYPE,5,1,0)) xsgj,sum(decode(WARNING_TYPE,7,1,0)) khgj,0 xcjc,0 yhgj  from MONITOR_CHECK_EJ WHERE DEPTID='" + deptid + "'";
+//            String module9 = "select nvl(sum(decode(WARNING_TYPE,5,1,0)),0) xsgj,nvl(sum(decode(WARNING_TYPE,7,1,0)),0) khgj,0 xcjc,0 yhgj  from MONITOR_CHECK_EJ WHERE DEPTID='" + deptid + "'";
+//            Map<String, Object> map1 = this.execSqlSingleResult(module9);
+            String module9 = "SELECT\n" +
+                    "  nvl(sum(decode(tt.TASK_TYPE, 1, 1, 0)),0) xsgj,\n" +
+                    "  nvl(sum(decode(tt.TASK_TYPE, 2, 1, 0)),0) khgj,\n" +
+                    "  nvl(sum(decode(tt.TASK_TYPE, 3, 1, 0)),0) xcjc,\n" +
+                    "  0                             yhgj\n" +
+                    "FROM MONITOR_CHECK_EJ tt where CREATE_TIME >= trunc(sysdate) and STATUS = 0 and deptid = '"+ deptid +"'";
             Map<String, Object> map1 = this.execSqlSingleResult(module9);
+            String module9Detail = "SELECT t.*,tt.DESCRIPTION from (SELECT\n" +
+                    "  t.WARNING_TYPE,\n" +
+                    "  t.REASON,\n" +
+                    "  t.TASK_NAME,\n" +
+                    "  t.USER_ID,\n" +
+                    "  t.TASK_TYPE\n" +
+                    "FROM MONITOR_CHECK_EJ t\n" +
+                    "WHERE t.id = (SELECT max(tt.ID)\n" +
+                    "              FROM MONITOR_CHECK_EJ tt\n" +
+                    "              WHERE tt.TASK_TYPE = t.TASK_TYPE AND tt.STATUS = 0 AND tt.CREATE_TIME >= trunc(sysdate) and deptid = '"+ deptid +"')) t join WARNING_TYPE tt on t.WARNING_TYPE = tt.WARNING_TYPE ";
+            List<Map<String, Object>> detail = this.execSql(module9Detail);
+            for (Map<String,Object> obj1:detail) {
+                try {
+
+
+                    Integer task_type = Integer.parseInt(obj1.get("TASK_TYPE").toString());
+                    Object description = obj1.get("DESCRIPTION");
+                    if(task_type == 1) {
+                        map1.put("xsgjDetail", description);
+                    } else if(task_type == 2) {
+                        map1.put("khgjDetail", description);
+                    } else if(task_type == 3) {
+                        map1.put("xcjcDetail", description);
+                    }
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                    continue;
+                }
+            }
             message.put("data", map1);
             erJiServerEndpoint.sendText((Session) session.get("session"), message);
         }
@@ -322,5 +359,61 @@ public class ErJiPushService extends CurdService<websocket, websocketRepository>
             message.put("data", map1);
             erJiServerEndpoint.sendText((Session) session.get("session"), message);
         }
+    }
+
+    @Scheduled(fixedRate = 30000)
+    public void module11() throws Exception {
+        Map<String, HashMap> map = erJiServerEndpoint.sendMsg();
+        if (map.size() == 0) {
+            return;
+        }
+        Map message = new HashMap<String, Object>();
+        message.put("module", 11);
+        String module11 = "select * from TIMED_CONFIG where id LIKE 'TIME_CONFIG'";
+        Map<String, Object> timeConfig = this.execSqlSingleResult(module11);
+        String newTime = "SELECT THREEDAY,CREATETIME FROM (SELECT * FROM TIMED_TASK where THREEDAY=? ORDER BY CREATETIME DESC ) WHERE rownum =1 ";
+        Map<String, Object> towHour = this.execSqlSingleResult(newTime, 0);
+        Map<String, Object> threeDay = this.execSqlSingleResult(newTime, 1);
+        Map<Object, Object> returnMap = new HashMap<>();
+        returnMap.put("dqsj", DateUtil.getWebsiteDatetime());
+        Date ercreatetime = DateUtil.parseDate(towHour.get("CREATETIME").toString());
+        if (ercreatetime.getTime() >= DateUtil.getScheduleTime(timeConfig.get("START_TIME").toString())) {
+            returnMap.put("xcsjyj", DateUtil.addDate(ercreatetime, Double.parseDouble(timeConfig.get("DAY_ZQ").toString())));
+            returnMap.put("yjjg", timeConfig.get("DAY_ZQ") + "小时/次");
+        } else if (ercreatetime.getTime() <= DateUtil.getScheduleTime(timeConfig.get("END_TIME").toString())) {
+            returnMap.put("xcsjyj", DateUtil.addDate(ercreatetime, Double.parseDouble(timeConfig.get("NIGHT_ZQ").toString())));
+            returnMap.put("yjjg", timeConfig.get("NIGHT_ZQ") + "小时/次");
+        }
+        message.put("data", returnMap);
+        Set<Map.Entry<String, HashMap>> entries = map.entrySet();
+        for (Map.Entry<String, HashMap> entry : entries) {
+            String sessionId = entry.getKey();
+            HashMap session = map.get(sessionId);
+            erJiServerEndpoint.sendText((Session) session.get("session"), message);
+        }
+    }
+
+    public void module11(String sessionId) throws Exception {
+        Map<String, HashMap> map = erJiServerEndpoint.sendMsg();
+        HashMap session = map.get(sessionId);
+        Map message = new HashMap<String, Object>();
+        message.put("module", 11);
+        String module11 = "select * from TIMED_CONFIG where id LIKE 'TIME_CONFIG'";
+        Map<String, Object> timeConfig = this.execSqlSingleResult(module11);
+        String newTime = "SELECT THREEDAY,CREATETIME FROM (SELECT * FROM TIMED_TASK where THREEDAY=? ORDER BY CREATETIME DESC ) WHERE rownum =1 ";
+        Map<String, Object> towHour = this.execSqlSingleResult(newTime, 0);
+        Map<String, Object> threeDay = this.execSqlSingleResult(newTime, 1);
+        Map<Object, Object> returnMap = new HashMap<>();
+        returnMap.put("dqsj", DateUtil.getWebsiteDatetime());
+        Date ercreatetime = DateUtil.parseDate(towHour.get("CREATETIME").toString());
+        if (ercreatetime.getTime() >= DateUtil.getScheduleTime(timeConfig.get("START_TIME").toString())) {
+            returnMap.put("xcsjyj", DateUtil.addDate(ercreatetime, Double.parseDouble(timeConfig.get("DAY_ZQ").toString())));
+            returnMap.put("yjjg", timeConfig.get("DAY_ZQ") + "小时/次");
+        } else if (ercreatetime.getTime() <= DateUtil.getScheduleTime(timeConfig.get("END_TIME").toString())) {
+            returnMap.put("xcsjyj", DateUtil.addDate(ercreatetime, Double.parseDouble(timeConfig.get("NIGHT_ZQ").toString())));
+            returnMap.put("yjjg", timeConfig.get("NIGHT_ZQ") + "小时/次");
+        }
+        message.put("data", returnMap);
+        erJiServerEndpoint.sendText((Session) session.get("session"), message);
     }
 }

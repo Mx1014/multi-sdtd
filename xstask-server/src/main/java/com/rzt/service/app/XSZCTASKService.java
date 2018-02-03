@@ -10,6 +10,7 @@ import com.rzt.entity.app.XSZCTASK;
 import com.rzt.repository.app.XSZCTASKRepository;
 import com.rzt.service.CurdService;
 import com.rzt.service.pc.XsZcCycleService;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -17,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -306,7 +308,7 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
                 sql = "select t.yhms,t.yhzt,t.id,tt.CREATE_TIME from\n" +
                         "(SELECT yhms,yhzt,ID\n" +
                         "FROM KH_YH_HISTORY t\n" +
-                        "WHERE START_TOWER = ? AND END_TOWER = ?  and yhjb1 like '施工隐患') t left join XS_ZC_TASK_LSYH tt on tt.task_id = ? and tt.YH_ID = t.id";//and xstask_id != ?
+                        "WHERE START_TOWER = ? AND END_TOWER = ?  and yhjb1 like '施工隐患' and yhzt = 0) t left join XS_ZC_TASK_LSYH tt on tt.task_id = ? and tt.YH_ID = t.id";//and xstask_id != ?
                 List<Map<String, Object>> maps = this.execSql(sql, execDetail.get("START_TOWER_ID").toString(), end_tower_id,taskId);//,Long.parseLong(execDetail.get("ID").toString())
                 execDetail.put("yh",maps);
             }
@@ -431,4 +433,18 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
         return map;
     }
 
+    public Map<String, Object> getImgsByExecId(String execId) {
+        Map<String, Object> result = new HashMap<>();
+        if(StringUtils.isEmpty(execId)){
+            result.put("success",false);
+            result.put("message","为啥不传参!!!");
+            return result;
+        }
+        String sql= "select id,file_path,file_small_path,PROCESS_NAME from picture_tour p where 1=1 ";
+        sql += "and exists (select ID from XS_ZC_TASK_EXEC_DETAIL where xs_zc_task_exec_id = ? and id = p.PROCESS_ID)";
+        List<Map<String, Object>> maps = execSql(sql, execId);
+        result.put("success",true);
+        result.put("object",maps);
+        return result;
+    }
 }

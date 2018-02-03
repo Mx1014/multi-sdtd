@@ -64,12 +64,17 @@ public class tourPublicController extends CurdController<Monitorcheckej, tourPub
     }
 
 
-
-    //巡视下线
-    @GetMapping("KHXX")
-    public WebApiResponse KHXX(String userId,Integer taskType){
+    /**
+     * 下线调接口
+     * @param currentUserId  人员id
+     * @param taskType 任务类型
+     * @param typeReason 下线类型 0 手动退出   1 90分钟无操作退出
+     * @return
+     */
+    @GetMapping("KHXXx")
+    public WebApiResponse KHXX(String currentUserId,Integer taskType,Integer typeReason){
         try {
-            this.service.KHXX(userId,taskType);
+            this.service.KHXX(currentUserId,taskType,typeReason);
             return WebApiResponse.success("success");
         }catch (Exception e){
             return WebApiResponse.erro("fail"+e.getMessage());

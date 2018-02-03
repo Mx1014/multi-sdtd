@@ -5,6 +5,8 @@ import com.rzt.repository.Monitorcheckejrepository;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.SnowflakeIdWorker;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import redis.clients.jedis.Jedis;
@@ -13,6 +15,7 @@ import redis.clients.jedis.JedisPool;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 public class tourPublicService extends CurdService<Monitorcheckej, Monitorcheckejrepository> {
@@ -25,6 +28,9 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
     @Autowired
     private RedisService redisService;
 
+    @Autowired
+    private RedisTemplate<String,Object> redisTemplate;
+
     /**
      * 巡视人员未到杆塔半径5米范围内
      */
@@ -34,6 +40,7 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
             String sql = "   SELECT TASK_NAME AS TASKNAME,TD_ORG FROM XS_ZC_TASK WHERE ID=?1 ";
             Map<String, Object> map = this.execSqlSingleResult(sql, taskid);
             //往二级单位插数据
+            System.out.println(reason+"----------巡视未到位原因");
             resp.saveCheckEjWdw(SnowflakeIdWorker.getInstance(10, 12).nextId(),taskid,1,3,userid,map.get("TD_ORG").toString(),map.get("TASKNAME").toString(),reason);
             String key = "ONE+" + taskid + "+1+3+" + userid + "+" + map.get("TD_ORG").toString() + "+" + map.get("TASKNAME").toString()+"+"+reason;
 
@@ -78,18 +85,22 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
 
     //看护/巡视未上线 给下线用
     //下线时如果该用户在任务时间段内，就把该用户放入redis准备往一级推，并且直接往二级查数据
-    public void KHXX(String userId,Integer taskType){
+    public void KHXX(String userId,Integer taskType,Integer typeReason){
         String sql = "";
-        if(taskType==2){
+
+        if(taskType==1){
+            //看护
             sql = " SELECT kh.ID,d.ID AS  DEPTID,kh.PLAN_START_TIME,kh.PLAN_END_TIME, kh.TASK_NAME,kh.USER_ID FROM  KH_TASK kh  LEFT JOIN RZTSYSDEPARTMENT d " +
                     " ON kh.TDYW_ORG = d.DEPTNAME WHERE trunc(kh.PLAN_START_TIME) = trunc(sysdate) AND kh.USER_ID =?1  AND kh.STATUS !=2 AND kh.STATUS !=3";
-        }else if(taskType==1){
+        }else if(taskType==2){
+            //巡视
             sql = "SELECT ID,TD_ORG as DEPTID,PLAN_START_TIME,TASK_NAME,CM_USER_ID,PLAN_END_TIME,STAUTS  " +
                     "FROM XS_ZC_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND CM_USER_ID=?1  AND STAUTS !=2";
         }else if(taskType==3){
+            //现场稽查
             sql=" SELECT t.ID,t.USER_ID,t.TASK_NAME,t.PLAN_START_TIME,t.PLAN_END_TIME,u.DEPTID FROM CHECK_LIVE_TASK t " +
                     " LEFT JOIN RZTSYSUSER u ON t.USER_ID=u.ID " +
-                    " WHERE trunc(t.CREATE_TIME)=trunc(sysdate) AND STATUS!=2 ";
+                    " WHERE trunc(t.CREATE_TIME)=trunc(sysdate) AND STATUS!=2  AND USER_ID=?1";
         }
         List<Map<String, Object>> maps = execSql(sql,userId);
         //如果查询结果为0，证明这个人当天没有任务
@@ -107,21 +118,28 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
                 Long startDate = plan_start_time.getTime();
                 Long endDate = plan_end_time.getTime();
                 Long currentDate = new Date().getTime();
+                String reason="";
+                if(typeReason==0){
+                    //手动退出
+                    reason="手动退出";
+                }else if(typeReason==1){
+                    reason="90分钟无操作";
+                }
 
                 if(startDate<currentDate && currentDate<endDate){
                     //如果用户在任务时间内退出登录，则直接往往二级推，并设置往一级推送时间
                     String key = "";
-                    if (taskType==2){
-                        key = "TWO+"+map.get("ID")+"+2+8+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
-                        //resp.saveCheckEj(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(map.get("ID").toString()),2,8,map.get("USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString());
-                    }else if (taskType==1){
-                        key = "TWO+"+map.get("ID")+"+1+2+"+map.get("CM_USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
-                        //resp.saveCheckEj(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(map.get("ID").toString()),1,2,map.get("CM_USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString());
+                    if (taskType==1){
+                        key = "ONE+"+map.get("ID")+"+2+8+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME")+reason;
+                        resp.saveCheckEjWdw(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(map.get("ID").toString()),2,8,map.get("USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString(),reason);
+                    }else if (taskType==2){
+                        key = "ONE+"+map.get("ID")+"+1+2+"+map.get("CM_USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME")+reason;
+                        resp.saveCheckEjWdw(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(map.get("ID").toString()),1,2,map.get("CM_USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString(),reason);
                     }else if(taskType==3){
-                        key = "TWO+"+map.get("ID")+"+3+13+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
-                        //resp.saveCheckEj(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(map.get("ID").toString()),3,13,map.get("USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString());
+                        key = "ONE+"+map.get("ID")+"+3+13+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME")+reason;
+                        resp.saveCheckEjWdw(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(map.get("ID").toString()),3,13,map.get("USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString(),reason);
                     }
-                    redisService.psetex(key,5400000L);
+                    redisService.setex(key);
                 }else if(new Date().getTime()<startDate){
                     String key = "";
                     if (taskType==2){
@@ -179,14 +197,21 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
                 if(currentDate<endDate){
                     //主要是删除定时拉取数据，存放在redis中的key
                     String key = "";
-                    if(taskType==2){
+                    /*if(taskType==2){
                         key = "TWO+"+map.get("ID")+"+2+8+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
                     }else if(taskType==1){
                         key = "TWO+"+map.get("ID")+"+1+2+"+map.get("CM_USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
                     }else if(taskType==3){
                         key = "TWO+"+map.get("ID")+"+3+13+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
+                    }*/
+                    if(taskType==2){
+                        key = "TWO+*+2+8+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+*";
+                    }else if(taskType==1){
+                        key = "TWO+*+1+2+"+map.get("CM_USER_ID")+"+"+map.get("DEPTID")+"+*";
+                    }else if(taskType==3){
+                        key = "TWO+*+3+13+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+*";
                     }
-                    jedis.del(key);
+                    removeKey(key);
                    resp.updateOnlineTime(userId,Long.parseLong(map.get("ID").toString()));
                 }
             } catch (Exception e) {
@@ -195,6 +220,23 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
             }finally {
                 jedis.close();
             }
+        }
+    }
+    public void removeKey(String s){
+        //String s = "TWO+*+2+8+*";
+        RedisConnection connection = null;
+        try {
+            connection = redisTemplate.getConnectionFactory().getConnection();
+            connection.select(1);
+            Set<byte[]> keys = connection.keys(s.getBytes());
+            byte[][] ts = keys.toArray(new byte[][]{});
+            if(ts.length > 0) {
+                connection.del(ts);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            connection.close();
         }
     }
 

@@ -2,10 +2,12 @@ package com.rzt.websocket.serverendpoint;
 
 import com.alibaba.fastjson.JSONObject;
 import com.rzt.websocket.service.ErJiPushService;
+import com.rzt.websocket.service.YiJiPushService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 
+import javax.annotation.Resource;
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
@@ -17,12 +19,17 @@ import java.util.concurrent.ConcurrentHashMap;
 @ServerEndpoint("/serverendpoint/ErJiServerEndpoint/{userId}")
 public class ErJiServerEndpoint {
     static RedisTemplate<String, Object> redisTemplate;
-
+    private static ErJiPushService erJiPushService;
 
     @Autowired
     public void setRedisTemplate(RedisTemplate<String, Object> redisTemplate) {
         ErJiServerEndpoint.redisTemplate = redisTemplate;
     }
+    @Resource
+    public void setErJiPushService(ErJiPushService erJiPushService) {
+        ErJiServerEndpoint.erJiPushService = erJiPushService;
+    }
+
 
     /**
      * WebSocket服务器端通过一个线程安全的队列来保持所有客户端的Session
@@ -45,6 +52,8 @@ public class ErJiServerEndpoint {
         jsonObject.put("session", session);
         String sessionId = session.getId();
         livingSessions.put(sessionId, jsonObject);
+        erJiPushService.module11(sessionId);
+
     }
 
 

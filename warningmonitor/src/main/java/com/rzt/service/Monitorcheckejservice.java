@@ -143,7 +143,7 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
             if(type==1){
                 sql = "SELECT   j.TASK_ID, j.CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,xs.PLAN_START_TIME FROM MONITOR_CHECK_YJ j " +
                         " LEFT JOIN RZTSYSUSER u ON j.USER_ID=u.ID " +
-                        "  LEFT JOIN XS_ZC_TASK xs ON j.TASK_ID=xs.ID where j.STATUS=0 AND j.USER_ID is NOT NULL AND u.USERDELETE=1 and j.TASK_TYPE=" + type;
+                        "  LEFT JOIN XS_ZC_TASK xs ON j.TASK_ID=xs.ID where j.STATUS=0 AND j.USER_ID is NOT NULL AND u.USERDELETE=1  AND xs.IS_DELETE=0  and j.TASK_TYPE=" + type;
             }else if(type==2){
                 //看护的sql
                 sql = "SELECT   j.TASK_ID, j.CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,kh.PLAN_START_TIME FROM MONITOR_CHECK_YJ j " +
@@ -166,7 +166,7 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
             if(type==1){
                 sql = "SELECT   j.TASK_ID, j.CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,xs.PLAN_START_TIME FROM MONITOR_CHECK_EJ j " +
                         " LEFT JOIN RZTSYSUSER u ON j.USER_ID=u.ID " +
-                        "  LEFT JOIN XS_ZC_TASK xs ON j.TASK_ID=xs.ID where j.STATUS=0 AND j.USER_ID is NOT NULL AND u.USERDELETE=1 and j.TASK_TYPE=" + type;
+                        "  LEFT JOIN XS_ZC_TASK xs ON j.TASK_ID=xs.ID where j.STATUS=0 AND j.USER_ID is NOT NULL AND u.USERDELETE=1 AND xs.IS_DELETE=0  and j.TASK_TYPE=" + type;
             }else if(type==2){
                 //看护的sql
                 sql = "SELECT   j.TASK_ID, j.CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,kh.PLAN_START_TIME FROM MONITOR_CHECK_EJ j " +
@@ -561,14 +561,51 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
     public Object warningType(String taskType) {
         String sql = "";
         sql = "SELECT * FROM WARNING_TYPE WHERE TASK_TYPE=?1";
-       /* if (!StringUtils.isEmpty(taskType) && "1".equals(taskType)) {
-            return execSql(sql, 1);
-        } else if (!StringUtils.isEmpty(taskType) && "2".equals(taskType)) {
-            return execSql(sql, 2);
-        }*/
        if(!StringUtils.isEmpty(taskType)){
            return execSql(sql, taskType);
        }
         return "";
+    }
+
+    /**
+     * 告警总览
+     * @param currentUserId
+     * @return
+     */
+    public Object GJZL(String currentUserId) {
+
+        String deptID = getDeptID(currentUserId);
+
+        if (deptID == null) {
+            return "该用户状态为null";
+        }
+        if ("-1".equals(deptID)) {
+            return "该用户无此权限";
+        }
+
+        String sql ="";
+        List<Map<String, Object>> maps = null;
+        if("0".equals(deptID)){
+            sql = "SELECT A.*,T.DEPTNAME FROM RZTSYSDEPARTMENT T LEFT JOIN (SELECT\n" +
+                    "    nvl(sum(decode(TASK_TYPE, 1, 1)),0)  AS XS,\n" +
+                    "    nvl(sum(decode(TASK_TYPE, 2, 1)),0)  AS KH,\n" +
+                    "    nvl(sum(decode(TASK_TYPE, 3, 1)),0)  AS XCJC,\n" +
+                    " nvl(sum(decode(TASK_TYPE, 3, 1,1,1,2,1)),0)  AS total, " +
+                    "    DEPTID\n" +
+                    "    FROM MONITOR_CHECK_YJ\n" +
+                    "   WHERE 1=1 AND trunc(CREATE_TIME) = trunc(sysdate) AND STATUS=0\n" +
+                    "  GROUP BY DEPTID)A ON T.ID = A.DEPTID WHERE  T.DEPTSORT IS NOT NULL ORDER BY T.DEPTSORT\n";
+            maps = execSql(sql);
+        }else{
+            sql="SELECT\n" +
+                    "    nvl(sum(decode(TASK_TYPE, 1, 1)),0)  AS XS,\n" +
+                    "    nvl(sum(decode(TASK_TYPE, 2, 1)),0)  AS KH,\n" +
+                    "    nvl(sum(decode(TASK_TYPE, 3, 1)),0)  AS XCJC\n" +
+                    " nvl(sum(decode(TASK_TYPE, 3, 1,1,1,2,1)),0)  AS total, " +
+                    "    FROM MONITOR_CHECK_YJ\n" +
+                    "   WHERE 1=1 AND trunc(CREATE_TIME) = trunc(sysdate) AND STATUS=0 AND DEPTID=?1";
+            maps = execSql(sql, currentUserId);
+        }
+        return maps;
     }
 }

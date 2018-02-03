@@ -6,8 +6,8 @@ server:
   context-path: /linedata/
 #expireTime: 30000000
 #
-#logging:
-#  config: classpath:logback.xml
+logging:
+  config: classpath:logback.xml
 
 spring:
   application:
@@ -21,8 +21,8 @@ spring:
 #      type: com.alibaba.druid.pool.DruidDataSource
       #oracle数据库配置
       driverClassName: oracle.jdbc.driver.OracleDriver
-      url: jdbc:oracle:thin:@47.94.131.120:1521/orcl
-#      url: jdbc:oracle:thin:@168.130.1.32:1521:orcl
+#      url: jdbc:oracle:thin:@47.94.131.120:1521/orcl
+      url: jdbc:oracle:thin:@168.130.1.32:1521:orcl
       username: sdtd27
       password: sdtd27
 # 下面为连接池的补充设置，应用到上面所有数据源中
@@ -71,5 +71,5 @@ spring:
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://39.106.206.129:7002/eureka/
-#      defaultZone: http://dubby:dubby@192.168.22.56:7002/eureka/
+#      defaultZone: http://39.106.206.129:7002/eureka/
+      defaultZone: http://localhost:7002/eureka/
