@@ -45,8 +45,8 @@ public class OverdueController extends CurdController<RztSysUser, CommonService>
             s += " AND trunc(CREATE_TIME) = trunc(sysdate) ";
         }
         String sql = " SELECT " +
-                "  k.TASK_NAME,u.DEPT,u.CLASSNAME,u.COMPANYNAME,u.REALNAME,u.PHONE,k.PLAN_END_TIME " +
-                "FROM (SELECT TASK_ID " +
+                "  k.TASK_NAME,u.DEPT,u.CLASSNAME,u.COMPANYNAME,u.REALNAME,u.PHONE,k.PLAN_END_TIME,e.* " +
+                "FROM (SELECT TASK_ID,USER_ID,TASK_TYPE  " +
                 "      FROM MONITOR_CHECK_EJ " +
                 "      WHERE WARNING_TYPE = 1 " + s +
                 "     ) e LEFT JOIN XS_ZC_TASK k ON e.TASK_ID = k.ID LEFT JOIN USERINFO u ON k.CM_USER_ID = u.ID ";

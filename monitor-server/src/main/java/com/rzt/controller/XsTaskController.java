@@ -108,6 +108,20 @@ public class XsTaskController extends
     }
 
     /**
+     * 查询为完成的任务
+     * @return
+     */
+    @GetMapping("/failTask")
+    public WebApiResponse failTask(Integer page,Integer size, String taskType,String currentUserId,String userName,String TD,String targetType){
+
+            return service.getFailTask(page,size,taskType,currentUserId,userName,TD,targetType);
+
+
+    }
+
+
+
+    /**
      * 导出excle
      * @param response
      * @param taskType

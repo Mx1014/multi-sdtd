@@ -119,18 +119,24 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
         return jsonObject;
     }
     //看护已派发稽查任务
-    public Page<Map<String,Object>> listKhCheckTaskPage(Pageable pageable, String userId, String tddwId,String currentUserId,String startTime,String endTime,String status,String queryAll) {
+    public Page<Map<String,Object>> listKhCheckTaskPage(Pageable pageable, String userId, String tddwId,String currentUserId,String startTime,String endTime,String status,String queryAll,String loginType) {
 
         String sql = "select t.id,t.TASK_ID,t.CREATE_TIME,t.TASK_NAME,t.PLAN_START_TIME,t.PLAN_END_TIME,u.REALNAME,d.DEPTNAME, " +
-                "  t.status , t.TASK_TYPE " +
+                "  t.status , t.TASK_TYPE ,u.LOGINSTATUS,C.COMPANYNAME,U.PHONE" +
                 " from CHECK_LIVE_TASK t " +
                 "  LEFT JOIN  rztsysuser u on u.id=t.USER_ID " +
-                "  LEFT JOIN  RZTSYSDEPARTMENT d on d.ID = u.DEPTID where 1=1 ";
+                "  LEFT JOIN  RZTSYSDEPARTMENT d on d.ID = u.DEPTID " +
+                "  LEFT JOIN RZTSYSCOMPANY C ON C.ID = U.COMPANYID where 1=1 ";
 
         List params = new ArrayList<>();
-        //稽查人查询
+        //任务状态人查询
         if (!StringUtils.isEmpty(status)) {
             sql += " AND t.status =" + status;
+        }
+        //人员在线状态查询
+        if (!StringUtils.isEmpty(loginType)) {
+            int login = Integer.parseInt(loginType);
+            sql += " AND u.LOGINSTATUS =" + login;
         }
         //稽查人查询
         if (!StringUtils.isEmpty(userId)) {
@@ -141,7 +147,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
         if (!StringUtils.isEmpty(startTime) && !StringUtils.isEmpty(endTime)){
             params.add(endTime);
             params.add(startTime);
-            sql += " and to_date(?,'yyyy-MM-dd HH24:mi') > t.plan_start_time and to_date(?,'yyyy-MM-dd HH24:mi') < t.plan_end_time ";
+            sql += " and (to_date(?,'yyyy-MM-dd HH24:mi') > t.plan_start_time or to_date(?,'yyyy-MM-dd HH24:mi') < t.plan_end_time) ";
         }
         if(!StringUtils.isEmpty(currentUserId)){
             Map<String, Object> map = userInfoFromRedis(currentUserId);
@@ -410,7 +416,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
 
     public List<Map<String,Object>> listKhCheckTaskDetail(Long id) {
         String sql = " select d.id detail_id,d.CREATE_TIME,d.PLAN_START_TIME,d.PLAN_END_TIME,replace(h.vtype,'kV')||h.line_name||' '||h.section task_name,t.task_type,d.status,u.REALNAME,h.yhms,h.TDYW_ORG,h.TDWX_ORG,h.yhjb,h.yhjb1,h.YHZRDW,h.YHZRDWLXR,h.YHZRDWDH,h.YHFXSJ,h.gkcs," +
-                " h.YHXCYY , h.XLZYCD,h.classname " +
+                " h.YHXCYY , h.XLZYCD,h.classname,t.real_start_time,t.real_end_time " +
                 " from CHECK_LIVE_TASK_DETAIL d " +
                 " left join CHECK_LIVE_TASK t on t.id=d.task_id " +
                 " left join KH_YH_HISTORY h on h.id=d.kh_task_id " +
@@ -485,6 +491,18 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
         }
         listAll.addAll(list1);
         listAll.addAll(list2);
+        return listAll;
+    }
+
+    public List<Map<String,Object>> mapKhCheckTaskDetailPicture(String ids) {
+        String sql = "select process_name,CREATE_TIME,FILE_PATH,lon,lat from PICTURE_JC " +
+                " where task_id in (?)  order by CREATE_TIME ASC " ;
+        List<Map<String, Object>> listAll = new ArrayList<>();
+
+        if(!StringUtils.isEmpty(ids)){
+            String sql1 = sql.replace("?",ids);
+            listAll = execSql(sql1);
+        }
         return listAll;
     }
 }

@@ -17,7 +17,7 @@ public class PictureController extends
         CurdController<PictureController,PictureService>{
 
     /***
-     * 获取详情中默认展示的4条照片
+     * 获取详情中默认展示的3张最新照片
      * @param taskId
      * @param TASKTYPE
      * @return
