@@ -122,10 +122,11 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
     public Page<Map<String,Object>> listKhCheckTaskPage(Pageable pageable, String userId, String tddwId,String currentUserId,String startTime,String endTime,String status,String queryAll,String loginType) {
 
         String sql = "select t.id,t.TASK_ID,t.CREATE_TIME,t.TASK_NAME,t.PLAN_START_TIME,t.PLAN_END_TIME,u.REALNAME,d.DEPTNAME, " +
-                "  t.status , t.TASK_TYPE " +
+                "  t.status , t.TASK_TYPE ,u.LOGINSTATUS,C.COMPANYNAME,U.PHONE" +
                 " from CHECK_LIVE_TASK t " +
                 "  LEFT JOIN  rztsysuser u on u.id=t.USER_ID " +
-                "  LEFT JOIN  RZTSYSDEPARTMENT d on d.ID = u.DEPTID where 1=1 ";
+                "  LEFT JOIN  RZTSYSDEPARTMENT d on d.ID = u.DEPTID " +
+                "  LEFT JOIN RZTSYSCOMPANY C ON C.ID = U.COMPANYID where 1=1 ";
 
         List params = new ArrayList<>();
         //任务状态人查询

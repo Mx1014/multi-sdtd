@@ -80,10 +80,10 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 	@GetMapping("/listKhCheckTaskPage")
 	public WebApiResponse listKhCheckTaskPage(@RequestParam(value = "page",defaultValue = "0") Integer page,
 											  @RequestParam(value = "size",defaultValue = "8") Integer size,
-											  String userId,String tddwId,String currentUserId,String startTime, String endTime,String status,String queryAll){
+											  String userId,String tddwId,String currentUserId,String startTime, String endTime,String status,String queryAll,String loginType){
 		try{
 			Pageable pageable = new PageRequest(page, size);
-			Page<Map<String, Object>> list = this.service.listKhCheckTaskPage(pageable, userId, tddwId,currentUserId,startTime,endTime,status,queryAll);
+			Page<Map<String, Object>> list = this.service.listKhCheckTaskPage(pageable, userId, tddwId,currentUserId,startTime,endTime,status,queryAll,loginType);
 			return WebApiResponse.success(list);
 		}catch (Exception e){
 			return WebApiResponse.erro("数据获取失败"+e.getMessage());
