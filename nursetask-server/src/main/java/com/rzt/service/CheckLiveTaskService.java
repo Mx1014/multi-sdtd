@@ -493,4 +493,16 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
         listAll.addAll(list2);
         return listAll;
     }
+
+    public List<Map<String,Object>> mapKhCheckTaskDetailPicture(String ids) {
+        String sql = "select process_name,CREATE_TIME,FILE_PATH,lon,lat from PICTURE_JC " +
+                " where task_id in (?)  order by CREATE_TIME ASC " ;
+        List<Map<String, Object>> listAll = new ArrayList<>();
+
+        if(!StringUtils.isEmpty(ids)){
+            String sql1 = sql.replace("?",ids);
+            listAll = execSql(sql1);
+        }
+        return listAll;
+    }
 }
