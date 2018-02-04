@@ -416,7 +416,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
 
     public List<Map<String,Object>> listKhCheckTaskDetail(Long id) {
         String sql = " select d.id detail_id,d.CREATE_TIME,d.PLAN_START_TIME,d.PLAN_END_TIME,replace(h.vtype,'kV')||h.line_name||' '||h.section task_name,t.task_type,d.status,u.REALNAME,h.yhms,h.TDYW_ORG,h.TDWX_ORG,h.yhjb,h.yhjb1,h.YHZRDW,h.YHZRDWLXR,h.YHZRDWDH,h.YHFXSJ,h.gkcs," +
-                " h.YHXCYY , h.XLZYCD,h.classname " +
+                " h.YHXCYY , h.XLZYCD,h.classname,t.real_start_time,t.real_end_time " +
                 " from CHECK_LIVE_TASK_DETAIL d " +
                 " left join CHECK_LIVE_TASK t on t.id=d.task_id " +
                 " left join KH_YH_HISTORY h on h.id=d.kh_task_id " +
@@ -491,6 +491,18 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
         }
         listAll.addAll(list1);
         listAll.addAll(list2);
+        return listAll;
+    }
+
+    public List<Map<String,Object>> mapKhCheckTaskDetailPicture(String ids) {
+        String sql = "select process_name,CREATE_TIME,FILE_PATH,lon,lat from PICTURE_JC " +
+                " where task_id in (?)  order by CREATE_TIME ASC " ;
+        List<Map<String, Object>> listAll = new ArrayList<>();
+
+        if(!StringUtils.isEmpty(ids)){
+            String sql1 = sql.replace("?",ids);
+            listAll = execSql(sql1);
+        }
         return listAll;
     }
 }

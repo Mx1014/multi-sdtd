@@ -455,9 +455,17 @@ public class PcMapShowController {
     }
 
     @GetMapping("getGuZhang")
-    public Object getGuZhang() {
+    public Object getGuZhang(String currentUserId) {
         try {
-            String sql = "select t.*,tt.TOWER_NAME,ttt.LONGITUDE,ttt.LATITUDE from GUZHANG t join CM_LINE_TOWER tt on t.LINE_ID = tt.LINE_ID and t.GZ_TOWER is not NULL and tt.TOWER_NAME = substr(t.GZ_TOWER,0,instr(GZ_TOWER,'#',1,1)-1) join cm_tower ttt on ttt.id = tt.TOWER_ID";
+            Map<String, Object> map = pcMapShowService.userInfoFromRedis(currentUserId);
+            String s = "";
+            Integer roletype = Integer.parseInt(map.get("ROLETYPE").toString());
+            if(roletype != 0) {
+                s = "and t.td_org = '" + map.get("DEPT") + "'";
+            }
+            String sql = "select t.*,tt.TOWER_NAME,ttt.LONGITUDE,ttt.LATITUDE from GUZHANG t join CM_LINE_TOWER tt on t.LINE_ID = tt.LINE_ID and t.GZ_TOWER is not NULL and tt.TOWER_NAME = substr(t.GZ_TOWER,0,instr(GZ_TOWER,'#',1,1)-1) " +
+                    s +
+                    "join cm_tower ttt on ttt.id = tt.TOWER_ID";
             List<Map<String, Object>> maps = cmcoordinateService.execSql(sql);
             return WebApiResponse.success(maps);
         } catch (Exception e) {
@@ -606,5 +614,12 @@ public class PcMapShowController {
         menCurrentDayJC(day);
     }
 
-
+    //两个定时计划
+    @Scheduled(fixedRate = 900000)
+    public void Scheduled2() {
+        Date day = new Date();
+        menCurrentDayKh(day);
+        menCurrentDayxs(day);
+        menCurrentDayJC(day);
+    }
 }
