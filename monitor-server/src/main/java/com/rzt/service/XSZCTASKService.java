@@ -5,6 +5,7 @@ import com.rzt.entity.TimedTask;
 import com.rzt.repository.TimedConfigRepository;
 import com.rzt.repository.XSZCTASKRepository;
 import com.rzt.util.WebApiResponse;
+import com.rzt.utils.DateUtil;
 import com.rzt.utils.RedisUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -252,13 +253,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                 String sum = map1.get("SUM").toString();
                 String comSum = map2.get("COMSUM").toString();
                 String date =  map3.get("TIME").toString();
-                if(null != date && !"".equals(date)){
-                    date = date.substring(0,date.length()-2);
-                }
-
-                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
-                //任务抽查时间
-                Date parse = simpleDateFormat.parse(date);
+                Date parse = DateUtil.parseDate(date);
                 //插入到记录表中
                 String uuid = UUID.randomUUID().toString();
 
@@ -283,7 +278,8 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                   if(hours <= Integer.parseInt(end_time)&& hours >= Integer.parseInt(start_time)){
                       JCID = day_user;
                   }
-                  timedConfigRepository.insertTaskRecord(uuid,date1,sum,comSum,deptId,parse,JCID);
+
+                timedConfigRepository.insertTaskRecord(uuid,date1,sum,comSum,deptId,parse,JCID);
 
                 LOGGER.info(deptId+ "单位本周期查询情况添加");
             }
