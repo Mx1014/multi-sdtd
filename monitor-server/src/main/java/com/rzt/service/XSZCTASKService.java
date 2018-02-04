@@ -76,6 +76,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
         Pageable pageable = new PageRequest(page, size);
         //sql 中 拉取数据为刷新时间至刷新时间前10分钟
         String sql = "";
+        String deptid = "";
         Page<Map<String, Object>> pageResult = null;
         try {
         if(null == userId || "".equals(userId)){
@@ -86,7 +87,11 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
         if(null != userInformation1 && !"".equals(userInformation1)){
             JSONObject jsonObject1 = JSONObject.parseObject(userInformation1.toString());
             String roletype = (String) jsonObject1.get("ROLETYPE");//用户权限信息  0 为1级单位  1为二级单位 2为单位 只展示当前单位的任务
-            String deptid = (String) jsonObject1.get("DEPTID");//当角色权限为3时需要只显示本单位的任务信息
+             deptid = (String) jsonObject1.get("DEPTID");//当角色权限为3时需要只显示本单位的任务信息
+            if(null == deptid  || "".equals(deptid)){
+                //部门id为空
+                return WebApiResponse.erro("当前登录用户部门id错误  deptId = "+deptid);
+            }
             if(null != roletype && !"".equals(roletype)){//证明当前用户信息正常
                 int i = Integer.parseInt(roletype);
                 switch (i){
@@ -182,6 +187,35 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                         return WebApiResponse.erro("获取登录人权限失败,当前权限未知");
                     }
                 }
+            }
+        }
+        //如果是公司本部  roleType 又没有赋值0的情况下   只要员工属于公司本部就显示所有信息
+        if(null != deptid && !"".equals(deptid)){
+            if("40283781608b848701608b85d3700000".equals(deptid)){
+                sql = "  SELECT * FROM (  SELECT DISTINCT t.TASKID," +
+                        "   t.ID," +
+                        "   t.CREATETIME," +
+                        "   t.USER_ID," +
+                        "   t.TASKNAME," +
+                        "    t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did," +
+                        "  d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE,(SELECT COMPANYNAME FROM RZTSYSCOMPANY WHERE ID = xs.WX_ORG) AS COMPANYNAME" +
+                        "    FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
+                        "   LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID LEFT JOIN XS_ZC_TASK xs ON xs.ID = t.TASKID" +
+                        "    WHERE t.CREATETIME >  ( select sysdate - (3 * 24 * 60 * 60 + 60 * 60) / (1 * 24 * 60 * 60)   from  dual)" +
+                        "     AND t.STATUS = 0 AND t.THREEDAY = 1 AND t.TASKTYPE = 1" +
+                        "  UNION ALL" +
+                        "   SELECT DISTINCT t.TASKID," +
+                        "  t.ID," +
+                        "  t.CREATETIME," +
+                        "  t.USER_ID," +
+                        "  t.TASKNAME," +
+                        "  t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did," +
+                        "    d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE" +
+                        "  ,kh.WX_ORG  AS COMPANYNAME" +
+                        "   FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
+                        "  LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID LEFT JOIN KH_TASK kh ON kh.ID = t.TASKID" +
+                        "   WHERE t.CREATETIME >  ( select sysdate - (3 * 24 * 60 * 60 + 60 * 60) / (1 * 24 * 60 * 60)   from  dual)  " +
+                        "   AND t.STATUS = 0 AND t.THREEDAY = 1 AND t.TASKTYPE = 2 ) WHERE 1=1";
             }
         }
         if(taskType!=null && !"".equals(taskType.trim())){// 判断当前任务类型  巡视1   看护2  看护稽查3  巡视稽查4
