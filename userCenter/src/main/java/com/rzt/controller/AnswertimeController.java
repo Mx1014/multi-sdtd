@@ -48,8 +48,8 @@ public class AnswertimeController extends CurdController<RztSysUser, CommonServi
         }
         String allSql = "";
         String xssql = "  SELECT * FROM (SELECT x.TASK_NAME,nvl(x.PLAN_START_TIME,sysdate-2) as PLAN_START_TIME," +
-                "  x.REAL_START_TIME,u.REALNAME,u.COMPANYNAME,u.DEPT,u.CLASSNAME,u.PHONE, X.STAUTS " +
-                "FROM (SELECT TASK_ID,USER_ID " +
+                "  x.REAL_START_TIME,u.REALNAME,u.COMPANYNAME,u.DEPT,u.CLASSNAME,u.PHONE, X.STAUTS,e.* " +
+                "FROM (SELECT TASK_ID,USER_ID,TASK_TYPE " +
                 "      FROM MONITOR_CHECK_EJ " +
                 "      WHERE WARNING_TYPE = 4 " + s1 + " ) e LEFT JOIN XS_ZC_TASK x ON e.TASK_ID = x.ID " +
                 "  LEFT JOIN USERINFO u ON e.USER_ID = u.ID WHERE 1=1 " +
@@ -59,8 +59,8 @@ public class AnswertimeController extends CurdController<RztSysUser, CommonServi
                 "" + s + " ) ";
 
 
-        String khsql = " (SELECT x.TASK_NAME,nvl(x.PLAN_START_TIME,sysdate-2) as PLAN_START_TIME,x.REAL_START_TIME,u.REALNAME,u.COMPANYNAME,u.DEPT,u.CLASSNAME,u.PHONE, X.STATUS as STAUTS " +
-                " FROM (SELECT TASK_ID,USER_ID " +
+        String khsql = " (SELECT x.TASK_NAME,nvl(x.PLAN_START_TIME,sysdate-2) as PLAN_START_TIME,x.REAL_START_TIME,u.REALNAME,u.COMPANYNAME,u.DEPT,u.CLASSNAME,u.PHONE, X.STATUS as STAUTS,e.* " +
+                " FROM (SELECT TASK_ID,USER_ID,TASK_TYPE " +
                 "      FROM MONITOR_CHECK_EJ " +
                 "      WHERE WARNING_TYPE = 10 " + s1 + " ) e LEFT JOIN KH_TASK x ON e.TASK_ID = x.ID " +
                 "  LEFT JOIN USERINFO u ON e.USER_ID = u.ID WHERE 1=1" +
