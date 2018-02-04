@@ -116,7 +116,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                                 "   WHERE t.CREATETIME >  ( select sysdate - (3 * 24 * 60 * 60 + 60 * 60) / (1 * 24 * 60 * 60)   from  dual)  " +
                                 "   AND t.STATUS = 0 AND t.THREEDAY = 1 AND t.TASKTYPE = 2 ) WHERE 1=1";
                         break;
-                    }case 1 :{//二级单位   显示全部周期为两小时的任务
+                    }case 1 :{//公司本部单位   显示全部周期为两小时的任务
                         if(null != deptid && !"".equals(deptid)){//当前用户单位信息获取成功，进入流程
                             list.add(deptid);
                             sql = "  SELECT * FROM (  SELECT DISTINCT t.TASKID," +
@@ -148,7 +148,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                             return WebApiResponse.erro("获取当前用户单位信息失败");
                         }
                         break;
-                    }case 2 :{//三级单位   只显示本单位的任务
+                    }case 2 :{//属地单位   只显示本单位的任务
 
                         if(null != deptid && !"".equals(deptid)){//当前用户单位信息获取成功，进入流程
                             list.add(deptid);
@@ -210,53 +210,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
         }
 
             pageResult = this.execSqlPage(pageable, sql, list.toArray());
-            /*Iterator<Map<String, Object>> iterator = pageResult.iterator();
-            HashOperations hashOperations = redisTemplate.opsForHash();*/
 
-           /* while (iterator.hasNext()){
-
-                Map<String, Object> next = iterator.next();
-                Object taskid = next.get("TASKID");
-                Object tasktype = next.get("TASKTYPE");
-                //巡视
-                if(tasktype!=null && tasktype.equals("1")){
-                    String sqll = "SELECT  c.LINE_ID FROM XS_ZC_TASK x LEFT JOIN XS_ZC_CYCLE c ON c.ID = x.XS_ZC_CYCLE_ID WHERE x.ID =?1";
-                    List<Map<String, Object>> maps = execSql(sqll,taskid);
-                    if(list.size()>0){
-                        next.put("LINE_ID",maps.get(0).get("LINE_ID"));
-                    }
-                }else if (tasktype!=null && tasktype.equals("2")){ //看护
-                    String sqlll = "SELECT LINE_ID FROM KH_YH_HISTORY WHERE TASK_ID =?1";
-                    List<Map<String, Object>> maps = execSql(sqlll, taskid);
-                    if(maps.size()>0){
-                        next.put("LINE_ID",maps.get(0).get("LINE_ID"));
-                    }
-                }else if (tasktype!=null && tasktype.equals("3")){ //看护稽查
-
-                }else if (tasktype!=null && tasktype.equals("4")){ //巡视稽查
-
-                }else {
-                    LOGGER.error("查询类型不明确");
-                    return WebApiResponse.erro("类型不明确");
-                }
-                Object userInformation = null;
-                        String userID =(String)next.get("USER_ID");
-                        if(null !=userID && !"".equals(userID)){
-                            userInformation = hashOperations.get("UserInformation", userID);
-                        }
-
-                if(userInformation==null){
-                    continue;
-                }
-                JSONObject jsonObject = JSONObject.parseObject(userInformation.toString());
-                if(jsonObject!=null){
-                    next.put("DEPT",jsonObject.get("DEPT"));
-                    next.put("COMPANYNAME",jsonObject.get("COMPANYNAME"));
-                    next.put("REALNAME",jsonObject.get("REALNAME"));
-                    next.put("PHONE",jsonObject.get("PHONE"));
-                    next.put("CHTYPE"," "); // 抽查类型
-                }
-            }*/
        }catch (Exception e){
             LOGGER.error("抽查任务查询失败"+e.getMessage());
             return WebApiResponse.erro("抽查任务查询失败"+e.getMessage());
@@ -298,8 +252,11 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                 String sum = map1.get("SUM").toString();
                 String comSum = map2.get("COMSUM").toString();
                 String date =  map3.get("TIME").toString();
+                if(null != date && !"".equals(date)){
+                    date = date.substring(0,date.length()-2);
+                }
 
-                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("YYYY-MM-dd HH");
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
                 //任务抽查时间
                 Date parse = simpleDateFormat.parse(date);
                 //插入到记录表中
