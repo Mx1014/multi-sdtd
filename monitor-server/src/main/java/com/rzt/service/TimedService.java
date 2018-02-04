@@ -69,7 +69,7 @@ public class TimedService  extends CurdService<TimedTask,XSZCTASKRepository>{
                               return WebApiResponse.success("3天");
                           }
                           case 1 :{
-                              return WebApiResponse.success("3天");
+                              return WebApiResponse.success(time);
                           }
                           case 2 :{
                               return WebApiResponse.success(time);
