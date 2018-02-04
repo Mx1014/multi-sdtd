@@ -94,8 +94,8 @@ public class KHYHHISTORYService extends CurdService<KHYHHISTORY, KHYHHISTORYRepo
             sql += " and line_id= ?" + list.size();
         }
         if (yhjb != null && !"".equals(yhjb.trim())) {
-            list.add(yhjb);
-            sql += " and yhjb= ?" + list.size();
+            list.add("%"+yhjb+"%");
+            sql += " and yhjb1 like ?" + list.size();
         }
         if (startTime != null && !"".equals(startTime.trim())) {
             Date date = DateUtil.parse(startTime + ":00", "yyyy-MM-dd HH:mm:ss");
