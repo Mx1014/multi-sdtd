@@ -101,7 +101,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                                 "  d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE,(SELECT COMPANYNAME FROM RZTSYSCOMPANY WHERE ID = xs.WX_ORG) AS COMPANYNAME" +
                                 "    FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
                                 "   LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID LEFT JOIN XS_ZC_TASK xs ON xs.ID = t.TASKID" +
-                                "    WHERE t.CREATETIME >  ( select sysdate - (3 * 24 * 60 * 60 + 60 * 60) / (1 * 24 * 60 * 60)   from  dual)" +
+                                "    WHERE t.CREATETIME >  ( select sysdate - (3 * 24 * 60 * 60 ) / (1 * 24 * 60 * 60)   from  dual)" +
                                 "     AND t.STATUS = 0 AND t.THREEDAY = 1 AND t.TASKTYPE = 1" +
                                 "  UNION ALL" +
                                 "   SELECT DISTINCT t.TASKID," +
@@ -114,7 +114,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                                 "  ,kh.WX_ORG  AS COMPANYNAME" +
                                 "   FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
                                 "  LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID LEFT JOIN KH_TASK kh ON kh.ID = t.TASKID" +
-                                "   WHERE t.CREATETIME >  ( select sysdate - (3 * 24 * 60 * 60 + 60 * 60) / (1 * 24 * 60 * 60)   from  dual)  " +
+                                "   WHERE t.CREATETIME >  ( select sysdate - (3 * 24 * 60 * 60 ) / (1 * 24 * 60 * 60)   from  dual)  " +
                                 "   AND t.STATUS = 0 AND t.THREEDAY = 1 AND t.TASKTYPE = 2 ) WHERE 1=1";
                         break;
                     }case 1 :{//公司本部单位   显示全部周期为三天的任务
@@ -128,7 +128,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                                 "  d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE,(SELECT COMPANYNAME FROM RZTSYSCOMPANY WHERE ID = xs.WX_ORG) AS COMPANYNAME" +
                                 "    FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
                                 "   LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID LEFT JOIN XS_ZC_TASK xs ON xs.ID = t.TASKID" +
-                                "    WHERE t.CREATETIME >  ( select sysdate - (3 * 24 * 60 * 60 + 60 * 60) / (1 * 24 * 60 * 60)   from  dual)" +
+                                "    WHERE t.CREATETIME >  ( select sysdate - (3 * 24 * 60 * 60 ) / (1 * 24 * 60 * 60)   from  dual)" +
                                 "     AND t.STATUS = 0 AND t.THREEDAY = 1 AND t.TASKTYPE = 1" +
                                 "  UNION ALL" +
                                 "   SELECT DISTINCT t.TASKID," +
@@ -141,7 +141,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                                 "  ,kh.WX_ORG  AS COMPANYNAME" +
                                 "   FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
                                 "  LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID LEFT JOIN KH_TASK kh ON kh.ID = t.TASKID" +
-                                "   WHERE t.CREATETIME >  ( select sysdate - (3 * 24 * 60 * 60 + 60 * 60) / (1 * 24 * 60 * 60)   from  dual)  " +
+                                "   WHERE t.CREATETIME >  ( select sysdate - (3 * 24 * 60 * 60 ) / (1 * 24 * 60 * 60)   from  dual)  " +
                                 "   AND t.STATUS = 0 AND t.THREEDAY = 1 AND t.TASKTYPE = 2 ) WHERE 1=1";
                         break;
                     }case 2 :{//属地单位   只显示本单位的任务
