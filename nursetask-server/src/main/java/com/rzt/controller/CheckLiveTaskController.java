@@ -65,9 +65,9 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 
 	@ApiOperation(value = "看护稽查任务派发",notes = "看护稽查任务派发")
 	@GetMapping("/paifaKhCheckTask")
-	public WebApiResponse paifaKhCheckTask(CheckLiveTask task , String username){
+	public WebApiResponse paifaKhCheckTask(CheckLiveTask task , String username,String currentUserId){
 		try {
-			this.service.paifaKhCheckTask(task,username);
+			this.service.paifaKhCheckTask(task,username,currentUserId);
 			return WebApiResponse.success("任务派发成功");
 		}catch (Exception e){
 			LOGGER.error("任务派发失败",e);
@@ -80,10 +80,10 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 	@GetMapping("/listKhCheckTaskPage")
 	public WebApiResponse listKhCheckTaskPage(@RequestParam(value = "page",defaultValue = "0") Integer page,
 											  @RequestParam(value = "size",defaultValue = "8") Integer size,
-											  String userId,String tddwId,String currentUserId,String startTime, String endTime,String status){
+											  String userId,String tddwId,String currentUserId,String startTime, String endTime,String status,String queryAll,String loginType){
 		try{
 			Pageable pageable = new PageRequest(page, size);
-			Page<Map<String, Object>> list = this.service.listKhCheckTaskPage(pageable, userId, tddwId,currentUserId,startTime,endTime,status);
+			Page<Map<String, Object>> list = this.service.listKhCheckTaskPage(pageable, userId, tddwId,currentUserId,startTime,endTime,status,queryAll,loginType);
 			return WebApiResponse.success(list);
 		}catch (Exception e){
 			return WebApiResponse.erro("数据获取失败"+e.getMessage());

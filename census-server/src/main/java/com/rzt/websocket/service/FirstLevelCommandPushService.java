@@ -3,17 +3,17 @@ package com.rzt.websocket.service;
 import com.rzt.entity.websocket;
 import com.rzt.repository.websocketRepository;
 import com.rzt.service.CurdService;
+import com.rzt.util.DateUtil;
 import com.rzt.websocket.serverendpoint.FirstLevelCommandServerEndpoint;
+import org.hibernate.sql.Select;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import javax.websocket.Session;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @Service
 public class FirstLevelCommandPushService extends CurdService<websocket, websocketRepository> {
@@ -43,10 +43,10 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
         Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
         sendMsg.forEach((sessionId, session) -> {
             String sql = " select  " +
-                    "(select count(h.id) from KH_YH_HISTORY h where yhjb1='施工隐患') sg, " +
-                    "(select count(h.id) from KH_YH_HISTORY h where yhjb1='建筑隐患') jz, " +
-                    "(select count(h.id) from KH_YH_HISTORY h where yhjb1='异物隐患') yw, " +
-                    "(select count(h.id) from KH_YH_HISTORY h where yhjb1='树木隐患') sm from dual  ";
+                    "(select count(h.id) from KH_YH_HISTORY h where yhjb1='施工隐患' and yhzt=0) sg, " +
+                    "(select count(h.id) from KH_YH_HISTORY h where yhjb1='建筑隐患' and yhzt=0) jz, " +
+                    "(select count(h.id) from KH_YH_HISTORY h where yhjb1='异物隐患' and yhzt=0) yw, " +
+                    "(select count(h.id) from KH_YH_HISTORY h where yhjb1='树木隐患' and yhzt=0) sm from dual  ";
             try {
                 Map<Object, Object> map1 = new HashMap<>();
                 Map<String, Object> map = this.execSqlSingleResult(sql);
@@ -128,23 +128,52 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
             String qjcZxUser = " SELECT count(1) SM FROM (SELECT " +
                     "    count(1) " +
                     "  FROM CHECK_LIVE_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID " +
-                    "  WHERE u.LOGINSTATUS = 1 AND u.USERDELETE = 1 AND sysdate BETWEEN PLAN_START_TIME AND PLAN_END_TIME GROUP BY k.USER_ID) ";
+                    "  WHERE u.LOGINSTATUS = 1 AND u.USERDELETE = 1 and k.check_type=1 and to_date('" + timeUtil(2) + "','yyyy-MM-dd HH24:mi') > k.plan_start_time and to_date('" + timeUtil(1) + "','yyyy-MM-dd HH24:mi') < k.plan_end_time GROUP BY k.USER_ID) ";
             /**
              * 前台稽查离线人员
              */
             String qjcLxUser = " SELECT count(1) SM FROM (SELECT " +
                     "    count(1) " +
                     "  FROM CHECK_LIVE_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID " +
-                    "  WHERE u.LOGINSTATUS = 0 AND u.USERDELETE = 1 AND sysdate BETWEEN PLAN_START_TIME AND PLAN_END_TIME GROUP BY k.USER_ID) ";
-
+                    "  WHERE u.LOGINSTATUS = 0 AND u.USERDELETE = 1 and k.check_type=1 and to_date('" + timeUtil(2) + "','yyyy-MM-dd HH24:mi') > k.plan_start_time and to_date('" + timeUtil(1) + "','yyyy-MM-dd HH24:mi') < k.plan_end_time GROUP BY k.USER_ID) ";
+            int a = 0;
+            int b = 0;
+            try {
+                String user = "SELECT * FROM WORKING_TIMED WHERE DEPT_ID='40283781608b848701608b85d3700000'";
+                Map<String, Object> map = this.execSqlSingleResult(user);
+                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+                String format = formatter.format(new Date());
+                String s = format + " 00:00:00";
+                String userId = "";
+                String start = map.get("START_TIME").toString();
+                String end = map.get("END_TIME").toString();
+                Date nowDate = DateUtil.getNowDate();
+                if (nowDate.getTime() >= DateUtil.addDate(DateUtil.parseDate(s), Double.parseDouble(start)).getTime() && nowDate.getTime() <= DateUtil.addDate(DateUtil.parseDate(s), Double.parseDouble(end)).getTime()) {
+                    userId = map.get("DAY_USER").toString();
+                } else {
+                    userId = map.get("NIGHT_USER").toString();
+                }
+                String[] split = userId.split(",");
+                for (int i = 0; i < split.length; i++) {
+                    String sql = "SELECT LOGINSTATUS status FROM RZTSYSUSER where id=?";
+                    Map<String, Object> status = this.execSqlSingleResult(sql, split[i]);
+                    if (status.get("STATUS").toString().equals("0")) {
+                        a++;
+                    } else {
+                        b++;
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             /**
              * 后台稽查在线人员
              */
-            String hjcZxUser = " SELECT count(id) SM FROM RZTSYSUSER WHERE LOGINSTATUS = 1 AND WORKTYPE = 4 AND USERDELETE = 1  AND USERTYPE=0 ";
+            //   String hjcZxUser = " SELECT count(id) SM FROM RZTSYSUSER WHERE LOGINSTATUS = 1 AND WORKTYPE = 4 AND USERDELETE = 1  AND USERTYPE=0 ";
             /**
              * 后台稽查离线人员
              */
-            String hjcLxUser = " SELECT count(id) SM  FROM RZTSYSUSER WHERE LOGINSTATUS = 0 AND WORKTYPE = 4 AND USERDELETE = 1  AND USERTYPE=0 ";
+            //  String hjcLxUser = " SELECT count(id) SM  FROM RZTSYSUSER WHERE LOGINSTATUS = 0 AND WORKTYPE = 4 AND USERDELETE = 1  AND USERTYPE=0 ";
             try {
                 Map<Object, Object> returnMap = new HashMap<>();
                 Map<Object, Object> iocMap = new HashMap<>();
@@ -154,16 +183,16 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
                 Map<String, Object> khLxUserMap = this.execSqlSingleResult(khLxUser);
                 Map<String, Object> qjcZxUserMap = this.execSqlSingleResult(qjcZxUser);
                 Map<String, Object> qjcLxUserMap = this.execSqlSingleResult(qjcLxUser);
-                Map<String, Object> hjcZxUserMap = this.execSqlSingleResult(hjcZxUser);
-                Map<String, Object> hjcLxUserMap = this.execSqlSingleResult(hjcLxUser);
+                // Map<String, Object> hjcZxUserMap = this.execSqlSingleResult(hjcZxUser);
+                // Map<String, Object> hjcLxUserMap = this.execSqlSingleResult(hjcLxUser);
                 iocMap.put("XSZX", xsZxUserMap.get("SM").toString());
                 iocMap.put("XSLX", xsLxUserMap.get("SM").toString());
                 iocMap.put("KHZX", khZxUserMap.get("SM").toString());
                 iocMap.put("KHLX", khLxUserMap.get("SM").toString());
                 iocMap.put("QJCZX", qjcZxUserMap.get("SM").toString());
                 iocMap.put("QJCLX", qjcLxUserMap.get("SM").toString());
-                iocMap.put("HJCZX", hjcZxUserMap.get("SM").toString());
-                iocMap.put("HJCLX", hjcLxUserMap.get("SM").toString());
+                iocMap.put("HJCZX", a);
+                iocMap.put("HJCLX", b);
                 returnMap.put("data", iocMap);
                 returnMap.put("adminModule", 5);
                 firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), returnMap);
@@ -248,7 +277,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
              */
             String xcJcWks = "SELECT count(1)  " +
                     "FROM CHECK_LIVE_TASK " +
-                    "WHERE STATUS = 0 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+                    "WHERE STATUS = 0 and check_type=1 and to_date('" + timeUtil(2) + "','yyyy-MM-dd HH24:mi') > plan_start_time and to_date('" + timeUtil(1) + "','yyyy-MM-dd HH24:mi') < plan_end_time ";
             /**
              * 正常巡视进行中
              */
@@ -272,7 +301,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
              */
             String xcJcJxz = "SELECT count(1)  " +
                     "FROM CHECK_LIVE_TASK " +
-                    "WHERE STATUS = 1 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+                    "WHERE STATUS = 1 and check_type=1 and to_date('" + timeUtil(2) + "','yyyy-MM-dd HH24:mi') > plan_start_time and to_date('" + timeUtil(1) + "','yyyy-MM-dd HH24:mi') < plan_end_time";
             /**
              * 正常巡视已完成
              */
@@ -296,7 +325,24 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
              */
             String xcJcYwc = "SELECT count(1)  " +
                     "FROM CHECK_LIVE_TASK " +
-                    "WHERE STATUS = 2 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+                    "WHERE STATUS = 2 and check_type=1 and to_date('" + timeUtil(2) + "','yyyy-MM-dd HH24:mi') > plan_start_time and to_date('" + timeUtil(1) + "','yyyy-MM-dd HH24:mi') <plan_end_time";
+
+            String sql1 = "select * from(SELECT CREATETIME FROM TIMED_TASK where THREEDAY=1 ORDER BY CREATETIME DESC ) where ROWNUM=1";
+            List<Map<String, Object>> maps = this.execSql(sql1);
+            Date createtime = DateUtil.parseDate(maps.get(0).get("CREATETIME").toString());
+            Date nextTime = DateUtil.addDate(createtime, 72);
+            /**
+             *后台稽查未开始
+             */
+            String htJcWks = "SELECT count(*) FROM TIMED_TASK where STATUS=0 and THREEDAY=1 and CREATETIME<=?  and CREATETIME>=?";
+            /**
+             *后台稽查已开始
+             */
+            String htJcYks = "SELECT count(*) FROM TIMED_TASK where STATUS=1 and THREEDAY=1 and CREATETIME<=?  and CREATETIME>=?";
+            /**
+             *后台稽查已完成
+             */
+            String htJcYwc = "SELECT count(*) FROM TIMED_TASK where STATUS=2 and THREEDAY=1 and CREATETIME<= ? and CREATETIME>=?";
             String sql = "SELECT " +
                     "(" + zcXsWks + ")+(" + bdXsWks + ") as XsWks," +
                     "(" + zcXsJxz + ")+(" + bdXsJxz + ") as XsJxz," +
@@ -306,9 +352,12 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
                     "(" + khYwc + ") as khYwc," +
                     "(" + xcJcJxz + ") as xcJcJxz," +
                     "(" + xcJcWks + ") as xcJcWks," +
-                    "(" + xcJcYwc + ") as xcJcYwc " +
+                    "(" + xcJcYwc + ") as xcJcYwc, " +
+                    "(" + htJcWks + ") as htJcWks, " +
+                    "(" + htJcYks + ") as htJcYks, " +
+                    "(" + htJcYwc + ") as htJcYwc " +
                     "  FROM dual";
-            List<Map<String, Object>> list = this.execSql(sql);
+            List<Map<String, Object>> list = this.execSql(sql, nextTime, createtime, nextTime, createtime, nextTime, createtime);
             Map map = new HashMap();
             map.put("data", list);
             map.put("adminModule", 6);
@@ -499,5 +548,21 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
                 firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), map);
             }
         });
+    }
+
+    public String timeUtil(int i) {
+        String date = "";
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+        Calendar c = Calendar.getInstance();
+        c.setTime(new Date());
+        Date m = c.getTime();
+        String mon = df.format(m);
+        if (i == 1) {
+            date = mon + " 00:00";
+        } else {
+            date = mon + " 23:59";
+        }
+        //  task.setPlanEndTime(df.format(new Date()) + " 23:59");
+        return date;
     }
 }
