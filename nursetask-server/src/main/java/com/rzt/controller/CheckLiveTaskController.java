@@ -109,6 +109,16 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 			return WebApiResponse.erro("数据获取失败"+e.getMessage());
 		}
 	}
+	@ApiOperation(value = "地图上稽查任务的图片位置信息",notes = "地图上稽查任务的图片位置信息")
+	@GetMapping("/mapKhCheckTaskDetailPicture")
+	public WebApiResponse mapKhCheckTaskDetailPicture(String ids){
+		try{
+			List<Map<String, Object>> list = this.service.mapKhCheckTaskDetailPicture(ids);
+			return WebApiResponse.success(list);
+		}catch (Exception e){
+			return WebApiResponse.erro("数据获取失败"+e.getMessage());
+		}
+	}
 	@ApiOperation(value = "修改已派发看护任务稽查人",notes = "修改已派发看护任务稽查人")
 	@GetMapping("/updateKhCheckUser")
 	public WebApiResponse updateKhCheckUser(String id,String userId,String userName){
