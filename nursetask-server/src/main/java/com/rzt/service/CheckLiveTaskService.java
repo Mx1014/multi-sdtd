@@ -21,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -95,7 +96,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
             sql += " and trunc(s.CREATE_TIME)=trunc(sysdate) and s.task_type=2 ";
             sql += " AND s.TDYW_ORGID =?";
         }else{
-            sql += " s.task_type=1 and trunc(s.CREATE_TIME)>trunc(sysdate-3) ";
+            sql += " and s.task_type=1 and trunc(s.CREATE_TIME)>trunc(sysdate-3) ";
         }
         return execSqlPage(pageable, sql, params.toArray());
     }
@@ -118,18 +119,24 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
         return jsonObject;
     }
     //看护已派发稽查任务
-    public Page<Map<String,Object>> listKhCheckTaskPage(Pageable pageable, String userId, String tddwId,String currentUserId,String startTime,String endTime,String status) {
+    public Page<Map<String,Object>> listKhCheckTaskPage(Pageable pageable, String userId, String tddwId,String currentUserId,String startTime,String endTime,String status,String queryAll,String loginType) {
 
         String sql = "select t.id,t.TASK_ID,t.CREATE_TIME,t.TASK_NAME,t.PLAN_START_TIME,t.PLAN_END_TIME,u.REALNAME,d.DEPTNAME, " +
-                "  t.status , t.TASK_TYPE " +
+                "  t.status , t.TASK_TYPE ,u.LOGINSTATUS,C.COMPANYNAME,U.PHONE" +
                 " from CHECK_LIVE_TASK t " +
                 "  LEFT JOIN  rztsysuser u on u.id=t.USER_ID " +
-                "  LEFT JOIN  RZTSYSDEPARTMENT d on d.ID = u.DEPTID where 1=1 ";
+                "  LEFT JOIN  RZTSYSDEPARTMENT d on d.ID = u.DEPTID " +
+                "  LEFT JOIN RZTSYSCOMPANY C ON C.ID = U.COMPANYID where 1=1 ";
 
         List params = new ArrayList<>();
-        //稽查人查询
+        //任务状态人查询
         if (!StringUtils.isEmpty(status)) {
             sql += " AND t.status =" + status;
+        }
+        //人员在线状态查询
+        if (!StringUtils.isEmpty(loginType)) {
+            int login = Integer.parseInt(loginType);
+            sql += " AND u.LOGINSTATUS =" + login;
         }
         //稽查人查询
         if (!StringUtils.isEmpty(userId)) {
@@ -140,7 +147,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
         if (!StringUtils.isEmpty(startTime) && !StringUtils.isEmpty(endTime)){
             params.add(endTime);
             params.add(startTime);
-            sql += " and to_date(?,'yyyy-MM-dd HH24:mi') > t.plan_start_time and to_date(?,'yyyy-MM-dd HH24:mi') < t.plan_end_time ";
+            sql += " and (to_date(?,'yyyy-MM-dd HH24:mi') > t.plan_start_time or to_date(?,'yyyy-MM-dd HH24:mi') < t.plan_end_time) ";
         }
         if(!StringUtils.isEmpty(currentUserId)){
             Map<String, Object> map = userInfoFromRedis(currentUserId);
@@ -167,14 +174,17 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
             }
 
         }
-        //通道单位查询
-        if (!StringUtils.isEmpty(tddwId)) {
-            params.add(tddwId);
-            sql += " and t.CHECK_TYPE=2 ";
-            sql += " AND d.ID =?";
-        }else{
-            sql += " and t.CHECK_TYPE=1 ";
+        if(!"queryAll".equals(queryAll)){
+            //通道单位查询
+            if (!StringUtils.isEmpty(tddwId)) {
+                params.add(tddwId);
+                sql += " and t.CHECK_TYPE=2 ";
+                sql += " AND d.ID =?";
+            }else{
+                sql += " and t.CHECK_TYPE=1 ";
+            }
         }
+
         return execSqlPage(pageable, sql, params.toArray());
     }
     public Map<String, Object> khTaskDetail(String taskId) throws Exception {
@@ -185,8 +195,34 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
     }
 
     @Transactional
-    public void paifaKhCheckTask(CheckLiveTask task , String username) throws Exception {
+    public void paifaKhCheckTask(CheckLiveTask task , String username,String currentUserId) throws Exception {
 
+        if(!StringUtils.isEmpty(currentUserId)){
+            Map<String, Object> map = userInfoFromRedis(currentUserId);
+            Integer roletype = Integer.parseInt(map.get("ROLETYPE").toString());
+            String deptid  = map.get("DEPTID").toString();
+            switch (roletype) {
+                case 0:
+                    task.setCheckType(1); //1一级单位 2二级单位
+                    break;
+                case 1:
+                    task.setCheckType(2); //1一级单位 2二级单位
+                    break;
+                case 2:
+                    task.setCheckType(2); //1一级单位 2二级单位
+                    break;
+                case 3:
+                    //外协角色
+                    break;
+                case 4:
+                    //班组角色
+                    break;
+                case 5:
+                    //个人角色
+                    break;
+            }
+
+        }
         task.setId(null);
         task.setCreateTime(new Date());
         task.setStatus(0);//任务派发状态  0未接单 1进行中 2已完成 3超期
@@ -394,7 +430,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
      * 每天根据看护点生成待派发的看护稽查
      */
     //@Scheduled(cron = "0/5 * *  * * ? ")
-//    @Scheduled(cron = "0 5 0 ? * *")
+    @Scheduled(cron = "0 5 0 ? * *")
     @Transactional
     public void generalKhSite(){
         //更新check_live_task,plan_end_time为昨天的没完成的状态为超期

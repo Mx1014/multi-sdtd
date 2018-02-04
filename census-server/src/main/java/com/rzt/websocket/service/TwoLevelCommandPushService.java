@@ -3,6 +3,7 @@ package com.rzt.websocket.service;
 import com.rzt.entity.websocket;
 import com.rzt.repository.websocketRepository;
 import com.rzt.service.CurdService;
+import com.rzt.util.DateUtil;
 import com.rzt.websocket.serverendpoint.TwoLevelCommandServerEndpoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -10,10 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import javax.websocket.Session;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @Service
 public class TwoLevelCommandPushService extends CurdService<websocket, websocketRepository> {
@@ -128,17 +127,17 @@ public class TwoLevelCommandPushService extends CurdService<websocket, websocket
             /**
              * 前台稽查在线人员
              */
-            String qjcZxUser = " SELECT count(1) SM FROM (SELECT " +
+            String qjcZxUser =" SELECT count(1) SM FROM (SELECT " +
                     "    count(1) " +
                     "  FROM CHECK_LIVE_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID " +
-                    "  WHERE u.LOGINSTATUS = 1 AND u.USERDELETE = 1 AND sysdate BETWEEN PLAN_START_TIME AND PLAN_END_TIME and u.deptid='" + deptid + "' GROUP BY k.USER_ID) ";
+                    "  WHERE u.LOGINSTATUS = 1 AND u.USERDELETE = 1 and k.check_type=2 and to_date('"+timeUtil(2)+"','yyyy-MM-dd HH24:mi') > k.plan_start_time and to_date('"+timeUtil(1)+"','yyyy-MM-dd HH24:mi') < k.plan_end_time and u.deptid='" + deptid + "' GROUP BY k.USER_ID) ";
             /**
              * 前台稽查离线人员
              */
             String qjcLxUser = " SELECT count(1) SM FROM (SELECT " +
                     "    count(1) " +
                     "  FROM CHECK_LIVE_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID " +
-                    "  WHERE u.LOGINSTATUS = 0 AND u.USERDELETE = 1 AND sysdate BETWEEN PLAN_START_TIME AND PLAN_END_TIME and u.deptid='" + deptid + "' GROUP BY k.USER_ID) ";
+                    "  WHERE u.LOGINSTATUS = 0 AND u.USERDELETE = 1 and k.check_type=2 and to_date('"+timeUtil(2)+"','yyyy-MM-dd HH24:mi') > k.plan_start_time and to_date('"+timeUtil(1)+"','yyyy-MM-dd HH24:mi') < k.plan_end_time and u.deptid='" + deptid + "' GROUP BY k.USER_ID) ";
 
             /**
              * 后台稽查在线人员
@@ -251,8 +250,8 @@ public class TwoLevelCommandPushService extends CurdService<websocket, websocket
              * 现场稽查未开始
              */
             String xcJcWks = "SELECT count(1)  " +
-                    "FROM CHECK_LIVE_TASK k LEFT JOIN  RZTSYSUSER u ON k.USER_ID = u.ID " +
-                    "WHERE STATUS = 0 AND trunc(PLAN_START_TIME) = trunc(sysdate) AND u.DEPTID='" + deptid + "'";
+                    "FROM CHECK_LIVE_TASK " +
+                    "WHERE STATUS = 0 and check_type=2 and to_date('"+timeUtil(2)+"','yyyy-MM-dd HH24:mi') > plan_start_time and to_date('"+timeUtil(1)+"','yyyy-MM-dd HH24:mi') < plan_end_time AND u.DEPTID='" + deptid + "'";
             /**
              * 正常巡视进行中
              */
@@ -275,8 +274,8 @@ public class TwoLevelCommandPushService extends CurdService<websocket, websocket
              * 现场稽查进行中
              */
             String xcJcJxz = "SELECT count(1)  " +
-                    "FROM CHECK_LIVE_TASK k LEFT JOIN  RZTSYSUSER u ON k.USER_ID = u.ID " +
-                    "WHERE STATUS = 1 AND trunc(PLAN_START_TIME) = trunc(sysdate) AND u.DEPTID='" + deptid + "'";
+                    "FROM CHECK_LIVE_TASK " +
+                    "WHERE STATUS = 1 and check_type=2 and to_date('"+timeUtil(2)+"','yyyy-MM-dd HH24:mi') > plan_start_time and to_date('"+timeUtil(1)+"','yyyy-MM-dd HH24:mi') < plan_end_time AND u.DEPTID='" + deptid + "'";
             /**
              * 正常巡视已完成
              */
@@ -299,8 +298,24 @@ public class TwoLevelCommandPushService extends CurdService<websocket, websocket
              *现场稽查已完成
              */
             String xcJcYwc = "SELECT count(1)  " +
-                    "FROM CHECK_LIVE_TASK k LEFT JOIN  RZTSYSUSER u ON k.USER_ID = u.ID " +
-                    "WHERE STATUS = 2 AND trunc(PLAN_START_TIME) = trunc(sysdate) AND u.DEPTID='" + deptid + "'";
+                    "FROM CHECK_LIVE_TASK " +
+                    "WHERE STATUS = 2 and check_type=2 and to_date('"+timeUtil(2)+"','yyyy-MM-dd HH24:mi') > plan_start_time and to_date('"+timeUtil(1)+"','yyyy-MM-dd HH24:mi') <plan_end_time AND u.DEPTID='" + deptid + "'";
+            String sql1 = "select * from(SELECT CREATETIME FROM TIMED_TASK where THREEDAY=1 ORDER BY CREATETIME DESC ) where ROWNUM=1";
+            List<Map<String, Object>> maps = this.execSql(sql1);
+            Date createtime = DateUtil.parseDate(maps.get(0).get("CREATETIME").toString());
+            Date nextTime = DateUtil.addDate(createtime, 72);
+            /**
+             *后台稽查未开始
+             */
+            String htJcWks = "SELECT count(*) FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u on u.id=t.USER_ID where STATUS=0 and CREATETIME<=?  and CREATETIME>=? and THREEDAY=0  and u.DEPTID='" + deptid + "'";
+            /**
+             *后台稽查已开始
+             */
+            String htJcYks = "SELECT count(*) FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u on u.id=t.USER_ID where STATUS=1 and CREATETIME<=?  and CREATETIME>=? and THREEDAY=0  and u.DEPTID='" + deptid + "'";
+            /**
+             *后台稽查已完成
+             */
+            String htJcYwc ="SELECT count(*) FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u on u.id=t.USER_ID where STATUS=2 and CREATETIME<=?  and CREATETIME>=? and THREEDAY=0  and u.DEPTID='" + deptid + "'";
             String sql = "SELECT " +
                     "(" + zcXsWks + ")+(" + bdXsWks + ") as XsWks," +
                     "(" + zcXsJxz + ")+(" + bdXsJxz + ") as XsJxz," +
@@ -310,9 +325,12 @@ public class TwoLevelCommandPushService extends CurdService<websocket, websocket
                     "(" + khYwc + ") as khYwc," +
                     "(" + xcJcJxz + ") as xcJcJxz," +
                     "(" + xcJcWks + ") as xcJcWks," +
-                    "(" + xcJcYwc + ") as xcJcYwc " +
+                    "(" + xcJcYwc + ") as xcJcYwc, " +
+                    "(" + htJcWks + ") as htJcWks, " +
+                    "(" + htJcYks + ") as htJcYks, " +
+                    "(" + htJcYwc + ") as htJcYwc " +
                     "  FROM dual";
-            List<Map<String, Object>> list = this.execSql(sql);
+            List<Map<String, Object>> list = this.execSql(sql, nextTime, createtime, nextTime, createtime, nextTime, createtime);
             Map map = new HashMap();
             map.put("data", list);
             map.put("adminModule", 6);
@@ -499,5 +517,20 @@ public class TwoLevelCommandPushService extends CurdService<websocket, websocket
                 twoLevelCommandServerEndpoint.sendText((Session) session.get("session"), map);
             }
         });
+    }
+    public String timeUtil(int i) {
+        String date = "";
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+        Calendar c = Calendar.getInstance();
+        c.setTime(new Date());
+        Date m = c.getTime();
+        String mon = df.format(m);
+        if (i == 1) {
+            date = mon + " 00:00";
+        } else {
+            date = mon + " 23:59";
+        }
+        //  task.setPlanEndTime(df.format(new Date()) + " 23:59");
+        return date;
     }
 }

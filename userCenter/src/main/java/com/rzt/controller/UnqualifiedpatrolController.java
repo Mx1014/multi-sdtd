@@ -50,7 +50,7 @@ public class UnqualifiedpatrolController extends CurdController<RztSysUser, Comm
             s += " AND u.REALNAME LIKE ?" + listLike.size();
         }
         //  修改增加未到位类别   增加未到位原因字段      ---> 李成阳
-        String sql = "SELECT e.CREATE_TIME,x.TASK_NAME,u.DEPT,u.COMPANYNAME,u.CLASSNAME,u.REALNAME,u.PHONE, '巡视超速' as  type,e.REASON" +
+        String sql = "SELECT e.CREATE_TIME,x.TASK_NAME,u.DEPT,u.COMPANYNAME,u.CLASSNAME,u.REALNAME,u.PHONE, '巡视超速' as  type,e.REASON,e.TASK_ID,e.USER_ID,e.TASK_TYPE" +
                 "      FROM MONITOR_CHECK_EJ e LEFT JOIN XS_ZC_TASK x ON e.TASK_ID=x.ID LEFT JOIN USERINFO u ON x.CM_USER_ID = u.ID" +
                 "      WHERE WARNING_TYPE = 5 "+s+"";
        /* String sql = " SELECT *" +

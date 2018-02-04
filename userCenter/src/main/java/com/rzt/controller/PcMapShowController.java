@@ -129,7 +129,8 @@ public class PcMapShowController {
             allMen.putAll(xsMenAll);
         }
         if (workTypes == null || workTypes.contains("3")) {
-
+            JSONObject jcMenAll = JSONObject.parseObject(valueOperations.get("jcMenAll:" + needDateString).toString());
+            allMen.putAll(jcMenAll);
         }
         Iterator<Map> iterator = menInMap.iterator();
         while (iterator.hasNext()) {
@@ -453,6 +454,18 @@ public class PcMapShowController {
         }
     }
 
+    @GetMapping("getGuZhang")
+    public Object getGuZhang() {
+        try {
+            String sql = "select t.*,tt.TOWER_NAME,ttt.LONGITUDE,ttt.LATITUDE from GUZHANG t join CM_LINE_TOWER tt on t.LINE_ID = tt.LINE_ID and t.GZ_TOWER is not NULL and tt.TOWER_NAME = substr(t.GZ_TOWER,0,instr(GZ_TOWER,'#',1,1)-1) join cm_tower ttt on ttt.id = tt.TOWER_ID";
+            List<Map<String, Object>> maps = cmcoordinateService.execSql(sql);
+            return WebApiResponse.success(maps);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro(e.getMessage());
+        }
+
+    }
 
     /***
      * @Method flushMenInDept
@@ -510,6 +523,35 @@ public class PcMapShowController {
             return WebApiResponse.erro("数据查询失败" + e.getMessage());
         }
     }
+    /***
+     * @Method menCurrentDayJC
+     * @Description 刷新flushMenInDept缓存
+     *
+     * @return java.lang.Object
+     * @date 2017/12/25 13:59
+     * @author nwz
+     */
+    @GetMapping("menCurrentDayJC")
+    public Object menCurrentDayJC(Date day) {
+        try {
+            ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
+            if (day == null) {
+                day = new Date();
+            }
+            String sql = "select USER_ID,min(STATUS) status from CHECK_LIVE_TASK where  PLAN_END_TIME >= trunc(?1) and  PLAN_START_TIME < trunc(?1+1) and user_id is not NULL group by USER_ID";
+            List<Map<String, Object>> userList = cmcoordinateService.execSql(sql, day);
+            Map<String, Object> map = new HashMap<String, Object>();
+            for (Map<String, Object> user : userList) {
+                String id = user.get("USER_ID").toString();
+                map.put(id, user.get("STATUS"));
+            }
+            valueOperations.set("jcMenAll:" + DateUtil.dateFormatToDay(day), map);
+            return WebApiResponse.success("成功了");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("数据查询失败" + e.getMessage());
+        }
+    }
 
     /***
      * @Method menCurrentDayKh
@@ -561,6 +603,7 @@ public class PcMapShowController {
         Date day = new Date();
         menCurrentDayKh(day);
         menCurrentDayxs(day);
+        menCurrentDayJC(day);
     }
 
 
