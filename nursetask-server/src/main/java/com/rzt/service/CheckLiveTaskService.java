@@ -147,7 +147,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
         if (!StringUtils.isEmpty(startTime) && !StringUtils.isEmpty(endTime)){
             params.add(endTime);
             params.add(startTime);
-            sql += " and to_date(?,'yyyy-MM-dd HH24:mi') > t.plan_start_time and to_date(?,'yyyy-MM-dd HH24:mi') < t.plan_end_time ";
+            sql += " and (to_date(?,'yyyy-MM-dd HH24:mi') > t.plan_start_time or to_date(?,'yyyy-MM-dd HH24:mi') < t.plan_end_time) ";
         }
         if(!StringUtils.isEmpty(currentUserId)){
             Map<String, Object> map = userInfoFromRedis(currentUserId);
