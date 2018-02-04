@@ -615,10 +615,11 @@ public class PcMapShowController {
     }
 
     //两个定时计划
-    @Scheduled(fixedRate = 300000)
+    @Scheduled(fixedRate = 900000)
     public void Scheduled2() {
         Date day = new Date();
         menCurrentDayKh(day);
+        menCurrentDayxs(day);
         menCurrentDayJC(day);
     }
 }
