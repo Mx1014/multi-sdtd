@@ -180,10 +180,10 @@ public class DateUtil {
         return DateUtil.parseDate(format1).getTime();
     }
 
-    public static final String getNowDate() {
+    public static final Date getNowDate() {
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String cdate = sdf.format(cal.getTime());
-        return cdate;
+        return cal.getTime();
     }
 }

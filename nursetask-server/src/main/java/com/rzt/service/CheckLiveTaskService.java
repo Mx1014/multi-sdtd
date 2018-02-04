@@ -119,7 +119,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
         return jsonObject;
     }
     //看护已派发稽查任务
-    public Page<Map<String,Object>> listKhCheckTaskPage(Pageable pageable, String userId, String tddwId,String currentUserId,String startTime,String endTime,String status,String queryAll) {
+    public Page<Map<String,Object>> listKhCheckTaskPage(Pageable pageable, String userId, String tddwId,String currentUserId,String startTime,String endTime,String status,String queryAll,String loginType) {
 
         String sql = "select t.id,t.TASK_ID,t.CREATE_TIME,t.TASK_NAME,t.PLAN_START_TIME,t.PLAN_END_TIME,u.REALNAME,d.DEPTNAME, " +
                 "  t.status , t.TASK_TYPE " +
@@ -128,9 +128,14 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
                 "  LEFT JOIN  RZTSYSDEPARTMENT d on d.ID = u.DEPTID where 1=1 ";
 
         List params = new ArrayList<>();
-        //稽查人查询
+        //任务状态人查询
         if (!StringUtils.isEmpty(status)) {
             sql += " AND t.status =" + status;
+        }
+        //人员在线状态查询
+        if (!StringUtils.isEmpty(loginType)) {
+            int login = Integer.parseInt(loginType);
+            sql += " AND u.LOGINSTATUS =" + login;
         }
         //稽查人查询
         if (!StringUtils.isEmpty(userId)) {
