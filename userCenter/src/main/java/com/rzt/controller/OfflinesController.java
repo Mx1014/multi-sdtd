@@ -111,7 +111,8 @@ public class OfflinesController extends CurdController<RztSysUser, CommonService
         
         String sql = "SELECT DISTINCT   " +
                 "  ce.USER_ID AS userID,   " +
-                "  ce.REASON,   " +
+                "  ce.REASON, " +
+                "  ce.TASK_TYPE,  " +
                 "  ch.*   " +
                 "FROM (SELECT   " +
                 "        e.USER_ID,   " +
@@ -129,7 +130,7 @@ public class OfflinesController extends CurdController<RztSysUser, CommonService
                 "        e.a               AS MORE,   " +
                 "        u.DEPTID,   " +
                 "        e.CREATE_TIME,   " +
-                "        e.ONLINE_TIME   " +
+                "        e.ONLINE_TIME  " +
                 "      FROM (SELECT   " +
                 "              count(1)    AS a,   " +
                 "              ej.USER_ID,   " +
