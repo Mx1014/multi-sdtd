@@ -17,12 +17,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import redis.clients.jedis.Jedis;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -362,7 +364,7 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
                             typee = 1;
                         }
                         try {
-                            staffLine.KHSX(String.valueOf(userid.get(0).get("ID")), typee);
+                            KHSX(String.valueOf(userid.get(0).get("ID")), typee);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -385,21 +387,89 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
             Map<String, Object> stringObjectMap = this.execSqlSingleResult(userAccout, id);
             HashOperations hashOperations = redisTemplate.opsForHash();
             hashOperations.put("UserInformation", id, stringObjectMap);
-            hashOperations.delete("USERTOKEN", "USER:" + stringObjectMap.get("ID") + "," + stringObjectMap.get("REALNAME"));
-            try {
-                Integer typee = Integer.valueOf(String.valueOf(stringObjectMap.get("WORKTYPE")));
-                if (typee == 1) {
-                    typee = 2;
-                } else if (typee == 2) {
-                    typee = 1;
-                }
-                staffLine.KHXX(String.valueOf(stringObjectMap.get("ID")), typee);
-            } catch (NumberFormatException e) {
-            }
+            hashOperations.delete("USERTOKEN", stringObjectMap.get("ID"));
+
             return WebApiResponse.success("");
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("erro");
         }
     }
+
+
+    /**
+     * 人员登录，删除redis中的键
+     */
+    public void KHSX(String userId,Integer taskType){
+        String sql = "";
+        if(taskType==2){
+            sql = " SELECT kh.ID,d.ID as DEPTID,kh.PLAN_START_TIME,kh.PLAN_END_TIME, kh.TASK_NAME,kh.USER_ID FROM  KH_TASK kh   LEFT JOIN RZTSYSDEPARTMENT d " +
+                    " ON kh.TDYW_ORG = d.DEPTNAME  WHERE trunc(kh.PLAN_START_TIME) = trunc(sysdate) AND kh.USER_ID =?1 AND kh.STATUS !=2 AND kh.STATUS !=3";
+        }else if(taskType==1){
+            sql = "SELECT ID,TD_ORG as DEPTID,PLAN_START_TIME,TASK_NAME,CM_USER_ID,PLAN_END_TIME  " +
+                    "FROM XS_ZC_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND CM_USER_ID=?1 AND STAUTS !=2";
+        }else if(taskType==3){
+            sql = " SELECT t.ID,t.USER_ID,t.TASK_NAME,t.PLAN_START_TIME,t.PLAN_END_TIME,u.DEPTID FROM CHECK_LIVE_TASK t " +
+                    "   LEFT JOIN RZTSYSUSER u ON t.USER_ID=u.ID " +
+                    "  WHERE trunc(t.CREATE_TIME)=trunc(sysdate) AND STATUS!=2 " +
+                    " UNION ALL " +
+                    " SELECT t.ID,t.USER_ID,t.TASK_NAME,t.PLAN_START_TIME,t.PLAN_END_TIME,u.DEPTID FROM CHECK_LIVE_TASKSB t " +
+                    "      LEFT JOIN RZTSYSUSER u ON t.USER_ID=u.ID " +
+                    "      WHERE trunc(t.CREATE_TIME)=trunc(sysdate) AND STATUS!=2 " +
+                    " UNION ALL  " +
+                    " SELECT t.ID,t.USER_ID,t.TASK_NAME,d.PLAN_START_TIME,d.PLAN_END_TIME,u.DEPTID FROM CHECK_LIVE_TASKXS t " +
+                    "      LEFT JOIN RZTSYSUSER u ON t.USER_ID=u.ID LEFT JOIN CHECK_LIVE_TASK_DETAILXS d ON d.TASK_ID=t.ID " +
+                    "      WHERE trunc(t.CREATE_TIME)=trunc(sysdate) AND t.STATUS!=2";
+        }
+
+        List<Map<String, Object>> maps = execSql(sql,userId);
+        //如果查询结果为0，证明这个人当天没有任务
+        if(maps.size()==0){
+            return;
+        }
+        for (Map<String, Object> map:maps) {
+            //开始时间
+            Date plan_start_time = (Date) map.get("PLAN_START_TIME");
+            //结束时间
+            Date plan_end_time = (Date) map.get("PLAN_END_TIME");
+            try {
+                Long startDate = plan_start_time.getTime();
+                Long endDate = plan_end_time.getTime();
+                Long currentDate = new Date().getTime();
+                if(currentDate<endDate){
+                    //主要是删除定时拉取数据，存放在redis中的key
+                    String key = "";
+                    if(taskType==2){
+                        key = "TWO+*+2+8+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+*";
+                    }else if(taskType==1){
+                        key = "TWO+*+1+2+"+map.get("CM_USER_ID")+"+"+map.get("DEPTID")+"+*";
+                    }else if(taskType==3){
+                        key = "TWO+*+3+13+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+*";
+                    }
+                    removeKey(key);
+                    this.reposiotry.updateOnlineTime(userId,Long.parseLong(map.get("ID").toString()));
+                }
+            } catch (Exception e) {
+
+            }
+        }
+    }
+    public void removeKey(String s){
+        //String s = "TWO+*+2+8+*";
+        RedisConnection connection = null;
+        try {
+            connection = redisTemplate.getConnectionFactory().getConnection();
+            connection.select(1);
+            Set<byte[]> keys = connection.keys(s.getBytes());
+            byte[][] ts = keys.toArray(new byte[][]{});
+            if(ts.length > 0) {
+                connection.del(ts);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            connection.close();
+        }
+    }
+
 }
