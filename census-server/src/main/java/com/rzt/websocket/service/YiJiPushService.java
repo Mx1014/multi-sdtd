@@ -30,49 +30,69 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
 
 
     public void module1Method(Map<String, Map> allMap, HashMap session) {
-        Map message = new HashMap<String, Object>();
         Integer roletype = Integer.parseInt(session.get("ROLETYPE").toString());
         String deptId = session.get("DEPTID").toString();
-        String module1 = "SELECT\n" +
-                "  ttt.DEPTNAME,\n" +
-                "  sum(decode(STATUS, 0, 1, 0)) wcl,\n" +
-                "  sum(decode(STATUS, 1, 1, 0)) clz,\n" +
-                "  sum(decode(STATUS, 2, 1, 0)) ycl,\n" +
-                "  count(1)                     total,ttt.deptsort\n" +
-                "FROM (SELECT\n" +
-                "        STATUS,\n" +
-                "        DEPTID,\n" +
-                "        USER_ID\n" +
-                "      FROM MONITOR_CHECK_EJ\n" +
-                "      WHERE CREATE_TIME > trunc(sysdate) and DEPTID = " + deptId + ") t\n" +
-                "  JOIN rztsysuser tt ON t.USER_ID = tt.id join RZTSYSDEPARTMENT ttt on ttt.id = tt.CLASSNAME group by ttt.DEPTNAME,ttt.deptsort order by ttt.deptsort";
-        if (1 == 1 /**roletype == 0*/) {
-            deptId = "admin";
-            module1 = "SELECT\n" +
-                    "  tt.DEPTNAME,\n" +
-                    "  sum(decode(STATUS, 0, 1, 0)) wcl,\n" +
-                    "  sum(decode(STATUS, 1, 1, 0)) clz,\n" +
-                    "  sum(decode(STATUS, 2, 1, 0)) ycl,\n" +
-                    "  count(1)                     total,tt.deptsort\n" +
-                    "FROM (SELECT\n" +
-                    "        STATUS,\n" +
-                    "        DEPTID\n" +
-                    "      FROM MONITOR_CHECK_EJ\n" +
-                    "      WHERE CREATE_TIME > trunc(sysdate)) t\n" +
-                    "  JOIN RZTSYSDEPARTMENT tt ON t.DEPTID = tt.id group by tt.DEPTNAME,tt.deptsort,tt.id order by tt.deptsort";
+        Map message = new HashMap<String, Object>();
+        List<Map<String, Object>> resList = new ArrayList<>();
+        String sql1 = "SELECT count(1) AS sum,yj.DEPTID FROM MONITOR_CHECK_YJ yj LEFT JOIN RZTSYSUSER u ON yj.USER_ID=u.ID " +
+                " WHERE trunc(yj.CREATE_TIME)=trunc(sysdate) AND u.USERDELETE=1 " +
+                "    AND yj.STATUS =0  AND yj.USER_ID IS NOT NULL GROUP BY yj.DEPTID";
+        //查询处理中
+        String sql2 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =1  AND USER_ID IS NOT NULL GROUP BY DEPTID  ";
+        //查询已处理
+        String sql3 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =2  AND USER_ID IS NOT NULL GROUP BY DEPTID  ";
+        List<Map<String, Object>> maps = execSql(sql1);
+        List<Map<String, Object>> maps1 = execSql(sql2);
+        List<Map<String, Object>> maps2 = execSql(sql3);
+        String deptnameSql = " SELECT t.ID,t.DEPTNAME FROM RZTSYSDEPARTMENT t WHERE t.DEPTSORT IS NOT NULL ORDER BY t.DEPTSORT ";
+        List<Map<String, Object>> dept = execSql(deptnameSql);
+        int i =0;
+        for (Map<String, Object> map : dept) {
+            Map<String, Object> sumMap = new HashMap<String, Object>();
+            String id = (String) map.get("ID");
+            String deptName = (String) map.get("DEPTNAME");
+            if (deptName.contains("本部")) {
+                deptName = "本部";
+            } else {
+                deptName = deptName.substring(0, deptName.length() - 2);
+            }
+            sumMap.put("ID", id);
+            sumMap.put("DEPTNAME", deptName);
+            sumMap.put("WCL", 0);
+            sumMap.put("CLZ", 0);
+            sumMap.put("YCL", 0);
+            sumMap.put("DEPTSORT",i++);
+            //添加未处理
+            for (Map<String, Object> m1 : maps) {
+                if (id.equals(m1.get("DEPTID").toString())) {
+                    sumMap.put("WCL", m1.get("SUM"));
+                }
+            }
+            //添加处理中
+            for (Map<String, Object> m1 : maps1) {
+                if (id.equals(m1.get("DEPTID").toString())) {
+                    sumMap.put("CLZ", m1.get("SUM"));
+                }
+            }
+            //添加已处理
+            for (Map<String, Object> m1 : maps2) {
+                if (id.equals(m1.get("DEPTID").toString())) {
+                    sumMap.put("YCL", m1.get("SUM"));
+                }
+            }
+            resList.add(sumMap);
         }
-        if (allMap.containsKey(deptId)) {
+       /* if (allMap.containsKey(deptId)) {
             message = allMap.get(deptId);
         } else {
-            try {
-                List<Map<String, Object>> resList = this.execSql(module1);
-                message.put("module", 1);
-                message.put("data", resList);
-                allMap.put(deptId, message);
-            } catch (Exception e) {
+            try {*/
+        message.put("module", 1);
+        message.put("data", resList);
+        // allMap.put(deptId, message);
+         /*   } catch (Exception e) {
                 e.printStackTrace();
             }
-        }
+        }*/
         wuDServerEndpoint.sendText((Session) session.get("session"), message);
     }
 
@@ -370,61 +390,65 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
     }
 
     public void module6(String sessionId) {
-        Map<String, HashMap> map = wuDServerEndpoint.sendMsg();
-        HashMap session = map.get(sessionId);
-        Map message = new HashMap<String, Object>();
-        message.put("module", 6);
-        Map module6Data = new HashMap();
-        /**
-         * 前台稽查在线人员
-         */
-        String qjcZxUser = " SELECT count(1) SM FROM (SELECT " +
-                "    count(1) " +
-                "  FROM CHECK_LIVE_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID " +
-                "  WHERE u.LOGINSTATUS = 1 AND u.USERDELETE = 1 and k.check_type=1 and k.status in (1,2) and to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > k.plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') < k.plan_end_time GROUP BY k.USER_ID) ";
-        /**
-         * 前台稽查离线人员
-         */
-        String qjcLxUser = " SELECT count(1) SM FROM (SELECT " +
-                "    count(1) " +
-                "  FROM CHECK_LIVE_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID " +
-                "  WHERE u.LOGINSTATUS = 0 AND u.USERDELETE = 1 and k.check_type=1 and k.status in (1,2) and to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > k.plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') < k.plan_end_time GROUP BY k.USER_ID) ";
-        /**
-         * 所有有任务的稽查人员
-         */
-        String allUser = " SELECT count(1) SM FROM (SELECT " +
-                "    count(1) " +
-                "  FROM CHECK_LIVE_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID " +
-                "  WHERE  u.USERDELETE = 1 and k.check_type=1 and to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > k.plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') < k.plan_end_time GROUP BY k.USER_ID) ";
-        /**
-         * 现场稽查未开始
-         */
-        String xcJcWks = "SELECT count(1)  " +
-                "FROM CHECK_LIVE_TASK " +
-                "WHERE STATUS = 0 and check_type=1 and to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') < plan_end_time ";
-        /**
-         * 现场稽查进行中
-         */
-        String xcJcJxz = "SELECT count(1)  " +
-                "FROM CHECK_LIVE_TASK " +
-                "WHERE STATUS = 1 and check_type=1 and to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') < plan_end_time";
-        /**
-         *现场稽查已完成
-         */
-        String xcJcYwc = "SELECT count(1)  " +
-                "FROM CHECK_LIVE_TASK " +
-                "WHERE STATUS = 2 and check_type=1 and to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') <plan_end_time";
+        try {
+            Map<String, HashMap> map = wuDServerEndpoint.sendMsg();
+            HashMap session = map.get(sessionId);
+            Map message = new HashMap<String, Object>();
+            message.put("module", 6);
+            /**
+             * 前台稽查在线人员
+             */
+            String qjcZxUser = " SELECT count(1) SM FROM (SELECT " +
+                    "    count(1) " +
+                    "  FROM CHECK_LIVE_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID " +
+                    "  WHERE u.LOGINSTATUS = 1 AND u.USERDELETE = 1  and k.status in (1,2) and to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > k.plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') < k.plan_end_time GROUP BY k.USER_ID) ";
+            /**
+             * 前台稽查离线人员
+             */
+            String qjcLxUser = " SELECT count(1) SM FROM (SELECT " +
+                    "    count(1) " +
+                    "  FROM CHECK_LIVE_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID " +
+                    "  WHERE u.LOGINSTATUS = 0 AND u.USERDELETE = 1  and k.status in (1,2) and to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > k.plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') < k.plan_end_time GROUP BY k.USER_ID) ";
+            /**
+             * 当天有任务的稽查人员
+             */
+            String allUser = " SELECT count(1) SM FROM (SELECT " +
+                    "    count(1) " +
+                    "  FROM CHECK_LIVE_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID " +
+                    "  WHERE  u.USERDELETE = 1  and to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > k.plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') < k.plan_end_time GROUP BY k.USER_ID) ";
+            /**
+             * 现场稽查未开始
+             */
+            String xcJcWks = "SELECT count(1)  " +
+                    "FROM CHECK_LIVE_TASK " +
+                    "WHERE STATUS = 0  and to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') < plan_end_time ";
+            /**
+             * 现场稽查进行中
+             */
+            String xcJcJxz = "SELECT count(1)  " +
+                    "FROM CHECK_LIVE_TASK " +
+                    "WHERE STATUS = 1  and to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') < plan_end_time";
+            /**
+             *现场稽查已完成
+             */
+            String xcJcYwc = "SELECT count(1)  " +
+                    "FROM CHECK_LIVE_TASK " +
+                    "WHERE STATUS = 2  and to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') <plan_end_time";
 //                module6Data.put("wsx", 0);
-        String sql = "SELECT " +
-                "(" + qjcZxUser + ") as zx," +
-                "(" + qjcLxUser + ") as lx," +
-                "(" + allUser + ") as all," +
-                "(" + xcJcJxz + ") as xcJcJxz," +
-                "(" + xcJcWks + ") as xcJcWks," +
-                "(" + xcJcYwc + ") as xcJcYwc " +
-                "  FROM dual";
-        message.put("data", module6Data);
-        wuDServerEndpoint.sendText((Session) session.get("session"), message);
+            String sql = "SELECT " +
+                    "(" + qjcZxUser + ") as zx," +
+                    "(" + qjcLxUser + ") as lx," +
+                    "(" + allUser + ") as alluser," +
+                    "(" + xcJcJxz + ") as xcJcJxz," +
+                    "(" + xcJcWks + ") as xcJcWks," +
+                    "(" + xcJcYwc + ") as xcJcYwc " +
+                    "  FROM dual";
+            Map<String, Object> maps = this.execSqlSingleResult(sql);
+            message.put("data", maps);
+            wuDServerEndpoint.sendText((Session) session.get("session"), message);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Scheduled(fixedRate = 30000)
@@ -434,28 +458,27 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
             try {
                 Map message = new HashMap<String, Object>();
                 message.put("module", 6);
-                Map module6Data = new HashMap();
                 /**
                  * 前台稽查在线人员
                  */
                 String qjcZxUser = " SELECT count(1) SM FROM (SELECT " +
                         "    count(1) " +
                         "  FROM CHECK_LIVE_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID " +
-                        "  WHERE u.LOGINSTATUS = 1 AND u.USERDELETE = 1 and k.check_type=1 and k.status in (1,2) and to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > k.plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') < k.plan_end_time GROUP BY k.USER_ID) ";
+                        "  WHERE u.LOGINSTATUS = 1 AND u.USERDELETE = 1  and k.status in (1,2) and to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > k.plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') < k.plan_end_time GROUP BY k.USER_ID) ";
                 /**
                  * 前台稽查离线人员
                  */
                 String qjcLxUser = " SELECT count(1) SM FROM (SELECT " +
                         "    count(1) " +
                         "  FROM CHECK_LIVE_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID " +
-                        "  WHERE u.LOGINSTATUS = 0 AND u.USERDELETE = 1 and k.check_type=1 and k.status in (1,2) and to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > k.plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') < k.plan_end_time GROUP BY k.USER_ID) ";
+                        "  WHERE u.LOGINSTATUS = 0 AND u.USERDELETE = 1  and k.status in (1,2) and to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > k.plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') < k.plan_end_time GROUP BY k.USER_ID) ";
                 /**
-                 * 所有有任务的稽查人员
+                 * 当天有任务的稽查人员
                  */
                 String allUser = " SELECT count(1) SM FROM (SELECT " +
                         "    count(1) " +
                         "  FROM CHECK_LIVE_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID " +
-                        "  WHERE  u.USERDELETE = 1 and k.check_type=1 and to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > k.plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') < k.plan_end_time GROUP BY k.USER_ID) ";
+                        "  WHERE  u.USERDELETE = 1  and to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > k.plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') < k.plan_end_time GROUP BY k.USER_ID) ";
                 /**
                  * 现场稽查未开始
                  */
@@ -478,12 +501,13 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
                 String sql = "SELECT " +
                         "(" + qjcZxUser + ") as zx," +
                         "(" + qjcLxUser + ") as lx," +
-                        "(" + allUser + ") as all," +
+                        "(" + allUser + ") as alluser," +
                         "(" + xcJcJxz + ") as xcJcJxz," +
                         "(" + xcJcWks + ") as xcJcWks," +
                         "(" + xcJcYwc + ") as xcJcYwc " +
                         "  FROM dual";
-                message.put("data", module6Data);
+                Map<String, Object> maps = this.execSqlSingleResult(sql);
+                message.put("data", maps);
                 wuDServerEndpoint.sendText((Session) session.get("session"), message);
             } catch (Exception e) {
                 e.printStackTrace();
