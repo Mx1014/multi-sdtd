@@ -127,7 +127,7 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
         HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
         JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", userId).toString());
         if (Integer.parseInt(jsonObject.get("ROLETYPE").toString()) == 0) {
-            String sql = " SELECT * FROM RZTSYSDEPARTMENT WHERE ORGTYPE = 0 ";
+            String sql = " SELECT ID,DEPTNAME FROM RZTSYSDEPARTMENT WHERE DEPTSORT IS NOT NULL ORDER BY DEPTSORT ";
             try {
                 return WebApiResponse.success(this.execSql(sql));
             } catch (Exception e) {
@@ -332,7 +332,7 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
                     }*/
                     access_token = JwtHelper.createJWT(userid1,
                             tokenProp.getExpireTime()).getAccess_token();
-                    hashOperations.put("USERTOKEN", "USER:" + userid1.get("ID") + "," + userid1.get("REALNAME"), access_token);
+                    hashOperations.put("USERTOKEN", userid1.get("ID"), access_token);
                     userid1.put("TOKEN", access_token);
                     Integer typee = Integer.valueOf(userid.get(0).get("WORKTYPE").toString());
                     String roleid2 = userid1.get("ROLEID").toString();
