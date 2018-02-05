@@ -62,18 +62,25 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
 
 
     public void saveCheckEj(String[] messages) {
+       resp.saveCheckEj(new SnowflakeIdWorker(0, 0).nextId(), Long.valueOf(messages[1]), Integer.valueOf(messages[2]), Integer.valueOf(messages[3]), messages[4], messages[5], messages[6]);
+
+    }
+    //添加未按时上线原因
+    public void saveCheckEjWdw(String[] messages) {
+        //巡视如果任务已经完成则不计
         if(Integer.parseInt(messages[3])==2){
             String sql=" SELECT STAUTS FROM XS_ZC_TASK WHERE ID=?1 ";
             try {
                 Map<String, Object> map = execSqlSingleResult(sql, Long.valueOf(messages[1]));
                 //如果任务状态不为2，才将数据插入进去
                 if(map==null || Integer.parseInt(map.get("STAUTS").toString())!=2){
-                    resp.saveCheckEj(new SnowflakeIdWorker(0, 0).nextId(), Long.valueOf(messages[1]), Integer.valueOf(messages[2]), Integer.valueOf(messages[3]), messages[4], messages[5], messages[6]);
+                    resp.saveCheckEjWdw(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(messages[1]),Integer.valueOf(messages[2]),Integer.valueOf(messages[3]),messages[4],messages[5],messages[6],messages[7]);
                 }
             } catch (Exception e) {
             }
-        }else{
-            resp.saveCheckEj(new SnowflakeIdWorker(0, 0).nextId(), Long.valueOf(messages[1]), Integer.valueOf(messages[2]), Integer.valueOf(messages[3]), messages[4], messages[5], messages[6]);
+        }else if(Integer.parseInt(messages[3])==8){
+            //看护没有提前完成的
+            resp.saveCheckEjWdw(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(messages[1]),Integer.valueOf(messages[2]),Integer.valueOf(messages[3]),messages[4],messages[5],messages[6],messages[7]);
         }
     }
 
@@ -547,7 +554,8 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
         List<Map<String, Object>> maps = execSql(sql, taskId,taskType,warningType,createTime);
         for (Map<String, Object> map : maps) {
             String key ="";
-            if(warningType==3 || warningType==11){
+            Object reason = map.get("REASON");
+            if(!StringUtils.isEmpty(reason)){
                 key = "ONE+" + taskId + "+" + taskType + "+" + warningType + "+" + map.get("USER_ID") + "+" + map.get("DEPTID") + "+" + map.get("TASK_NAME")+"+"+map.get("REASON");
             }else{
                 key = "ONE+" + taskId + "+" + taskType + "+" + warningType + "+" + map.get("USER_ID") + "+" + map.get("DEPTID") + "+" + map.get("TASK_NAME");
@@ -586,7 +594,7 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
         String sql ="";
         List<Map<String, Object>> maps = null;
         if("0".equals(deptID)){
-            sql = "SELECT A.*,T.DEPTNAME FROM RZTSYSDEPARTMENT T LEFT JOIN (SELECT\n" +
+            /*sql = "SELECT A.*,T.DEPTNAME FROM RZTSYSDEPARTMENT T LEFT JOIN (SELECT\n" +
                     "    nvl(sum(decode(TASK_TYPE, 1, 1)),0)  AS XS,\n" +
                     "    nvl(sum(decode(TASK_TYPE, 2, 1)),0)  AS KH,\n" +
                     "    nvl(sum(decode(TASK_TYPE, 3, 1)),0)  AS XCJC,\n" +
@@ -594,18 +602,37 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
                     "    DEPTID\n" +
                     "    FROM MONITOR_CHECK_YJ\n" +
                     "   WHERE 1=1 AND trunc(CREATE_TIME) = trunc(sysdate) AND STATUS=0\n" +
-                    "  GROUP BY DEPTID)A ON T.ID = A.DEPTID WHERE  T.DEPTSORT IS NOT NULL ORDER BY T.DEPTSORT\n";
+                    "  GROUP BY DEPTID)A ON T.ID = A.DEPTID WHERE  T.DEPTSORT IS NOT NULL ORDER BY T.DEPTSORT\n";*/
+            sql = "SELECT A.*,T.DEPTNAME FROM RZTSYSDEPARTMENT T LEFT JOIN (\n" +
+                    "  SELECT nvl(sum(decode(TASK_TYPE, 1, 1)),0)  AS XS,\n" +
+                    "   nvl(sum(decode(TASK_TYPE, 2, 1)),0)  AS KH,\n" +
+                    "   nvl(sum(decode(TASK_TYPE, 3, 1)),0)  AS XCJC,\n" +
+                    "   nvl(sum(decode(TASK_TYPE, 3, 1,1,1,2,1)),0)  AS total,\n" +
+                    "  yj.DEPTID\n" +
+                    "FROM MONITOR_CHECK_YJ yj LEFT JOIN RZTSYSUSER u ON yj.USER_ID=u.ID\n" +
+                    "  WHERE u.USERDELETE=1 AND trunc(yj.CREATE_TIME)=trunc(sysdate) AND STATUS =0\n" +
+                    "        AND yj.USER_ID IS NOT NULL GROUP BY yj.DEPTID\n" +
+                    "    )A ON T.ID = A.DEPTID WHERE  T.DEPTSORT IS NOT NULL ORDER BY T.DEPTSORT";
             maps = execSql(sql);
         }else{
-            sql="SELECT\n" +
+            /*sql="SELECT\n" +
                     "    nvl(sum(decode(TASK_TYPE, 1, 1)),0)  AS XS,\n" +
                     "    nvl(sum(decode(TASK_TYPE, 2, 1)),0)  AS KH,\n" +
-                    "    nvl(sum(decode(TASK_TYPE, 3, 1)),0)  AS XCJC\n" +
-                    " nvl(sum(decode(TASK_TYPE, 3, 1,1,1,2,1)),0)  AS total, " +
-                    "    FROM MONITOR_CHECK_YJ\n" +
-                    "   WHERE 1=1 AND trunc(CREATE_TIME) = trunc(sysdate) AND STATUS=0 AND DEPTID=?1";
-            maps = execSql(sql, currentUserId);
+                    "    nvl(sum(decode(TASK_TYPE, 3, 1)),0)  AS XCJC,\n" +
+                    " nvl(sum(decode(TASK_TYPE, 3, 1,1,1,2,1)),0)  AS total " +
+                    "    FROM MONITOR_CHECK_EJ\n" +
+                    "   WHERE 1=1 AND trunc(CREATE_TIME) = trunc(sysdate) AND STATUS=0 AND DEPTID=?1";*/
+            sql="SELECT nvl(sum(decode(TASK_TYPE, 1, 1)),0)  AS XS,\n" +
+                    "     nvl(sum(decode(TASK_TYPE, 2, 1)),0)  AS KH,\n" +
+                    "     nvl(sum(decode(TASK_TYPE, 3, 1)),0)  AS XCJC,\n" +
+                    "     nvl(sum(decode(TASK_TYPE, 3, 1,1,1,2,1)),0)  AS total,d.DEPTNAME\n" +
+                    "FROM MONITOR_CHECK_EJ ej LEFT JOIN RZTSYSUSER u ON ej.USER_ID=u.ID LEFT JOIN RZTSYSDEPARTMENT d ON u.CLASSNAME=d.ID\n" +
+                    "   WHERE u.USERDELETE=1  AND trunc(ej.CREATE_TIME)=trunc(sysdate) AND ej.STATUS =0 AND ej.DEPTID=?1 AND ej.USER_ID IS NOT NULL\n" +
+                    "   GROUP BY d.DEPTNAME";
+            maps = execSql(sql, deptID);
         }
         return maps;
     }
+
+
 }

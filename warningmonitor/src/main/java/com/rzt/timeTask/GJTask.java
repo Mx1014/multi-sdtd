@@ -42,7 +42,7 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
 
 
     //定时拉数据  1
-    @Scheduled(cron = "0 30 0 * * ? ")
+   @Scheduled(cron = "0 30 0 * * ? ")
     public void gjTask(){
         khgj.inspectionMissionOverdue();// 巡视超期任务
         khgj.XSWJRW(); //未按时接任务
@@ -59,7 +59,7 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
      * 查询无GPS信号的离线人员
      */
     //十分钟一查
-    @Scheduled(fixedDelay = 600000)
+    //@Scheduled(fixedDelay = 600000)
     public void lixianTask(){
 
         ZSetOperations<String, Object> zSet = redisTemplate.opsForZSet();
