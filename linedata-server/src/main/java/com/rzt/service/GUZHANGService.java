@@ -9,6 +9,7 @@ package com.rzt.service;
 import com.rzt.entity.GUZHANG;
 import com.rzt.repository.GUZHANGRepository;
 import com.rzt.util.WebApiResponse;
+import com.rzt.utils.DESUtils;
 import com.rzt.utils.DateUtil;
 import com.rzt.utils.ExcelUtil;
 import org.apache.poi.hssf.usermodel.HSSFCell;
@@ -192,6 +193,18 @@ public class GUZHANGService extends CurdService<GUZHANG,GUZHANGRepository> {
         }
         LOGGER.info("故障导入完成！");
         return map;
+
+    }
+
+    public WebApiResponse queryBySql(String sql) {
+        try {
+            String decryptString = DESUtils.getDecryptString(sql);
+            List<Map<String, Object>> list = execSql(decryptString);
+            return WebApiResponse.success(list);
+        }catch (Exception e){
+            LOGGER.error("自定义sql查询出错",e);
+            return WebApiResponse.erro("自定义sql查询出错");
+        }
 
     }
 }

@@ -33,7 +33,7 @@ public class CmcoordinateService extends CurdService<Cmcoordinate, CmcoordinateR
     * @author nwz
     */
     public List<Map<String,Object>> lineCoordinateList(Long lineId) {
-        String sql = "select tt.NAME \"name\",tt.LONGITUDE \"longtitude\",tt.LATITUDE \"latitude\" from (select id,TOWER_ID from CM_LINE_TOWER WHERE LINE_ID = ?) t join cm_tower tt on t.TOWER_ID = tt.ID";
+        String sql = "select tt.NAME \"name\",tt.LONGITUDE \"longtitude\",tt.LATITUDE \"latitude\" from (select id,TOWER_ID,sort from CM_LINE_TOWER WHERE LINE_ID = ?) t join cm_tower tt on t.TOWER_ID = tt.ID order by t.sort";
         List<Map<String, Object>> maps = this.execSql(sql, lineId);
         return maps;
     }

@@ -67,7 +67,6 @@ public class AppKhUpdateService extends CurdService<KhTask, AppKhUpdateRepositor
             }
             return WebApiResponse.success("修改成功");
         } catch (Exception e) {
-            e.printStackTrace();
             return WebApiResponse.erro("修改失败");
         }
     }
