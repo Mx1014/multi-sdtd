@@ -247,7 +247,9 @@ public class KhYhHistoryController extends
     @GetMapping("listUpdateRecord")
     public WebApiResponse listUpdateRecord(Pageable pageable) {
         try {
-            String sql = "SELECT * FROM CM_TOWER_UPDATE_RECORD";
+            String sql = "SELECT U.REALNAME,L.V_LEVEL,t.NAME,R.*\n" +
+                    "FROM CM_TOWER_UPDATE_RECORD R LEFT JOIN RZTSYSUSER U ON U.ID = R.USER_ID\n" +
+                    "  LEFT JOIN CM_TOWER T ON T.ID = R.TOWER_ID LEFT JOIN CM_LINE L ON L.ID = T.LINE_ID where r.status !=1 order by r.create_time desc";
             return WebApiResponse.success(this.service.execSqlPage(pageable, sql));
         } catch (Exception e) {
             e.printStackTrace();
@@ -272,10 +274,7 @@ public class KhYhHistoryController extends
     @GetMapping("saveCycle")
     public WebApiResponse saveCycle(String yhId) {
         try {
-            String[] split = yhId.split(",");
-            for (int i = 0; i < split.length; i++) {
-                this.service.saveCycle(Long.parseLong(split[i]));
-            }
+                this.service.saveCycle(Long.parseLong(yhId));
             return WebApiResponse.success("成功");
         } catch (Exception e) {
             e.printStackTrace();
@@ -285,13 +284,24 @@ public class KhYhHistoryController extends
 
     @Transactional
     @GetMapping("listTowerPicture")
-    public WebApiResponse updateTower(String detailId) {
+    public WebApiResponse listTowerPicture(String detailId) {
         try {
             String sql = "SELECT OPERATE_NAME FROM XS_ZC_TASK_EXEC_DETAIL where id = ?";
-            Map<String, Object> map = this.service.execSqlSingleResult(sql,Long.parseLong(detailId));
+            Map<String, Object> map = this.service.execSqlSingleResult(sql, Long.parseLong(detailId));
             sql = "SELECT * FROM PICTURE_TOUR WHERE PROCESS_NAME LIKE ? and trunc(CREATE_TIME)=trunc(sysdate)";
-            List<Map<String, Object>> list = this.service.execSql(sql,  map.get("OPERATE_NAME").toString() + "%");
+            List<Map<String, Object>> list = this.service.execSql(sql, map.get("OPERATE_NAME").toString() + "%");
             return WebApiResponse.success(list);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("失败");
+        }
+    }
+
+    @GetMapping("/deleteRecord")
+    public WebApiResponse deleteRecord(String id) {
+        try {
+            this.service.reposiotry.deleteRecord(id);
+            return WebApiResponse.success("成功");
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("失败");
