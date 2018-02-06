@@ -32,7 +32,7 @@ public class OfflinesController extends CurdController<RztSysUser, CommonService
      * @return
      */
     @RequestMapping("OfflinesList")
-    public WebApiResponse OfflinesList(Integer workType, Integer page, Integer size, String currentUserId, String startTime, String endTime, String deptId, String taskType) {
+    public WebApiResponse OfflinesList(Integer workType, Integer page, Integer size, String currentUserId, String startTime, String endTime, String deptId, String taskType,String loginType) {
         org.springframework.data.domain.Pageable pageable = new PageRequest(page, size);
         List listLike = new ArrayList();
         String s = "";
@@ -47,6 +47,10 @@ public class OfflinesController extends CurdController<RztSysUser, CommonService
         if (roletype == 1 || roletype == 2) {
             listLike.add(deptid);
             s += " AND DEPTID= ?" + listLike.size();
+        }
+        if (!StringUtils.isEmpty(loginType)){
+            listLike.add(loginType);
+            s1 += "  LOGINSTATUS=?" + listLike.size();
         }
         if (!StringUtils.isEmpty(deptId)) {
             listLike.add(deptId);
@@ -113,6 +117,7 @@ public class OfflinesController extends CurdController<RztSysUser, CommonService
                 "        u.REALNAME, " +
                 "        u.CLASSNAME, " +
                 "        u.DEPT, " +
+                "        u.LOGINSTATUS, " +
                 "        u.COMPANYNAME, " +
                 "         u.WORKTYPE AS WORKTYPEs, " +
                 "        e.a               AS MORE, " +
