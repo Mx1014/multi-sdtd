@@ -469,13 +469,21 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
     }
 
     public void deleteTaskById(long id) {
-        this.reposiotry.deleteTaskById(id);
-        this.reposiotry.deleteYjById(id);
-        this.reposiotry.deleteEjById(id);
-        String s = "TWO+" + id + "+2+*";
-        removeSomeKey(s);
-        String s1 = "ONE+" + id + "+2+*";
-        removeSomeKey(s1);
+        try {
+            this.reposiotry.deleteTaskById(id);
+            this.reposiotry.deleteYjById(id);
+            this.reposiotry.deleteEjById(id);
+            try {
+                String s = "TWO+" + id + "+2+*";
+                removeSomeKey(s);
+                String s1 = "ONE+" + id + "+2+*";
+                removeSomeKey(s1);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public WebApiResponse listTowerPoint(long id) {
