@@ -242,6 +242,12 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
             arrList.add(tdOrg);
         }
 
+        //人员id
+        String userId1 = xsTaskSch.getUserId();
+        if (!StringUtils.isEmpty(userId1 )) {
+            sqlBuffer.append("and cm_user_id = ? ");
+            arrList.add(userId1);
+        }
 
         sqlBuffer.append(" order by id desc");
 
