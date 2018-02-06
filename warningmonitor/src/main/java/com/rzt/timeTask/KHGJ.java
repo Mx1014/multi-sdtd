@@ -104,7 +104,7 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
     public void KHWKH() {
         String sql = " SELECT kh.ID,d.ID AS TDYW_ORG,kh.PLAN_START_TIME,kh.TASK_NAME,kh.USER_ID FROM  KH_TASK kh LEFT JOIN RZTSYSDEPARTMENT  d" +
                 "    ON kh.TDYW_ORG = d.DEPTNAME WHERE trunc(kh.PLAN_START_TIME) = trunc(sysdate) AND (kh.REAL_START_TIME IS NULL OR kh.PLAN_START_TIME<kh.REAL_START_TIME)";
-        List<Object> list = new ArrayList<>();
+        //List<Object> list = new ArrayList<>();
         List<Map<String, Object>> maps = execSql(sql);
         for (Map<String, Object> map : maps) {
             Jedis jedis = jedisPool.getResource();
@@ -114,7 +114,7 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
             try {
                 Long time = plan_start_time.getTime() - new Date().getTime();
                 if(time<0){
-                    list.add(map.get("ID"));
+                    //list.add(map.get("ID"));
                     continue;
                 }
                 time = time+1800000L;
@@ -128,7 +128,7 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
         }
 
         //判断在0点到拉数据时间段内有无未按时接任务的
-        if(list.size()>0)
+        /*if(list.size()>0)
             for(Object obj:list){
                 String sql1 = "SELECT kh.ID,d.ID AS TDYW_ORG,kh.PLAN_START_TIME,kh.TASK_NAME,kh.USER_ID FROM  KH_TASK kh LEFT JOIN RZTSYSDEPARTMENT d  " +
                         " ON kh.TDYW_ORG = d.DEPTNAME WHERE kh.PLAN_START_TIME<nvl(kh.REAL_START_TIME,sysdate) AND kh.ID=?1";
@@ -138,7 +138,7 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
                     resp.saveCheckEj(SnowflakeIdWorker.getInstance(0,0).nextId(),Long.valueOf(map.get("ID").toString()),2,10,map.get("USER_ID").toString(),map.get("TDYW_ORG").toString(),map.get("TASK_NAME").toString());
                     String key = "ONE+"+map.get("ID").toString()+"+2+10+"+map.get("USER_ID")+"+"+map.get("TDYW_ORG")+"+"+map.get("TASK_NAME");
                     redisService.setex(key);
-                   /* String[] message = new String[7];
+                   *//* String[] message = new String[7];
                     message[0] = "ONE";
                     message[1] = map.get("ID").toString();
                     message[2] = "2";
@@ -147,9 +147,9 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
                     message[5] = map.get("TDYW_ORG").toString();
                     message[6] = map.get("TASK_NAME").toString();
 
-                    monitorcheckyj.saveCheckYj(message);*/
+                    monitorcheckyj.saveCheckYj(message);*//*
                 }
-            }
+            }*/
     }
     @Autowired
     private Monitorcheckyjservice monitorcheckyj;
@@ -157,7 +157,7 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
     public void XSWJRW(){
         String sql = "SELECT ID,TD_ORG,PLAN_START_TIME,CM_USER_ID,TASK_NAME FROM XS_ZC_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate)  AND (REAL_START_TIME IS NULL OR PLAN_START_TIME<REAL_START_TIME)  AND IS_DELETE=0 ";
         List<Map<String, Object>> maps = execSql(sql);
-        List<Object> list = new ArrayList<>();
+       // List<Object> list = new ArrayList<>();
         for (Map<String, Object> map : maps) {
             Jedis jedis = jedisPool.getResource();
             String key = "TWO+" + map.get("ID") + "+1+4+" + map.get("CM_USER_ID") + "+" + map.get("TD_ORG") + "+" + map.get("TASK_NAME");
@@ -166,7 +166,7 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
             try {
                 Long time = plan_start_time.getTime() - new Date().getTime();
                 if(time<0){
-                    list.add(map.get("ID"));
+                    //list.add(map.get("ID"));
                     continue;
                 }
                 time = time+1800000L;
@@ -180,7 +180,7 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
         }
 
         //判断在0点到拉数据时间段内有无未按时接任务的
-        if(list.size()>0) {
+        /*if(list.size()>0) {
             for (Object obj : list) {
                 String sql1 = "SELECT ID,TD_ORG,PLAN_START_TIME,CM_USER_ID,TASK_NAME FROM XS_ZC_TASK WHERE PLAN_START_TIME<nvl(REAL_START_TIME,sysdate) AND ID=?1";
                 List<Map<String, Object>> maps1 = execSql(sql1, obj);
@@ -189,7 +189,7 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
                     resp.saveCheckEj(SnowflakeIdWorker.getInstance(0, 0).nextId(), Long.valueOf(map.get("ID").toString()), 1, 4, map.get("CM_USER_ID").toString(), map.get("TD_ORG").toString(), map.get("TASK_NAME").toString());
                     String key = "ONE+"+map.get("ID").toString()+"+1+4+"+map.get("CM_USER_ID")+"+"+map.get("TD_ORG")+"+"+map.get("TASK_NAME");
                     redisService.setex(key);
-                    /*String[] message = new String[7];
+                    *//*String[] message = new String[7];
                     message[0] = "ONE";
                     message[1] = map.get("ID").toString();
                     message[2] = "1";
@@ -198,10 +198,10 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
                     message[5] = map.get("TD_ORG").toString();
                     message[6] = map.get("TASK_NAME").toString();
 
-                    monitorcheckyj.saveCheckYj(message);*/
+                    monitorcheckyj.saveCheckYj(message);*//*
                 }
             }
-        }
+        }*/
         //System.out.println("结束------------------------");
 
     }
