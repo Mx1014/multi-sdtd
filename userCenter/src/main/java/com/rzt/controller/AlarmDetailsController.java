@@ -45,16 +45,26 @@ public class AlarmDetailsController extends CurdController<RztSysUser, CommonSer
                 listLike.add(deptId);
                 s += " AND DEPTID= ?" + listLike.size();
             }
-            String alarm = "SELECT A.*,T.DEPTNAME FROM RZTSYSDEPARTMENT T LEFT JOIN (SELECT " +
-                    "  nvl(sum(decode(WARNING_TYPE, 2, 1, 8, 1, 0)),0)  AS OFFLINES, " +
-                    "  nvl(sum(decode(WARNING_TYPE, 4, 1, 10, 1, 0)),0) AS ANSWERTIME, " +
-                    "  nvl(sum(decode(WARNING_TYPE, 1, 1, 0)),0)        AS OVERDUE, " +
-                    "  nvl(sum(decode(WARNING_TYPE, 7, 1, 0)),0)        AS TEMPORARILY, " +
-                    "  nvl(sum(decode(WARNING_TYPE, 5, 1, 0)),0)        AS UNQUALIFIEDPATROL, " +
-                    "  DEPTID " +
-                    " FROM MONITOR_CHECK_EJ " +
-                    " WHERE 1=1 " + s +
-                    " GROUP BY DEPTID)A ON T.ID = A.DEPTID WHERE  T.DEPTSORT IS NOT NULL ORDER BY T.DEPTSORT ";
+            String alarm = " SELECT " +
+                    "  NVL(A.OFFLINES,0) AS OFFLINES, " +
+                    "  NVL(A.ANSWERTIME,0) AS ANSWERTIME, " +
+                    "  NVL(A.OVERDUE,0) AS OVERDUE, " +
+                    "  NVL(A.TEMPORARILY,0) AS TEMPORARILY, " +
+                    "  NVL(A.UNQUALIFIEDPATROL,0) AS UNQUALIFIEDPATROL, " +
+                    "  T.ID AS DEPTID, " +
+                    "  T.DEPTNAME " +
+                    "FROM RZTSYSDEPARTMENT T LEFT JOIN (SELECT " +
+                    "                                     nvl(sum(decode(WARNING_TYPE, 2, 1, 8, 1, 0)), 0)  AS OFFLINES, " +
+                    "                                     nvl(sum(decode(WARNING_TYPE, 4, 1, 10, 1, 0)), 0) AS ANSWERTIME, " +
+                    "                                     nvl(sum(decode(WARNING_TYPE, 1, 1, 0)), 0)        AS OVERDUE, " +
+                    "                                     nvl(sum(decode(WARNING_TYPE, 7, 1, 0)), 0)        AS TEMPORARILY, " +
+                    "                                     nvl(sum(decode(WARNING_TYPE, 5, 1, 0)), 0)        AS UNQUALIFIEDPATROL, " +
+                    "                                     DEPTID " +
+                    "                                   FROM MONITOR_CHECK_EJ " +
+                    "                                   WHERE 1 = 1 AND trunc(CREATE_TIME) = trunc(sysdate) " +
+                    "                                   GROUP BY DEPTID) A ON T.ID = A.DEPTID " +
+                    "WHERE T.DEPTSORT IS NOT NULL " +
+                    "ORDER BY T.DEPTSORT ";
             List<Map<String, Object>> alarms = this.service.execSql(alarm, listLike.toArray());
             return WebApiResponse.success(alarms);
         } else if (roletype == 1 || roletype == 2) {

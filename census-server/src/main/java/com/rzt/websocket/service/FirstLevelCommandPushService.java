@@ -140,7 +140,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
             int a = 0;
             int b = 0;
             try {
-                String user = "SELECT * FROM WORKING_TIMED WHERE DEPT_ID='"+deptid+"'";
+                String user = "SELECT * FROM WORKING_TIMED WHERE DEPT_ID='" + deptid + "'";
                 Map<String, Object> map = this.execSqlSingleResult(user);
                 SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
                 String format = formatter.format(new Date());
@@ -279,7 +279,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
              */
             String xcJcWks = "SELECT count(1)  " +
                     "FROM CHECK_LIVE_TASK " +
-                    "WHERE STATUS = 0 and check_type=1 and to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') < plan_end_time ";
+                    "WHERE STATUS = 0 and check_type=2 and to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') < plan_end_time ";
             /**
              * 正常巡视进行中
              */
@@ -303,7 +303,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
              */
             String xcJcJxz = "SELECT count(1)  " +
                     "FROM CHECK_LIVE_TASK " +
-                    "WHERE STATUS = 1 and check_type=1 and to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') < plan_end_time";
+                    "WHERE STATUS = 1 and check_type=2 and to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') < plan_end_time";
             /**
              * 正常巡视已完成
              */
@@ -327,7 +327,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
              */
             String xcJcYwc = "SELECT count(1)  " +
                     "FROM CHECK_LIVE_TASK " +
-                    "WHERE STATUS = 2 and check_type=1 and to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') <plan_end_time";
+                    "WHERE STATUS = 2 and check_type=2 and to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') <plan_end_time";
 
            /* String sql1 = "select * from(SELECT CREATETIME FROM TIMED_TASK where THREEDAY=1 ORDER BY CREATETIME DESC ) where ROWNUM=1";
             List<Map<String, Object>> maps = this.execSql(sql1);
@@ -356,8 +356,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
                     "(" + xcJcWks + ") as xcJcWks," +
                     "(" + xcJcYwc + ") as xcJcYwc, " +
                     "(" + htJcWks + ") as htJcWks, " +
-                    "(1) as htJcYks, " +
-                   // "(" + htJcYks + ") as htJcYks, " +
+                    // "(" + htJcYks + ") as htJcYks, " +
                     "(" + htJcYwc + ") as htJcYwc " +
                     "  FROM dual";
             List<Map<String, Object>> list = this.execSql(sql);
