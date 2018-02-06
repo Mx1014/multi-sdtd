@@ -186,4 +186,19 @@ public class DateUtil {
         String cdate = sdf.format(cal.getTime());
         return cal.getTime();
     }
+    public static String timeUtil(int i) {
+        String date = "";
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+        Calendar c = Calendar.getInstance();
+        c.setTime(new Date());
+        Date m = c.getTime();
+        String mon = df.format(m);
+        if (i == 1) {
+            date = mon + " 00:00";
+        } else {
+            date = mon + " 23:59";
+        }
+        //  task.setPlanEndTime(df.format(new Date()) + " 23:59");
+        return date;
+    }
 }

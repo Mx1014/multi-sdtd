@@ -93,8 +93,8 @@ public interface KhSiteRepository extends JpaRepository<KhSite, String> {
     List<KhSite> findSites();
 
     @Modifying
-    @Query(value = "insert into CHECK_LIVE_SITE(id,TASK_ID,TASK_TYPE,CREATE_TIME,TASK_NAME,STATUS,line_id,TDYW_ORGID,TDWX_ORGID,yh_id) " +
-            "values(?1,?2,?3,sysdate,?4,?5,?6,?7,?8,?9)",nativeQuery = true)
+    @Query(value = "insert into CHECK_LIVE_SITE(id,TASK_ID,TASK_TYPE,CREATE_TIME,TASK_NAME,STATUS,line_id,TDYW_ORGID,TDWX_ORGID,yh_id,TASK_TYPE) " +
+            "values(?1,?2,?3,sysdate,?4,?5,?6,?7,?8,?9,2)",nativeQuery = true)
     void addCheckSite(long l, Long taskId, int i1, String taskName, int i, Long lineId, String tdywOrgId, String wxOrgId, Long id);
 
     @Modifying
