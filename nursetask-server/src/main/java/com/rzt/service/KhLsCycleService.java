@@ -76,7 +76,7 @@ public class KhLsCycleService extends CurdService<KhLsCycle, KhLsCycleRepository
             Object tdId = jsonObject.get("DEPTID");
 //            Object classid = jsonObject.get("CLASSID");
             Object companyid = jsonObject.get("COMPANYID");
-            String result = " k.id as id,k.task_name as taskName,k.tdyw_org as yworg,y.yhms as ms,y.yhjb as jb,k.create_time as createTime ";
+            String result = " k.id as id,k.task_name as taskName,k.tdyw_org as yworg,y.yhms as ms,y.yhjb1 as jb,k.create_time as createTime ";
 
 
             // 搜索框
@@ -90,7 +90,7 @@ public class KhLsCycleService extends CurdService<KhLsCycle, KhLsCycleRepository
                 params.add("%" + taskName + "%");
             }
             if (yhjb != null && !yhjb.equals("")) {
-                buffer.append(" and y.yhjb like ? ");
+                buffer.append(" and y.yhjb1 like ? ");
                 params.add(("%" + yhjb + "%"));
             }
             if (yworg != null && !yworg.equals("")) {

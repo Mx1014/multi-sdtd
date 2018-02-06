@@ -61,8 +61,8 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
     public Object listAllTaskNotDo(KhTaskModel task, Pageable pageable, String userName, String roleType, String yhjb, String yworg, String currentUserId) {
         List params = new ArrayList<>();
         StringBuffer buffer = new StringBuffer();
-        String result = " k.id as id,k.task_name as taskName,k.tdyw_org as yworg,y.yhms as ms,y.yhjb as jb,k.create_time as createTime,k.COUNT as COUNT,u.realname as username,k.jbd as jbd,k.plan_start_time as starttime,k.plan_end_time as endtime,u.id as userId";
-        String result1 = " k.id as id,k.task_name as taskName,k.tdyw_org as yworg,y.yhms as ms,y.yhjb as jb,k.create_time as createTime ";
+        String result = " k.id as id,k.task_name as taskName,k.tdyw_org as yworg,y.yhms as ms,y.yhjb1 as jb,k.create_time as createTime,k.COUNT as COUNT,u.realname as username,k.jbd as jbd,k.plan_start_time as starttime,k.plan_end_time as endtime,u.id as userId";
+        String result1 = " k.id as id,k.task_name as taskName,k.tdyw_org as yworg,y.yhms as ms,y.yhjb1 as jb,k.create_time as createTime ";
         buffer.append(" where k.status = ?");// 0为未派发的任务
         params.add(task.getStatus());
         if (task.getPlanStartTime() != null && !task.getPlanStartTime().equals("")) {
@@ -85,7 +85,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             params.add("%" + userName + "%");
         }
         if (yhjb != null && !yhjb.equals("")) {
-            buffer.append(" and y.yhjb like ?");
+            buffer.append(" and y.yhjb1 like ?");
             params.add(("%" + yhjb + "%"));
         }
         if (yworg != null && !yworg.equals("")) {
@@ -195,7 +195,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
     }
 
     public List listKhtaskById(long id) {
-        String result = "k.task_name as taskname,k.plan_start_time starttime,k.plan_end_time endtime,d.deptname deptname,y.yhms as ms,y.yhjb as jb,u.realname as name";
+        String result = "k.task_name as taskname,k.plan_start_time starttime,k.plan_end_time endtime,d.deptname deptname,y.yhms as ms,y.yhjb1 as jb,u.realname as name";
         String sql = "select " + result + " from kh_site k left join rztsysuser u on u.id = k.user_id left join kh_yh_history y on y.id = k.yh_id left join rztsysdepartment d on d.id=u.classname where k.id=?";
         return this.execSql(sql, id);
     }

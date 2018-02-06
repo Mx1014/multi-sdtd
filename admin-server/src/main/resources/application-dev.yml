@@ -1,0 +1,59 @@
+server:
+    port: 6789
+    context-path: /adminserver/
+token:
+  expiretime: 300000000
+spring:
+    datasource:
+      type: com.alibaba.druid.pool.DruidDataSource
+      url: jdbc:oracle:thin:@47.94.131.120:1521:orcl
+#      url: jdbc:oracle:thin:@168.130.1.32:1521:LIUZE
+      username: sdtd27
+      password: sdtd27
+      driver-class-name: oracle.jdbc.driver.OracleDriver
+      minIdle: 10
+      maxActive: 50
+      initialSize: 5
+      maxWait: 60000
+      timeBetweenEvictionRunsMillis: 3000
+      minEvictableIdleTimeMillis: 300000
+      validationQuery: SELECT 1 FROM DUAL
+      testWhileIdle: true
+      testOnBorrow: false
+      testOnReturn: false
+      poolPreparedStatements: true
+      maxPoolPreparedStatementPerConnectionSize: 20
+      filters: stat,wall,log4j
+      connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMill
+    jpa:
+      hibernate:
+        ddl-auto: none
+      show-sql: true
+    application:
+      name: monitorServer
+    redis:
+        database: 0
+        host: 39.106.206.129
+        port: 6379
+#        host: localhost
+#        port: 65535
+#        password: 123456
+        password: Rzt82890758-Rzt82890758
+        pool:
+          max-active: 8
+          max-wait: -1
+          max-idle: 8
+          min-idle: 0
+        timeout: 0
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+        service-url:
+          defaultZone: http://localhost:7002/eureka/
+          #防止心跳启动报错
+#        register-with-eureka: false
+#        fetch-registry: false
+
+logging:
+  config: classpath:logback-spring.xml

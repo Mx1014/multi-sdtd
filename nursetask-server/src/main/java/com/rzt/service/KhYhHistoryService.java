@@ -96,7 +96,6 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            yh.setYhjb("一般");
             yh.setSdgs(1);//手机导入
             yh.setSfdj(0);  //未定级
             yh.setYhzt(0);//隐患未消除
@@ -349,9 +348,6 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             cell.setCellValue("是否栽装警示牌");
             cell.setCellStyle(headerStyle);
             cell = row.createCell((short) 25);
-            cell.setCellValue("危急程度");
-            cell.setCellStyle(headerStyle);
-            cell = row.createCell((short) 26);
             cell.setCellValue("管控措施");
             cell.setCellStyle(headerStyle);
             //Sheet sheet = wb.getSheetAt(0);
@@ -433,11 +429,11 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 if (task.get("JSP") != null) {
                     row.createCell(24).setCellValue(task.get("JSP").toString());
                 }
-                if (task.get("YHJB") != null) {
+               /* if (task.get("YHJB") != null) {
                     row.createCell(25).setCellValue(task.get("YHJB").toString());
-                }
+                }*/
                 if (task.get("GKCS") != null) {
-                    row.createCell(26).setCellValue(task.get("GKCS").toString());
+                    row.createCell(25).setCellValue(task.get("GKCS").toString());
                 }
             }
             OutputStream output = response.getOutputStream();
@@ -833,13 +829,13 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 yh.setXdxyhjkjl(ExcelUtil.getCellValue(row.getCell(22)));//导线对隐患净空距离
                 yh.setYhxcyy(ExcelUtil.getCellValue(row.getCell(23)));//隐患形成原因
                 yh.setJsp(ExcelUtil.getCellValue(row.getCell(24)));//是否栽装警示牌
-                String wjcd = ExcelUtil.getCellValue(row.getCell(25));//危急程度
-                if (wjcd != null && !wjcd.equals("")) {
+                //  String wjcd = ExcelUtil.getCellValue(row.getCell(25));//危急程度
+                /*if (wjcd != null && !wjcd.equals("")) {
                     yh.setYhjb(wjcd);
                 } else {
                     yh.setYhjb("一般");
-                }
-                yh.setGkcs(ExcelUtil.getCellValue(row.getCell(26)));//管控措施
+                }*/
+                yh.setGkcs(ExcelUtil.getCellValue(row.getCell(25)));//管控措施
                 //yh.setZpxgsj(DateUtil.parse(ExcelUtil.getCellValue(row.getCell(27))));//照片修改时间
                 yh.setYhzt(0);//隐患状态
                 yh.setRadius("100.0");
@@ -963,13 +959,13 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 yh.setXdxyhjkjl(ExcelUtil.getCellValue2(row.getCell(22)));//导线对隐患净空距离
                 yh.setYhxcyy(ExcelUtil.getCellValue2(row.getCell(23)));//隐患形成原因
                 yh.setJsp(ExcelUtil.getCellValue2(row.getCell(24)));//是否栽装警示牌
-                String wjcd = ExcelUtil.getCellValue2(row.getCell(25));//危急程度
+               /* String wjcd = ExcelUtil.getCellValue2(row.getCell(25));//危急程度
                 if (wjcd != null && !wjcd.equals("")) {
                     yh.setYhjb(wjcd);
                 } else {
                     yh.setYhjb("一般");
-                }
-                yh.setGkcs(ExcelUtil.getCellValue2(row.getCell(26)));//管控措施
+                }*/
+                yh.setGkcs(ExcelUtil.getCellValue2(row.getCell(25)));//管控措施
                 //yh.setZpxgsj(DateUtil.parse(ExcelUtil.getCellValue(row.getCell(27))));//照片修改时间
                 yh.setYhzt(0);//隐患状态
                 yh.setRadius("100.0");
@@ -1043,9 +1039,9 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
     private CmTowerUpdateRecordService recordService;
 
     @Transactional
-    public WebApiResponse updateTowerById(long id, String lon, String lat, String userId, String lineName,String detailId) {
+    public WebApiResponse updateTowerById(long id, String lon, String lat, String userId, String lineName, String detailId) {
         try {
-            this.reposiotry.updateTowerById(id, lon, lat);
+            //this.reposiotry.updateTowerById(id, lon, lat);
             CmTowerUpdateRecord record = new CmTowerUpdateRecord();
             record.setId(0l);
             record.setLat(lat);
@@ -1125,4 +1121,28 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         }
     }
 
+    @Transactional
+    public void saveCycle(long yhId) {
+        KhYhHistory yh = this.reposiotry.finds(yhId);
+        String kv = yh.getVtype();
+        if (yh.getVtype().contains("kV")) {
+            kv = kv.substring(0, kv.indexOf("k"));
+        }
+        KhCycle task = new KhCycle();
+        String taskName = kv + "-" + yh.getLineName() + " " + yh.getSection() + " 号杆塔看护任务";
+        task.setId(0L);
+        task.setVtype(yh.getVtype());
+        task.setLineName(yh.getLineName());
+        task.setTdywOrg(yh.getTdywOrg());
+        task.setSection(yh.getSection());
+        task.setLineId(yh.getLineId());
+        task.setTaskName(taskName);
+        task.setWxOrgId(yh.getWxorgId());
+        task.setTdywOrgId(yh.getTdorgId());
+        task.setWxOrg(yh.getTdwxOrg());
+        task.setStatus(0);// 未派发
+        task.setYhId(yh.getId());
+        task.setCreateTime(DateUtil.dateNow());
+        this.cycleService.add(task);
+    }
 }
