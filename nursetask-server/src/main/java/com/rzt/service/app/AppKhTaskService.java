@@ -44,7 +44,7 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
 
     public WebApiResponse appListkhTaskById(String taskId) {
         try {
-            String result = "K.TASK_NAME AS TASKNAME,H.YHMS AS MS,H.YHJB AS JB,K.PLAN_START_TIME AS STARTTIME,K.PLAN_END_TIME AS ENDTIME,K.STATUS AS STATUS ";
+            String result = "K.TASK_NAME AS TASKNAME,H.YHMS AS MS,H.YHJB1 AS JB,K.PLAN_START_TIME AS STARTTIME,K.PLAN_END_TIME AS ENDTIME,K.STATUS AS STATUS ";
             String sql = "SELECT " + result + " FROM KH_TASK k LEFT JOIN KH_YH_HISTORY H on k.yh_id = h.id WHERE K.ID=?";
             List<Map<String, Object>> list = this.execSql(sql, Long.parseLong(taskId));
             return WebApiResponse.success(list);
@@ -224,7 +224,7 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
 
     public WebApiResponse appListTaskDone(String userId, long taskId) {
         try {
-            String sql = "SELECT k.status status,k.TASK_NAME taskname,y.YHMS ms,y.YHJB jb,k.PLAN_START_TIME starttime,k.PLAN_END_TIME endtime,u.REALNAME name,u.PHONE phone,d.DEPTNAME\n" +
+            String sql = "SELECT k.status status,k.TASK_NAME taskname,y.YHMS ms,y.YHJB1 jb,k.PLAN_START_TIME starttime,k.PLAN_END_TIME endtime,u.REALNAME name,u.PHONE phone,d.DEPTNAME\n" +
                     "from KH_TASK k,KH_YH_HISTORY y,RZTSYSUSER u,RZTSYSDEPARTMENT d\n" +
                     "where k.YH_ID=y.id and k.USER_ID = u.id and d.ID = u.CLASSNAME\n" +
                     "and k.id = ?";

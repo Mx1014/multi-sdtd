@@ -16,6 +16,7 @@ import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DateUtil;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,10 +26,9 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import javax.websocket.Session;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * 类名称：KHYHHISTORYController
@@ -138,8 +138,8 @@ public class KhYhHistoryController extends
 
     @ApiOperation(value = "杆塔坐标采集", notes = "杆塔坐标采集")
     @GetMapping("updateTowerById")
-    public WebApiResponse updateTowerById(long id, String lon, String lat,String userId, String lineName,String detailId) {
-        return this.service.updateTowerById(id, lon, lat,userId,lineName,detailId);
+    public WebApiResponse updateTowerById(long id, String lon, String lat, String userId, String lineName, String detailId) {
+        return this.service.updateTowerById(id, lon, lat, userId, lineName, detailId);
     }
 
     @ApiOperation(value = "判断线路是否属于通州公司、门头沟公司", notes = "隐患台账删除")
@@ -163,7 +163,7 @@ public class KhYhHistoryController extends
             for (Map map : maps) {
                 long id = Long.parseLong(map.get("ID").toString());
                 String td = map.get("TD").toString();
-                this.service.addTdOrgId(Long.parseLong(map.get("ID").toString()), map.get("TD").toString(),map.get("WX"));
+                this.service.addTdOrgId(Long.parseLong(map.get("ID").toString()), map.get("TD").toString(), map.get("WX"));
 //                try {
 //                    this.service.addTdOrgId2(Long.parseLong(map.get("ID").toString()), );
 //                } catch (NumberFormatException e) {
@@ -174,35 +174,118 @@ public class KhYhHistoryController extends
             e.printStackTrace();
         }
     }
-    /*@ApiOperation(value = "隐患台账图片展示", notes = "隐患台账图片展示")
+
+    @ApiOperation(value = "隐患台账图片展示", notes = "隐患台账图片展示")
     @GetMapping("addadd")
     public Map addadd() {
-        try {
-            Map message = new HashMap<String, Object>();
-            message.put("module", 11);
-            String module11 = "select * from TIMED_CONFIG where id LIKE 'TIME_CONFIG'";
-            Map<String, Object> timeConfig = this.service.execSqlSingleResult(module11);
-            String newTime = "SELECT THREEDAY,CREATETIME FROM (SELECT * FROM TIMED_TASK where THREEDAY=? ORDER BY CREATETIME DESC ) WHERE rownum =1 ";
-            Map<String, Object> towHour = this.service.execSqlSingleResult(newTime, 0);
-            Map<String, Object> threeDay = this.service.execSqlSingleResult(newTime, 1);
-            Map<Object, Object> returnMap = new HashMap<>();
-            returnMap.put("dqsj",DateUtil.getNowDate());
-            Date yjcreatetime = DateUtil.parseDate(towHour.get("CREATETIME").toString());
-            Date ercreatetime = DateUtil.parseDate(towHour.get("CREATETIME").toString());
-            returnMap.put("xcsjyj",DateUtil.addDate(yjcreatetime,72));
-            returnMap.put("yjjg","72小时/次");
-            if (ercreatetime.getTime()>= DateUtil.getScheduleTime(timeConfig.get("START_TIME").toString())) {
-                returnMap.put("xcsjej",DateUtil.addDate(ercreatetime,Double.parseDouble(timeConfig.get("DAY_ZQ").toString())));
-                returnMap.put("ejjg",timeConfig.get("DAY_ZQ")+"小时/次");
-            }else if(ercreatetime.getTime() <=DateUtil.getScheduleTime(timeConfig.get("END_TIME").toString())){
-                returnMap.put("xcsjej",DateUtil.addDate(ercreatetime,Double.parseDouble(timeConfig.get("NIGHT_ZQ").toString())));
-                returnMap.put("ejjg",timeConfig.get("NIGHT_ZQ")+"小时/次");
+        Map message = new HashMap<String, Object>();
+        List<Map<String, Object>> resList = new ArrayList<>();
+        String sql1 = "SELECT count(1) AS sum,yj.DEPTID FROM MONITOR_CHECK_YJ yj LEFT JOIN RZTSYSUSER u ON yj.USER_ID=u.ID " +
+                " WHERE trunc(yj.CREATE_TIME)=trunc(sysdate) AND u.USERDELETE=1 " +
+                "    AND yj.STATUS =0  AND yj.USER_ID IS NOT NULL GROUP BY yj.DEPTID";
+        //查询处理中
+        String sql2 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =1  AND USER_ID IS NOT NULL GROUP BY DEPTID  ";
+        //查询已处理
+        String sql3 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =2  AND USER_ID IS NOT NULL GROUP BY DEPTID  ";
+        List<Map<String, Object>> maps = this.service.execSql(sql1);
+        List<Map<String, Object>> maps1 = this.service.execSql(sql2);
+        List<Map<String, Object>> maps2 = this.service.execSql(sql3);
+        String deptnameSql = " SELECT t.ID,t.DEPTNAME FROM RZTSYSDEPARTMENT t WHERE t.DEPTSORT IS NOT NULL ORDER BY t.DEPTSORT ";
+        List<Map<String, Object>> dept = this.service.execSql(deptnameSql);
+
+        for (Map<String, Object> map : dept) {
+            Map<String, Object> sumMap = new HashMap<String, Object>();
+            String id = (String) map.get("ID");
+            String deptName = (String) map.get("DEPTNAME");
+            if (deptName.contains("本部")) {
+                deptName = "本部";
+            } else {
+                deptName = deptName.substring(0, deptName.length() - 2);
             }
-            message.put("data", returnMap);
-            return message;
+            sumMap.put("ID", id);
+            sumMap.put("DEPTNAME", deptName);
+            sumMap.put("wcl", 0);
+            sumMap.put("clz", 0);
+            sumMap.put("ycl", 0);
+
+            //添加未处理
+            for (Map<String, Object> m1 : maps) {
+                if (id.equals(m1.get("DEPTID").toString())) {
+                    sumMap.put("wcl", m1.get("SUM"));
+                }
+            }
+            //添加处理中
+            for (Map<String, Object> m1 : maps1) {
+                if (id.equals(m1.get("DEPTID").toString())) {
+                    sumMap.put("clz", m1.get("SUM"));
+                }
+            }
+            //添加已处理
+            for (Map<String, Object> m1 : maps2) {
+                if (id.equals(m1.get("DEPTID").toString())) {
+                    sumMap.put("ycl", m1.get("SUM"));
+                }
+            }
+            resList.add(sumMap);
+        }
+       /* if (allMap.containsKey(deptId)) {
+            message = allMap.get(deptId);
+        } else {
+            try {*/
+        message.put("module", 1);
+        message.put("data", resList);
+        return message;
+        // allMap.put(deptId, message);
+         /*   } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }*/
+    }
+
+    //隐患采集记录
+    @Transactional
+    @GetMapping("listUpdateRecord")
+    public WebApiResponse listUpdateRecord(Pageable pageable) {
+        try {
+            String sql = "SELECT * FROM CM_TOWER_UPDATE_RECORD";
+            return WebApiResponse.success(this.service.execSqlPage(pageable, sql));
         } catch (Exception e) {
             e.printStackTrace();
-            return new HashMap();
+            return WebApiResponse.erro("失败");
         }
-    }*/
+    }
+    @Transactional
+    @GetMapping("updateTower")
+    public WebApiResponse updateTower(String towerId,String lon,String lat) {
+        try {
+            this.service.reposiotry.updateTowerById(Long.parseLong(towerId),lon,lat);
+            return WebApiResponse.success("成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("失败");
+        }
+    }
+    //生成看护点
+    @Transactional
+    @GetMapping("saveCycle")
+    public WebApiResponse saveCycle(String yhId) {
+        try {
+            this.service.saveCycle(Long.parseLong(yhId));
+            return WebApiResponse.success("成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("失败");
+        }
+    }
+    @Transactional
+    @GetMapping("listTowerPicture")
+    public WebApiResponse updateTower(String detailId) {
+        try {
+            String sql = "select ";
+            return WebApiResponse.success("成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("失败");
+        }
+    }
 }
