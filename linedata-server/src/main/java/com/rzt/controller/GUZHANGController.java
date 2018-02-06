@@ -51,5 +51,11 @@ public class GUZHANGController extends
 		return service.importGuZhang(file,flag);
 	}
 
-	
+	@ApiOperation(value = "sql",notes = "sql查询")
+	@PostMapping("queryBySql")
+	public WebApiResponse queryBySql(String sql){
+		return service.queryBySql(sql);
+	}
+
+
 }

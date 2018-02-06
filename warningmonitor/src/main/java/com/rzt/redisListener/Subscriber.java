@@ -50,9 +50,14 @@ public class Subscriber extends JedisPubSub {
             }
             if("TWO".equals(messages[0])){  //表示告警任务生成，插入到二级单位表中
                 try{
-
-                    monitorcheckej.saveCheckEj(messages);
-                    String key = "ONE+"+messages[1]+"+"+messages[2]+"+"+messages[3]+"+"+messages[4]+"+"+messages[5]+"+"+messages[6];
+                    String key ="";
+                    if(messages.length>7){
+                        monitorcheckej.saveCheckEjWdw(messages);
+                        key = "ONE+"+messages[1]+"+"+messages[2]+"+"+messages[3]+"+"+messages[4]+"+"+messages[5]+"+"+messages[6]+"+"+messages[7];
+                    }else{
+                        monitorcheckej.saveCheckEj(messages);
+                        key = "ONE+"+messages[1]+"+"+messages[2]+"+"+messages[3]+"+"+messages[4]+"+"+messages[5]+"+"+messages[6];
+                    }
                     redisService.setex(key);
                 }catch (Exception e){
                     LOGGER.error("插入数据失败："+e.getMessage());

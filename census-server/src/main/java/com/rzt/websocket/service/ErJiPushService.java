@@ -70,7 +70,7 @@ public class ErJiPushService extends CurdService<websocket, websocketRepository>
                 "  nvl(sum(decode(t.QUESTION_TYPE, 3, 1, 0)),0) c,\n" +
                 "  nvl(sum(decode(t.QUESTION_TYPE, 4, 1, 0)),0) d\n" +
                 "FROM CHECK_RESULT t\n" +
-                "  JOIN CHECK_DETAIL tt ON t.CHECK_DETAIL_ID = tt.id join RZTSYSUSER ttt on tt.QUESTION_USER_ID = ttt.id and DEPTID = '" + deptId + "'";
+                "  JOIN CHECK_DETAIL tt ON t.CHECK_DETAIL_ID = tt.id join RZTSYSUSER ttt on tt.QUESTION_USER_ID = ttt.id and trunc(CREATE_TIME) = trunc(sysdate) and DEPTID = '" + deptId + "'";
         if (allMap.containsKey(deptId)) {
             message = allMap.get(deptId);
         } else {

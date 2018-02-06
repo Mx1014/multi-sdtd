@@ -61,8 +61,8 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
     public Object listAllTaskNotDo(KhTaskModel task, Pageable pageable, String userName, String roleType, String yhjb, String yworg, String currentUserId) {
         List params = new ArrayList<>();
         StringBuffer buffer = new StringBuffer();
-        String result = " k.id as id,k.task_name as taskName,k.tdyw_org as yworg,y.yhms as ms,y.yhjb as jb,k.create_time as createTime,k.COUNT as COUNT,u.realname as username,k.jbd as jbd,k.plan_start_time as starttime,k.plan_end_time as endtime,u.id as userId";
-        String result1 = " k.id as id,k.task_name as taskName,k.tdyw_org as yworg,y.yhms as ms,y.yhjb as jb,k.create_time as createTime ";
+        String result = " k.id as id,k.task_name as taskName,k.tdyw_org as yworg,y.yhms as ms,y.yhjb1 as jb,k.create_time as createTime,k.COUNT as COUNT,u.realname as username,k.jbd as jbd,k.plan_start_time as starttime,k.plan_end_time as endtime,u.id as userId";
+        String result1 = " k.id as id,k.task_name as taskName,k.tdyw_org as yworg,y.yhms as ms,y.yhjb1 as jb,k.create_time as createTime ";
         buffer.append(" where k.status = ?");// 0为未派发的任务
         params.add(task.getStatus());
         if (task.getPlanStartTime() != null && !task.getPlanStartTime().equals("")) {
@@ -85,7 +85,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             params.add("%" + userName + "%");
         }
         if (yhjb != null && !yhjb.equals("")) {
-            buffer.append(" and y.yhjb like ?");
+            buffer.append(" and y.yhjb1 like ?");
             params.add(("%" + yhjb + "%"));
         }
         if (yworg != null && !yworg.equals("")) {
@@ -195,7 +195,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
     }
 
     public List listKhtaskById(long id) {
-        String result = "k.task_name as taskname,k.plan_start_time starttime,k.plan_end_time endtime,d.deptname deptname,y.yhms as ms,y.yhjb as jb,u.realname as name";
+        String result = "k.task_name as taskname,k.plan_start_time starttime,k.plan_end_time endtime,d.deptname deptname,y.yhms as ms,y.yhjb1 as jb,u.realname as name";
         String sql = "select " + result + " from kh_site k left join rztsysuser u on u.id = k.user_id left join kh_yh_history y on y.id = k.yh_id left join rztsysdepartment d on d.id=u.classname where k.id=?";
         return this.execSql(sql, id);
     }
@@ -224,36 +224,37 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
-            task.setId(0L);
             kv = yh.getVtype();
             if (yh.getVtype().contains("kV")) {
                 kv = kv.substring(0, kv.indexOf("k"));
             }
-            yh.setTaskId(task.getId());
+            yh.setCreateTime(DateUtil.dateNow());
+            yh.setSection(startTowerName + "-" + endTowerName);
             yh.setYhzt(0);//隐患未消除
             if (yh.getId() == null) {
                 yh.setId(0L);
             }
-            yh.setCreateTime(DateUtil.dateNow());
-            yh.setSection(startTowerName + "-" + endTowerName);
+            if (yh.getYhlb().equals("在施类")) {
+                String taskName = kv + "-" + yh.getLineName() + " " + yh.getSection() + " 号杆塔看护任务";
+                task.setId(0L);
+                yh.setTaskId(task.getId());
+                task.setVtype(yh.getVtype());
+                task.setLineName(yh.getLineName());
+                task.setTdywOrg(yh.getTdywOrg());
+                task.setSection(yh.getSection());
+                task.setLineId(yh.getLineId());
+                task.setTaskName(taskName);
+                task.setWxOrgId(yh.getWxorgId());
+                task.setTdywOrgId(yh.getTdorgId());
+                task.setWxOrg(yh.getTdwxOrg());
+                task.setStatus(0);// 未派发
+                task.setYhId(yh.getId());
+                task.setCreateTime(DateUtil.dateNow());
+                this.cycleService.add(task);
+                long id = new SnowflakeIdWorker(8, 24).nextId();
+                this.reposiotry.addCheckSite(id, task.getId(), 2, task.getTaskName(), 0, task.getLineId(), task.getTdywOrgId(), task.getWxOrgId(), task.getYhId());
+            }
             yhservice.add(yh);
-            String taskName = kv + "-" + yh.getLineName() + " " + yh.getSection() + " 号杆塔看护任务";
-            task.setVtype(yh.getVtype());
-            task.setLineName(yh.getLineName());
-            task.setTdywOrg(yh.getTdywOrg());
-            task.setSection(yh.getSection());
-            task.setLineId(yh.getLineId());
-            task.setTaskName(taskName);
-            task.setWxOrgId(yh.getWxorgId());
-            task.setTdywOrgId(yh.getTdorgId());
-            task.setWxOrg(yh.getTdwxOrg());
-            task.setStatus(0);// 未派发
-            task.setYhId(yh.getId());
-            task.setCreateTime(DateUtil.dateNow());
-            this.cycleService.add(task);
-            long id = new SnowflakeIdWorker(8, 24).nextId();
-            this.reposiotry.addCheckSite(id, task.getId(), 0, task.getTaskName(), 0, task.getLineId(), task.getTdywOrgId(), task.getWxOrgId(), task.getYhId());
             if (null != pictureId && !pictureId.equals("")) {
                 String[] split = pictureId.split(",");
                 for (int i = 0; i < split.length; i++) {

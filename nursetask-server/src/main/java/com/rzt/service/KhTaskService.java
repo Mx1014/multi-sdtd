@@ -20,6 +20,8 @@ import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.rzt.service.CurdService;
@@ -41,7 +43,8 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
     EntityManager entityManager;
     @Autowired
     private KhSiteRepository siteRepository;
-
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
     public Object listAllKhTask(KhTaskModel task, String status, Pageable pageable, int roleType, String yworg, String currentUserId,String home) {
         task = timeUtil(task);
         String result = "k.wx_org company,k.id as id, k.task_name as taskName,k.tdyw_org as yworg,k.CREATE_TIME as createTime,k.plan_start_time as startTime,k.plan_end_time as endTime,k.status as status,u.realname as userName,d.DEPTNAME as class,k.task_type as type,u.phone,u.loginstatus " +
@@ -129,7 +132,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
     }
 
     public List<Map<String, Object>> getKhTaskById(long id) {
-        String result = " k.task_name as taskName,y.yhms as yhms,y.yhjb as yhjb,u.realname as userName,u.phone as phone ";
+        String result = " k.task_name as taskName,y.yhms as yhms,y.yhjb1 as yhjb,u.realname as userName,u.phone as phone ";
         String sql = "select " + result + " from kh_task k left join kh_yh_history y on k.yh_id=y.id left join rztsysuser u on u.id=k.user_id  where k.id=?";
         return this.execSql(sql, id);
     }
@@ -170,7 +173,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
 
     public WebApiResponse listTaskInfoById(String taskId) {
         try {
-            String sql = "SELECT IS_DW AS ISDW,REASON,TASK_NAME TASKNAME,DDXC_TIME AS DDXCTIME,CREATE_TIME PDTIME,TDYW_ORG YWORG,WX_ORG WXORG,PLAN_START_TIME STARTTIME,PLAN_END_TIME ENDTIME,STATUS,TASK_TYPE TYPE from KH_TASK WHERE ID=?";
+            String sql = "SELECT REAL_START_TIME,REAL_END_TIME,DDXC_TIME,SFQR_TIME,WPQR_TIME,IS_DW AS ISDW,REASON,TASK_NAME TASKNAME,DDXC_TIME AS DDXCTIME,CREATE_TIME PDTIME,TDYW_ORG YWORG,WX_ORG WXORG,PLAN_START_TIME STARTTIME,PLAN_END_TIME ENDTIME,STATUS,TASK_TYPE TYPE from KH_TASK WHERE ID=?";
             return WebApiResponse.success(this.execSql(sql, taskId));
         } catch (Exception e) {
             e.printStackTrace();
@@ -466,9 +469,21 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
     }
 
     public void deleteTaskById(long id) {
-        this.reposiotry.deleteTaskById(id);
-        this.reposiotry.deleteYjById(id);
-        this.reposiotry.deleteEjById(id);
+        try {
+            this.reposiotry.deleteTaskById(id);
+            this.reposiotry.deleteYjById(id);
+            this.reposiotry.deleteEjById(id);
+            try {
+                String s = "TWO+" + id + "+2+*";
+                removeSomeKey(s);
+                String s1 = "ONE+" + id + "+2+*";
+                removeSomeKey(s1);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public WebApiResponse listTowerPoint(long id) {
@@ -510,6 +525,23 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("");
+        }
+    }
+    public void removeSomeKey(String s) {
+        //String s = "TWO+" + id + "+2+*";
+        RedisConnection connection = null;
+        try {
+            connection = redisTemplate.getConnectionFactory().getConnection();
+            connection.select(1);
+            Set<byte[]> keys = connection.keys(s.getBytes());
+            byte[][] ts = keys.toArray(new byte[][]{});
+            if (ts.length > 0) {
+                connection.del(ts);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            connection.close();
         }
     }
 }

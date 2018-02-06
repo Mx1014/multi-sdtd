@@ -28,7 +28,7 @@ public class MapFanWailiPushService extends CurdService<websocket, websocketRepo
     @Autowired
     private PcMapShowService pcMapShowService;
 
-//    @Scheduled(fixedRate = 30000)
+    @Scheduled(fixedRate = 30000)
     public void module1() {
         Map<String, Map> allMap = new HashMap<String, Map>();
         Map<String, HashMap> map = mapFanWailiEndpoint.sendMsg();
@@ -44,7 +44,7 @@ public class MapFanWailiPushService extends CurdService<websocket, websocketRepo
 
     public void mapshow(Map<String, Map> allMap, HashMap session) throws Exception {
         Object menInMap = giveMeUserList(session);
-        Map<String, HashMap> map = mapFanWailiEndpoint.sendMsg();
+
         mapFanWailiEndpoint.sendText((Session) session.get("session"), menInMap);
     }
 
@@ -58,11 +58,16 @@ public class MapFanWailiPushService extends CurdService<websocket, websocketRepo
         ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
         //0 根据人查 有人就直接结束
         String currentUserId = session.get("ID").toString();
-        String dept = pcMapShowService.dataAccessByUserId(currentUserId).toString();
-        String deptId = "";
+        String deptId = pcMapShowService.dataAccessByUserId(currentUserId).toString();
+        String haha;
+        if ("all".equals(deptId)) {
+            haha = "";
+        } else {
+            haha = " and t.deptid = '" + deptId + "'";
+        }
         //1.初始数据权限
         //1.1 根据部门筛选
-        String sql = "select DISTINCT t.USER_ID id from MONITOR_CHECK_EJ t where t.STATUS = 0 and CREATE_TIME > trunc(sysdate) and t.user_id is not null";
+        String sql = "select DISTINCT t.USER_ID id from MONITOR_CHECK_EJ t where t.STATUS = 0 and CREATE_TIME > trunc(sysdate) and t.user_id is not null" + haha;
         List<Map<String, Object>> userList = this.execSql(sql);
         Set<String> keys = new HashSet();
         //单位 外协 组织 班组 都走这里
@@ -89,7 +94,8 @@ public class MapFanWailiPushService extends CurdService<websocket, websocketRepo
             allMen.putAll(xsMenAll);
         }
         if (workTypes == null || workTypes.contains("3")) {
-
+            JSONObject jcMenAll = JSONObject.parseObject(valueOperations.get("jcMenAll:" + needDateString).toString());
+            allMen.putAll(jcMenAll);
         }
         Iterator<Map> iterator = menInMap.iterator();
         while (iterator.hasNext()) {
