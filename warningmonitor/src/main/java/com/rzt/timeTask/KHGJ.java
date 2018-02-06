@@ -52,7 +52,7 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
         String sql = " SELECT kh.ID,d.ID AS TDYW_ORG,kh.PLAN_START_TIME,kh.TASK_NAME,kh.USER_ID FROM  KH_TASK kh LEFT JOIN RZTSYSDEPARTMENT d " +
                 " ON kh.TDYW_ORG = d.DEPTNAME WHERE trunc(kh.PLAN_START_TIME) = trunc(sysdate)";
         List<Map<String, Object>> maps = execSql(sql);
-        String reason="未按时上线";
+        String reason="未上线";
         for (Map<String, Object> map:maps) {
             Jedis jedis = jedisPool.getResource();
             String key = "TWO+"+map.get("ID")+"+2+8+"+map.get("USER_ID")+"+"+map.get("TDYW_ORG")+"+"+map.get("TASK_NAME")+"+"+reason;
@@ -78,7 +78,7 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
         String sql="SELECT ID,PLAN_START_TIME,TASK_NAME,CM_USER_ID,PLAN_END_TIME,TD_ORG FROM XS_ZC_TASK " +
                 "WHERE  trunc(PLAN_START_TIME) = trunc(sysdate)  AND IS_DELETE=0  ";
         List<Map<String, Object>> maps = execSql(sql);
-        String reason="未按时上线";
+        String reason="未上线";
         maps.forEach(map ->{
             Jedis jedis = jedisPool.getResource();
             String key = "TWO+"+map.get("ID")+"+1+2+"+map.get("CM_USER_ID")+"+"+map.get("TD_ORG")+"+"+map.get("TASK_NAME")+"+"+reason;

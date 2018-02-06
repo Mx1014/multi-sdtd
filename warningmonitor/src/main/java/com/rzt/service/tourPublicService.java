@@ -98,9 +98,21 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
                     "FROM XS_ZC_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND CM_USER_ID=?1  AND STAUTS !=2";
         }else if(taskType==3){
             //现场稽查
-            sql=" SELECT t.ID,t.USER_ID,t.TASK_NAME,t.PLAN_START_TIME,t.PLAN_END_TIME,u.DEPTID FROM CHECK_LIVE_TASK t " +
+         /*   sql=" SELECT t.ID,t.USER_ID,t.TASK_NAME,t.PLAN_START_TIME,t.PLAN_END_TIME,u.DEPTID FROM CHECK_LIVE_TASK t " +
                     " LEFT JOIN RZTSYSUSER u ON t.USER_ID=u.ID " +
-                    " WHERE trunc(t.CREATE_TIME)=trunc(sysdate) AND STATUS!=2  AND USER_ID=?1";
+                    " WHERE trunc(t.CREATE_TIME)=trunc(sysdate) AND STATUS!=2  AND USER_ID=?1";*/
+
+            sql=" SELECT t.ID,t.USER_ID,t.TASK_NAME,t.PLAN_START_TIME,u.DEPTID FROM CHECK_LIVE_TASK t " +
+                    "   LEFT JOIN RZTSYSUSER u ON t.USER_ID=u.ID " +
+                    "  WHERE trunc(t.CREATE_TIME)=trunc(sysdate) AND STATUS!=2  AND USER_ID=?1" +
+                    "UNION ALL " +
+                    " SELECT t.ID,t.USER_ID,t.TASK_NAME,t.PLAN_START_TIME,u.DEPTID FROM CHECK_LIVE_TASKSB t " +
+                    "      LEFT JOIN RZTSYSUSER u ON t.USER_ID=u.ID " +
+                    "      WHERE trunc(t.CREATE_TIME)=trunc(sysdate) AND STATUS!=2  AND USER_ID=?1" +
+                    "UNION ALL  " +
+                    " SELECT t.ID,t.USER_ID,t.TASK_NAME,d.PLAN_START_TIME,u.DEPTID FROM CHECK_LIVE_TASKXS t " +
+                    "      LEFT JOIN RZTSYSUSER u ON t.USER_ID=u.ID LEFT JOIN CHECK_LIVE_TASK_DETAILXS d ON d.TASK_ID=t.ID " +
+                    "      WHERE trunc(t.CREATE_TIME)=trunc(sysdate) AND t.STATUS!=2  AND USER_ID=?1";
         }
         List<Map<String, Object>> maps = execSql(sql,userId);
         //如果查询结果为0，证明这个人当天没有任务
@@ -173,9 +185,20 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
             sql = "SELECT ID,TD_ORG as DEPTID,PLAN_START_TIME,TASK_NAME,CM_USER_ID,PLAN_END_TIME  " +
                     "FROM XS_ZC_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND CM_USER_ID=?1 AND STAUTS !=2";
         }else if(taskType==3){
-            sql=" SELECT t.ID,t.USER_ID,t.TASK_NAME,t.PLAN_START_TIME,t.PLAN_END_TIME,u.DEPTID FROM CHECK_LIVE_TASK t " +
+            /*sql=" SELECT t.ID,t.USER_ID,t.TASK_NAME,t.PLAN_START_TIME,t.PLAN_END_TIME,u.DEPTID FROM CHECK_LIVE_TASK t " +
                     " LEFT JOIN RZTSYSUSER u ON t.USER_ID=u.ID " +
-                    " WHERE trunc(t.CREATE_TIME)=trunc(sysdate) AND STATUS!=2";
+                    " WHERE trunc(t.CREATE_TIME)=trunc(sysdate) AND STATUS!=2";*/
+            sql = " SELECT t.ID,t.USER_ID,t.TASK_NAME,t.PLAN_START_TIME,t.PLAN_END_TIME,u.DEPTID FROM CHECK_LIVE_TASK t " +
+                    "   LEFT JOIN RZTSYSUSER u ON t.USER_ID=u.ID " +
+                    "  WHERE trunc(t.CREATE_TIME)=trunc(sysdate) AND STATUS!=2 " +
+                    " UNION ALL " +
+                    " SELECT t.ID,t.USER_ID,t.TASK_NAME,t.PLAN_START_TIME,t.PLAN_END_TIME,u.DEPTID FROM CHECK_LIVE_TASKSB t " +
+                    "      LEFT JOIN RZTSYSUSER u ON t.USER_ID=u.ID " +
+                    "      WHERE trunc(t.CREATE_TIME)=trunc(sysdate) AND STATUS!=2 " +
+                    " UNION ALL  " +
+                    " SELECT t.ID,t.USER_ID,t.TASK_NAME,d.PLAN_START_TIME,d.PLAN_END_TIME,u.DEPTID FROM CHECK_LIVE_TASKXS t " +
+                    "      LEFT JOIN RZTSYSUSER u ON t.USER_ID=u.ID LEFT JOIN CHECK_LIVE_TASK_DETAILXS d ON d.TASK_ID=t.ID " +
+                    "      WHERE trunc(t.CREATE_TIME)=trunc(sysdate) AND t.STATUS!=2";
         }
 
         List<Map<String, Object>> maps = execSql(sql,userId);
