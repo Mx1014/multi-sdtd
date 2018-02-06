@@ -368,6 +368,123 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
     }
 
     @Scheduled(fixedDelay = 3000)
+    public void adminModule6_1() {
+        Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
+        sendMsg.forEach((sessionId, session) -> {
+            Object deptid = session.get("DEPTID");
+            /**
+             * 正常巡视未开始
+             */
+            String zcXsWks = "SELECT count(1)  " +
+                    "FROM XS_ZC_TASK " +
+                    "WHERE is_delete = 0 and STAUTS = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= trunc(sysdate)";
+            /**
+             * 保电巡视未开始
+             */
+            String bdXsWks = "SELECT count(1)  " +
+                    "FROM XS_TXBD_TASK " +
+                    "WHERE STAUTS = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= trunc(sysdate)";
+            /**
+             * 看护未开始
+             */
+            String khWks = "SELECT count(1)  " +
+                    "FROM KH_TASK " +
+                    "WHERE STATUS = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= trunc(sysdate)";
+            /**
+             * 现场稽查未开始
+             */
+            String xcJcWks = "SELECT count(1)  " +
+                    "FROM CHECK_LIVE_TASK " +
+                    "WHERE STATUS = 0 and check_type=1 and to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') < plan_end_time and plan_start_time <= sysdate";
+            /**
+             * 正常巡视进行中
+             */
+            String zcXsJxz = "SELECT count(1)  " +
+                    "FROM XS_ZC_TASK " +
+                    "WHERE is_delete = 0 and STAUTS = 1 AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
+            /**
+             * 保电巡视进行中
+             */
+            String bdXsJxz = "SELECT count(1)  " +
+                    "FROM XS_TXBD_TASK " +
+                    "WHERE STAUTS = 1 AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
+            /**
+             * 看护进行中
+             */
+            String khJxz = "SELECT count(1)  " +
+                    "FROM KH_TASK " +
+                    "WHERE STATUS = 1 AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
+            /**
+             * 现场稽查进行中
+             */
+            String xcJcJxz = "SELECT count(1)  " +
+                    "FROM CHECK_LIVE_TASK " +
+                    "WHERE STATUS = 1 and check_type=1 and to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') < plan_end_time";
+            /**
+             * 正常巡视已完成
+             */
+            String zcXsYwc = "SELECT count(1)  " +
+                    "FROM XS_ZC_TASK " +
+                    "WHERE is_delete = 0 and STAUTS = 2 AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
+            /**
+             * 保电巡视已完成
+             */
+            String bdXsYwc = "SELECT count(1)  " +
+                    "FROM XS_TXBD_TASK " +
+                    "WHERE STAUTS = 2 AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
+            /**
+             * 看护已完成
+             */
+            String khYwc = "SELECT count(1)  " +
+                    "FROM KH_TASK " +
+                    "WHERE STATUS = 2 AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
+            /**
+             *现场稽查已完成
+             */
+            String xcJcYwc = "SELECT count(1)  " +
+                    "FROM CHECK_LIVE_TASK " +
+                    "WHERE STATUS = 2 and check_type=1 and to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') <plan_end_time";
+
+           /* String sql1 = "select * from(SELECT CREATETIME FROM TIMED_TASK where THREEDAY=1 ORDER BY CREATETIME DESC ) where ROWNUM=1";
+            List<Map<String, Object>> maps = this.execSql(sql1);
+            Date createtime = DateUtil.parseDate(maps.get(0).get("CREATETIME").toString());
+            Date nextTime = DateUtil.addDate(createtime, 72);*/
+            /**
+             *后台稽查未完成
+             */
+            String htJcWks = "SELECT count(1) FROM TIMED_TASK t WHERE  t.CREATETIME >  ( select sysdate - (3 * 24 * 60 * 60 + 60 * 60) / (1 * 24 * 60 * 60)   from  dual) AND  THREEDAY  = 1 AND t.STATUS = 0";
+            /**
+             *后台稽查进行中
+             */
+            String htJcYks = "SELECT count(1) FROM TIMED_TASK t WHERE  t.CREATETIME >  ( select sysdate - (3 * 24 * 60 * 60 + 60 * 60) / (1 * 24 * 60 * 60)   from  dual) AND  THREEDAY  = 1 AND t.STATUS = 1";
+            /**
+             *后台稽查已完成
+             */
+            String htJcYwc = "SELECT count(1) FROM TIMED_TASK t WHERE  t.CREATETIME >  ( select sysdate - (3 * 24 * 60 * 60 + 60 * 60) / (1 * 24 * 60 * 60)   from  dual) AND  THREEDAY  = 1 AND t.STATUS = 1";
+            String sql = "SELECT " +
+                    "(" + zcXsWks + ")+(" + bdXsWks + ") as XsWks," +
+                    "(" + zcXsJxz + ")+(" + bdXsJxz + ") as XsJxz," +
+                    "(" + zcXsYwc + ")+(" + bdXsYwc + ") as XsYwc," +
+                    "(" + khJxz + ") as khJxz," +
+                    "(" + khWks + ") as khWks, " +
+                    "(" + khYwc + ") as khYwc," +
+                    "(" + xcJcJxz + ") as xcJcJxz," +
+                    "(" + xcJcWks + ") as xcJcWks," +
+                    "(" + xcJcYwc + ") as xcJcYwc, " +
+                    "(" + htJcWks + ") as htJcWks, " +
+                    "(1) as htJcYks, " +
+                    // "(" + htJcYks + ") as htJcYks, " +
+                    "(" + htJcYwc + ") as htJcYwc " +
+                    "  FROM dual";
+            List<Map<String, Object>> list = this.execSql(sql);
+            Map map = new HashMap();
+            map.put("data", list);
+            map.put("adminModule", "6_1");
+            firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), map);
+        });
+    }
+
+    @Scheduled(fixedDelay = 3000)
     public void adminModule7() {
         Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
         sendMsg.forEach((sessionId, session) -> {
