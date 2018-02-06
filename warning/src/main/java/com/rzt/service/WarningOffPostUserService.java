@@ -95,4 +95,9 @@ public class WarningOffPostUserService extends CurdService<OffPostUser, OffPostU
         }
         return result;
     }
+
+
+    public int updateTimeStatus(Object fk_task_id, Object fk_user_id) {
+       return reposiotry.updateTimeStatus(fk_task_id,fk_user_id);
+    }
 }
