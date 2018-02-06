@@ -129,7 +129,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
     }
 
     public List<Map<String, Object>> getKhTaskById(long id) {
-        String result = " k.task_name as taskName,y.yhms as yhms,y.yhjb as yhjb,u.realname as userName,u.phone as phone ";
+        String result = " k.task_name as taskName,y.yhms as yhms,y.yhjb1 as yhjb,u.realname as userName,u.phone as phone ";
         String sql = "select " + result + " from kh_task k left join kh_yh_history y on k.yh_id=y.id left join rztsysuser u on u.id=k.user_id  where k.id=?";
         return this.execSql(sql, id);
     }
@@ -170,7 +170,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
 
     public WebApiResponse listTaskInfoById(String taskId) {
         try {
-            String sql = "SELECT IS_DW AS ISDW,REASON,TASK_NAME TASKNAME,DDXC_TIME AS DDXCTIME,CREATE_TIME PDTIME,TDYW_ORG YWORG,WX_ORG WXORG,PLAN_START_TIME STARTTIME,PLAN_END_TIME ENDTIME,STATUS,TASK_TYPE TYPE from KH_TASK WHERE ID=?";
+            String sql = "SELECT REAL_START_TIME,REAL_END_TIME,DDXC_TIME,SFQR_TIME,WPQR_TIME,IS_DW AS ISDW,REASON,TASK_NAME TASKNAME,DDXC_TIME AS DDXCTIME,CREATE_TIME PDTIME,TDYW_ORG YWORG,WX_ORG WXORG,PLAN_START_TIME STARTTIME,PLAN_END_TIME ENDTIME,STATUS,TASK_TYPE TYPE from KH_TASK WHERE ID=?";
             return WebApiResponse.success(this.execSql(sql, taskId));
         } catch (Exception e) {
             e.printStackTrace();

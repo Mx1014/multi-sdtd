@@ -150,7 +150,7 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
         String module3;
         if (1 == 1 /**roletype == 0*/) {
             deptId = "admin";
-            module3 = "SELECT sum(decode(QUESTION_TYPE,1,1,0)) a,sum(decode(QUESTION_TYPE,2,1,0)) b,sum(decode(QUESTION_TYPE,3,1,0)) c,sum(decode(QUESTION_TYPE,4,1,0)) d from CHECK_RESULT";
+            module3 = "SELECT sum(decode(QUESTION_TYPE,1,1,0)) a,sum(decode(QUESTION_TYPE,2,1,0)) b,sum(decode(QUESTION_TYPE,3,1,0)) c,sum(decode(QUESTION_TYPE,4,1,0)) d from CHECK_RESULT where trunc(create_time) = trunc(sysdate)";
         } else {
             deptId = session.get("DEPTID").toString();
             module3 = "SELECT\n" +
@@ -581,12 +581,30 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
         Map message = new HashMap<String, Object>();
         message.put("module", 9);
         // 巡视超速  看护脱岗
-        String module9 = "SELECT\n" +
+        //巡视告警
+        String  xsgj = "SELECT  nvl(sum(decode(j.TASK_TYPE, 1, 1, 0)),0) xsgj FROM MONITOR_CHECK_YJ j\n" +
+                "   LEFT JOIN RZTSYSUSER u ON j.USER_ID=u.ID\n" +
+                "   LEFT JOIN XS_ZC_TASK xs ON j.TASK_ID=xs.ID\n" +
+                "where j.STATUS=0 AND j.USER_ID is NOT NULL AND u.USERDELETE=1  AND xs.IS_DELETE=0 AND j.CREATE_TIME >= trunc(sysdate)";
+        //看护告警
+        String khgj = "SELECT  nvl(sum(decode(j.TASK_TYPE, 2, 1, 0)),0) khgj  FROM MONITOR_CHECK_YJ j\n" +
+                "    LEFT JOIN RZTSYSUSER u ON j.USER_ID=u.ID\n" +
+                "   LEFT JOIN KH_TASK kh ON j.TASK_ID=kh.ID where j.STATUS=0 AND j.USER_ID is NOT NULL AND u.USERDELETE=1  AND j.CREATE_TIME >= trunc(sysdate)\n";
+        //稽查告警
+        String jcgj = "SELECT   nvl(sum(decode(j.TASK_TYPE, 3, 1, 0)),0) xcjc FROM MONITOR_CHECK_YJ j " +
+                "     LEFT JOIN RZTSYSUSER u ON j.USER_ID=u.ID " +
+                "     LEFT JOIN CHECK_LIVE_TASK cl ON j.TASK_ID=cl.ID where j.STATUS=0 AND j.USER_ID is NOT NULL AND u.USERDELETE=1  AND j.CREATE_TIME >= trunc(sysdate)";
+        String module9 = "SELECT " +
+                "(" + xsgj + ") as xsgj, " +
+                "(" + khgj + ") as khgj," +
+                "(" + jcgj + ") as xcjc" +
+                "  FROM dual";
+        /*String module9 = "SELECT\n" +
                 "  nvl(sum(decode(tt.TASK_TYPE, 1, 1, 0)),0) xsgj,\n" +
                 "  nvl(sum(decode(tt.TASK_TYPE, 2, 1, 0)),0) khgj,\n" +
                 "  nvl(sum(decode(tt.TASK_TYPE, 3, 1, 0)),0) xcjc,\n" +
                 "  0                             yhgj\n" +
-                "FROM MONITOR_CHECK_EJ tt where CREATE_TIME >= trunc(sysdate) and STATUS = 0";
+                "FROM MONITOR_CHECK_YJ tt where CREATE_TIME >= trunc(sysdate) and STATUS = 0";*/
         Map<String, Object> map1 = this.execSqlSingleResult(module9);
         String module9Detail = "SELECT t.*,tt.DESCRIPTION from (SELECT\n" +
                 "  t.WARNING_TYPE,\n" +
@@ -628,12 +646,23 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
         }
         Map message = new HashMap<String, Object>();
         message.put("module", 9);
-        String module9 = "SELECT\n" +
-                "  nvl(sum(decode(tt.TASK_TYPE, 1, 1, 0)),0) xsgj,\n" +
-                "  nvl(sum(decode(tt.TASK_TYPE, 2, 1, 0)),0) khgj,\n" +
-                "  nvl(sum(decode(tt.TASK_TYPE, 3, 1, 0)),0) xcjc,\n" +
-                "  0                             yhgj\n" +
-                "FROM MONITOR_CHECK_EJ tt where CREATE_TIME >= trunc(sysdate) and STATUS = 0";
+        String  xsgj = "SELECT  nvl(sum(decode(j.TASK_TYPE, 1, 1, 0)),0) xsgj FROM MONITOR_CHECK_YJ j\n" +
+                "   LEFT JOIN RZTSYSUSER u ON j.USER_ID=u.ID\n" +
+                "   LEFT JOIN XS_ZC_TASK xs ON j.TASK_ID=xs.ID\n" +
+                "where j.STATUS=0 AND j.USER_ID is NOT NULL AND u.USERDELETE=1  AND xs.IS_DELETE=0 AND j.CREATE_TIME >= trunc(sysdate)";
+        //看护告警
+        String khgj = "SELECT  nvl(sum(decode(j.TASK_TYPE, 2, 1, 0)),0) khgj  FROM MONITOR_CHECK_YJ j\n" +
+                "    LEFT JOIN RZTSYSUSER u ON j.USER_ID=u.ID\n" +
+                "   LEFT JOIN KH_TASK kh ON j.TASK_ID=kh.ID where j.STATUS=0 AND j.USER_ID is NOT NULL AND u.USERDELETE=1  AND j.CREATE_TIME >= trunc(sysdate)\n";
+        //稽查告警
+        String jcgj = "SELECT   nvl(sum(decode(j.TASK_TYPE, 3, 1, 0)),0) xcjc FROM MONITOR_CHECK_YJ j\n" +
+                "     LEFT JOIN RZTSYSUSER u ON j.USER_ID=u.ID\n" +
+                "     LEFT JOIN CHECK_LIVE_TASK cl ON j.TASK_ID=cl.ID where j.STATUS=0 AND j.USER_ID is NOT NULL AND u.USERDELETE=1  AND j.CREATE_TIME >= trunc(sysdate)\n";
+        String module9 = "SELECT " +
+                "(" + xsgj + ") as xsgj, " +
+                "(" + khgj + ") as khgj," +
+                "(" + jcgj + ") as xcjc" +
+                "  FROM dual";
         Map<String, Object> map1 = this.execSqlSingleResult(module9);
         map1.put("xsgjDetail", "暂无");
         map1.put("khgjDetail", "暂无");
