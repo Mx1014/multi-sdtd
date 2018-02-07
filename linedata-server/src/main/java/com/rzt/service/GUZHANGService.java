@@ -6,6 +6,9 @@
  */
 package com.rzt.service;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.GUZHANG;
 import com.rzt.repository.GUZHANGRepository;
 import com.rzt.util.WebApiResponse;
@@ -18,8 +21,11 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
@@ -41,6 +47,8 @@ import java.util.*;
 public class GUZHANGService extends CurdService<GUZHANG,GUZHANGRepository> {
 
     protected static Logger LOGGER = LoggerFactory.getLogger(GUZHANGService.class);
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
     public WebApiResponse getGuZhang(Pageable pageable, String tdOrg, String kv, String lineId, String startTime, String endTime) {
         List<String> list = new ArrayList<>();
@@ -205,6 +213,40 @@ public class GUZHANGService extends CurdService<GUZHANG,GUZHANGRepository> {
             LOGGER.error("自定义sql查询出错",e);
             return WebApiResponse.erro("自定义sql查询出错");
         }
+
+    }
+
+    public WebApiResponse whatYouWant(String whatYouWant) {
+        ValueOperations<String, Object> stringObjectValueOperations = redisTemplate.opsForValue();
+        Map<String, Object> result = new HashMap<>();
+
+        JSONArray objects = JSON.parseArray(whatYouWant);
+        for (int x = 0; x < objects.size(); x++) {
+            JSONObject jsonObject = objects.getJSONObject(x);
+            String what = jsonObject.getString("want");
+
+            Object o = stringObjectValueOperations.get(what);
+            String sql = "";
+            if(o == null){
+                try {
+                    Map<String, Object> map = execSqlSingleResult("select * from cm_sql where sql_desc=?", what);
+                    sql = map.get("SQL_STR").toString();
+                    stringObjectValueOperations.set(what,sql);
+                } catch (Exception e) {
+                    LOGGER.error("获取的值不唯一!",e);
+                }
+            }else{
+                sql = o.toString();
+            }
+            List params = new ArrayList();
+            if(jsonObject.containsKey("params")){
+                params = jsonObject.getObject("params", List.class);
+            }
+            List<Map<String, Object>> list = execSql(sql, params.toArray());
+            result.put(what,list);
+        }
+
+        return WebApiResponse.success(result);
 
     }
 }

@@ -35,5 +35,7 @@ public interface CheckLiveTaskDetailRepository extends JpaRepository<CheckLiveTa
     @Query(value = "UPDATE check_live_task_detailxs SET  dydj=?2,  yhxx=?3,  czfa=?4 ,qtwt=?5,status=2 where status!=2 AND id= ?1",nativeQuery = true)
     void checkQuestionUpdateXs(String detailId, String dydj, String yhxx, String czfa, String qtwt);
 
-
+    @Modifying
+    @Query(value = "UPDATE check_live_task_detail SET DDXC_TIME=sysdate where status!=2 AND id= ?1",nativeQuery = true)
+    void updateArriveTime(Long id);
 }

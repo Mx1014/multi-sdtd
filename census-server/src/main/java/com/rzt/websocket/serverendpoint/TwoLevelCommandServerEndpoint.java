@@ -1,9 +1,12 @@
 package com.rzt.websocket.serverendpoint;
 
 import com.alibaba.fastjson.JSONObject;
+import com.rzt.websocket.service.FirstLevelCommandPushService;
+import com.rzt.websocket.service.TwoLevelCommandPushService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 
+import javax.annotation.Resource;
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
@@ -15,10 +18,16 @@ import java.util.concurrent.ConcurrentHashMap;
 @ServerEndpoint("/serverendpoint/twolevelcommand/{currentUserId}/{mapType}/{type}")
 public class TwoLevelCommandServerEndpoint {
     static RedisTemplate<String, Object> redisTemplate;
+    private static TwoLevelCommandPushService twoLevelCommandPushService;
 
     @Autowired
     public void setRedisTemplate(RedisTemplate<String, Object> redisTemplate) {
         TwoLevelCommandServerEndpoint.redisTemplate = redisTemplate;
+    }
+
+    @Resource
+    public void setWuDPushService(TwoLevelCommandPushService wuDPushService) {
+        TwoLevelCommandServerEndpoint.twoLevelCommandPushService = wuDPushService;
     }
 
     /**
@@ -42,6 +51,14 @@ public class TwoLevelCommandServerEndpoint {
         h.put("mapType", mapType);
         h.put("type", type);
         livingSessions.put(sessionId, h);
+        twoLevelCommandPushService.adminModule1();
+        twoLevelCommandPushService.adminModule2();
+        twoLevelCommandPushService.adminModule3();
+        twoLevelCommandPushService.adminModule4();
+        twoLevelCommandPushService.adminModule5();
+        twoLevelCommandPushService.adminModule6();
+        twoLevelCommandPushService.adminModule7();
+        twoLevelCommandPushService.adminModule8();
     }
 
     public Map<String, HashMap> sendMsg() {

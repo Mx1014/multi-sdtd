@@ -49,4 +49,30 @@ public class TaskController extends CurdController<TimedTask,TasksService>  {
         return tasksService.threeTasks(deptId);
     }
 
+    /**
+     *  四级页面使用  查询本单位不同状态的任务
+     * @param page
+     * @param size
+     * @param deptId 部门id
+     * @param flag   0 未开始  1 进行中  2 以完成
+     * @return
+     */
+    @GetMapping("/findTasksByStatus")
+    public WebApiResponse findTasksByStatus(Integer page,Integer size,String deptId,String flag){
+      return   tasksService.findTasksByStatus(page,size,deptId,flag);
+    }
+
+    /**
+     * 五级页面使用  查看当前任务详情
+     * @param taskType
+     * @param taskId
+     * @param deptId   当任务类型为4时 需要使用部门id和抽查时间查询后台稽查任务
+     * @param realTime
+     * @return
+     */
+    @GetMapping("/findTaskInfoByTaskId")
+    public WebApiResponse findTaskInfoByTaskId(String taskType,String taskId,String deptId,String realTime){
+       return tasksService.findTaskInfoByTaskId(taskType,taskId,deptId,realTime);
+    }
+
 }

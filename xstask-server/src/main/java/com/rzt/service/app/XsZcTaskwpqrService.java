@@ -315,7 +315,7 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
             addExecDetail(taskId,xslx,nextId);
         } else {
             this.reposiotry.insertZcXsTaskExec(nextId,taskId,repeatNum);
-            this.reposiotry.updateZcxsTaskXsRepeatNum(taskId,repeatNum);
+            this.reposiotry.updateZcxsTaskXsRepeatNum(taskId);
             addExecDetail(taskId,xslx,nextId);
         }
     }

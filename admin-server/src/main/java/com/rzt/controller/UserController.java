@@ -58,4 +58,13 @@ public class UserController extends CurdController<TimedTask, UserService>  {
         return userService.findUserAndTask(page,size,deptId,loginStatus);
     }
 
+    /**
+     * 五级页面 查询用户详细信息
+     * @return
+     */
+    @GetMapping("/findUserInfo")
+    public WebApiResponse findUserInfo(String userId){
+       return userService.findUserInfo(userId);
+    }
+
 }

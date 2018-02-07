@@ -7,6 +7,7 @@
 package com.rzt.service;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.netflix.ribbon.proxy.annotation.Http;
 import com.rzt.entity.*;
 import com.rzt.eureka.MonitorService;
@@ -140,17 +141,32 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         }
     }
 
-    public WebApiResponse listCoordinate(String yhjb, String yhlb) {
+    public WebApiResponse listCoordinate(String yhjb, String yhlb, JSONObject josn) {
         try {
+            List params = new ArrayList<>();
             StringBuffer buffer = new StringBuffer();
-            List<Object> params = new ArrayList<>();
+            Map jsonObject = JSON.parseObject(josn.toString(), Map.class);
+            Integer roleType = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
+            Object tdId = jsonObject.get("DEPTID");
+            Object companyid = jsonObject.get("COMPANYID");
             buffer.append(" where s.YH_ID=y.ID ");
+            if (roleType == 1 || roleType == 2) {
+                buffer.append(" and y.YWORG_ID = " + tdId);
+            }
+            if (roleType == 3) {
+                buffer.append(" and y.WXORG_ID = " + companyid);
+            }
             if (yhjb != null && !yhjb.equals("")) {
-                buffer.append(" and yhjb1 like");
-                params.add("%" + yhjb + "%");
+                String[] split = yhjb.split(",");
+                String result="";
+                for (int i=0;i<split.length;i++){
+                    String s = "'"+split[i]+"'";
+                    result +=s+",";
+                }
+                buffer.append(" and y.yhjb1 in (" + result.substring(0,result.lastIndexOf(",")) + ")");
             }
             if (yhlb != null && !yhlb.equals("")) {
-                buffer.append(" and yhlb like");
+                buffer.append(" and yhlb like ?");
                 params.add("%" + yhlb + "%");
             }
             buffer.append(" and yhzt = 0 ");
@@ -159,7 +175,6 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             List<Map<String, Object>> list = this.execSql(sql, params.toArray());
             List<Object> list1 = new ArrayList<>();
             for (Map map : list) {
-                // System.out.println(map.get("JD").toString());
                 if (map != null && map.size() > 0 && map.get("JD") != null) {
                     list1.add(map);
                 }
@@ -1041,21 +1056,30 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
     @Transactional
     public WebApiResponse updateTowerById(long id, String lon, String lat, String userId, String lineName, String detailId) {
         try {
-            //this.reposiotry.updateTowerById(id, lon, lat);
-            CmTowerUpdateRecord record = new CmTowerUpdateRecord();
-            record.setId(0l);
-            record.setLat(lat);
-            record.setLon(lon);
-            record.setLineName(lineName);
-            record.setTowerId(id);
-            record.setUserId(userId);
+//            this.reposiotry.updateTowerById(id, lon, lat);
+            Map<String, Object> map = new HashMap<>();
             try {
-                record.setDetailId(Long.parseLong(detailId));
-            } catch (NumberFormatException e) {
+                String sql = "select status from cm_tower where id =?";
+                map = this.execSqlSingleResult(sql, id);
+            } catch (Exception e) {
                 e.printStackTrace();
             }
-            record.setCreateTime(DateUtil.dateNow());
-            recordService.add(record);
+            if (map.get("STATUS") != null && map.get("STATUS").toString().equals("0")) {
+                CmTowerUpdateRecord record = new CmTowerUpdateRecord();
+                record.setId(0l);
+                record.setLat(lat);
+                record.setLon(lon);
+                record.setLineName(lineName);
+                record.setTowerId(id);
+                record.setUserId(userId);
+                try {
+                    record.setDetailId(Long.parseLong(detailId));
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                }
+                record.setCreateTime(DateUtil.dateNow());
+                recordService.add(record);
+            }
             return WebApiResponse.success("修改成功");
         } catch (Exception e) {
             e.printStackTrace();
