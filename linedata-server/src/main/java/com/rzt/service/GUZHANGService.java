@@ -217,13 +217,14 @@ public class GUZHANGService extends CurdService<GUZHANG,GUZHANGRepository> {
     }
 
     public WebApiResponse whatYouWant(String whatYouWant) {
-
+        ValueOperations<String, Object> stringObjectValueOperations = redisTemplate.opsForValue();
         Map<String, Object> result = new HashMap<>();
+
         JSONArray objects = JSON.parseArray(whatYouWant);
-        for (int i = 0; i < objects.size(); i++) {
-            JSONObject jsonObject = objects.getJSONObject(i);
+        for (int x = 0; x < objects.size(); x++) {
+            JSONObject jsonObject = objects.getJSONObject(x);
             String what = jsonObject.getString("want");
-            ValueOperations<String, Object> stringObjectValueOperations = redisTemplate.opsForValue();
+
             Object o = stringObjectValueOperations.get(what);
             String sql = "";
             if(o == null){
@@ -234,6 +235,8 @@ public class GUZHANGService extends CurdService<GUZHANG,GUZHANGRepository> {
                 } catch (Exception e) {
                     LOGGER.error("获取的值不唯一!",e);
                 }
+            }else{
+                sql = o.toString();
             }
             List params = new ArrayList();
             if(jsonObject.containsKey("params")){
