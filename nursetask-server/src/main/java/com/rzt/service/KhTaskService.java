@@ -396,6 +396,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
 
     //生成任务的逻辑
     public void createTask() {
+        siteRepository.deleteSite();
         List<KhSite> list = siteRepository.findSites();
         for (KhSite site : list) {
             double cycle = site.getCycle();  //一轮任务时长
