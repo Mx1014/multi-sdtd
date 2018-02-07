@@ -90,7 +90,7 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
             Date plan_start_time = (Date) map.get("PLAN_START_TIME");
             try {
                 Long time = plan_start_time.getTime() - new Date().getTime();
-                if (time > 0) {
+                if (time >= 0) {
                     time = time + 5400000L;
                     jedis.psetex(key, time, "巡视未上线");
                 }
@@ -166,7 +166,6 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
         List<Map<String, Object>> maps = execSql(sql);
         // List<Object> list = new ArrayList<>();
         for (Map<String, Object> map : maps) {
-            if(!StringUtils.isEmpty(map.get("CM_USER_ID"))||!map.get("CM_USER_ID").equals("")){
                 Jedis jedis = jedisPool.getResource();
                 String key = "TWO+" + map.get("ID") + "+1+4+" + map.get("CM_USER_ID") + "+" + map.get("TD_ORG") + "+" + map.get("TASK_NAME");
                 jedis.select(1);
@@ -185,7 +184,6 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
                 } finally {
                     jedis.close();
                 }
-            }
         }
 
         //判断在0点到拉数据时间段内有无未按时接任务的

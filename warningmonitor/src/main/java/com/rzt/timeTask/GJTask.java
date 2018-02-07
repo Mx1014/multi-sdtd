@@ -43,7 +43,7 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
 
 
     //定时拉数据  1
-   @Scheduled(cron = "0 30 0 * * ? ")
+    @Scheduled(cron = "0 30 0 * * ? ")
     public void gjTask(){
         khgj.inspectionMissionOverdue();// 巡视超期任务
         khgj.XSWJRW(); //未按时接任务
@@ -89,11 +89,7 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
-
         }
-
-
     }
 
     /**
@@ -171,13 +167,14 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
                         flag++;
                     }
                 }else if(new Date().getTime()<startDate){
+                    String s = "未上线";
                     String key = "";
                     if (taskType==2){
-                        key = "TWO+"+map.get("ID")+"+2+8+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
+                        key = "TWO+"+map.get("ID")+"+2+8+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME")+"+"+s;
                     }else if (taskType==1){
-                        key = "TWO+"+map.get("ID")+"+1+2+"+map.get("CM_USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
+                        key = "TWO+"+map.get("ID")+"+1+2+"+map.get("CM_USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME")+"+"+s;
                     }else if(taskType==3){
-                        key = "TWO+"+map.get("ID")+"+3+13+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
+                        key = "TWO+"+map.get("ID")+"+3+13+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME")+"+"+s;
                     }
                     Long time = plan_start_time.getTime() - new Date().getTime();
                     time = time+5400000L;

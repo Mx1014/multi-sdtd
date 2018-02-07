@@ -40,7 +40,7 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
             String sql = "   SELECT TASK_NAME AS TASKNAME,TD_ORG FROM XS_ZC_TASK WHERE ID=?1 ";
             Map<String, Object> map = this.execSqlSingleResult(sql, taskid);
             //往二级单位插数据
-            System.out.println(reason+"----------巡视未到位原因");
+            //System.out.println(reason+"----------巡视未到位原因");
             resp.saveCheckEjWdw(SnowflakeIdWorker.getInstance(10, 12).nextId(),taskid,1,3,userid,map.get("TD_ORG").toString(),map.get("TASKNAME").toString(),reason);
             String key = "ONE+" + taskid + "+1+3+" + userid + "+" + map.get("TD_ORG").toString() + "+" + map.get("TASKNAME").toString()+"+"+reason;
 
@@ -48,7 +48,7 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
             return WebApiResponse.success("");
         } catch (Exception e) {
             e.printStackTrace();
-            return WebApiResponse.erro("erro");
+            return WebApiResponse.erro("erro"+e.getMessage());
         }
     }
 
@@ -90,11 +90,11 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
 
         if(taskType==1){
             //看护
-            sql = " SELECT kh.ID,d.ID AS  DEPTID,kh.PLAN_START_TIME,kh.PLAN_END_TIME, kh.TASK_NAME,kh.USER_ID FROM  KH_TASK kh  LEFT JOIN RZTSYSDEPARTMENT d " +
+            sql = " SELECT kh.ID,d.ID AS  DEPTID,kh.PLAN_START_TIME,kh.PLAN_END_TIME, kh.TASK_NAME,kh.USER_ID,kh.STATUS AS STATUS FROM  KH_TASK kh  LEFT JOIN RZTSYSDEPARTMENT d " +
                     " ON kh.TDYW_ORG = d.DEPTNAME WHERE trunc(kh.PLAN_START_TIME) = trunc(sysdate) AND kh.USER_ID =?1  AND kh.STATUS !=2 AND kh.STATUS !=3";
         }else if(taskType==2){
             //巡视
-            sql = "SELECT ID,TD_ORG as DEPTID,PLAN_START_TIME,TASK_NAME,CM_USER_ID,PLAN_END_TIME,STAUTS  " +
+            sql = "SELECT ID,TD_ORG as DEPTID,PLAN_START_TIME,TASK_NAME,CM_USER_ID,PLAN_END_TIME,STAUTS AS STATUS  " +
                     "FROM XS_ZC_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND CM_USER_ID=?1  AND STAUTS !=2";
         }else if(taskType==3){
             //现场稽查
@@ -102,17 +102,17 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
                     " LEFT JOIN RZTSYSUSER u ON t.USER_ID=u.ID " +
                     " WHERE trunc(t.CREATE_TIME)=trunc(sysdate) AND STATUS!=2  AND USER_ID=?1";*/
 
-            sql=" SELECT t.ID,t.USER_ID,t.TASK_NAME,t.PLAN_START_TIME,u.DEPTID FROM CHECK_LIVE_TASK t " +
+            sql=" SELECT t.ID,t.USER_ID,t.TASK_NAME,t.PLAN_START_TIME,u.DEPTID,t.STATUS FROM CHECK_LIVE_TASK t " +
                     "   LEFT JOIN RZTSYSUSER u ON t.USER_ID=u.ID " +
-                    "  WHERE trunc(t.CREATE_TIME)=trunc(sysdate) AND STATUS!=2  AND USER_ID=?1" +
+                    "  WHERE trunc(t.CREATE_TIME)=trunc(sysdate) AND t.STATUS!=2  AND t.USER_ID=?1" +
                     "UNION ALL " +
-                    " SELECT t.ID,t.USER_ID,t.TASK_NAME,t.PLAN_START_TIME,u.DEPTID FROM CHECK_LIVE_TASKSB t " +
+                    " SELECT t.ID,t.USER_ID,t.TASK_NAME,t.PLAN_START_TIME,u.DEPTID,t.STATUS FROM CHECK_LIVE_TASKSB t " +
                     "      LEFT JOIN RZTSYSUSER u ON t.USER_ID=u.ID " +
-                    "      WHERE trunc(t.CREATE_TIME)=trunc(sysdate) AND STATUS!=2  AND USER_ID=?1" +
+                    "      WHERE trunc(t.CREATE_TIME)=trunc(sysdate) AND t.STATUS!=2  AND t.USER_ID=?1" +
                     "UNION ALL  " +
-                    " SELECT t.ID,t.USER_ID,t.TASK_NAME,d.PLAN_START_TIME,u.DEPTID FROM CHECK_LIVE_TASKXS t " +
+                    " SELECT t.ID,t.USER_ID,t.TASK_NAME,d.PLAN_START_TIME,u.DEPTID,t.STATUS FROM CHECK_LIVE_TASKXS t " +
                     "      LEFT JOIN RZTSYSUSER u ON t.USER_ID=u.ID LEFT JOIN CHECK_LIVE_TASK_DETAILXS d ON d.TASK_ID=t.ID " +
-                    "      WHERE trunc(t.CREATE_TIME)=trunc(sysdate) AND t.STATUS!=2  AND USER_ID=?1";
+                    "      WHERE trunc(t.CREATE_TIME)=trunc(sysdate) AND t.STATUS!=2  AND t.USER_ID=?1";
         }
         List<Map<String, Object>> maps = execSql(sql,userId);
         //如果查询结果为0，证明这个人当天没有任务
@@ -125,6 +125,7 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
             Date plan_start_time = (Date) map.get("PLAN_START_TIME");
             //结束时间
             Date plan_end_time = (Date) map.get("PLAN_END_TIME");
+            Object status = map.get("STATUS");
 
             try {
                 Long startDate = plan_start_time.getTime();
@@ -145,28 +146,28 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
                     if(falg==0){
                         String key = "";
                         if (taskType==1){
-                            key = "ONE+"+map.get("ID")+"+2+8+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME")+reason;
+                            key = "ONE+"+map.get("ID")+"+2+8+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME")+"+"+reason;
                             resp.saveCheckEjWdw(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(map.get("ID").toString()),2,8,map.get("USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString(),reason);
                         }else if (taskType==2){
-                            key = "ONE+"+map.get("ID")+"+1+2+"+map.get("CM_USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME")+reason;
+                            key = "ONE+"+map.get("ID")+"+1+2+"+map.get("CM_USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME")+"+"+reason;
                             resp.saveCheckEjWdw(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(map.get("ID").toString()),1,2,map.get("CM_USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString(),reason);
                         }else if(taskType==3){
-                            key = "ONE+"+map.get("ID")+"+3+13+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME")+reason;
+                            key = "ONE+"+map.get("ID")+"+3+13+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME")+"+"+reason;
                             resp.saveCheckEjWdw(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(map.get("ID").toString()),3,13,map.get("USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString(),reason);
                         }
                         redisService.setex(key);
                         falg++;
                     }
-                }else if(new Date().getTime()<startDate){
+                }else if(new Date().getTime()<startDate && "0".equals(status.toString())){
+                    //如果还未接单，则重新设置redis
+                    String r = "未上线";
                     String key = "";
                     if (taskType==1){
-                        key = "TWO+"+map.get("ID")+"+2+8+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
-                        //resp.saveCheckEj(new SnowflakeIdWorker(0,0).nextId(),Long.valueOf(map.get("ID").toString()),2,8,map.get("USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString());
+                        key = "TWO+"+map.get("ID")+"+2+8+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME")+"+"+r;
                     }else if (taskType==2){
-                        key = "TWO+"+map.get("ID")+"+1+2+"+map.get("CM_USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
-                        //resp.saveCheckEj(new SnowflakeIdWorker(0,0).nextId(),Long.valueOf(map.get("ID").toString()),1,2,map.get("CM_USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString());
+                        key = "TWO+"+map.get("ID")+"+1+2+"+map.get("CM_USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME")+"+"+r;
                     }else if(taskType==3){
-                        key = "TWO+"+map.get("ID")+"+3+13+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
+                        key = "TWO+"+map.get("ID")+"+3+13+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME")+"+"+r;
                     }
                     Long time = plan_start_time.getTime() - new Date().getTime();
                     time = time+5400000L;
