@@ -210,7 +210,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
             /**
              * 离线
              */
-            String offline = "SELECT count(1) as OFFLINES FROM MONITOR_CHECK_EJ  WHERE (WARNING_TYPE = 8 OR WARNING_TYPE = 2) AND trunc(CREATE_TIME) = trunc(sysdate)";
+            String offline = "SELECT count(1) as OFFLINES FROM MONITOR_CHECK_EJ  WHERE (WARNING_TYPE = 8 OR WARNING_TYPE = 2) AND trunc(CREATE_TIME) = trunc(sysdate) AND USER_ID !='null' ";
 
             /**
              *未按时开始任务
