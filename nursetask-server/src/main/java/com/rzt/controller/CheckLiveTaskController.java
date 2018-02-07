@@ -176,6 +176,7 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 		}
 	}
 
+
 	@ApiOperation(value = "app根据id获取稽查母任务",notes = "根据id获取稽查母任务")
 	@GetMapping("/getById")
 	public WebApiResponse getById(Long id,String taskType){
@@ -213,6 +214,17 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 			return WebApiResponse.erro("稽查子任务列表数据获取失败");
 		}
 
+	}
+	@ApiOperation(value = "app子任务到达现场",notes = "app子任务到达现场")
+	@GetMapping("/updateArriveTime")
+	public WebApiResponse updateArriveTime(Long id){
+		try{
+			this.service.updateArriveTime(id);
+			return WebApiResponse.success("");
+		}catch (Exception e){
+			LOGGER.error("app子任务到达现场",e);
+			return WebApiResponse.erro("app子任务到达现场");
+		}
 	}
 
 	@ApiOperation(value = "app稽查完成按钮",notes = "稽查完成按钮")
