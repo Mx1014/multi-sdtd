@@ -357,9 +357,9 @@ public class TwoLevelCommandPushService extends CurdService<websocket, websocket
                     "(" + khJxz + ") as khJxz," +
                     "(" + khWks + ") as khWks, " +
                     "(" + khYwc + ") as khYwc," +
-                    "(" + xcJcJxz + ") as xcJcJxz," +
-                    "(" + xcJcWks + ") as xcJcWks," +
-                    "(" + xcJcYwc + ") as xcJcYwc, " +
+//                    "(" + xcJcJxz + ") as xcJcJxz," +
+//                    "(" + xcJcWks + ") as xcJcWks," +
+//                    "(" + xcJcYwc + ") as xcJcYwc, " +
                     "(" + htJcWks + ") as htJcWks, " +
                     "(1) as htJcYks, " +
                     // "(" + htJcYks + ") as htJcYks, " +
