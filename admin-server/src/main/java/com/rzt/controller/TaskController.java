@@ -1,12 +1,19 @@
 package com.rzt.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.TimedTask;
 import com.rzt.service.TasksService;
 import com.rzt.util.WebApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.HashOperations;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 李成阳
@@ -73,6 +80,15 @@ public class TaskController extends CurdController<TimedTask,TasksService>  {
     @GetMapping("/findTaskInfoByTaskId")
     public WebApiResponse findTaskInfoByTaskId(String taskType,String taskId,String deptId,String realTime){
        return tasksService.findTaskInfoByTaskId(taskType,taskId,deptId,realTime);
+    }
+
+    /**
+     * 二级页
+     * @return
+     */
+    @GetMapping("deptDaZhu")
+    public WebApiResponse deptDaZhu() {
+       return tasksService.deptDaZhu();
     }
 
 }

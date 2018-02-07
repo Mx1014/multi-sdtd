@@ -5,12 +5,11 @@ import com.rzt.repository.XSZCTASKRepository;
 import com.rzt.util.WebApiResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 李成阳
@@ -140,5 +139,32 @@ public class YhService extends CurdService<TimedTask,XSZCTASKRepository>{
             return WebApiResponse.erro("隐患信息查询失败"+e.getMessage());
         }
         return WebApiResponse.success(obj);
+    }
+
+    public Page<Map<String,Object>> getYHInfo(Pageable pageable, String kv, String lineId, String yhjb,  String deptId) {
+        List<Object> list = new ArrayList<>();
+        String sql = "select * from KH_YH_HISTORY WHERE yhzt=0 ";
+
+        if (deptId != null && !"".equals(deptId.trim())) {
+            list.add(deptId);
+            sql += " and yworg_id= ?" + list.size();
+        }
+        if (kv != null && !"".equals(kv.trim())) {
+            list.add(kv);
+            sql += " and vtype= ?" + list.size();
+        }
+        if (lineId != null && !"".equals(lineId.trim())) {
+            list.add(lineId);
+            sql += " and line_id= ?" + list.size();
+        }
+        if (yhjb != null && !"".equals(yhjb.trim())) {
+            list.add("%"+yhjb+"%");
+            sql += " and yhjb1 like ?" + list.size();
+        }
+
+        sql +=" order by create_time desc";
+        return execSqlPage(pageable, sql, list.toArray());
+
+
     }
 }
