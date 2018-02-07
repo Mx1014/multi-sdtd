@@ -11,6 +11,7 @@ import com.netflix.discovery.converters.Auto;
 import com.rzt.entity.KhTask;
 import com.rzt.entity.KhYhHistory;
 import com.rzt.entity.XsSbYh;
+import com.rzt.repository.KhYhHistoryRepository;
 import com.rzt.service.KhYhHistoryService;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DateUtil;
@@ -45,6 +46,8 @@ public class KhYhHistoryController extends
         CurdController<KhYhHistory, KhYhHistoryService> {
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+    @Autowired
+    private KhYhHistoryRepository repository;
 
     @ApiOperation(notes = "施工情况", value = "施工情况")
     @PostMapping("/saveYh")
@@ -257,11 +260,11 @@ public class KhYhHistoryController extends
         }
     }
 
-    @Transactional
     @GetMapping("updateTower")
-    public WebApiResponse updateTower(String towerId, String lon, String lat) {
+    public WebApiResponse updateTower(String towerId, String lon, String lat,String id) {
         try {
-            this.service.reposiotry.updateTowerById(Long.parseLong(towerId), lon, lat);
+            repository.updateTowerById(Long.parseLong(towerId), lon, lat);
+            repository.deleteRecord(Long.parseLong(id));
             return WebApiResponse.success("成功");
         } catch (Exception e) {
             e.printStackTrace();
@@ -286,7 +289,7 @@ public class KhYhHistoryController extends
     @GetMapping("listTowerPicture")
     public WebApiResponse listTowerPicture(String detailId) {
         try {
-            String sql = "SELECT OPERATE_NAME FROM XS_ZC_TASK_EXEC_DETAIL where id = ?";
+             String sql = "SELECT OPERATE_NAME FROM XS_ZC_TASK_EXEC_DETAIL where id = ?";
             Map<String, Object> map = this.service.execSqlSingleResult(sql, Long.parseLong(detailId));
             sql = "SELECT * FROM PICTURE_TOUR WHERE PROCESS_NAME LIKE ? and trunc(CREATE_TIME)=trunc(sysdate)";
             List<Map<String, Object>> list = this.service.execSql(sql, map.get("OPERATE_NAME").toString() + "%");
@@ -300,7 +303,7 @@ public class KhYhHistoryController extends
     @GetMapping("/deleteRecord")
     public WebApiResponse deleteRecord(String id) {
         try {
-            this.service.reposiotry.deleteRecord(id);
+            repository.deleteRecord(Long.parseLong(id));
             return WebApiResponse.success("成功");
         } catch (Exception e) {
             e.printStackTrace();

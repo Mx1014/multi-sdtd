@@ -13,6 +13,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Locale;
+
 /**
  * 类名称：KHYHHISTORYRepository    
  * 类描述：    
@@ -89,6 +91,7 @@ public interface KhYhHistoryRepository extends JpaRepository<KhYhHistory, String
     void deleteYhById(long yhId);
 
     @Modifying
+    @Transactional
     @Query(value = "update CM_TOWER SET LONGITUDE=?2,LATITUDE=?3,STATUS=1 WHERE ID=?1", nativeQuery = true)
     void updateTowerById(long id, String lon, String lat);
 
@@ -113,5 +116,5 @@ public interface KhYhHistoryRepository extends JpaRepository<KhYhHistory, String
     @Modifying
     @Transactional
     @Query(value = "update CM_TOWER_UPDATE_RECORD SET STATUS=1 WHERE ID=?1", nativeQuery = true)
-    void deleteRecord(String id);
+    void deleteRecord(long id);
 }
