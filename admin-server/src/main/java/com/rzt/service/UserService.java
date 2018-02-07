@@ -185,5 +185,65 @@ public class UserService extends CurdService<TimedTask,XSZCTASKRepository>{
         return WebApiResponse.success(maps);
     }
 
+    /**
+     * 根据用户id查询当前用户
+     * @param userId
+     * @return
+     */
+    public WebApiResponse findUserInfo(String userId){
+        if(null == userId || "".equals(userId)){
+            return WebApiResponse.erro("参数错误 userId = "+userId);
+        }
+        Map<String, Object> map = null;
+        try {
+            String sql = "   SELECT u.DEPTID,u.LOGINSTATUS,u.WORKTYPE,u.ID,u.REALNAME,u.PHONE,d.DEPTNAME,dd.DEPTNAME GROUPNAME,com.COMPANYNAME,ddd.DEPTNAME AS DW,u.CERTIFICATE" +
+                    "  FROM RZTSYSUSER u" +
+                    "  LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID" +
+                    "  LEFT JOIN RZTSYSDEPARTMENT dd ON dd.ID = u.GROUPID" +
+                    "  LEFT JOIN RZTSYSDEPARTMENT ddd ON ddd.ID = u.CLASSNAME" +
+                    "  LEFT JOIN RZTSYSCOMPANY com ON com.ID = u.COMPANYID" +
+                    "   WHERE u.ID = '"+userId+"'";
+            map = this.execSqlSingleResult(sql);
+            if(null != map){
+                String worktype = (String) map.get("WORKTYPE");
+                if(null != worktype && !"".equals(worktype)){
+                    String taskSql = "";
+                    if("1".equals(worktype)){//看护
+                         taskSql = "   SELECT k.ID,k.TASK_NAME," +
+                                "  (SELECT COUNT(1) FROM KH_TASK kh WHERE kh.USER_ID = '"+userId+"') AS sum" +
+                                "  FROM KH_TASK k WHERE k.USER_ID = '"+userId+"'" +
+                                "  AND k.REAL_START_TIME =" +
+                                "      (SELECT max(kk.REAL_START_TIME) FROM KH_TASK kk WHERE kk.USER_ID = '"+userId+"')";
+                    }
+                    if("2".equals(worktype)){//巡视
+                         taskSql = "   SELECT x.ID,x.TASK_NAME," +
+                                "  (SELECT count(1) FROM XS_ZC_TASK xz WHERE xz.CM_USER_ID = '"+userId+"') AS sum" +
+                                "   FROM XS_ZC_TASK x WHERE x.CM_USER_ID = '"+userId+"' AND x.REAL_START_TIME =" +
+                                "   (SELECT max(xs.REAL_START_TIME) FROM XS_ZC_TASK xs WHERE xs.CM_USER_ID = '"+userId+"')";
+                    }
+                    if("3".equals(worktype)){//现场稽查
+                         taskSql = "   SELECT c.ID,c.TASK_NAME," +
+                                "  (SELECT count(1) FROM CHECK_LIVE_TASK ccc WHERE ccc.USER_ID = '"+userId+"') AS sum" +
+                                "   FROM CHECK_LIVE_TASK c WHERE c.USER_ID = '"+userId+"'" +
+                                "  AND c.REAL_START_TIME = (SELECT max(cc.REAL_START_TIME) FROM CHECK_LIVE_TASK cc WHERE cc.USER_ID = '"+userId+"')";
+                    }
+                    if("4".equals(worktype)){//后台稽查
+                        taskSql = "   SELECT concat(to_char(t.CHECK_TIME,'YYYY-MM-dd HH24:mi:ss'),'期后台稽查任务') AS TASK_NAME," +
+                               "  (SELECT count(1) FROM TIMED_TASK_RECORD ttt WHERE ttt.EX_USER LIKE '%"+userId+"%') AS sum" +
+                               "   FROM TIMED_TASK_RECORD t WHERE t.EX_USER LIKE '%"+userId+"%' AND t.CREATE_TIME =" +
+                               "  (SELECT max(tt.CREATE_TIME) FROM TIMED_TASK_RECORD tt WHERE tt.EX_USER LIKE '%"+userId+"%')";
+                    }
+                    Map<String, Object> map1 = this.execSqlSingleResult(taskSql);
+                    map.putAll(map1);
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.error("人员信息详情查询失败"+e.getMessage());
+            return WebApiResponse.erro("人员信息详情查询失败"+e.getMessage());
+        }
+        LOGGER.info("人员信息详情查询成功");
+        return WebApiResponse.success(map);
+    }
+
 
 }

@@ -162,7 +162,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
                 sql = "select k.id as id,k.status as status,k.task_name as task_name,k.plan_end_time as endTime from kh_task k where k.user_id = ? and trunc(k.plan_start_time)>=trunc(sysdate)"; //";
                 return WebApiResponse.success(this.execSql(sql, userId));
             } else {
-                sql = "select k.id as id,k.status as status,k.task_name as task_name,k.plan_end_time as endTime from kh_task k where k.user_id = ? and k.plan_start_time <=to_date(?,'yyyy-mm-dd hh24:mi:ss') and k.plan_end_time>=to_date(?,'yyyy-mm-dd hh24:mi:ss')";
+                    sql = "select k.id as id,k.status as status,k.task_name as task_name,k.plan_end_time as endTime from kh_task k where k.user_id = ? and trunc(k.plan_start_time) >=trunc(to_date(?,'yyyy-mm-dd hh24:mi:ss')) and trunc(k.plan_end_time)<=trunc(to_date(?,'yyyy-mm-dd hh24:mi:ss')+1)";
                 return WebApiResponse.success(this.execSql(sql, userId, startDate, startDate));
             }
         } catch (Exception e) {
