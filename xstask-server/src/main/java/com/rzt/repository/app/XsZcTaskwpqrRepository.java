@@ -397,9 +397,8 @@ public interface XsZcTaskwpqrRepository extends JpaRepository<XsZcTaskwpqr, Stri
      */
     @Modifying
     @Transactional
-    @Query(value = "UPDATE xs_zc_task SET xscs_num = ?2 WHERE id =?1", nativeQuery = true)
-    void updateZcxsTaskXsRepeatNum(Long taskId, Integer repeatNum);
-
+    @Query(value = "UPDATE xs_zc_task SET xscs_num = xscs_num + 1 WHERE id =?1", nativeQuery = true)
+    void updateZcxsTaskXsRepeatNum(Long taskId);
 
 
     /***

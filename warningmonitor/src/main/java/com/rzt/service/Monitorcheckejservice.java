@@ -594,41 +594,54 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
         String sql ="";
         List<Map<String, Object>> maps = null;
         if("0".equals(deptID)){
-            /*sql = "SELECT A.*,T.DEPTNAME FROM RZTSYSDEPARTMENT T LEFT JOIN (SELECT\n" +
-                    "    nvl(sum(decode(TASK_TYPE, 1, 1)),0)  AS XS,\n" +
-                    "    nvl(sum(decode(TASK_TYPE, 2, 1)),0)  AS KH,\n" +
-                    "    nvl(sum(decode(TASK_TYPE, 3, 1)),0)  AS XCJC,\n" +
-                    " nvl(sum(decode(TASK_TYPE, 3, 1,1,1,2,1)),0)  AS total, " +
-                    "    DEPTID\n" +
-                    "    FROM MONITOR_CHECK_YJ\n" +
-                    "   WHERE 1=1 AND trunc(CREATE_TIME) = trunc(sysdate) AND STATUS=0\n" +
-                    "  GROUP BY DEPTID)A ON T.ID = A.DEPTID WHERE  T.DEPTSORT IS NOT NULL ORDER BY T.DEPTSORT\n";*/
-            sql = "SELECT A.*,T.DEPTNAME FROM RZTSYSDEPARTMENT T LEFT JOIN (\n" +
-                    "  SELECT nvl(sum(decode(TASK_TYPE, 1, 1)),0)  AS XS,\n" +
-                    "   nvl(sum(decode(TASK_TYPE, 2, 1)),0)  AS KH,\n" +
-                    "   nvl(sum(decode(TASK_TYPE, 3, 1)),0)  AS XCJC,\n" +
-                    "   nvl(sum(decode(TASK_TYPE, 3, 1,1,1,2,1)),0)  AS total,\n" +
-                    "  yj.DEPTID\n" +
-                    "FROM MONITOR_CHECK_YJ yj LEFT JOIN RZTSYSUSER u ON yj.USER_ID=u.ID\n" +
-                    "  WHERE u.USERDELETE=1 AND trunc(yj.CREATE_TIME)=trunc(sysdate) AND STATUS =0\n" +
-                    "        AND yj.USER_ID IS NOT NULL GROUP BY yj.DEPTID\n" +
-                    "    )A ON T.ID = A.DEPTID WHERE  T.DEPTSORT IS NOT NULL ORDER BY T.DEPTSORT";
+            /*sql = "SELECT A.*,T.DEPTNAME FROM RZTSYSDEPARTMENT T LEFT JOIN ( " +
+                    "  SELECT nvl(sum(decode(TASK_TYPE, 1, 1)),0)  AS XS, " +
+                    "   nvl(sum(decode(TASK_TYPE, 2, 1)),0)  AS KH, " +
+                    "   nvl(sum(decode(TASK_TYPE, 3, 1)),0)  AS XCJC, " +
+                    "   nvl(sum(decode(TASK_TYPE, 3, 1,1,1,2,1)),0)  AS total, " +
+                    "  yj.DEPTID " +
+                    "FROM MONITOR_CHECK_YJ yj LEFT JOIN RZTSYSUSER u ON yj.USER_ID=u.ID " +
+                    "  WHERE u.USERDELETE=1 AND trunc(yj.CREATE_TIME)=trunc(sysdate) AND STATUS =0 " +
+                    "        AND yj.USER_ID IS NOT NULL GROUP BY yj.DEPTID " +
+                    "    )A ON T.ID = A.DEPTID WHERE  T.DEPTSORT IS NOT NULL ORDER BY T.DEPTSORT";*/
+            sql="SELECT nvl(A.KH,0) AS KH, " +
+                    "  nvl(A.XS,0) AS XS, " +
+                    "  nvl(A.XCJC,0) AS XCJC, " +
+                    "  nvl(A.total,0) AS total, " +
+                    "  T.DEPTNAME,T.ID FROM RZTSYSDEPARTMENT T LEFT JOIN ( " +
+                    "                      SELECT nvl(sum(decode(TASK_TYPE, 1, 1)),0)  AS XS, " +
+                    "                       nvl(sum(decode(TASK_TYPE, 2, 1)),0)  AS KH, " +
+                    "                       nvl(sum(decode(TASK_TYPE, 3, 1)),0)  AS XCJC, " +
+                    "                       nvl(sum(decode(TASK_TYPE, 3, 1,1,1,2,1)),0)  AS total, " +
+                    "                      yj.DEPTID " +
+                    "                    FROM MONITOR_CHECK_YJ yj LEFT JOIN RZTSYSUSER u ON yj.USER_ID=u.ID " +
+                    "                      WHERE u.USERDELETE=1 AND trunc(yj.CREATE_TIME)=trunc(sysdate) AND STATUS =0 " +
+                    "                            AND yj.USER_ID IS NOT NULL GROUP BY yj.DEPTID " +
+                    "                        )A ON T.ID = A.DEPTID WHERE  T.DEPTSORT IS NOT NULL ORDER BY T.DEPTSORT";
             maps = execSql(sql);
         }else{
-            /*sql="SELECT\n" +
-                    "    nvl(sum(decode(TASK_TYPE, 1, 1)),0)  AS XS,\n" +
-                    "    nvl(sum(decode(TASK_TYPE, 2, 1)),0)  AS KH,\n" +
-                    "    nvl(sum(decode(TASK_TYPE, 3, 1)),0)  AS XCJC,\n" +
-                    " nvl(sum(decode(TASK_TYPE, 3, 1,1,1,2,1)),0)  AS total " +
-                    "    FROM MONITOR_CHECK_EJ\n" +
-                    "   WHERE 1=1 AND trunc(CREATE_TIME) = trunc(sysdate) AND STATUS=0 AND DEPTID=?1";*/
-            sql="SELECT nvl(sum(decode(TASK_TYPE, 1, 1)),0)  AS XS,\n" +
-                    "     nvl(sum(decode(TASK_TYPE, 2, 1)),0)  AS KH,\n" +
-                    "     nvl(sum(decode(TASK_TYPE, 3, 1)),0)  AS XCJC,\n" +
-                    "     nvl(sum(decode(TASK_TYPE, 3, 1,1,1,2,1)),0)  AS total,d.DEPTNAME\n" +
-                    "FROM MONITOR_CHECK_EJ ej LEFT JOIN RZTSYSUSER u ON ej.USER_ID=u.ID LEFT JOIN RZTSYSDEPARTMENT d ON u.CLASSNAME=d.ID\n" +
-                    "   WHERE u.USERDELETE=1  AND trunc(ej.CREATE_TIME)=trunc(sysdate) AND ej.STATUS =0 AND ej.DEPTID=?1 AND ej.USER_ID IS NOT NULL\n" +
-                    "   GROUP BY d.DEPTNAME";
+            /*sql="SELECT nvl(sum(decode(TASK_TYPE, 1, 1)),0)  AS XS, " +
+                    "     nvl(sum(decode(TASK_TYPE, 2, 1)),0)  AS KH, " +
+                    "     nvl(sum(decode(TASK_TYPE, 3, 1)),0)  AS XCJC, " +
+                    "     nvl(sum(decode(TASK_TYPE, 3, 1,1,1,2,1)),0)  AS total,d.DEPTNAME " +
+                    "FROM MONITOR_CHECK_EJ ej LEFT JOIN RZTSYSUSER u ON ej.USER_ID=u.ID LEFT JOIN RZTSYSDEPARTMENT d ON u.CLASSNAME=d.ID " +
+                    "   WHERE u.USERDELETE=1  AND trunc(ej.CREATE_TIME)=trunc(sysdate) AND ej.STATUS =0 AND ej.DEPTID=?1 AND ej.USER_ID IS NOT NULL " +
+                    "   GROUP BY d.DEPTNAME";*/
+            sql = "SELECT nvl(A.KH,0) AS KH,   " +
+                    "  nvl(A.XS,0) AS XS,   " +
+                    "  nvl(A.XCJC,0) AS XCJC,   " +
+                    "  nvl(A.total,0) AS total,   " +
+                    "  T.DEPTNAME,   " +
+                    "  T.ID FROM (SELECT ID,  DEPTNAME FROM (SELECT ID, DEPTNAME, LASTNODE  FROM RZTSYSDEPARTMENT   " +
+                    "          START WITH ID = ?1 CONNECT BY PRIOR ID = DEPTPID) WHERE LASTNODE = 0) T LEFT JOIN   " +
+                    "  (SELECT nvl(sum(decode(TASK_TYPE, 1, 1)),0)  AS XS,   " +
+                    "         nvl(sum(decode(TASK_TYPE, 2, 1)),0)  AS KH,   " +
+                    "         nvl(sum(decode(TASK_TYPE, 3, 1)),0)  AS XCJC,   " +
+                    "         nvl(sum(decode(TASK_TYPE, 3, 1,1,1,2,1)),0)  AS total,d.ID   " +
+                    "    FROM MONITOR_CHECK_EJ ej LEFT JOIN RZTSYSUSER u ON ej.USER_ID=u.ID LEFT JOIN RZTSYSDEPARTMENT d ON u.CLASSNAME=d.ID   " +
+                    "       WHERE u.USERDELETE=1  AND trunc(ej.CREATE_TIME)=trunc(sysdate)   " +
+                    "             AND ej.STATUS =0 AND ej.DEPTID=?1 AND ej.USER_ID IS NOT NULL   " +
+                    "       GROUP BY d.ID) A ON A.ID=T.ID";
             maps = execSql(sql, deptID);
         }
         return maps;

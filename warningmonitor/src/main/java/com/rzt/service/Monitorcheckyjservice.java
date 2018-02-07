@@ -370,7 +370,7 @@ public class Monitorcheckyjservice extends CurdService<Monitorcheckyj, Monitorch
             if(warningType==5){
                 String sql = "select YCDATA from XS_ZC_EXCEPTION WHERE TASK_ID=?1";
                 List<Map<String, Object>> maps = execSql(sql, taskId);
-                maps.forEach(map ->{
+                /*maps.forEach(map ->{
                     Object ycdata = map.get("YCDATA");
                     JSONArray objects = JSONObject.parseArray(ycdata.toString());
                     for (int i=0;i<objects.size();i++){
@@ -380,7 +380,28 @@ public class Monitorcheckyjservice extends CurdService<Monitorcheckyj, Monitorch
                         List<Map<String, Object>> maps1 = execSql(sql1, id);
                         result.addAll(maps1);
                     }
-                });
+                });*/
+                StringBuffer ids = new StringBuffer();
+                for(int j = 0;j<maps.size();j++){
+                    Map<String, Object> map = maps.get(j);
+                    Object ycdata = map.get("YCDATA");
+                    JSONArray objects = JSONObject.parseArray(ycdata.toString());
+                    for (int i=0;i<objects.size();i++){
+                        Map<String,Object> m = (Map<String, Object>) objects.get(i);
+                        String id = (String) m.get("ID");
+                        if(i!=objects.size()-1){
+                            ids.append(id+", ");
+                        }else{
+                            ids.append(id);
+                        }
+                    }
+                    if(j!=maps.size()-1){
+                        ids.append(",");
+                    }
+                }
+                String sql1 = "select FILE_PATH,PROCESS_NAME AS OPERATE_NAME ,CREATE_TIME from PICTURE_TOUR where PROCESS_ID in ("+ids.toString()+")";
+                List<Map<String, Object>> maps1 = execSql(sql1);
+                result.addAll(maps1);
 
             }
         }

@@ -106,7 +106,7 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
             Map<String, Object> stringObjectMap = this.execSqlSingleResult(userAccout, userId);
             HashOperations hashOperations = redisTemplate.opsForHash();
             hashOperations.put("UserInformation", userId, stringObjectMap);
-            hashOperations.delete("USERTOKEN", "USER:" + stringObjectMap.get("ID") + "," + stringObjectMap.get("REALNAME"));
+            hashOperations.delete("USERTOKEN", stringObjectMap.get("ID"));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -121,9 +121,20 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
             sql = "SELECT ID,TD_ORG as DEPTID,PLAN_START_TIME,TASK_NAME,CM_USER_ID,PLAN_END_TIME,STAUTS  " +
                     "FROM XS_ZC_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND CM_USER_ID=?1  AND STAUTS !=2";
         }else if(taskType==3){
-            sql=" SELECT t.ID,t.USER_ID,t.TASK_NAME,t.PLAN_START_TIME,t.PLAN_END_TIME,u.DEPTID FROM CHECK_LIVE_TASK t " +
+          /*  sql=" SELECT t.ID,t.USER_ID,t.TASK_NAME,t.PLAN_START_TIME,t.PLAN_END_TIME,u.DEPTID FROM CHECK_LIVE_TASK t " +
                     " LEFT JOIN RZTSYSUSER u ON t.USER_ID=u.ID " +
-                    " WHERE trunc(t.CREATE_TIME)=trunc(sysdate) AND STATUS!=2 AND USER_ID=?1";
+                    " WHERE trunc(t.CREATE_TIME)=trunc(sysdate) AND STATUS!=2 AND USER_ID=?1";*/
+            sql = " SELECT t.ID,t.USER_ID,t.TASK_NAME,t.PLAN_START_TIME,t.PLAN_END_TIME,u.DEPTID FROM CHECK_LIVE_TASK t " +
+                    "   LEFT JOIN RZTSYSUSER u ON t.USER_ID=u.ID " +
+                    "  WHERE trunc(t.CREATE_TIME)=trunc(sysdate) AND STATUS!=2  AND USER_ID=?1" +
+                    " UNION ALL " +
+                    " SELECT t.ID,t.USER_ID,t.TASK_NAME,t.PLAN_START_TIME,t.PLAN_END_TIME,u.DEPTID FROM CHECK_LIVE_TASKSB t " +
+                    "      LEFT JOIN RZTSYSUSER u ON t.USER_ID=u.ID " +
+                    "      WHERE trunc(t.CREATE_TIME)=trunc(sysdate) AND STATUS!=2  AND USER_ID=?1" +
+                    " UNION ALL  " +
+                    " SELECT t.ID,t.USER_ID,t.TASK_NAME,d.PLAN_START_TIME,d.PLAN_END_TIME,u.DEPTID FROM CHECK_LIVE_TASKXS t " +
+                    "      LEFT JOIN RZTSYSUSER u ON t.USER_ID=u.ID LEFT JOIN CHECK_LIVE_TASK_DETAILXS d ON d.TASK_ID=t.ID " +
+                    "      WHERE trunc(t.CREATE_TIME)=trunc(sysdate) AND t.STATUS!=2  AND USER_ID=?1";
         }
         List<Map<String, Object>> maps = execSql(sql,userId);
         //如果查询结果为0，证明这个人当天没有任务
