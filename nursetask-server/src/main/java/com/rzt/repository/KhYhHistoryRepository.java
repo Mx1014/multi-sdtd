@@ -117,4 +117,9 @@ public interface KhYhHistoryRepository extends JpaRepository<KhYhHistory, String
     @Transactional
     @Query(value = "update CM_TOWER_UPDATE_RECORD SET STATUS=1 WHERE ID=?1", nativeQuery = true)
     void deleteRecord(long id);
+
+    @Modifying
+    @Transactional
+    @Query(value = "update CM_TOWER_UPDATE_RECORD SET STATUS=2 WHERE ID=?1", nativeQuery = true)
+    void deleteRecord2(long id);
 }

@@ -269,7 +269,7 @@ public class KhYhHistoryController extends
                     "  LEFT JOIN CM_LINE L ON L.ID = T.LINE_ID LEFT JOIN RZTSYSDEPARTMENT D ON D.ID =U.DEPTID \n" +
                     "  LEFT JOIN XS_ZC_TASK_EXEC_DETAIL ED on ed.id = r.DETAIL_ID LEFT JOIN XS_ZC_TASK_EXEC TE ON ED.XS_ZC_TASK_EXEC_ID = TE.ID\n" +
                     "  LEFT JOIN XS_ZC_TASK ZT ON ZT.ID = TE.XS_ZC_TASK_ID\n" +
-                    " WHERE r.status != 1\n" +s+
+                    " WHERE r.status = 0\n" +s+
                     " ORDER BY r.create_time DESC";
             return WebApiResponse.success(this.service.execSqlPage(pageable, sql));
         } catch (Exception e) {
@@ -282,7 +282,7 @@ public class KhYhHistoryController extends
     public WebApiResponse updateTower(String towerId, String lon, String lat,String id) {
         try {
             repository.updateTowerById(Long.parseLong(towerId), lon, lat);
-            repository.deleteRecord(Long.parseLong(id));
+            repository.deleteRecord2(Long.parseLong(id));
             return WebApiResponse.success("成功");
         } catch (Exception e) {
             e.printStackTrace();
