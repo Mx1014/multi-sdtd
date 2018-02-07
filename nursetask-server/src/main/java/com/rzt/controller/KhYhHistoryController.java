@@ -307,10 +307,10 @@ public class KhYhHistoryController extends
     @GetMapping("listTowerPicture")
     public WebApiResponse listTowerPicture(String detailId) {
         try {
-             String sql = "SELECT OPERATE_NAME FROM XS_ZC_TASK_EXEC_DETAIL where id = ?";
-            Map<String, Object> map = this.service.execSqlSingleResult(sql, Long.parseLong(detailId));
-            sql = "SELECT * FROM PICTURE_TOUR WHERE PROCESS_NAME LIKE ? and trunc(CREATE_TIME)=trunc(sysdate)";
-            List<Map<String, Object>> list = this.service.execSql(sql, map.get("OPERATE_NAME").toString() + "%");
+            /* String sql = "SELECT OPERATE_NAME FROM XS_ZC_TASK_EXEC_DETAIL where id = ?";
+            Map<String, Object> map = this.service.execSqlSingleResult(sql, Long.parseLong(detailId));*/
+            String sql = "SELECT * FROM PICTURE_TOUR WHERE PROCESS_id =? and trunc(CREATE_TIME)=trunc(sysdate)";
+            List<Map<String, Object>> list = this.service.execSql(sql, detailId);
             return WebApiResponse.success(list);
         } catch (Exception e) {
             e.printStackTrace();

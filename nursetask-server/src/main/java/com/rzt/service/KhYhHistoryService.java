@@ -176,6 +176,15 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             List<Object> list1 = new ArrayList<>();
             for (Map map : list) {
                 if (map != null && map.size() > 0 && map.get("JD") != null) {
+                    sql = "select u.realname from kh_site s left join rztsysuser u on u.id =s.user_id where yh_id=?";
+                    List<Map<String, Object>> nameList = this.execSql(sql, Long.parseLong(map.get("ID").toString()));
+                    String realname="";
+                    for (int i=0;i<nameList.size();i++){
+                            if (!realname.contains((nameList.get(i).get("REALNAME")).toString())){
+                                realname +=nameList.get(i).get("REALNAME")+" ";
+                            }
+                    }
+                    map.put("USERNAME",realname);
                     list1.add(map);
                 }
             }
