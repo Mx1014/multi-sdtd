@@ -750,7 +750,7 @@ public class PcMapShowController {
         if (khMenAllString == null) {
         } else {
             JSONObject khMenAll = JSONObject.parseObject(khMenAllString.toString());
-            String sql = "SELECT USER_ID,max(status) status from kh_task where PLAN_END_TIME >= trunc(sysdate) and  PLAN_START_TIME <= trunc(sysdate+1) and USER_ID = ? group by user_id";
+            String sql = "SELECT USER_ID,min(status) status from kh_task where PLAN_END_TIME >= trunc(sysdate) and  PLAN_START_TIME <= trunc(sysdate+1) and USER_ID = ? group by user_id";
             try {
                 Map<String, Object> map = cmcoordinateService.execSqlSingleResult(sql, userId);
                 Object status = map.get("STATUS");
