@@ -472,7 +472,8 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
                     "(" + xcJcJxz + ") as xcJcJxz," +
                     "(" + xcJcWks + ") as xcJcWks," +
                     "(" + xcJcYwc + ") as xcJcYwc, " +
-                    "(" + htJcWks + ") as htJcWks, " +
+//                    "(" + htJcWks + ") as htJcWks, " +
+                    "(" + 0 + ") as htJcWks, " +
                     "(1) as htJcYks, " +
                     // "(" + htJcYks + ") as htJcYks, " +
                     "(" + htJcYwc + ") as htJcYwc " +
