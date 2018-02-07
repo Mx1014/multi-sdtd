@@ -1,9 +1,11 @@
 package com.rzt.websocket.serverendpoint;
 
 import com.alibaba.fastjson.JSONObject;
+import com.rzt.websocket.service.FirstLevelCommandPushService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 
+import javax.annotation.Resource;
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
@@ -15,10 +17,16 @@ import java.util.concurrent.ConcurrentHashMap;
 @ServerEndpoint("/serverendpoint/firstlevelcommand/{currentUserId}/{mapType}/{type}")
 public class FirstLevelCommandServerEndpoint {
     static RedisTemplate<String, Object> redisTemplate;
+    private static FirstLevelCommandPushService firstLevelCommandPushService;
 
     @Autowired
     public void setRedisTemplate(RedisTemplate<String, Object> redisTemplate) {
         FirstLevelCommandServerEndpoint.redisTemplate = redisTemplate;
+    }
+
+    @Resource
+    public void setWuDPushService(FirstLevelCommandPushService wuDPushService) {
+        FirstLevelCommandServerEndpoint.firstLevelCommandPushService = wuDPushService;
     }
 
     /**
@@ -40,7 +48,17 @@ public class FirstLevelCommandServerEndpoint {
         h.put("jsonObject", jsonObject);
         h.put("mapType", mapType);
         h.put("type", type);
+        h.put("DEPTID", jsonObject.get("DEPTID"));
         livingSessions.put(sessionId, h);
+        firstLevelCommandPushService.adminModule1();
+        firstLevelCommandPushService.adminModule2();
+        firstLevelCommandPushService.adminModule3();
+        firstLevelCommandPushService.adminModule4();
+        firstLevelCommandPushService.adminModule5();
+        firstLevelCommandPushService.adminModule6();
+        firstLevelCommandPushService.adminModule6_1();
+        firstLevelCommandPushService.adminModule7();
+        firstLevelCommandPushService.adminModule8();
     }
 
     public Map<String, HashMap> sendMsg() {
