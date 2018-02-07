@@ -455,13 +455,24 @@ public class PcMapShowController {
     }
 
     @GetMapping("getGuZhang")
-    public Object getGuZhang(String currentUserId) {
+    public Object getGuZhang(String currentUserId,String types) {
         try {
             Map<String, Object> map = pcMapShowService.userInfoFromRedis(currentUserId);
             String s = "";
             Integer roletype = Integer.parseInt(map.get("ROLETYPE").toString());
             if(roletype != 0) {
                 s = "and t.td_org = '" + map.get("DEPT") + "'";
+            }
+            if(StringUtils.isEmpty(types)) {
+               s += " and GZ_REASON1 in ('施工碰线','异物短路','树竹放电') ";
+            } else {
+                String[] typeArr = types.split(",");
+                s += " and GZ_REASON1 in (";
+                for (String type:typeArr) {
+                    s += "'" + type + "',";
+                }
+                s = s.substring(0,s.length() - 1);
+                s += ")";
             }
             String sql = "select t.*,tt.TOWER_NAME,ttt.LONGITUDE,ttt.LATITUDE from GUZHANG t join CM_LINE_TOWER tt on t.LINE_ID = tt.LINE_ID and t.GZ_TOWER is not NULL and tt.TOWER_NAME = substr(t.GZ_TOWER,0,instr(GZ_TOWER,'#',1,1)-1) " +
                     s +

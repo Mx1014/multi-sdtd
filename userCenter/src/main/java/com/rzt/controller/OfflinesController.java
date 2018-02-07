@@ -32,7 +32,7 @@ public class OfflinesController extends CurdController<RztSysUser, CommonService
      * @return
      */
     @RequestMapping("OfflinesList")
-    public WebApiResponse OfflinesList(Integer workType, Integer page, Integer size, String currentUserId, String startTime, String endTime, String deptId, String taskType) {
+    public WebApiResponse OfflinesList(Integer workType, Integer page, Integer size, String currentUserId, String startTime, String endTime, String deptId, String taskType,String loginType) {
         org.springframework.data.domain.Pageable pageable = new PageRequest(page, size);
         List listLike = new ArrayList();
         String s = "";
@@ -47,6 +47,10 @@ public class OfflinesController extends CurdController<RztSysUser, CommonService
         if (roletype == 1 || roletype == 2) {
             listLike.add(deptid);
             s += " AND DEPTID= ?" + listLike.size();
+        }
+        if (!StringUtils.isEmpty(loginType)){
+            listLike.add(loginType);
+            s1 += "  LOGINSTATUS=?" + listLike.size();
         }
         if (!StringUtils.isEmpty(deptId)) {
             listLike.add(deptId);
@@ -113,6 +117,7 @@ public class OfflinesController extends CurdController<RztSysUser, CommonService
                 "        u.REALNAME, " +
                 "        u.CLASSNAME, " +
                 "        u.DEPT, " +
+                "        u.LOGINSTATUS, " +
                 "        u.COMPANYNAME, " +
                 "         u.WORKTYPE AS WORKTYPEs, " +
                 "        e.a               AS MORE, " +
@@ -126,7 +131,7 @@ public class OfflinesController extends CurdController<RztSysUser, CommonService
                 "              nvl(to_char(MAX(ej.ONLINE_TIME), 'yyyy-MM-dd hh24:mi:ss'), '人员未上线') AS ONLINE_TIME " +
                 "            FROM MONITOR_CHECK_EJ ej " +
                 "            WHERE (ej.WARNING_TYPE = 8 OR ej.WARNING_TYPE = 2) " + s +
-                "            GROUP BY USER_ID) e LEFT JOIN USERINFO u ON e.USER_ID = u.ID) ch LEFT JOIN MONITOR_CHECK_EJ ce " +
+                "            GROUP BY USER_ID) e LEFT JOIN USERINFO u ON e.USER_ID = u.ID AND u.USERDELETE=1) ch LEFT JOIN MONITOR_CHECK_EJ ce " +
                 "    ON ch.USER_ID = ce.USER_ID AND ch.CREATE_TIME = ce.CREATE_TIME  " + s1;
         try {
             return WebApiResponse.success(this.service.execSqlPage(pageable, sql, listLike.toArray()));

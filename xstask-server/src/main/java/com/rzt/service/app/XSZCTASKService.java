@@ -10,6 +10,7 @@ import com.rzt.entity.app.XSZCTASK;
 import com.rzt.repository.app.XSZCTASKRepository;
 import com.rzt.service.CurdService;
 import com.rzt.service.pc.XsZcCycleService;
+import com.rzt.utils.SnowflakeIdWorker;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -18,10 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 类名称：XSZCTASKService
@@ -446,5 +444,31 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
         result.put("success",true);
         result.put("object",maps);
         return result;
+    }
+
+    /***
+    * @Method shangBaoQueXian
+    * @Description 上报缺陷
+    * @param [taskId, userId, towerId, processId, qxMs, qxType, qxPosition, pictureIds]
+    * @return java.lang.Object
+    * @date 2018/2/5 14:10
+    * @author nwz
+    */
+    public void shangBaoQueXian(Long taskId, String userId, Long towerId, Long processId, String qxMs, Integer qxType, Integer qxPosition, String pictureIds) throws Exception {
+        if(!StringUtils.isEmpty(pictureIds)) {
+            String sql = "select tt.LINE_ID,tt.TD_ORG,t.CM_USER_ID from xs_zc_task t join XS_ZC_CYCLE tt on t.XS_ZC_CYCLE_ID = tt.id and t.id = ?";
+            Map<String, Object> map = this.execSqlSingleResult(sql, taskId);
+            long qxId = new SnowflakeIdWorker(13, 20).nextId();
+            this.reposiotry.insertGuZhang(qxId,map.get("CM_USER_ID").toString(),map.get("TD_ORG").toString(),towerId, Long.parseLong(map.get("LINE_ID").toString()),taskId,processId,new Date(),qxMs,qxPosition,qxType);
+            String[] picIds = pictureIds.split(",");
+            List<Long> picIdList = new ArrayList<>();
+            for (String picId:picIds) {
+                picIdList.add(Long.parseLong(picId));
+            }
+            this.reposiotry.updateQxId(picIdList,qxId);
+        } else {
+            throw new Exception("图片没传!");
+        }
+
     }
 }

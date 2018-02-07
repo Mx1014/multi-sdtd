@@ -36,7 +36,7 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
     WarningmonitorServerService warningmonitorServerService;
     /***
      * @Method updateJdTime
-     * @Description
+     * @Description\
      * @param [id, xslx]
      * @return void
      * @date 2017/12/17 15:18
@@ -315,7 +315,7 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
             addExecDetail(taskId,xslx,nextId);
         } else {
             this.reposiotry.insertZcXsTaskExec(nextId,taskId,repeatNum);
-            this.reposiotry.updateZcxsTaskXsRepeatNum(taskId,repeatNum);
+            this.reposiotry.updateZcxsTaskXsRepeatNum(taskId);
             addExecDetail(taskId,xslx,nextId);
         }
     }
