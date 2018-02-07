@@ -86,7 +86,7 @@ public class GJService extends CurdService<TimedTask,XSZCTASKRepository>{
                     "  (SELECT count(1) FROM" +
                     "    ( SELECT u.TASK_ID, u.STATUS, t.START_TIME, t.END_TIME FROM WARNING_OFF_POST_USER u LEFT JOIN WARNING_OFF_POST_USER_TIME t ON u.USER_ID=t.FK_USER_ID AND u.TASK_ID=t.FK_TASK_ID WHERE 1=1" +
                     "    AND  trunc(CREATE_TIME) = trunc(sysdate)" +
-                    "    )t LEFT JOIN KH_TASK k ON t.TASK_ID = k.ID JOIN USERINFO u ON k.USER_ID = u.ID) AS KHTG" +
+                    "    )t LEFT JOIN KH_TASK k ON t.TASK_ID = k.ID JOIN USERINFO u ON k.USER_ID = u.ID) AS KHTG,10 AS JCBDW" +
                     "       FROM dual";
             map = this.execSqlSingleResult(gjSql, null);
             LOGGER.info("告警信息查询成功");
