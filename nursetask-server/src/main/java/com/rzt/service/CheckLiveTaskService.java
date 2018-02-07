@@ -54,7 +54,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
     //看护稽查列表查询展示
     public Page<Map<String,Object>> listKhCheckPage(Pageable pageable, String lineId, String tddwId,String currentUserId) {
 
-        String sql = "select s.id,s.task_id,s.TASK_NAME,h.yhms,h.yhjb,h.XLZYCD,d.DEPTNAME,s.yh_id from CHECK_LIVE_site s " +
+        String sql = "select s.id,s.task_id,s.TASK_NAME,h.yhms,h.yhjb1 yhjb,h.XLZYCD,d.DEPTNAME,s.yh_id from CHECK_LIVE_site s " +
                 " left JOIN KH_YH_HISTORY h on s.YH_ID=h.id " +
                 " LEFT JOIN  RZTSYSDEPARTMENT d on d.ID = s.TDYW_ORGID where s.status=0 ";
 
@@ -71,11 +71,14 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
             String deptid  = map.get("DEPTID").toString();
             switch (roletype) {
                 case 0:
+                    sql += " and s.task_type=1 and trunc(s.CREATE_TIME)>trunc(sysdate-3) ";
                     break;
                 case 1:
+                    sql += " and trunc(s.CREATE_TIME)=trunc(sysdate) and s.task_type=2 ";
                     tddwId = deptid;
                     break;
                 case 2:
+                    sql += " and trunc(s.CREATE_TIME)=trunc(sysdate) and s.task_type=2 ";
                     tddwId = deptid;
                     break;
                 case 3:
@@ -93,10 +96,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
         //通道单位查询
         if (!StringUtils.isEmpty(tddwId)) {
             params.add(tddwId);
-            sql += " and trunc(s.CREATE_TIME)=trunc(sysdate) and s.task_type=2 ";
             sql += " AND s.TDYW_ORGID =?";
-        }else{
-            sql += " and s.task_type=1 and trunc(s.CREATE_TIME)>trunc(sysdate-3) ";
         }
         return execSqlPage(pageable, sql, params.toArray());
     }
@@ -504,5 +504,10 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
             listAll = execSql(sql1);
         }
         return listAll;
+    }
+
+    @Transactional
+    public void updateArriveTime(Long id) {
+        checkLiveTaskDetailRepository.updateArriveTime(id);
     }
 }

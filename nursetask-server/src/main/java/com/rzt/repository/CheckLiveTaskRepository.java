@@ -42,7 +42,7 @@ public interface CheckLiveTaskRepository extends JpaRepository<CheckLiveTask,Str
 
     @Modifying
     @Query(value = "insert into CHECK_LIVE_SITE (id,TASK_ID,TASK_TYPE,CREATE_TIME,TASK_NAME,STATUS,line_id,TDYW_ORGID,TDWX_ORGID,yh_id) " +
-            " select seq.nextval,id as taskid,?,sysdate,TASK_NAME,0,LINE_ID,TDYW_ORGID,WX_ORGID,YH_ID from KH_CYCLE WHERE KH_CYCLE.STATUS=1 ",nativeQuery = true)
+            " select seq.nextval,id as taskid,?,sysdate,TASK_NAME,0,LINE_ID,TDYW_ORGID,WX_ORGID,YH_ID from KH_CYCLE WHERE KH_CYCLE.STATUS!=2",nativeQuery = true)
     void generalKhSite(Integer taskType);
 
     @Modifying
@@ -61,4 +61,5 @@ public interface CheckLiveTaskRepository extends JpaRepository<CheckLiveTask,Str
     //@Query(value = "update check_live_task set USER_ID=?2,task_name = concat(?3,substr(task_name,instr(task_name,extract(year from sysdate)))) where id=?1",nativeQuery = true)
     @Query(value = "update check_live_task set USER_ID=?2 where id=?1",nativeQuery = true)
     void updateKhCheckUser(Long id, String userId, String userName);
+
 }

@@ -130,8 +130,8 @@ public class OfflinesController extends CurdController<RztSysUser, CommonService
                 "              MAX(ej.CREATE_TIME)                                                 AS CREATE_TIME, " +
                 "              nvl(to_char(MAX(ej.ONLINE_TIME), 'yyyy-MM-dd hh24:mi:ss'), '人员未上线') AS ONLINE_TIME " +
                 "            FROM MONITOR_CHECK_EJ ej " +
-                "            WHERE (ej.WARNING_TYPE = 8 OR ej.WARNING_TYPE = 2) " + s +
-                "            GROUP BY USER_ID) e LEFT JOIN USERINFO u ON e.USER_ID = u.ID AND u.USERDELETE=1) ch LEFT JOIN MONITOR_CHECK_EJ ce " +
+                "            WHERE (ej.WARNING_TYPE = 8 OR ej.WARNING_TYPE = 2) AND USER_ID !='null'  " + s +
+                "            GROUP BY USER_ID) e JOIN USERINFO u ON e.USER_ID = u.ID AND u.USERDELETE=1) ch LEFT JOIN MONITOR_CHECK_EJ ce " +
                 "    ON ch.USER_ID = ce.USER_ID AND ch.CREATE_TIME = ce.CREATE_TIME  " + s1;
         try {
             return WebApiResponse.success(this.service.execSqlPage(pageable, sql, listLike.toArray()));
