@@ -1041,7 +1041,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
     @Transactional
     public WebApiResponse updateTowerById(long id, String lon, String lat, String userId, String lineName, String detailId) {
         try {
-            //this.reposiotry.updateTowerById(id, lon, lat);
+            this.reposiotry.updateTowerById(id, lon, lat);
             Map<String, Object> map = new HashMap<>();
             try {
                 String sql = "select status from cm_tower where id =?";
