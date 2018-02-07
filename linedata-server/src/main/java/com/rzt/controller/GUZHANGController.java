@@ -57,5 +57,11 @@ public class GUZHANGController extends
 		return service.queryBySql(sql);
 	}
 
+	@ApiOperation(value = "whatYouWant",notes = "whatYouWant")
+	@PostMapping("whatYouWant")
+	public WebApiResponse whatYouWant(String whatYouWant){
+		return service.whatYouWant(whatYouWant);
+	}
+
 
 }
