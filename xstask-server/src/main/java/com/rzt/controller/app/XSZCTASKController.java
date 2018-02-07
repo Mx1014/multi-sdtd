@@ -187,7 +187,7 @@ public class XSZCTASKController extends
     }
 
     @GetMapping("shangbaoYh")
-    @ApiOperation(value = "上报隐患", notes = "上报隐患")
+    @ApiOperation(value = "上报隐患所需要的参数", notes = "上报隐患所需要的参数")
     public WebApiResponse shangbaoYh(Integer xslx, Long taskId,String userId) {
         try {
             return WebApiResponse.success(this.service.shangbaoYh(xslx, taskId,userId));
@@ -197,4 +197,15 @@ public class XSZCTASKController extends
         }
     }
 
+    @PostMapping("shangBaoQueXian")
+    @ApiOperation(value = "上报缺陷", notes = "上报缺陷")
+    public WebApiResponse shangBaoQueXian(Long taskId,String userId,Long towerId,Long processId,String qxMs,Integer qxType,Integer qxPosition,String pictureIds) {
+        try {
+            this.service.shangBaoQueXian(taskId, userId,towerId,processId,qxMs,qxType,qxPosition,pictureIds);
+            return WebApiResponse.success("成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("数据库请求失败" + e.getMessage());
+        }
+    }
 }

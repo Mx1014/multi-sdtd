@@ -20,6 +20,8 @@ import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.rzt.service.CurdService;
@@ -41,7 +43,8 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
     EntityManager entityManager;
     @Autowired
     private KhSiteRepository siteRepository;
-
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
     public Object listAllKhTask(KhTaskModel task, String status, Pageable pageable, int roleType, String yworg, String currentUserId,String home) {
         task = timeUtil(task);
         String result = "k.wx_org company,k.id as id, k.task_name as taskName,k.tdyw_org as yworg,k.CREATE_TIME as createTime,k.plan_start_time as startTime,k.plan_end_time as endTime,k.status as status,u.realname as userName,d.DEPTNAME as class,k.task_type as type,u.phone,u.loginstatus " +
@@ -159,7 +162,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
                 sql = "select k.id as id,k.status as status,k.task_name as task_name,k.plan_end_time as endTime from kh_task k where k.user_id = ? and trunc(k.plan_start_time)>=trunc(sysdate)"; //";
                 return WebApiResponse.success(this.execSql(sql, userId));
             } else {
-                sql = "select k.id as id,k.status as status,k.task_name as task_name,k.plan_end_time as endTime from kh_task k where k.user_id = ? and k.plan_start_time <=to_date(?,'yyyy-mm-dd hh24:mi:ss') and k.plan_end_time>=to_date(?,'yyyy-mm-dd hh24:mi:ss')";
+                    sql = "select k.id as id,k.status as status,k.task_name as task_name,k.plan_end_time as endTime from kh_task k where k.user_id = ? and trunc(k.plan_start_time) >=trunc(to_date(?,'yyyy-mm-dd hh24:mi:ss')) and trunc(k.plan_end_time)<=trunc(to_date(?,'yyyy-mm-dd hh24:mi:ss')+1)";
                 return WebApiResponse.success(this.execSql(sql, userId, startDate, startDate));
             }
         } catch (Exception e) {
@@ -466,9 +469,21 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
     }
 
     public void deleteTaskById(long id) {
-        this.reposiotry.deleteTaskById(id);
-        this.reposiotry.deleteYjById(id);
-        this.reposiotry.deleteEjById(id);
+        try {
+            this.reposiotry.deleteTaskById(id);
+            this.reposiotry.deleteYjById(id);
+            this.reposiotry.deleteEjById(id);
+            try {
+                String s = "TWO+" + id + "+2+*";
+                removeSomeKey(s);
+                String s1 = "ONE+" + id + "+2+*";
+                removeSomeKey(s1);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public WebApiResponse listTowerPoint(long id) {
@@ -510,6 +525,23 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("");
+        }
+    }
+    public void removeSomeKey(String s) {
+        //String s = "TWO+" + id + "+2+*";
+        RedisConnection connection = null;
+        try {
+            connection = redisTemplate.getConnectionFactory().getConnection();
+            connection.select(1);
+            Set<byte[]> keys = connection.keys(s.getBytes());
+            byte[][] ts = keys.toArray(new byte[][]{});
+            if (ts.length > 0) {
+                connection.del(ts);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            connection.close();
         }
     }
 }

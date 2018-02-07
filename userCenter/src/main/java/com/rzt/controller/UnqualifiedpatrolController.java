@@ -1,5 +1,6 @@
 package com.rzt.controller;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.RztSysUser;
 import com.rzt.service.CommonService;
@@ -9,11 +10,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("UNQUALIFIEDPATROL")
@@ -66,6 +69,60 @@ public class UnqualifiedpatrolController extends CurdController<RztSysUser, Comm
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("");
+        }
+    }
+
+    @GetMapping("/csInfo")
+    public WebApiResponse csInfo(Long taskId) {
+        try {
+            List<Map<String, Object>> result = new ArrayList<>();
+            String sql = "select YCDATA,CREATE_TIME from XS_ZC_EXCEPTION WHERE TASK_ID=?1";
+            List<Map<String, Object>> maps = this.service.execSql(sql, taskId);
+            maps.forEach(map ->{
+                Object ycdata = map.get("YCDATA");
+                JSONArray objects = JSONObject.parseArray(ycdata.toString());
+                for (int i=0;i<objects.size();i++){
+                    Map<String,Object> m = (Map<String, Object>) objects.get(i);
+                    result.add(m);
+                }
+                });
+            return WebApiResponse.success(result);
+        }catch (Exception e){
+            return WebApiResponse.erro("erro"+e.getMessage());
+        }
+    }
+
+    @GetMapping("/csPicture")
+    public WebApiResponse csPicture(Long taskId){
+        List<Map<String, Object>> result = new ArrayList<>();
+        try {
+
+            String sql = "select YCDATA from XS_ZC_EXCEPTION WHERE TASK_ID=?1";
+            List<Map<String, Object>> maps = this.service.execSql(sql, taskId);
+            StringBuffer ids = new StringBuffer();
+            for(int j = 0;j<maps.size();j++){
+                Map<String, Object> map = maps.get(j);
+                Object ycdata = map.get("YCDATA");
+                JSONArray objects = JSONObject.parseArray(ycdata.toString());
+                for (int i=0;i<objects.size();i++){
+                    Map<String,Object> m = (Map<String, Object>) objects.get(i);
+                    String id = (String) m.get("ID");
+                    if(i!=objects.size()-1){
+                        ids.append(id+", ");
+                    }else{
+                        ids.append(id);
+                    }
+                }
+                if(j!=maps.size()-1){
+                    ids.append(",");
+                }
+            }
+            String sql1 = "select FILE_PATH,PROCESS_NAME AS OPERATE_NAME ,CREATE_TIME from PICTURE_TOUR where PROCESS_ID in ("+ids.toString()+")";
+            List<Map<String, Object>> maps1 = this.service.execSql(sql1);
+            result.addAll(maps1);
+            return WebApiResponse.success(result);
+        }catch (Exception e){
+            return WebApiResponse.erro("erro"+e.getMessage());
         }
     }
 }

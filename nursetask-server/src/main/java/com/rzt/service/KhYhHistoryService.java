@@ -1041,21 +1041,30 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
     @Transactional
     public WebApiResponse updateTowerById(long id, String lon, String lat, String userId, String lineName, String detailId) {
         try {
-            //this.reposiotry.updateTowerById(id, lon, lat);
-            CmTowerUpdateRecord record = new CmTowerUpdateRecord();
-            record.setId(0l);
-            record.setLat(lat);
-            record.setLon(lon);
-            record.setLineName(lineName);
-            record.setTowerId(id);
-            record.setUserId(userId);
+//            this.reposiotry.updateTowerById(id, lon, lat);
+            Map<String, Object> map = new HashMap<>();
             try {
-                record.setDetailId(Long.parseLong(detailId));
-            } catch (NumberFormatException e) {
+                String sql = "select status from cm_tower where id =?";
+                map = this.execSqlSingleResult(sql, id);
+            } catch (Exception e) {
                 e.printStackTrace();
             }
-            record.setCreateTime(DateUtil.dateNow());
-            recordService.add(record);
+            if (map.get("STATUS") != null && map.get("STATUS").toString().equals("0")) {
+                CmTowerUpdateRecord record = new CmTowerUpdateRecord();
+                record.setId(0l);
+                record.setLat(lat);
+                record.setLon(lon);
+                record.setLineName(lineName);
+                record.setTowerId(id);
+                record.setUserId(userId);
+                try {
+                    record.setDetailId(Long.parseLong(detailId));
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                }
+                record.setCreateTime(DateUtil.dateNow());
+                recordService.add(record);
+            }
             return WebApiResponse.success("修改成功");
         } catch (Exception e) {
             e.printStackTrace();

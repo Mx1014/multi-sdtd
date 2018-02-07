@@ -8,12 +8,14 @@ import com.rzt.service.WarningOffPostUserService;
 import com.rzt.service.WarningOffPostUserTimeService;
 import com.rzt.util.WebApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("warning")
@@ -47,10 +49,10 @@ public class WarningController extends CurdController<OffPostUser,WarningOffPost
 						service.addUser(offPostUser);
 						//添加OffPostUserTime
 						timeService.addOffUserTime(offPostUser.getUserId(),offPostUser.getTaskId());
-						try {
+						/*try {
 							staffLine.khtg(offPostUser.getUserId(),offPostUser.getTaskId());
 						} catch (Exception e) {
-						}
+						}*/
 					}
 				}else{
 					//判断该人员状态是否改变
@@ -68,12 +70,12 @@ public class WarningController extends CurdController<OffPostUser,WarningOffPost
 						//更新脱岗人员状态
 						offUser.setStatus(offPostUser.getStatus());
 						service.updateOffUser(offUser);
-						if(offPostUser.getStatus()==1){
+						/*if(offPostUser.getStatus()==1){
 							try {
 								staffLine.khtg(offPostUser.getUserId(),offPostUser.getTaskId());
 							} catch (Exception e) {
 							}
-						}
+						}*/
 					}
 				}
 
@@ -85,9 +87,25 @@ public class WarningController extends CurdController<OffPostUser,WarningOffPost
 	}
 
 
-	@GetMapping("aa")
-	public void aa(){
-		System.out.println("成功——————————————");
+	/**
+	 * 定时查询 如果脱岗开始时间超过30分钟则正式记为脱岗
+	 */
+	@Scheduled(fixedRate = 60000)
+	public void changeTG(){
+		String sql = "SELECT * FROM WARNING_OFF_POST_USER_TIME WHERE END_TIME is NULL " +
+				"AND (sysdate-START_TIME)*24*60*60>1800 AND TIME_STATUS=0 ";
+		List<Map<String, Object>> maps = service.execSql(sql);
+		for (Map<String, Object> map :maps){
+			Long fk_task_id = Long.parseLong(map.get("FK_TASK_ID").toString());
+			String fk_user_id = (String) map.get("FK_USER_ID");
+			int i = service.updateTimeStatus(fk_task_id,fk_user_id);
+			if(i>0){
+				try {
+					staffLine.khtg(fk_user_id,fk_task_id);
+				} catch (Exception e) {
+				}
+			}
+		}
 	}
 
 }
