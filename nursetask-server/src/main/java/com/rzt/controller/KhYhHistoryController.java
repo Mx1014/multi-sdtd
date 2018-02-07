@@ -251,11 +251,26 @@ public class KhYhHistoryController extends
     //隐患采集记录
     @Transactional
     @GetMapping("listUpdateRecord")
-    public WebApiResponse listUpdateRecord(Pageable pageable) {
+    public WebApiResponse listUpdateRecord(Pageable pageable,String deptId) {
         try {
-            String sql = "SELECT U.REALNAME,L.V_LEVEL,t.NAME,R.*\n" +
-                    "FROM CM_TOWER_UPDATE_RECORD R LEFT JOIN RZTSYSUSER U ON U.ID = R.USER_ID\n" +
-                    "  LEFT JOIN CM_TOWER T ON T.ID = R.TOWER_ID LEFT JOIN CM_LINE L ON L.ID = T.LINE_ID where r.status !=1 order by r.create_time desc";
+            String s ="";
+            if (deptId != null && !deptId.equals("")){
+                s = " and u.DEPTID='"+deptId+"' ";
+            }
+            String sql = "SELECT\n" +
+                    "  zt.TASK_NAME,\n" +
+                    "  D.DEPTNAME,\n" +
+                    "  U.REALNAME,\n" +
+                    "  L.V_LEVEL,\n" +
+                    "  t.NAME,\n" +
+                    "  R.*\n" +
+                    " FROM CM_TOWER_UPDATE_RECORD R LEFT JOIN RZTSYSUSER U ON U.ID = R.USER_ID\n" +
+                    "  LEFT JOIN CM_TOWER T ON T.ID = R.TOWER_ID\n" +
+                    "  LEFT JOIN CM_LINE L ON L.ID = T.LINE_ID LEFT JOIN RZTSYSDEPARTMENT D ON D.ID =U.DEPTID \n" +
+                    "  LEFT JOIN XS_ZC_TASK_EXEC_DETAIL ED on ed.id = r.DETAIL_ID LEFT JOIN XS_ZC_TASK_EXEC TE ON ED.XS_ZC_TASK_EXEC_ID = TE.ID\n" +
+                    "  LEFT JOIN XS_ZC_TASK ZT ON ZT.ID = TE.XS_ZC_TASK_ID\n" +
+                    " WHERE r.status != 1\n" +s+
+                    " ORDER BY r.create_time DESC";
             return WebApiResponse.success(this.service.execSqlPage(pageable, sql));
         } catch (Exception e) {
             e.printStackTrace();
