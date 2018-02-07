@@ -20,7 +20,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
     @Autowired
     FirstLevelCommandServerEndpoint firstLevelCommandServerEndpoint;
 
-    @Scheduled(fixedDelay = 3000)
+    @Scheduled(fixedDelay = 30000)
     public void adminModule1() {
         Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
         sendMsg.forEach((sessionId, session) -> {
@@ -29,7 +29,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
         });
     }
 
-    @Scheduled(fixedDelay = 3000)
+    @Scheduled(fixedDelay = 30000)
     public void adminModule2() {
         Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
         sendMsg.forEach((sessionId, session) -> {
@@ -38,7 +38,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
         });
     }
 
-    @Scheduled(fixedDelay = 3000)
+    @Scheduled(fixedDelay = 30000)
     public void adminModule4() {
         Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
         sendMsg.forEach((sessionId, session) -> {
@@ -59,7 +59,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
         });
     }
 
-    @Scheduled(fixedDelay = 3000)
+    @Scheduled(fixedDelay = 30000)
     public void adminModule3() {
         Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
         sendMsg.forEach((sessionId, session) -> {
@@ -91,7 +91,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
         });
     }
 
-    @Scheduled(fixedDelay = 3000)
+    @Scheduled(fixedDelay = 30000)
     public void adminModule5() {
         Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
         sendMsg.forEach((sessionId, session) -> {
@@ -203,7 +203,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
         });
     }
 
-    @Scheduled(fixedDelay = 3000)
+    @Scheduled(fixedDelay = 30000)
     public void adminModule8() {
         Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
         sendMsg.forEach((sessionId, session) -> {
@@ -251,7 +251,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
         });
     }
 
-    @Scheduled(fixedDelay = 3000)
+    @Scheduled(fixedDelay = 30000)
     public void adminModule6() {
         Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
         sendMsg.forEach((sessionId, session) -> {
@@ -367,7 +367,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
         });
     }
 
-    @Scheduled(fixedDelay = 3000)
+    @Scheduled(fixedDelay = 30000)
     public void adminModule6_1() {
         Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
         sendMsg.forEach((sessionId, session) -> {
@@ -484,7 +484,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
         });
     }
 
-    @Scheduled(fixedDelay = 3000)
+    @Scheduled(fixedDelay = 30000)
     public void adminModule7() {
         Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
         sendMsg.forEach((sessionId, session) -> {

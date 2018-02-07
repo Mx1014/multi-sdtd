@@ -7,6 +7,7 @@
 package com.rzt.service;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.netflix.ribbon.proxy.annotation.Http;
 import com.rzt.entity.*;
 import com.rzt.eureka.MonitorService;
@@ -140,17 +141,32 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         }
     }
 
-    public WebApiResponse listCoordinate(String yhjb, String yhlb) {
+    public WebApiResponse listCoordinate(String yhjb, String yhlb, JSONObject josn) {
         try {
+            List params = new ArrayList<>();
             StringBuffer buffer = new StringBuffer();
-            List<Object> params = new ArrayList<>();
+            Map jsonObject = JSON.parseObject(josn.toString(), Map.class);
+            Integer roleType = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
+            Object tdId = jsonObject.get("DEPTID");
+            Object companyid = jsonObject.get("COMPANYID");
             buffer.append(" where s.YH_ID=y.ID ");
+            if (roleType == 1 || roleType == 2) {
+                buffer.append(" and y.YWORG_ID = " + tdId);
+            }
+            if (roleType == 3) {
+                buffer.append(" and y.WXORG_ID = " + companyid);
+            }
             if (yhjb != null && !yhjb.equals("")) {
-                buffer.append(" and yhjb1 like");
-                params.add("%" + yhjb + "%");
+                String[] split = yhjb.split(",");
+                String result="";
+                for (int i=0;i<split.length;i++){
+                    String s = "'"+split[i]+"'";
+                    result +=s+",";
+                }
+                buffer.append(" and y.yhjb1 in (" + result.substring(0,result.lastIndexOf(",")) + ")");
             }
             if (yhlb != null && !yhlb.equals("")) {
-                buffer.append(" and yhlb like");
+                buffer.append(" and yhlb like ?");
                 params.add("%" + yhlb + "%");
             }
             buffer.append(" and yhzt = 0 ");
@@ -159,7 +175,6 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             List<Map<String, Object>> list = this.execSql(sql, params.toArray());
             List<Object> list1 = new ArrayList<>();
             for (Map map : list) {
-                // System.out.println(map.get("JD").toString());
                 if (map != null && map.size() > 0 && map.get("JD") != null) {
                     list1.add(map);
                 }

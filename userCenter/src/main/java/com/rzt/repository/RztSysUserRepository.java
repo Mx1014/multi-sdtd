@@ -64,6 +64,6 @@ public interface RztSysUserRepository extends JpaRepository<RztSysUser, String> 
     @Transactional
     @Modifying
     @Query(value = "UPDATE MONITOR_CHECK_EJ SET ONLINE_TIME = sysdate" +
-            "  WHERE TASK_ID=?2 AND USER_ID=?1 ",nativeQuery = true)
+            "  WHERE TASK_ID=?2 AND USER_ID=?1 AND ONLINE_TIME is null",nativeQuery = true)
     int updateOnlineTime(String userId, long id);
 }

@@ -66,8 +66,11 @@ public class KhYhHistoryController extends
     @ApiOperation(notes = "地图撒坐标点", value = "地图撒坐标点")
     @GetMapping("/listCoordinate")
     @ResponseBody
-    public WebApiResponse listCoordinate(String yhjb, String yhlb) {
-        return this.service.listCoordinate(yhjb, yhlb);
+    public WebApiResponse listCoordinate(String yhjb, String yhlb,String currentUserId) {
+        HashOperations<String, Object, Object> hash = redisTemplate.opsForHash();
+        Object userInformation = hash.get("UserInformation", currentUserId);
+        JSONObject jsonObject = JSONObject.parseObject(userInformation.toString());
+        return this.service.listCoordinate(yhjb, yhlb,jsonObject);
     }
 
     @ApiOperation(notes = "地图查看隐患信息", value = "地图查看隐患信息")

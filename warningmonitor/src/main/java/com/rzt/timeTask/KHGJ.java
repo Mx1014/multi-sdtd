@@ -166,23 +166,25 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
         List<Map<String, Object>> maps = execSql(sql);
         // List<Object> list = new ArrayList<>();
         for (Map<String, Object> map : maps) {
-            Jedis jedis = jedisPool.getResource();
-            String key = "TWO+" + map.get("ID") + "+1+4+" + map.get("CM_USER_ID") + "+" + map.get("TD_ORG") + "+" + map.get("TASK_NAME");
-            jedis.select(1);
-            Date plan_start_time = (Date) map.get("PLAN_START_TIME");
-            try {
-                Long time = plan_start_time.getTime() - new Date().getTime();
-                if (time < 0) {
-                    //list.add(map.get("ID"));
-                    continue;
+            if(!StringUtils.isEmpty(map.get("CM_USER_ID"))||!map.get("CM_USER_ID").equals("")){
+                Jedis jedis = jedisPool.getResource();
+                String key = "TWO+" + map.get("ID") + "+1+4+" + map.get("CM_USER_ID") + "+" + map.get("TD_ORG") + "+" + map.get("TASK_NAME");
+                jedis.select(1);
+                Date plan_start_time = (Date) map.get("PLAN_START_TIME");
+                try {
+                    Long time = plan_start_time.getTime() - new Date().getTime();
+                    if (time < 0) {
+                        //list.add(map.get("ID"));
+                        continue;
+                    }
+                    time = time + 1800000L;
+                    jedis.psetex(key, time, "巡视未按规定时间接任务");
+                } catch (Exception e) {
+                    //System.out.println(e.getMessage());
+                    //throw new RuntimeException(e.getMessage()+"巡视人员未按规定时间接任务");
+                } finally {
+                    jedis.close();
                 }
-                time = time + 1800000L;
-                jedis.psetex(key, time, "巡视未按规定时间接任务");
-            } catch (Exception e) {
-                //System.out.println(e.getMessage());
-                //throw new RuntimeException(e.getMessage()+"巡视人员未按规定时间接任务");
-            } finally {
-                jedis.close();
             }
         }
 

@@ -136,6 +136,8 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
                     reason="手动退出";
                 }else if(typeReason==1){
                     reason="90分钟无操作";
+                }else{
+                    reason="90分钟";
                 }
 
                 if(startDate<currentDate && currentDate<endDate){
@@ -157,10 +159,10 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
                     }
                 }else if(new Date().getTime()<startDate){
                     String key = "";
-                    if (taskType==2){
+                    if (taskType==1){
                         key = "TWO+"+map.get("ID")+"+2+8+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
                         //resp.saveCheckEj(new SnowflakeIdWorker(0,0).nextId(),Long.valueOf(map.get("ID").toString()),2,8,map.get("USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString());
-                    }else if (taskType==1){
+                    }else if (taskType==2){
                         key = "TWO+"+map.get("ID")+"+1+2+"+map.get("CM_USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME");
                         //resp.saveCheckEj(new SnowflakeIdWorker(0,0).nextId(),Long.valueOf(map.get("ID").toString()),1,2,map.get("CM_USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString());
                     }else if(taskType==3){

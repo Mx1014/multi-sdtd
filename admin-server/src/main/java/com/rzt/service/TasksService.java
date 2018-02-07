@@ -31,21 +31,29 @@ public class TasksService extends CurdService<TimedTask,XSZCTASKRepository>{
     public WebApiResponse findTaskInfo(){
         Map<String, Object> map = null;
   try {
-      String sql = "SELECT ((SELECT count(1)" +
+      String sql = "     SELECT ((SELECT count(1)" +
               "         FROM XS_ZC_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate)) + (SELECT count(1)" +
               "      FROM KH_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate)) +" +
+              "     (SELECT ((SELECT count(1) FROM RZTSYSDEPARTMENT WHERE DEPTPID = '402881e6603a69b801603a6ab1d70000') * 12) +1" +
+              "       FROM dual) +" +
               "        (SELECT count(1)" +
               "         FROM CHECK_LIVE_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate))) AS SUM," +
               "     ((SELECT count(1)" +
               "     FROM XS_ZC_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STAUTS = 2)" +
               "     + (SELECT count(1)" +
               "      FROM KH_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STATUS = 2) +" +
+              "     (SELECT count(1) FROM TIMED_TASK_RECORD ti WHERE trunc(CHECK_TIME) = trunc(sysdate) AND ti.COMPLETE = TASKS) +" +
               "    (SELECT count(1)" +
               "    FROM CHECK_LIVE_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STATUS = 2)) AS COMPlETE," +
               "    ((SELECT count(1)" +
               "    FROM XS_ZC_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STAUTS = 0)" +
               "    + (SELECT count(1)" +
               "      FROM KH_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STATUS = 0) +" +
+              "     (SELECT" +
+              "  (SELECT ((SELECT count(1) FROM RZTSYSDEPARTMENT WHERE DEPTPID = '402881e6603a69b801603a6ab1d70000') * 12) +1 FROM dual) -" +
+              "  (SELECT count(1) FROM TIMED_TASK_RECORD ti WHERE trunc(CHECK_TIME) = trunc(sysdate)) +" +
+              "  (SELECT count(1) FROM RZTSYSDEPARTMENT WHERE DEPTPID = '402881e6603a69b801603a6ab1d70000' OR ID = '402881e6603a69b801603a6ab1d70000')" +
+              "   FROM dual  ) +" +
               "    (SELECT count(1)" +
               "    FROM CHECK_LIVE_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STATUS = 0)) AS WKS" +
               "    FROM dual";
@@ -76,26 +84,40 @@ public class TasksService extends CurdService<TimedTask,XSZCTASKRepository>{
                 //按部门查询并封装
                 String id = map.get("ID").toString();
                 String deptName = map.get("DEPTNAME").toString();
-                String sql = "SELECT ((SELECT count(1)" +
-                        "         FROM XS_ZC_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate)  AND TD_ORG = '"+id+"' )+  (SELECT count(1)" +
-                        "     FROM KH_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate)  AND YWORG_ID = '"+id+"' )+" +
-                        "        (SELECT count(1)" +
-                        "         FROM CHECK_LIVE_TASK t LEFT JOIN CHECK_LIVE_TASK_DETAIL d ON d.TASK_ID = t.ID" +
-                        "         WHERE trunc(t.PLAN_START_TIME) = trunc(sysdate) AND d.TDYW_ORGID = '"+id+"')) AS SUM," +
-                        "    ((SELECT count(1)" +
-                        "    FROM XS_ZC_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STAUTS = 2   AND TD_ORG = '"+id+"' )+" +
-                        "    (SELECT count(1)" +
-                        "      FROM KH_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STATUS = 2  AND YWORG_ID = '"+id+"')+" +
+                String sql = "     SELECT ((SELECT count(1)" +
+                        "        FROM XS_ZC_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate)  AND TD_ORG = '"+id+"' )+  (SELECT count(1)" +
+                        "    FROM KH_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate)  AND YWORG_ID = '"+id+"' )+" +
                         "    (SELECT count(1)" +
                         "    FROM CHECK_LIVE_TASK t LEFT JOIN CHECK_LIVE_TASK_DETAIL d ON d.TASK_ID = t.ID" +
-                        "    WHERE trunc(t.PLAN_START_TIME) = trunc(sysdate) AND t.STATUS = 2 AND d.TDYW_ORGID = '"+id+"')) AS COMPlETE," +
-                        "    ((SELECT count(1)" +
-                        "    FROM XS_ZC_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STAUTS = 0   AND TD_ORG = '"+id+"' )+" +
-                        "    (SELECT count(1)" +
-                        "      FROM KH_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STATUS = 0  AND YWORG_ID = '"+id+"')+" +
-                        "    (SELECT count(1)" +
-                        "    FROM CHECK_LIVE_TASK t LEFT JOIN CHECK_LIVE_TASK_DETAIL d ON d.TASK_ID = t.ID" +
-                        "    WHERE trunc(t.PLAN_START_TIME) = trunc(sysdate) AND t.STATUS = 0 AND d.TDYW_ORGID = '"+id+"')) AS WKS" +
+                        "    WHERE trunc(t.PLAN_START_TIME) = trunc(sysdate) AND d.TDYW_ORGID = '"+id+"') +" +
+                        "        (SELECT CASE WHEN ('"+id+"' = '402881e6603a69b801603a6ab1d70000')" +
+                        "          THEN 1" +
+                        "                WHEN ('"+id+"' != '402881e6603a69b801603a6ab1d70000')" +
+                        "                  THEN 12" +
+                        "                end" +
+                        "         FROM dual)) AS SUM," +
+                        "     ((SELECT count(1)" +
+                        "     FROM XS_ZC_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STAUTS = 2   AND TD_ORG = '"+id+"' )+" +
+                        "   (SELECT count(1)" +
+                        "     FROM KH_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STATUS = 2  AND YWORG_ID = '"+id+"')+" +
+                        "   (SELECT count(1)" +
+                        "   FROM CHECK_LIVE_TASK t LEFT JOIN CHECK_LIVE_TASK_DETAIL d ON d.TASK_ID = t.ID" +
+                        "   WHERE trunc(t.PLAN_START_TIME) = trunc(sysdate) AND t.STATUS = 2 AND d.TDYW_ORGID = '"+id+"') +" +
+                        "      (SELECT count(1) FROM TIMED_TASK_RECORD WHERE DEPT_ID = '402881e6603a69b801603a6ab1d70000' AND COMPLETE = TASKS)) AS COMPlETE," +
+                        "   ((SELECT count(1)" +
+                        "   FROM XS_ZC_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STAUTS = 0   AND TD_ORG = '"+id+"' )+" +
+                        "   (SELECT count(1)" +
+                        "     FROM KH_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STATUS = 0  AND YWORG_ID = '"+id+"')+" +
+                        "     (SELECT count(1)" +
+                        "     FROM CHECK_LIVE_TASK t LEFT JOIN CHECK_LIVE_TASK_DETAIL d ON d.TASK_ID = t.ID" +
+                        "     WHERE trunc(t.PLAN_START_TIME) = trunc(sysdate) AND t.STATUS = 0 AND d.TDYW_ORGID = '"+id+"') +" +
+                        "    (SELECT  ((SELECT CASE WHEN ('"+id+"' = '402881e6603a69b801603a6ab1d70000')" +
+                        "      THEN 1" +
+                        "                      WHEN ('"+id+"' != '402881e6603a69b801603a6ab1d70000')" +
+                        "                        THEN 12" +
+                        "                      end" +
+                        "               FROM dual) - ((SELECT count(1) FROM TIMED_TASK_RECORD t WHERE DEPT_ID = '"+id+"' AND trunc(t.CHECK_TIME) = trunc(sysdate)) +1))" +
+                        "     from dual )) AS WKS" +
                         "    FROM dual";
                 Map<String, Object> map1 = this.execSqlSingleResult(sql, null);
                 HashMap<String, Object> obj = new HashMap<>();
@@ -124,26 +146,40 @@ public class TasksService extends CurdService<TimedTask,XSZCTASKRepository>{
             if(null !=  deptId && !"".equals(deptId)){
                 //按部门查询并封装
                  //任务总数 饼图sql
-                String sql = "SELECT ((SELECT count(1)" +
-                        "         FROM XS_ZC_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate)  AND TD_ORG = '"+deptId+"' )+  (SELECT count(1)" +
-                        "     FROM KH_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate)  AND YWORG_ID = '"+deptId+"' )+" +
-                        "        (SELECT count(1)" +
-                        "         FROM CHECK_LIVE_TASK t LEFT JOIN CHECK_LIVE_TASK_DETAIL d ON d.TASK_ID = t.ID" +
-                        "         WHERE trunc(t.PLAN_START_TIME) = trunc(sysdate) AND d.TDYW_ORGID = '"+deptId+"')) AS SUM," +
-                        "  ((SELECT count(1)" +
-                        "    FROM XS_ZC_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STAUTS = 2   AND TD_ORG = '"+deptId+"' )+" +
+                String sql = "     SELECT ((SELECT count(1)" +
+                        "        FROM XS_ZC_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate)  AND TD_ORG = '"+deptId+"' )+  (SELECT count(1)" +
+                        "    FROM KH_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate)  AND YWORG_ID = '"+deptId+"' )+" +
                         "    (SELECT count(1)" +
-                        "      FROM KH_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STATUS = 2  AND YWORG_ID = '"+deptId+"')+" +
-                        "   (SELECT count(1)" +
                         "    FROM CHECK_LIVE_TASK t LEFT JOIN CHECK_LIVE_TASK_DETAIL d ON d.TASK_ID = t.ID" +
-                        "    WHERE trunc(t.PLAN_START_TIME) = trunc(sysdate) AND t.STATUS = 2 AND d.TDYW_ORGID = '"+deptId+"')) AS COMPlETE," +
-                        "  ((SELECT count(1)" +
-                        "    FROM XS_ZC_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STAUTS = 0   AND TD_ORG = '"+deptId+"' )+" +
-                        "    (SELECT count(1)" +
-                        "      FROM KH_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STATUS = 0  AND YWORG_ID = '"+deptId+"')+" +
+                        "    WHERE trunc(t.PLAN_START_TIME) = trunc(sysdate) AND d.TDYW_ORGID = '"+deptId+"') +" +
+                        "        (SELECT CASE WHEN ('"+deptId+"' = '402881e6603a69b801603a6ab1d70000')" +
+                        "          THEN 1" +
+                        "                WHEN ('"+deptId+"' != '402881e6603a69b801603a6ab1d70000')" +
+                        "                  THEN 12" +
+                        "                end" +
+                        "         FROM dual)) AS SUM," +
+                        "     ((SELECT count(1)" +
+                        "     FROM XS_ZC_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STAUTS = 2   AND TD_ORG = '"+deptId+"' )+" +
                         "   (SELECT count(1)" +
-                        "    FROM CHECK_LIVE_TASK t LEFT JOIN CHECK_LIVE_TASK_DETAIL d ON d.TASK_ID = t.ID" +
-                        "    WHERE trunc(t.PLAN_START_TIME) = trunc(sysdate) AND t.STATUS = 0 AND d.TDYW_ORGID = '"+deptId+"')) AS WKS" +
+                        "     FROM KH_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STATUS = 2  AND YWORG_ID = '"+deptId+"')+" +
+                        "   (SELECT count(1)" +
+                        "   FROM CHECK_LIVE_TASK t LEFT JOIN CHECK_LIVE_TASK_DETAIL d ON d.TASK_ID = t.ID" +
+                        "   WHERE trunc(t.PLAN_START_TIME) = trunc(sysdate) AND t.STATUS = 2 AND d.TDYW_ORGID = '"+deptId+"') +" +
+                        "      (SELECT count(1) FROM TIMED_TASK_RECORD WHERE DEPT_ID = '402881e6603a69b801603a6ab1d70000' AND COMPLETE = TASKS)) AS COMPlETE," +
+                        "   ((SELECT count(1)" +
+                        "   FROM XS_ZC_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STAUTS = 0   AND TD_ORG = '"+deptId+"' )+" +
+                        "   (SELECT count(1)" +
+                        "     FROM KH_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND STATUS = 0  AND YWORG_ID = '"+deptId+"')+" +
+                        "     (SELECT count(1)" +
+                        "     FROM CHECK_LIVE_TASK t LEFT JOIN CHECK_LIVE_TASK_DETAIL d ON d.TASK_ID = t.ID" +
+                        "     WHERE trunc(t.PLAN_START_TIME) = trunc(sysdate) AND t.STATUS = 0 AND d.TDYW_ORGID = '"+deptId+"') +" +
+                        "    (SELECT  ((SELECT CASE WHEN ('"+deptId+"' = '402881e6603a69b801603a6ab1d70000')" +
+                        "      THEN 1" +
+                        "                      WHEN ('"+deptId+"' != '402881e6603a69b801603a6ab1d70000')" +
+                        "                        THEN 12" +
+                        "                      end" +
+                        "               FROM dual) - ((SELECT count(1) FROM TIMED_TASK_RECORD t WHERE DEPT_ID = '"+deptId+"' AND trunc(t.CHECK_TIME) = trunc(sysdate)) +1))" +
+                        "     from dual )) AS WKS" +
                         "    FROM dual";
                 Map<String, Object> map1 = this.execSqlSingleResult(sql, null);
                 //饼图
@@ -190,6 +226,23 @@ public class TasksService extends CurdService<TimedTask,XSZCTASKRepository>{
                         "   FROM dual";
                 Map<String, Object> qtjcMap = this.execSqlSingleResult(qtjcSql, null);
                 obj.put("qtjcMap",qtjcMap);
+                String htjcSql = "     SELECT" +
+                        "        (SELECT CASE WHEN ('"+deptId+"' = '402881e6603a69b801603a6ab1d70000')" +
+                        "          THEN 1" +
+                        "                WHEN ('"+deptId+"' != '402881e6603a69b801603a6ab1d70000')" +
+                        "                  THEN 12" +
+                        "                end" +
+                        "         FROM dual) AS SUM," +
+                        "      ((SELECT CASE WHEN ('"+deptId+"' = '402881e6603a69b801603a6ab1d70000')" +
+                        "          THEN 1" +
+                        "          WHEN ('"+deptId+"' != '402881e6603a69b801603a6ab1d70000')" +
+                        "          THEN 12" +
+                        "          end" +
+                        "          FROM dual) - ((SELECT count(1) FROM TIMED_TASK_RECORD t WHERE DEPT_ID = '402881e6603a69b801603a729f320016' AND trunc(t.CHECK_TIME) = trunc(sysdate)) +1)) AS WKS," +
+                        "        (SELECT count(1) FROM TIMED_TASK_RECORD WHERE DEPT_ID = '"+deptId+"' AND COMPLETE = TASKS) AS COMPlETE" +
+                        "        from dual";
+                Map<String, Object> htjcMap = this.execSqlSingleResult(htjcSql, null);
+                obj.put("htjcMap",htjcMap);
                 LOGGER.info("三级页面任务详情查询成功");
             }
         }catch (Exception e){
@@ -215,22 +268,22 @@ public class TasksService extends CurdService<TimedTask,XSZCTASKRepository>{
 
         String sql = "    SELECT * FROM (" +
                 //巡视
-                "  SELECT to_char(x.ID),x.STAUTS AS STATUS,x.TASK_NAME,x.REAL_START_TIME,u.REALNAME,u.WORKTYPE,u.DEPTID AS DEPT" +
+                "  SELECT to_char(x.ID) AS TASKID,x.STAUTS AS STATUS,x.TASK_NAME,x.REAL_START_TIME,u.REALNAME,u.WORKTYPE,u.DEPTID AS DEPT" +
                 "  FROM XS_ZC_TASK x LEFT JOIN RZTSYSUSER u  ON u.ID = x.CM_USER_ID" +
                 "  WHERE trunc(x.REAL_START_TIME) = trunc(sysdate)" +
                 "  UNION ALL" +
                 //看护
-                "  SELECT to_char(k.ID),k.STATUS,k.TASK_NAME,k.REAL_START_TIME,u.REALNAME,u.WORKTYPE,u.DEPTID AS DEPT" +
+                "  SELECT to_char(k.ID) AS TASKID,k.STATUS,k.TASK_NAME,k.REAL_START_TIME,u.REALNAME,u.WORKTYPE,u.DEPTID AS DEPT" +
                 "  FROM KH_TASK k LEFT JOIN RZTSYSUSER u ON u.ID = k.USER_ID" +
                 "  WHERE trunc(k.REAL_START_TIME) = trunc(sysdate)" +
                 //现场稽查
                 "  UNION ALL" +
-                "  select to_char(t.id),t.STATUS,t.TASK_NAME,t.PLAN_START_TIME,u.REALNAME,u.WORKTYPE,u.DEPTID AS DEPT" +
+                "  select to_char(t.id) AS TASKID,t.STATUS,t.TASK_NAME,t.PLAN_START_TIME,u.REALNAME,u.WORKTYPE,u.DEPTID AS DEPT" +
                 "  from CHECK_LIVE_TASK t" +
                 "    LEFT JOIN  rztsysuser u on u.id=t.USER_ID WHERE trunc(t.PLAN_START_TIME) = trunc(sysdate)" +
                 "  UNION ALL" +
                 //后台稽查
-                "   SELECT t.ID,CASE  WHEN (t.TASKS = COMPLETE) THEN 2 WHEN (t.COMPLETE <t.TASKS) THEN 1 WHEN (t.COMPLETE = 0) THEN 0 END AS STATUS" +
+                "   SELECT t.ID AS TASKID,CASE  WHEN (t.TASKS = COMPLETE) THEN 2 WHEN (t.COMPLETE <t.TASKS) THEN 1 WHEN (t.COMPLETE = 0) THEN 0 END AS STATUS" +
                 "    ,CASE" +
                 "     WHEN (to_number(to_char(t.CHECK_TIME,'hh24')) >= to_number(w.START_TIME) ) AND" +
                 "          (to_number(to_char(t.CHECK_TIME,'hh24')) <= to_number(w.END_TIME) )THEN 'pc后台稽查任务'" +
