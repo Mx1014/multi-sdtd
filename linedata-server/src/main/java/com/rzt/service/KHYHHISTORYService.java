@@ -94,6 +94,15 @@ public class KHYHHISTORYService extends CurdService<KHYHHISTORY, KHYHHISTORYRepo
             sql += " and line_id= ?" + list.size();
         }
         if (yhjb != null && !"".equals(yhjb.trim())) {
+            if(yhjb.equals("sg")){
+                yhjb="施工隐患";
+            }if(yhjb.equals("yw")){
+                yhjb="异物隐患";
+            }if(yhjb.equals("jz")){
+                yhjb="建筑隐患";
+            }if(yhjb.equals("sm")){
+                yhjb="树木隐患 ";
+            }
             list.add("%"+yhjb+"%");
             sql += " and yhjb1 like ?" + list.size();
         }

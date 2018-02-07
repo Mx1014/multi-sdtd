@@ -75,7 +75,7 @@ public class DESUtils {
 
 public static void main(String[] args) {
 
-    System.out.println(getEncryptString("select td_org,td_org_name,score from index_pm order by to_number(score) desc"));
+    System.out.println(getEncryptString("select td_org,replace(td_org_name,'公司','') td_org_name,score from index_pm order by to_number(score) desc"));
     System.out.println(getEncryptString("sdtd"));
 //	System.out.println(getDecryptString("MyuOSAj6tbjyR9+19rwt9TOGiXrVrvM9ztCxeXkrdxS487+GWznJeQ=="));
 //    System.out.println(getEncryptString("wx"));
