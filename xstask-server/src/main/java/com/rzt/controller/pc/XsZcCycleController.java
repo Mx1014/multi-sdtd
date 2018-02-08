@@ -166,9 +166,9 @@ public class XsZcCycleController extends
 	 */
 	@ApiOperation(value = "pc端任务派发列表",notes = "pc端任务派发列表")
 	@GetMapping("listPlan")
-	public Object listPlan(Pageable pageable, XsTaskSCh xsTaskSch,String currentUserId) {
+	public Object listPlan(Pageable pageable, XsTaskSCh xsTaskSch,String currentUserId,String home) {
 		try {
-			return this.service.listPlan(pageable,xsTaskSch,currentUserId);
+			return this.service.listPlan(pageable,xsTaskSch,currentUserId,home);
 		} catch (Exception var7) {
 			return WebApiResponse.erro("数据查询失败" + var7.getMessage());
 		}
