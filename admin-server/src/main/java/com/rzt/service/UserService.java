@@ -111,7 +111,7 @@ public class UserService extends CurdService<TimedTask,XSZCTASKRepository>{
      * 各单位人员离线信息
      * @return
      */
-    public WebApiResponse findUserInfoTwo(String deptid) {
+    public WebApiResponse findUserInfoOne(String deptid) {
 
 
         String xsZxUser = " SELECT count(1) SM " +
@@ -204,16 +204,30 @@ public class UserService extends CurdService<TimedTask,XSZCTASKRepository>{
             Map<String, Object> qjcLxUserMap = this.execSqlSingleResult(qjcLxUser);
             // Map<String, Object> hjcZxUserMap = this.execSqlSingleResult(hjcZxUser);
             // Map<String, Object> hjcLxUserMap = this.execSqlSingleResult(hjcLxUser);
-            iocMap.put("XSZX", xsZxUserMap.get("SM").toString());
+            /*iocMap.put("XSZX", xsZxUserMap.get("SM").toString());
             iocMap.put("XSLX", xsLxUserMap.get("SM").toString());
             iocMap.put("KHZX", khZxUserMap.get("SM").toString());
             iocMap.put("KHLX", khLxUserMap.get("SM").toString());
             iocMap.put("QJCZX", qjcZxUserMap.get("SM").toString());
             iocMap.put("QJCLX", qjcLxUserMap.get("SM").toString());
             iocMap.put("HJCZX", a);
-            iocMap.put("HJCLX", b);
-            returnMap.put("data", iocMap);
-            return WebApiResponse.success(returnMap);
+            iocMap.put("HJCLX", b);*/
+            Integer xsZx =  Integer.parseInt(xsZxUserMap.get("SM") == null ? "0":xsZxUserMap.get("SM").toString());
+            Integer xsLx = Integer.parseInt(xsLxUserMap.get("SM") == null ? "0":xsLxUserMap.get("SM").toString());
+            Integer khZx = Integer.parseInt(khZxUserMap.get("SM") == null ? "0" : khZxUserMap.get("SM").toString());
+            Integer khLx = Integer.parseInt(khLxUserMap.get("SM") == null ? "0" : khLxUserMap.get("SM").toString());
+            Integer qjcZx = Integer.parseInt(qjcZxUserMap.get("SM") == null ? "0" : qjcZxUserMap.get("SM").toString());
+            Integer qjcLx = Integer.parseInt(qjcLxUserMap.get("SM") == null ? "0" : qjcLxUserMap.get("SM").toString());
+            int OFF_LINE  = (xsLx==null? 0 : xsLx) + (khLx == null ? 0:xsLx)/*+ b*/;
+                /*+(qjcLx == null ? 0 : qjcLx)*/
+
+            int LOGIN = (xsZx == null ? 0 :xsZx ) + (khZx == null ? 0 : khZx) /*+ (qjcZx == null ? 0 : qjcZx) + a*/;
+            HashMap<String, Object> hashMap = new HashMap<>();
+            hashMap.put("SUM", LOGIN + OFF_LINE);
+            hashMap.put("LOGIN", LOGIN);
+            hashMap.put("OFF_LINE", OFF_LINE);
+            //returnMap.put("data", iocMap);
+            return WebApiResponse.success(hashMap);
         } catch (Exception e) {
             e.printStackTrace();
         }

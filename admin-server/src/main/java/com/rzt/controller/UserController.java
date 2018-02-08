@@ -49,7 +49,7 @@ public class UserController extends CurdController<TimedTask, UserService> {
      */
     @GetMapping("/findUserSum")
     public WebApiResponse findUserInfoTwo(String deptId) {
-        return userService.findUserInfoTwo(deptId);
+        return userService.findUserInfoOne(deptId);
     }
 
     /**
