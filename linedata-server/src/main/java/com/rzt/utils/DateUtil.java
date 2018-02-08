@@ -534,8 +534,6 @@ public class DateUtil {
 		System.out.println(format(new Date(),"MM/dd"));
 	}
 
-
-
 	public static String timeUtil(int i) {
 		String date = "";
 		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
