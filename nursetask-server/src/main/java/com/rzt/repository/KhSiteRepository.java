@@ -89,7 +89,7 @@ public interface KhSiteRepository extends JpaRepository<KhSite, String> {
         //SELECT id,VTYPE,LINE_NAME,SECTION,status,line_id,KH_RANGE,to_date(KHXQ_TIME,'yyyy-mm-dd hh24:mi:ss'),to_date(create_time,'yyyy-mm-dd hh24:mi:ss'),KHFZR_ID1,KHFZR_ID2,KHDY_ID1,KHDY_ID2,TDYW_ORG,YH_ID,TASK_NAME,COUNT FROM KH_SITE  where id=?1
     KhSite findSite(long id);
 
-    @Query(value = "select * from KH_SITE WHERE STATUS=1",nativeQuery = true)
+    @Query(value = "select S.* from KH_SITE S LEFT JOIN RZTSYSUSER U ON U.ID = S.USER_ID WHERE S.STATUS=1 AND U.USERDELETE=1",nativeQuery = true)
     List<KhSite> findSites();
 
     @Modifying
@@ -105,4 +105,8 @@ public interface KhSiteRepository extends JpaRepository<KhSite, String> {
     @Query(value = "update kh_yh_history set wxorg_id=?2,TDWX_ORG=?3 where id=?1", nativeQuery = true)
     @Transactional
     void updateYH3(Long yhId, String cid, String cname);
+    @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM KH_SITE WHERE ID IN (select S.ID from KH_SITE S LEFT JOIN RZTSYSUSER U ON U.ID = S.USER_ID WHERE S.STATUS=1 AND U.USERDELETE=0)",nativeQuery = true)
+    void deleteSite();
 }

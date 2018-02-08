@@ -25,7 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
@@ -216,7 +215,7 @@ public class GUZHANGService extends CurdService<GUZHANG,GUZHANGRepository> {
 
     }
 
-    public WebApiResponse whatYouWant(String whatYouWant) {
+/*    public WebApiResponse whatYouWant(String whatYouWant) {
         ValueOperations<String, Object> stringObjectValueOperations = redisTemplate.opsForValue();
         Map<String, Object> result = new HashMap<>();
 
@@ -238,6 +237,34 @@ public class GUZHANGService extends CurdService<GUZHANG,GUZHANGRepository> {
             }else{
                 sql = o.toString();
             }
+            List params = new ArrayList();
+            if(jsonObject.containsKey("params")){
+                params = jsonObject.getObject("params", List.class);
+            }
+            List<Map<String, Object>> list = execSql(sql, params.toArray());
+            result.put(what,list);
+        }
+
+        return WebApiResponse.success(result);
+
+    }*/
+    public WebApiResponse whatYouWant(String whatYouWant) {
+        Map<String, Object> result = new HashMap<>();
+
+        JSONArray objects = JSON.parseArray(whatYouWant);
+        for (int x = 0; x < objects.size(); x++) {
+            JSONObject jsonObject = objects.getJSONObject(x);
+            String what = jsonObject.getString("want");
+
+            String sql = "";
+
+            try {
+                Map<String, Object> map = execSqlSingleResult("select * from cm_sql where sql_desc=?", what);
+                sql = map.get("SQL_STR").toString();
+            } catch (Exception e) {
+                LOGGER.error("获取的值不唯一!",e);
+            }
+
             List params = new ArrayList();
             if(jsonObject.containsKey("params")){
                 params = jsonObject.getObject("params", List.class);

@@ -35,7 +35,7 @@ public interface CheckLiveTaskRepository extends JpaRepository<CheckLiveTask,Str
  void deleteById(long id);
 
  @Modifying
- @Query(value = "update check_live_task set WPTS=?2,status=1,real_start_time=sysdate where id =?1",nativeQuery = true)
+ @Query(value = "update check_live_task set WPTS=?2,status=1,real_start_time=sysdate where id =?1 and real_start_time is not null ",nativeQuery = true)
  void updateWptsById(Long id, String str);
 
     CheckLiveTask findById(Long id);
