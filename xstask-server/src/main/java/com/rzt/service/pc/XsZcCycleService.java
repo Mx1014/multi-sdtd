@@ -361,7 +361,7 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
      * @date 2017/12/14 14:17
      * @author nwz
      */
-    public Object listPlan(Pageable pageable, XsTaskSCh xsTaskSch, String currentUserId) throws Exception {
+    public Object listPlan(Pageable pageable, XsTaskSCh xsTaskSch, String currentUserId,String home) throws Exception {
         String authoritySql = userAuthority(currentUserId);//把权限的sql给我
 
         StringBuffer sqlBuffer = new StringBuffer();
@@ -376,7 +376,11 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
             arrList.add(startDate);
             arrList.add(startDate);
         } else {
-            sqlBuffer.append(" and PLAN_END_TIME >= trunc(sysdate) and  PLAN_START_TIME <= trunc(sysdate+1)");
+            if (null != home && home.equals("1")){
+                sqlBuffer.append(" and PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= trunc(sysdate)");
+            }else {
+                sqlBuffer.append(" and PLAN_END_TIME >= trunc(sysdate) and  PLAN_START_TIME <= trunc(sysdate+1)");
+            }
         }
 
 

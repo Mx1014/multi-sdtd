@@ -51,14 +51,15 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
                 " from kh_task k  left join rztsysuser u on u.id = k.user_id left join RZTSYSDEPARTMENT d on u.classname = d.id  ";
         List params = new ArrayList<>();
         StringBuffer buffer = new StringBuffer();
-        buffer.append(" where k.plan_start_time <= trunc(to_date(?,'YYYY-MM-DD hh24:mi')+1) and plan_end_time>= trunc(to_date(?,'YYYY-MM-DD hh24:mi')) ");
-        params.add(task.getPlanEndTime());
-        params.add(task.getPlanStartTime());
-        /*if (home!=null && home.equals("1")){
+        if (home!=null && home.equals("1")){
             buffer = new StringBuffer();
-            buffer.append(" where  trunc(k.plan_start_time) = trunc(sysdate)");
+            buffer.append(" where  PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= trunc(sysdate)");
             params = new ArrayList<>();
-        }*/
+        }else {
+            buffer.append(" where k.plan_start_time <= trunc(to_date(?,'YYYY-MM-DD hh24:mi')+1) and plan_end_time>= trunc(to_date(?,'YYYY-MM-DD hh24:mi')) ");
+            params.add(task.getPlanEndTime());
+            params.add(task.getPlanStartTime());
+        }
         //查询框
         if (task.getTaskName() != null && !task.getTaskName().equals("")) {
             task.setTaskName("%" + task.getTaskName() + "%");
