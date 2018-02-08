@@ -8,10 +8,7 @@ import org.joda.time.*;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TimeZone;
+import java.util.*;
 
 /**
  * joda日期工具类
@@ -35,6 +32,7 @@ public class DateUtil {
 	public static final String                FORMAT_TIME_MINUTE = "yyyy-MM-dd HH:mm";            //默认时间格式
 
 	public static final String                FORTER_DATE        = "yyyy-MM-dd";                  //默认日期格式
+	private static final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	private static final Map<Integer, String> WEEK_DAY           = new HashMap<Integer, String>();
 	static {
@@ -536,4 +534,50 @@ public class DateUtil {
 		System.out.println(format(new Date(),"MM/dd"));
 	}
 
+
+
+	public static String timeUtil(int i) {
+		String date = "";
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+		Calendar c = Calendar.getInstance();
+		c.setTime(new Date());
+		Date m = c.getTime();
+		String mon = df.format(m);
+		if (i == 1) {
+			date = mon + " 00:00";
+		} else {
+			date = mon + " 23:59";
+		}
+		//  task.setPlanEndTime(df.format(new Date()) + " 23:59");
+		return date;
+	}
+
+
+	public static Date parseDate(String dateTime) {
+		try {
+			return formatter.parse(dateTime);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return new Date();
+	}
+
+
+	public static final Date getNowDate() {
+		Calendar cal = Calendar.getInstance();
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String cdate = sdf.format(cal.getTime());
+		return cal.getTime();
+	}
+
+	public static Date addDate(Date date, double hour){
+		Calendar cal = Calendar.getInstance();
+		long hour1 =(long) (hour * 3600000);
+		long l = date.getTime() + hour1;
+		cal.setTimeInMillis(l);
+		date = cal.getTime();
+		// return format.format(date);
+		return date;
+	}
 }
