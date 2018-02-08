@@ -416,7 +416,7 @@ public class TasksService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository
 
 
             //正常
-            String xszc = " SELECT " + xsField + " td_org,nvl(sum(decode(stauts, 0, 1, 0)),0) XSWKS,nvl(sum(decode(stauts, 1, 1, 0)),0) XSJXZ,nvl(sum(decode(stauts, 2, 1, 0)),0) XSYWC FROM XS_ZC_TASK WHERE PLAN_END_TIME >= trunc(?1) and  PLAN_START_TIME <= trunc(?1+1) " + xsCondition;
+            String xszc = " SELECT " + xsField + " td_org,nvl(sum(decode(stauts, 0, 1, 0)),0) XSWKS,nvl(sum(decode(stauts, 1, 1, 0)),0) XSJXZ,nvl(sum(decode(stauts, 2, 1, 0)),0) XSYWC FROM XS_ZC_TASK  WHERE PLAN_END_TIME >= trunc(?1) and  is_delete = 0  and  PLAN_START_TIME <= trunc(?1+1) " + xsCondition;
             List<Map<String, Object>> xszcMap = this.execSql(xszc, day);
             //保电
             String txbd = " SELECT " + xsField + " td_org,nvl(sum(decode(stauts, 0, 1, 0)),0) XSWKS,nvl(sum(decode(stauts, 1, 1, 0)),0) XSJXZ,nvl(sum(decode(stauts, 2, 1, 0)),0) XSYWC FROM XS_txbd_TASK WHERE PLAN_END_TIME >= trunc(?1) and  PLAN_START_TIME <= trunc(?1+1) " + xsCondition;
@@ -462,79 +462,139 @@ public class TasksService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository
 
 
     public WebApiResponse deptDaZhu1() {
-        try {
-            Map map = new HashMap();
+        /**
+         * 正常巡视未开始
+         */
+        String zcXsWks = "SELECT count(1)  " +
+                "FROM XS_ZC_TASK " +
+                "WHERE is_delete = 0 and STAUTS = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= trunc(sysdate)";
+        /**
+         * 保电巡视未开始
+         */
+        String bdXsWks = "SELECT count(1)  " +
+                "FROM XS_TXBD_TASK " +
+                "WHERE STAUTS = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= trunc(sysdate)";
+        /**
+         * 看护未开始
+         */
+        String khWks = "SELECT count(1)  " +
+                "FROM KH_TASK " +
+                "WHERE STATUS = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= trunc(sysdate)";
+        /**
+         * 现场稽查未开始
+         */
+        String xcJcWks = "SELECT count(1)  " +
+                "FROM CHECK_LIVE_TASK " +
+                "WHERE STATUS = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= trunc(sysdate)";
+        /**
+         * 正常巡视进行中
+         */
+        String zcXsJxz = "SELECT count(1)  " +
+                "FROM XS_ZC_TASK " +
+                "WHERE is_delete = 0 and STAUTS = 1 AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
+        /**
+         * 保电巡视进行中
+         */
+        String bdXsJxz = "SELECT count(1)  " +
+                "FROM XS_TXBD_TASK " +
+                "WHERE STAUTS = 1 AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
+        /**
+         * 看护进行中
+         */
+        String khJxz = "SELECT count(1)  " +
+                "FROM KH_TASK " +
+                "WHERE STATUS = 1 AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
+        /**
+         * 现场稽查进行中
+         */
+        String xcJcJxz = "SELECT count(1)  " +
+                "FROM CHECK_LIVE_TASK " +
+                "WHERE STATUS = 1  AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= trunc(sysdate)";
+        /**
+         * 正常巡视已完成
+         */
+        String zcXsYwc = "SELECT count(1)  " +
+                "FROM XS_ZC_TASK " +
+                "WHERE is_delete = 0 and STAUTS = 2 AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
+        /**
+         * 保电巡视已完成
+         */
+        String bdXsYwc = "SELECT count(1)  " +
+                "FROM XS_TXBD_TASK " +
+                "WHERE STAUTS = 2 AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
+        /**
+         * 看护已完成
+         */
+        String khYwc = "SELECT count(1)  " +
+                "FROM KH_TASK " +
+                "WHERE STATUS = 2 AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
+        /**
+         *现场稽查已完成
+         */
+        String xcJcYwc = "SELECT count(1)  " +
+                "FROM CHECK_LIVE_TASK " +
+                "WHERE STATUS = 2 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= trunc(sysdate)";
+
+           /* String sql1 = "select * from(SELECT CREATETIME FROM TIMED_TASK where THREEDAY=1 ORDER BY CREATETIME DESC ) where ROWNUM=1";
+            List<Map<String, Object>> maps = this.execSql(sql1);
+            Date createtime = DateUtil.parseDate(maps.get(0).get("CREATETIME").toString());
+            Date nextTime = DateUtil.addDate(createtime, 72);*/
+        /**
+         *后台稽查未完成
+         */
+        String htJcWks = "SELECT count(*) FROM TIMED_TASK_RECORD WHERE CREATE_TIME >= trunc(sysdate) and (TASKS>COMPLETE)";
+        /**
+         *后台稽查进行中
+         */
+//            String htJcYks = "SELECT count(1) FROM TIMED_TASK t WHERE  t.CREATETIME >  ( select sysdate - (3 * 24 * 60 * 60 + 60 * 60) / (1 * 24 * 60 * 60)   from  dual) AND  THREEDAY  = 1 AND t.STATUS = 1";
+        String htJcYks = "SELECT count(DISTINCT (DEPT_ID)) FROM TIMED_TASK_RECORD";
+        /**
+         *后台稽查已完成
+         */
+        String htJcYwc = "SELECT count(*) FROM TIMED_TASK_RECORD WHERE CREATE_TIME >= trunc(sysdate) and (TASKS=COMPLETE)";
+        String sql = "SELECT " +
+                "(" + zcXsWks + ")+(" + bdXsWks + ") as XsWks," +
+                "(" + zcXsJxz + ")+(" + bdXsJxz + ") as XsJxz," +
+                "(" + zcXsYwc + ")+(" + bdXsYwc + ") as XsYwc," +
+                "(" + khJxz + ") as khJxz," +
+                "(" + khWks + ") as khWks, " +
+                "(" + khYwc + ") as khYwc," +
+                "(" + xcJcJxz + ") as xcJcJxz," +
+                "(" + xcJcWks + ") as xcJcWks," +
+                "(" + xcJcYwc + ") as xcJcYwc, " +
+                "(" + htJcWks + ") as htJcWks, " +
+                "(" + htJcYks + ") as htJcYks, " +
+                "(" + htJcYwc + ") as htJcYwc " +
+                "  FROM dual";
+        List<Map<String, Object>> list = this.execSql(sql);
+        Map map = new HashMap();
+        map.put("data", list);
+        map.put("adminModule", "6_1");
 
 
-            Date day = new Date();
+        if(null != list && list.size() ==1){
+            Map<String, Object> map1 = list.get(0);
+            Integer WKS = Integer.parseInt(map1.get("KHWKS").toString()) +
+                       Integer.parseInt(map1.get("XCJCWKS").toString())+
+                       Integer.parseInt(map1.get("HTJCWKS").toString())+
+                    Integer.parseInt(map1.get("XSWKS").toString());
 
-            String xsCondition = "group by td_org";
-            String khCondition = "group by u.deptid ";
-            String xsField = "td_org";
-            String khField = "u.deptid";
+            Integer JXZ = Integer.parseInt(map1.get("XCJCJXZ").toString())+
+                    Integer.parseInt(map1.get("KHJXZ").toString())+
+                    Integer.parseInt(map1.get("HTJCYKS").toString())+
+                    Integer.parseInt(map1.get("XSJXZ").toString());
 
-
-            //正常
-            String xszc = " SELECT " + xsField + " td_org,nvl(sum(decode(stauts, 0, 1, 0)),0) XSWKS,nvl(sum(decode(stauts, 1, 1, 0)),0) XSJXZ,nvl(sum(decode(stauts, 2, 1, 0)),0) XSYWC FROM XS_ZC_TASK WHERE PLAN_END_TIME >= trunc(?1) and  PLAN_START_TIME <= trunc(?1+1) " + xsCondition;
-            List<Map<String, Object>> xszcMap = this.execSql(xszc, day);
-            //保电
-            String txbd = " SELECT " + xsField + " td_org,nvl(sum(decode(stauts, 0, 1, 0)),0) XSWKS,nvl(sum(decode(stauts, 1, 1, 0)),0) XSJXZ,nvl(sum(decode(stauts, 2, 1, 0)),0) XSYWC FROM XS_txbd_TASK WHERE PLAN_END_TIME >= trunc(?1) and  PLAN_START_TIME <= trunc(?1+1) " + xsCondition;
-            List<Map<String, Object>> txbdMap = this.execSql(txbd, day);
-            //看护
-            String kh = "SELECT " + khField + " td_org,nvl(sum(decode(status, 0, 1, 0)),0) KHWKS,nvl(sum(decode(status, 1, 1, 0)),0) KHJXZ,nvl(sum(decode(status, 2, 1, 0)),0) KHYWC FROM KH_TASK k JOIN RZTSYSUSER u ON k.USER_ID = u.ID and PLAN_END_TIME >= trunc(?1) and  PLAN_START_TIME <= trunc(?1+1) " + khCondition;
-            List<Map<String, Object>> khMap = this.execSql(kh, day);
-            //通道单位
-            List<Map<String, Object>> deptnameList;
-            String deptname = " SELECT t.ID,t.DEPTNAME FROM RZTSYSDEPARTMENT t WHERE t.DEPTSORT IS NOT NULL ORDER BY t.DEPTSORT ";
-            deptnameList = this.execSql(deptname);
-
-            Map<String, Object> map1 = new HashMap();
-            Map<String, Object> map2 = new HashMap();
-            Map<String, Object> map3 = new HashMap();
-            for (Map<String, Object> xs : xszcMap) {
-                map1.put(xs.get("TD_ORG").toString(), xs);
-            }
-            for (Map<String, Object> tx : txbdMap) {
-                map2.put(tx.get("TD_ORG").toString(), tx);
-            }
-            for (Map<String, Object> kha : khMap) {
-                map3.put(kha.get("TD_ORG").toString(), kha);
-            }
-            for (Map<String, Object> dept : deptnameList) {
-                String deptId = dept.get("ID").toString();
-                HashMap xsTask = (HashMap) map1.get(deptId);
-                HashMap txTask = (HashMap) map2.get(deptId);
-                HashMap khTask = (HashMap) map3.get(deptId);
-                dept.put("wks", Integer.parseInt(xsTask == null ? "0" : xsTask.get("XSWKS").toString()) + Integer.parseInt(txTask == null ? "0" : txTask.get("XSWKS").toString()) + Integer.parseInt(khTask == null ? "0" : khTask.get("KHWKS").toString()));
-                dept.put("jxz", Integer.parseInt(xsTask == null ? "0" : xsTask.get("XSJXZ").toString()) + Integer.parseInt(txTask == null ? "0" : txTask.get("XSJXZ").toString()) + Integer.parseInt(khTask == null ? "0" : khTask.get("KHJXZ").toString()));
-                dept.put("ywc", Integer.parseInt(xsTask == null ? "0" : xsTask.get("XSYWC").toString()) + Integer.parseInt(txTask == null ? "0" : txTask.get("XSYWC").toString()) + Integer.parseInt(khTask == null ? "0" : khTask.get("KHYWC").toString()));
-            }
-            int WKS = 0;
-            int JXZ  = 0;
-            int YWC = 0;
-            for (Map<String, Object> dept : deptnameList) {
-                String deptId = dept.get("ID").toString();
-
-
-                Integer wks = (Integer) dept.get("wks");
-                WKS+= wks == null ? 0 :wks;
-
-                Integer jxz = (Integer) dept.get("jxz");
-                JXZ+= jxz == null?0:jxz;
-
-                Integer ywc = (Integer) dept.get("ywc");
-                YWC += ywc == null ? 0 : ywc;
-            }
+            Integer YWC = Integer.parseInt(map1.get("XSYWC").toString())+
+                    Integer.parseInt(map1.get("KHYWC").toString())+
+                    Integer.parseInt(map1.get("XCJCYWC").toString())+
+                    Integer.parseInt(map1.get("HTJCYWC").toString());
             HashMap<String, Object> stringObjectHashMap = new HashMap<>();
             stringObjectHashMap.put("WKS",WKS);
             stringObjectHashMap.put("JXZ",JXZ);
             stringObjectHashMap.put("YWC",YWC);
-
             return WebApiResponse.success(stringObjectHashMap);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return WebApiResponse.erro("erro");
         }
+        return WebApiResponse.success(list);
 
 }
 

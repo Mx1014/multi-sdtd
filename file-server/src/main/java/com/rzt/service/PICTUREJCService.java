@@ -176,28 +176,4 @@ public class PICTUREJCService extends CurdService<PICTUREJC,PICTUREJCRepository>
         return result;
 
     }
-
-    public Map<String,Object> getDocBytaskId( String date, Integer fileType) {
-        Map<String, Object> result = new HashMap<>();
-        List<Object> list = new ArrayList();
-        String s = "";
-
-        if(fileType!=null){
-            list.add(fileType);
-            s+=" AND　FILE_TYPE=?"+list.size();
-        }else{
-            s+=" AND  (FILE_TYPE=4 OR FILE_TYPE=5)";
-        }
-        if(!StringUtils.isEmpty(date)){
-            list.add(date);
-            s+=" AND trunc(to_date(?"+list.size()+",'yyyy-mm-dd hh24:mi:ss')) =trunc(CREATE_TIME) ";
-        }else{
-            s+=" AND trunc(CREATE_TIME)=trunc(sysdate-1) ";
-        }
-        String sql = " SELECT * FROM PICTURE_JC WHERE 1=1"+s;
-        List<Map<String, Object>> maps = execSql(sql, list.toArray());
-        result.put("success",true);
-        result.put("object",maps);
-        return result;
-    }
 }
