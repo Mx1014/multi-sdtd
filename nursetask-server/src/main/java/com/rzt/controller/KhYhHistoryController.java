@@ -66,11 +66,11 @@ public class KhYhHistoryController extends
     @ApiOperation(notes = "地图撒坐标点", value = "地图撒坐标点")
     @GetMapping("/listCoordinate")
     @ResponseBody
-    public WebApiResponse listCoordinate(String yhjb, String yhlb,String currentUserId) {
+    public WebApiResponse listCoordinate(String yhjb, String yhlb, String currentUserId) {
         HashOperations<String, Object, Object> hash = redisTemplate.opsForHash();
         Object userInformation = hash.get("UserInformation", currentUserId);
         JSONObject jsonObject = JSONObject.parseObject(userInformation.toString());
-        return this.service.listCoordinate(yhjb, yhlb,jsonObject);
+        return this.service.listCoordinate(yhjb, yhlb, jsonObject);
     }
 
     @ApiOperation(notes = "地图查看隐患信息", value = "地图查看隐患信息")
@@ -183,79 +183,51 @@ public class KhYhHistoryController extends
 
     @ApiOperation(value = "隐患台账图片展示", notes = "隐患台账图片展示")
     @GetMapping("addadd")
-    public Map addadd() {
-        Map message = new HashMap<String, Object>();
-        List<Map<String, Object>> resList = new ArrayList<>();
-        String sql1 = "SELECT count(1) AS sum,yj.DEPTID FROM MONITOR_CHECK_YJ yj LEFT JOIN RZTSYSUSER u ON yj.USER_ID=u.ID " +
-                " WHERE trunc(yj.CREATE_TIME)=trunc(sysdate) AND u.USERDELETE=1 " +
-                "    AND yj.STATUS =0  AND yj.USER_ID IS NOT NULL GROUP BY yj.DEPTID";
-        //查询处理中
-        String sql2 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =1  AND USER_ID IS NOT NULL GROUP BY DEPTID  ";
-        //查询已处理
-        String sql3 = "SELECT count(1) AS sum,DEPTID FROM MONITOR_CHECK_YJ WHERE trunc(CREATE_TIME)=trunc(sysdate) AND STATUS =2  AND USER_ID IS NOT NULL GROUP BY DEPTID  ";
-        List<Map<String, Object>> maps = this.service.execSql(sql1);
-        List<Map<String, Object>> maps1 = this.service.execSql(sql2);
-        List<Map<String, Object>> maps2 = this.service.execSql(sql3);
-        String deptnameSql = " SELECT t.ID,t.DEPTNAME FROM RZTSYSDEPARTMENT t WHERE t.DEPTSORT IS NOT NULL ORDER BY t.DEPTSORT ";
-        List<Map<String, Object>> dept = this.service.execSql(deptnameSql);
-
-        for (Map<String, Object> map : dept) {
-            Map<String, Object> sumMap = new HashMap<String, Object>();
-            String id = (String) map.get("ID");
-            String deptName = (String) map.get("DEPTNAME");
-            if (deptName.contains("本部")) {
-                deptName = "本部";
+    public Object addadd() {
+        int a = 0;
+        int b = 0;
+        String user = "SELECT * FROM WORKING_TIMED ";
+        List<Map<String, Object>> maps = this.service.execSql(user);
+        for (Map map : maps) {
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+            String format = formatter.format(new Date());
+            String s = format + " 00:00:00";
+            String userId = "";
+            String start = map.get("START_TIME").toString();
+            String end = map.get("END_TIME").toString();
+            Date nowDate = DateUtil.getNowDate();
+            if (nowDate.getTime() >= DateUtil.addDate(DateUtil.parseDate(s), Double.parseDouble(start)).getTime() && nowDate.getTime() <= DateUtil.addDate(DateUtil.parseDate(s), Double.parseDouble(end)).getTime()) {
+                userId = map.get("DAY_USER").toString();
             } else {
-                deptName = deptName.substring(0, deptName.length() - 2);
+                userId = map.get("NIGHT_USER").toString();
             }
-            sumMap.put("ID", id);
-            sumMap.put("DEPTNAME", deptName);
-            sumMap.put("wcl", 0);
-            sumMap.put("clz", 0);
-            sumMap.put("ycl", 0);
-
-            //添加未处理
-            for (Map<String, Object> m1 : maps) {
-                if (id.equals(m1.get("DEPTID").toString())) {
-                    sumMap.put("wcl", m1.get("SUM"));
+            String[] split = userId.split(",");
+            for (int i = 0; i < split.length; i++) {
+                try {
+                    String sql = "SELECT LOGINSTATUS status FROM RZTSYSUSER where id=?";
+                    Map<String, Object> status = this.service.execSqlSingleResult(sql, split[i]);
+                    if (status.get("STATUS").toString().equals("0")) {
+                        a++;
+                    } else {
+                        b++;
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
-            //添加处理中
-            for (Map<String, Object> m1 : maps1) {
-                if (id.equals(m1.get("DEPTID").toString())) {
-                    sumMap.put("clz", m1.get("SUM"));
-                }
-            }
-            //添加已处理
-            for (Map<String, Object> m1 : maps2) {
-                if (id.equals(m1.get("DEPTID").toString())) {
-                    sumMap.put("ycl", m1.get("SUM"));
-                }
-            }
-            resList.add(sumMap);
         }
-       /* if (allMap.containsKey(deptId)) {
-            message = allMap.get(deptId);
-        } else {
-            try {*/
-        message.put("module", 1);
-        message.put("data", resList);
-        return message;
-        // allMap.put(deptId, message);
-         /*   } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }*/
+        System.out.println(a+"     "+b);
+        return WebApiResponse.success(a+" "+b);
     }
 
     //隐患采集记录
     @Transactional
     @GetMapping("listUpdateRecord")
-    public WebApiResponse listUpdateRecord(Pageable pageable,String deptId) {
+    public WebApiResponse listUpdateRecord(Pageable pageable, String deptId) {
         try {
-            String s ="";
-            if (deptId != null && !deptId.equals("")){
-                s = " and u.DEPTID='"+deptId+"' ";
+            String s = "";
+            if (deptId != null && !deptId.equals("")) {
+                s = " and u.DEPTID='" + deptId + "' ";
             }
             String sql = "SELECT\n" +
                     "  zt.TASK_NAME,\n" +
@@ -269,7 +241,7 @@ public class KhYhHistoryController extends
                     "  LEFT JOIN CM_LINE L ON L.ID = T.LINE_ID LEFT JOIN RZTSYSDEPARTMENT D ON D.ID =U.DEPTID \n" +
                     "  LEFT JOIN XS_ZC_TASK_EXEC_DETAIL ED on ed.id = r.DETAIL_ID LEFT JOIN XS_ZC_TASK_EXEC TE ON ED.XS_ZC_TASK_EXEC_ID = TE.ID\n" +
                     "  LEFT JOIN XS_ZC_TASK ZT ON ZT.ID = TE.XS_ZC_TASK_ID\n" +
-                    " WHERE r.status = 0\n" +s+
+                    " WHERE r.status = 0\n" + s +
                     " ORDER BY r.create_time DESC";
             return WebApiResponse.success(this.service.execSqlPage(pageable, sql));
         } catch (Exception e) {
@@ -279,7 +251,7 @@ public class KhYhHistoryController extends
     }
 
     @GetMapping("updateTower")
-    public WebApiResponse updateTower(String towerId, String lon, String lat,String id) {
+    public WebApiResponse updateTower(String towerId, String lon, String lat, String id) {
         try {
             repository.updateTowerById(Long.parseLong(towerId), lon, lat);
             repository.deleteRecord2(Long.parseLong(id));
@@ -295,7 +267,7 @@ public class KhYhHistoryController extends
     @GetMapping("saveCycle")
     public WebApiResponse saveCycle(String yhId) {
         try {
-                this.service.saveCycle(Long.parseLong(yhId));
+            this.service.saveCycle(Long.parseLong(yhId));
             return WebApiResponse.success("成功");
         } catch (Exception e) {
             e.printStackTrace();
@@ -309,7 +281,7 @@ public class KhYhHistoryController extends
         try {
             /* String sql = "SELECT OPERATE_NAME FROM XS_ZC_TASK_EXEC_DETAIL where id = ?";
             Map<String, Object> map = this.service.execSqlSingleResult(sql, Long.parseLong(detailId));*/
-            String sql = "SELECT * FROM PICTURE_TOUR WHERE PROCESS_id =? and trunc(CREATE_TIME)=trunc(sysdate)";
+            String sql = "SELECT * FROM PICTURE_TOUR WHERE PROCESS_id =?";
             List<Map<String, Object>> list = this.service.execSql(sql, detailId);
             return WebApiResponse.success(list);
         } catch (Exception e) {
