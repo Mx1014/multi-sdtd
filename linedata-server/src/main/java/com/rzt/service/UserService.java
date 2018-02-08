@@ -115,131 +115,163 @@ public class UserService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository>
     public WebApiResponse findUserInfoOne(String deptid) {
 
 
-        String xsZxUser = " SELECT count(1) SM " +
-                "FROM (SELECT z.CM_USER_ID " +
-                "      FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID " +
-                "      WHERE  z.is_delete = 0 and LOGINSTATUS = 1 AND USERDELETE = 1 AND z.PLAN_START_TIME< = sysdate AND z.PLAN_END_TIME >= sysdate " +
-                "      GROUP BY z.CM_USER_ID) ";
-        /**
-         * 巡视离线人员
-         */
-        String xsLxUser = " SELECT count(1) SM  FROM (SELECT z.CM_USER_ID " +
-                "  FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID " +
-                "  WHERE z.is_delete = 0 and LOGINSTATUS = 0 AND USERDELETE = 1  AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate) " +
-                "  GROUP BY z.CM_USER_ID) ";
-        /**
-         * 看护在线人员
-         */
-        String khZxUser = " SELECT count(1) SM FROM (SELECT count(u.ID) " +
-                "FROM RZTSYSUSER u LEFT JOIN KH_TASK k ON u.ID = k.USER_ID " +
-                "WHERE LOGINSTATUS = 1 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate) " +
-                "GROUP BY k.USER_ID) ";
-        /**
-         * 看护离线人员
-         */
-        String khLxUser = " SELECT count(1) SM FROM (SELECT count(u.ID) " +
-                "FROM RZTSYSUSER u LEFT JOIN KH_TASK k ON u.ID = k.USER_ID " +
-                "WHERE LOGINSTATUS = 0 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate) " +
-                "GROUP BY k.USER_ID) ";
+        List listLike = new ArrayList();
+        String s = "";
+        String s2 = "";
+        String s3 = "";
+        String s4 = "";
+        String s5 = "";
 
-        /**
-         * 前台稽查在线人员
-         */
-        String qjcZxUser = " SELECT count(1) SM FROM (SELECT " +
-                "    count(1) " +
-                "  FROM CHECK_LIVE_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID " +
-                "  WHERE u.LOGINSTATUS = 1 AND u.USERDELETE = 1 and k.check_type=1 and to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > k.plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') < k.plan_end_time GROUP BY k.USER_ID) ";
-        /**
-         * 前台稽查离线人员
-         */
-        String qjcLxUser = " SELECT count(1) SM FROM (SELECT " +
-                "    count(1) " +
-                "  FROM CHECK_LIVE_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID " +
-                "  WHERE u.LOGINSTATUS = 0 AND u.USERDELETE = 1 and k.check_type=1 and to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > k.plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') < k.plan_end_time GROUP BY k.USER_ID) ";
-        int a = 0;
-        int b = 0;
+        s += " AND z.PLAN_END_TIME >= trunc( SYSDATE ) AND z.PLAN_START_TIME <= trunc(sysdate+1) ";
+        s3 += " and to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > z.plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') < z.plan_end_time ";
+
+
+        Map<String, Map> xsMap = new HashMap();
+        Map<String, Map> khMap = new HashMap();
+        Map<String, Map> xcjcMap = new HashMap();
+        Map<String, Map> htjcMap = new HashMap();
+        String xs = " SELECT nvl(sum(decode(LOGINSTATUS,1,1,0)),0) xszx," +
+                "  nvl(sum(decode(LOGINSTATUS,0,1,0)),0) xslx,DEPTID FROM (SELECT CM_USER_ID,DEPTID,CLASSNAME,LOGINSTATUS " +
+                " FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID " +
+                " WHERE USERDELETE = 1  " + s + s2 +
+                " GROUP BY DEPTID,CM_USER_ID,CLASSNAME,LOGINSTATUS ) GROUP BY DEPTID ";
+        String kh = " SELECT nvl(sum(decode(LOGINSTATUS,1,1,0)),0) khzx," +
+                "  nvl(sum(decode(LOGINSTATUS,0,1,0)),0) khlx,DEPTID FROM (SELECT USER_ID,DEPTID,CLASSNAME,LOGINSTATUS " +
+                " FROM RZTSYSUSER r RIGHT JOIN KH_TASK z ON r.ID = z.USER_ID " +
+                " WHERE USERDELETE = 1  " + s + s2 +
+                " GROUP BY DEPTID,USER_ID,CLASSNAME,LOGINSTATUS ) GROUP BY DEPTID ";
+        String xcjc = " SELECT nvl(sum(decode(LOGINSTATUS,1,1,0)),0) zxjczx," +
+                "  nvl(sum(decode(LOGINSTATUS,0,1,0)),0) zxjclx ,DEPTID FROM (SELECT z.USER_ID AS USERID,DEPTID,CLASSNAME,LOGINSTATUS " +
+                " FROM RZTSYSUSER r RIGHT JOIN CHECK_LIVE_TASK z ON r.ID = z.USER_ID " + s3 + s2 +
+                " WHERE  USERDELETE = 1   GROUP BY z.USER_ID, DEPTID, CLASSNAME, LOGINSTATUS " +
+                " ) GROUP BY DEPTID ";
+        List<Map<String, Object>> htlist = new ArrayList<>();
         try {
-            if(deptid != null  &&  !"".equals(deptid)){
-
-            String user = "SELECT * FROM WORKING_TIMED WHERE DEPT_ID='" + deptid + "'";
+            String user = "SELECT * FROM WORKING_TIMED where 1=1 " + s4;
             List<Map<String, Object>> maps = this.execSql(user);
-            Map<String,Object> map = new HashedMap();
-            if(null != maps && maps.size()>0){
-                map = maps.get(0);
-            }
-            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-            String format = formatter.format(new Date());
-            String s = format + " 00:00:00";
-            String userId = "";
-            String start = map.get("START_TIME").toString();
-            String end = map.get("END_TIME").toString();
-            Date nowDate = DateUtil.getNowDate();
-            if (nowDate.getTime() >= DateUtil.addDate(DateUtil.parseDate(s), Double.parseDouble(start)).getTime() && nowDate.getTime() <= DateUtil.addDate(DateUtil.parseDate(s), Double.parseDouble(end)).getTime()) {
-                userId = map.get("DAY_USER").toString();
-            } else {
-                userId = map.get("NIGHT_USER").toString();
-            }
-            String[] split = userId.split(",");
-            for (int i = 0; i < split.length; i++) {
-                String sql = "SELECT LOGINSTATUS status FROM RZTSYSUSER where id=?";
-                Map<String, Object> status = this.execSqlSingleResult(sql, split[i]);
-                if (status.get("STATUS").toString().equals("0")) {
-                    a++;
+            for (Map map : maps) {
+                Map<String, Object> dept = new HashMap<>();
+                int a = 0;
+                int b = 0;
+                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+                String format = formatter.format(new Date());
+                String s1 = format + " 00:00:00";
+                String userId = "";
+                String start = map.get("START_TIME").toString();
+                String end = map.get("END_TIME").toString();
+                Date nowDate = DateUtil.getNowDate();
+                if (nowDate.getTime() >= DateUtil.addDate(DateUtil.parseDate(s1), Double.parseDouble(start)).getTime() && nowDate.getTime() <= DateUtil.addDate(DateUtil.parseDate(s1), Double.parseDouble(end)).getTime()) {
+                    userId = map.get("DAY_USER").toString();
                 } else {
-                    b++;
+                    userId = map.get("NIGHT_USER").toString();
                 }
-            }
+                String[] split = userId.split(",");
+                for (int i = 0; i < split.length; i++) {
+                    String sql = "SELECT LOGINSTATUS status FROM RZTSYSUSER where id=?";
+                    Map<String, Object> status = this.execSqlSingleResult(sql, split[i]);
+                    if (status.get("STATUS").toString().equals("1")) {
+                        a++;
+                    } else {
+                        b++;
+                    }
+                }
+                dept.put("htzx", a);
+                dept.put("htlx", b);
+                dept.put("DEPTID", map.get("DEPT_ID"));
+                htlist.add(dept);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        /**
-         * 后台稽查在线人员
-         */
-        //   String hjcZxUser = " SELECT count(id) SM FROM RZTSYSUSER WHERE LOGINSTATUS = 1 AND WORKTYPE = 4 AND USERDELETE = 1  AND USERTYPE=0 ";
-        /**
-         * 后台稽查离线人员
-         */
-        //  String hjcLxUser = " SELECT count(id) SM  FROM RZTSYSUSER WHERE LOGINSTATUS = 0 AND WORKTYPE = 4 AND USERDELETE = 1  AND USERTYPE=0 ";
-        try {
-            Map<Object, Object> returnMap = new HashMap<>();
-            Map<Object, Object> iocMap = new HashMap<>();
-            Map<String, Object> xsZxUserMap = this.execSqlSingleResult(xsZxUser);
-            Map<String, Object> xsLxUserMap = this.execSqlSingleResult(xsLxUser);
-            Map<String, Object> khZxUserMap = this.execSqlSingleResult(khZxUser);
-            Map<String, Object> khLxUserMap = this.execSqlSingleResult(khLxUser);
-            Map<String, Object> qjcZxUserMap = this.execSqlSingleResult(qjcZxUser);
-            Map<String, Object> qjcLxUserMap = this.execSqlSingleResult(qjcLxUser);
-            // Map<String, Object> hjcZxUserMap = this.execSqlSingleResult(hjcZxUser);
-            // Map<String, Object> hjcLxUserMap = this.execSqlSingleResult(hjcLxUser);
-            /*iocMap.put("XSZX", xsZxUserMap.get("SM").toString());
-            iocMap.put("XSLX", xsLxUserMap.get("SM").toString());
-            iocMap.put("KHZX", khZxUserMap.get("SM").toString());
-            iocMap.put("KHLX", khLxUserMap.get("SM").toString());
-            iocMap.put("QJCZX", qjcZxUserMap.get("SM").toString());
-            iocMap.put("QJCLX", qjcLxUserMap.get("SM").toString());
-            iocMap.put("HJCZX", a);
-            iocMap.put("HJCLX", b);*/
-            Integer xsZx =  Integer.parseInt(xsZxUserMap.get("SM") == null ? "0":xsZxUserMap.get("SM").toString());
-            Integer xsLx = Integer.parseInt(xsLxUserMap.get("SM") == null ? "0":xsLxUserMap.get("SM").toString());
-            Integer khZx = Integer.parseInt(khZxUserMap.get("SM") == null ? "0" : khZxUserMap.get("SM").toString());
-            Integer khLx = Integer.parseInt(khLxUserMap.get("SM") == null ? "0" : khLxUserMap.get("SM").toString());
-            Integer qjcZx = Integer.parseInt(qjcZxUserMap.get("SM") == null ? "0" : qjcZxUserMap.get("SM").toString());
-            Integer qjcLx = Integer.parseInt(qjcLxUserMap.get("SM") == null ? "0" : qjcLxUserMap.get("SM").toString());
-            int OFF_LINE  = (xsLx==null? 0 : xsLx) + (khLx == null ? 0:xsLx +(qjcLx == null ? 0 : qjcLx) +b)/*+ b*/;
-                /*+(qjcLx == null ? 0 : qjcLx)*/
+        String deptname = " SELECT t.ID,t.DEPTNAME FROM RZTSYSDEPARTMENT t WHERE t.DEPTSORT IS NOT NULL " + s5 + "ORDER BY t.DEPTSORT ";
+        List<Map<String, Object>> xsList = this.execSql(xs, listLike.toArray());
+        List<Map<String, Object>> khList = this.execSql(kh, listLike.toArray());
+        List<Map<String, Object>> xcjcList = this.execSql(xcjc, listLike.toArray());
+        List<Map<String, Object>> deptnameList = this.execSql(deptname);
+        for (int i = 0; i < xsList.size(); i++) {
+            xsMap.put(xsList.get(i).get("DEPTID").toString(), xsList.get(i));
+        }
+        for (int i = 0; i < khList.size(); i++) {
+            khMap.put(khList.get(i).get("DEPTID").toString(), khList.get(i));
+        }
+        for (int i = 0; i < xcjcList.size(); i++) {
+            xcjcMap.put(xcjcList.get(i).get("DEPTID").toString(), xcjcList.get(i));
+        }
+        for (int i = 0; i < htlist.size(); i++) {
+            htjcMap.put(htlist.get(i).get("DEPTID").toString(), htlist.get(i));
+        }
 
-            int LOGIN = (xsZx == null ? 0 :xsZx ) + (khZx == null ? 0 : khZx )+ (qjcZx == null ? 0 : qjcZx) + a /*+ (qjcZx == null ? 0 : qjcZx) + a*/;
+        for (Map map : deptnameList) {
+            Map id = xsMap.get(map.get("ID"));
+            if (id == null) {
+                map.put("XSZX", 0);
+                map.put("XSLX", 0);
+            } else {
+                map.putAll(id);
+            }
+            Map id1 = khMap.get(map.get("ID"));
+            if (id1 == null) {
+                map.put("KHZX", 0);
+                map.put("KHLX", 0);
+            } else {
+                map.putAll(id1);
+            }
+            Map id2 = xcjcMap.get(map.get("ID"));
+            if (id2 == null) {
+                map.put("ZXJCZX", 0);
+                map.put("ZXJCLX", 0);
+            } else {
+                map.putAll(id2);
+            }
+            Map id3 = htjcMap.get(map.get("ID"));
+            if (id3 == null) {
+                map.put("HTJCZX", 0);
+                map.put("HTJCLX", 0);
+            } else {
+                map.putAll(id3);
+            }
+
+        }
+        try {
+            int XSZX = 0;
+            int KHZX = 0;
+            int ZXJCZX = 0;
+            int HTJCZX = 0;
+
+            int XSLX = 0;
+            int KHLX = 0;
+            int ZXJCLX = 0;
+            int HTJCLX = 0;
+
+            for (Map<String, Object> map : deptnameList) {
+                XSZX += Integer.parseInt(map.get("XSZX") == null ? "0" : map.get("XSZX").toString());
+                KHZX += Integer.parseInt(map.get("KHZX") == null ? "0" : map.get("KHZX").toString());
+                ZXJCZX += Integer.parseInt(map.get("ZXJCZX") == null ? "0" : map.get("ZXJCZX").toString());
+                HTJCZX += Integer.parseInt(map.get("htzx") == null ? "0" : map.get("htzx").toString());
+
+                XSLX += Integer.parseInt(map.get("XSLX") == null ? "0" : map.get("XSLX").toString());
+                KHLX += Integer.parseInt(map.get("KHLX") == null ? "0" : map.get("KHLX").toString());
+                ZXJCLX += Integer.parseInt(map.get("ZXJCLX") == null ? "0" : map.get("ZXJCLX").toString());
+                HTJCLX += Integer.parseInt(map.get("htlx") == null ? "0" : map.get("htlx").toString());
+
+            }
             HashMap<String, Object> hashMap = new HashMap<>();
+           /* String zxSql = "";
+            String lxSql = "";*/
+            /*Map<String, Object> map = this.service.execSqlSingleResult(zxSql);
+            ZXJCZX = Integer.parseInt(map.get("") == null ? "0" : map.get("").toString());
+            Map<String, Object> map1 = this.service.execSqlSingleResult(lxSql);
+            ZXJCLX = Integer.parseInt(map1.get("") == null ? "0" : map.get("").toString());*/
+            int LOGIN = XSZX + KHZX + ZXJCZX + HTJCZX;
+            int OFF_LINE =  XSLX + KHLX + ZXJCLX + HTJCLX ;
             hashMap.put("SUM", LOGIN + OFF_LINE);
             hashMap.put("LOGIN", LOGIN);
             hashMap.put("OFF_LINE", OFF_LINE);
-            //returnMap.put("data", iocMap);
             return WebApiResponse.success(hashMap);
         } catch (Exception e) {
             e.printStackTrace();
+            return WebApiResponse.erro("");
         }
-        return WebApiResponse.success("");
     }
     /**
      * 三级页面使用
