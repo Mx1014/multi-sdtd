@@ -222,7 +222,7 @@ public class UserController extends CurdController<KHYHHISTORY, UserService> {
 
 
 
-    @RequestMapping("users")
+    @RequestMapping("findUserSum")
     public WebApiResponse users (String currentUserId, String startTime, String endTime, String deptId) {
         List listLike = new ArrayList();
         String s = "";
