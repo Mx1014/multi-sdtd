@@ -384,73 +384,73 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
              */
             String zcXsWks = "SELECT count(1)  " +
                     "FROM XS_ZC_TASK " +
-                    "WHERE is_delete = 0 and STAUTS = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= trunc(sysdate)";
+                    "WHERE is_delete = 0 and STAUTS = 0 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
             /**
              * 保电巡视未开始
              */
             String bdXsWks = "SELECT count(1)  " +
                     "FROM XS_TXBD_TASK " +
-                    "WHERE STAUTS = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= trunc(sysdate)";
+                    "WHERE STAUTS = 0 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
             /**
              * 看护未开始
              */
             String khWks = "SELECT count(1)  " +
                     "FROM KH_TASK " +
-                    "WHERE STATUS = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= trunc(sysdate)";
+                    "WHERE STATUS = 0 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
             /**
              * 现场稽查未开始
              */
             String xcJcWks = "SELECT count(1)  " +
                     "FROM CHECK_LIVE_TASK " +
-                    "WHERE STATUS = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= trunc(sysdate)";
+                    "WHERE STATUS = 0 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
             /**
              * 正常巡视进行中
              */
             String zcXsJxz = "SELECT count(1)  " +
                     "FROM XS_ZC_TASK " +
-                    "WHERE is_delete = 0 and STAUTS = 1 AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
+                    "WHERE is_delete = 0 and STAUTS = 1 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
             /**
              * 保电巡视进行中
              */
             String bdXsJxz = "SELECT count(1)  " +
                     "FROM XS_TXBD_TASK " +
-                    "WHERE STAUTS = 1 AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
+                    "WHERE STAUTS = 1 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
             /**
              * 看护进行中
              */
             String khJxz = "SELECT count(1)  " +
                     "FROM KH_TASK " +
-                    "WHERE STATUS = 1 AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
+                    "WHERE STATUS = 1 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
             /**
              * 现场稽查进行中
              */
             String xcJcJxz = "SELECT count(1)  " +
                     "FROM CHECK_LIVE_TASK " +
-                    "WHERE STATUS = 1  AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= trunc(sysdate)";
+                    "WHERE STATUS = 1  AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
             /**
              * 正常巡视已完成
              */
             String zcXsYwc = "SELECT count(1)  " +
                     "FROM XS_ZC_TASK " +
-                    "WHERE is_delete = 0 and STAUTS = 2 AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
+                    "WHERE is_delete = 0 and STAUTS = 2 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
             /**
              * 保电巡视已完成
              */
             String bdXsYwc = "SELECT count(1)  " +
                     "FROM XS_TXBD_TASK " +
-                    "WHERE STAUTS = 2 AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
+                    "WHERE STAUTS = 2 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
             /**
              * 看护已完成
              */
             String khYwc = "SELECT count(1)  " +
                     "FROM KH_TASK " +
-                    "WHERE STATUS = 2 AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
+                    "WHERE STATUS = 2 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
             /**
              *现场稽查已完成
              */
             String xcJcYwc = "SELECT count(1)  " +
                     "FROM CHECK_LIVE_TASK " +
-                    "WHERE STATUS = 2 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= trunc(sysdate)";
+                    "WHERE STATUS = 2 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
 
            /* String sql1 = "select * from(SELECT CREATETIME FROM TIMED_TASK where THREEDAY=1 ORDER BY CREATETIME DESC ) where ROWNUM=1";
             List<Map<String, Object>> maps = this.execSql(sql1);
