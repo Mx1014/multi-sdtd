@@ -1,5 +1,6 @@
 package com.rzt.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.TimedTask;
 import com.rzt.service.YhService;
 import com.rzt.util.WebApiResponse;
@@ -7,11 +8,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -32,8 +36,10 @@ public class YhController extends CurdController<TimedTask, YhService>  {
      */
     @GetMapping("/findYhSum")
     public WebApiResponse findYh(){
-        return yhService.findYh();
+        return yhService.findYh1();
     }
+
+
     /**
      * 二级页面显示
      * 隐患统计信息  按照单位分组返回
@@ -41,7 +47,7 @@ public class YhController extends CurdController<TimedTask, YhService>  {
      */
     @GetMapping("/findYhSumTwo")
     public WebApiResponse findYhSumTwo(){
-        return yhService.findYhTwo();
+        return yhService.findYh();
     }
     /**
      * 三级页面显示

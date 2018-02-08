@@ -175,6 +175,90 @@ public class GJService extends CurdService<TimedTask,XSZCTASKRepository>{
         }
     }
 
+
+    /**
+     * 一级页
+     * @param deptId
+     * @return
+     */
+    public WebApiResponse AlarmList1(String deptId) {
+        String s = "";
+        String alarm = "";
+        try {
+
+            if(null != deptId && !"".equals(deptId)){
+                alarm = " SELECT " +
+                        "  NVL(A.OFFLINES,0) AS OFFLINES, " +
+                        "  NVL(A.ANSWERTIME,0) AS ANSWERTIME, " +
+                        "  NVL(A.OVERDUE,0) AS OVERDUE, " +
+                        "  NVL(A.TEMPORARILY,0) AS TEMPORARILY, " +
+                        "  NVL(A.UNQUALIFIEDPATROL,0) AS UNQUALIFIEDPATROL, " +
+                        "  T.ID AS DEPTID, " +
+                        "  T.DEPTNAME " +
+                        "  FROM RZTSYSDEPARTMENT T LEFT JOIN (SELECT " +
+                        "     nvl(sum(decode(WARNING_TYPE, 2, 1, 8, 1, 0)), 0)  AS OFFLINES, " +
+                        "     nvl(sum(decode(WARNING_TYPE, 4, 1, 10, 1, 0)), 0) AS ANSWERTIME, " +
+                        "     nvl(sum(decode(WARNING_TYPE, 1, 1, 0)), 0)        AS OVERDUE, " +
+                        "     nvl(sum(decode(WARNING_TYPE, 7, 1, 0)), 0)        AS TEMPORARILY, " +
+                        "     nvl(sum(decode(WARNING_TYPE, 5, 1, 0)), 0)        AS UNQUALIFIEDPATROL, " +
+                        "     DEPTID " +
+                        "   FROM MONITOR_CHECK_EJ " +
+                        "   WHERE 1 = 1 AND trunc(CREATE_TIME) = trunc(sysdate) " +
+                        "   GROUP BY DEPTID) A ON T.ID = A.DEPTID " +
+                        "   WHERE T.DEPTSORT IS NOT NULL  AND t.ID = '"+deptId+"'  " +
+                        "   ORDER BY T.DEPTSORT ";
+            }else {
+                alarm = " SELECT " +
+                        "  NVL(A.OFFLINES,0) AS OFFLINES, " +
+                        "  NVL(A.ANSWERTIME,0) AS ANSWERTIME, " +
+                        "  NVL(A.OVERDUE,0) AS OVERDUE, " +
+                        "  NVL(A.TEMPORARILY,0) AS TEMPORARILY, " +
+                        "  NVL(A.UNQUALIFIEDPATROL,0) AS UNQUALIFIEDPATROL, " +
+                        "  T.ID AS DEPTID, " +
+                        "  T.DEPTNAME " +
+                        "  FROM RZTSYSDEPARTMENT T LEFT JOIN (SELECT " +
+                        "     nvl(sum(decode(WARNING_TYPE, 2, 1, 8, 1, 0)), 0)  AS OFFLINES, " +
+                        "     nvl(sum(decode(WARNING_TYPE, 4, 1, 10, 1, 0)), 0) AS ANSWERTIME, " +
+                        "     nvl(sum(decode(WARNING_TYPE, 1, 1, 0)), 0)        AS OVERDUE, " +
+                        "     nvl(sum(decode(WARNING_TYPE, 7, 1, 0)), 0)        AS TEMPORARILY, " +
+                        "     nvl(sum(decode(WARNING_TYPE, 5, 1, 0)), 0)        AS UNQUALIFIEDPATROL, " +
+                        "     DEPTID " +
+                        "   FROM MONITOR_CHECK_EJ " +
+                        "   WHERE 1 = 1 AND trunc(CREATE_TIME) = trunc(sysdate) " +
+                        "   GROUP BY DEPTID) A ON T.ID = A.DEPTID " +
+                        "   WHERE T.DEPTSORT IS NOT NULL " +
+                        "   ORDER BY T.DEPTSORT ";
+            }
+
+
+            List<Map<String, Object>> alarms = this.execSql(alarm, null);
+            int ANSWERTIME = 0;
+            int TEMPORARILY = 0;
+            int OFFLINES = 0;
+            int UNQUALIFIEDPATROL = 0;
+            int OVERDUE = 0;
+            for (Map<String, Object> map : alarms) {
+                ANSWERTIME += Integer.parseInt(map.get("ANSWERTIME")==null?"0" : map.get("ANSWERTIME").toString());
+                TEMPORARILY += Integer.parseInt(map.get("TEMPORARILY")==null?"0" : map.get("TEMPORARILY").toString());
+                OFFLINES += Integer.parseInt(map.get("OFFLINES")==null?"0" : map.get("OFFLINES").toString());
+                UNQUALIFIEDPATROL += Integer.parseInt(map.get("UNQUALIFIEDPATROL")==null?"0" : map.get("UNQUALIFIEDPATROL").toString());
+                OVERDUE += Integer.parseInt(map.get("OVERDUE")==null?"0" : map.get("OVERDUE").toString());
+
+            }
+            HashMap<String, Object> hashMap = new HashMap<>();
+            hashMap.put("ANSWERTIME",ANSWERTIME);
+            hashMap.put("TEMPORARILY",TEMPORARILY);
+            hashMap.put("OFFLINES",OFFLINES);
+            hashMap.put("UNQUALIFIEDPATROL",UNQUALIFIEDPATROL);
+            hashMap.put("OVERDUE",OVERDUE);
+            hashMap.put("ABCDEFG",0);
+            return WebApiResponse.success(hashMap);
+
+        } catch (Exception e) {
+            return WebApiResponse.erro("告警三级查询错误"+e.getMessage());
+        }
+    }
+
  /*----------------------------- 三级页下半部  列表数据开始-------------------------------------------- */
 
     /**

@@ -33,7 +33,7 @@ public class TaskController extends CurdController<TimedTask,TasksService>  {
      */
     @GetMapping("/findTaskSum")
     public WebApiResponse findTaskInfo(){
-        return tasksService.findTaskInfo();
+        return tasksService.deptDaZhu1();
     }
     /**
      * 二级页面使用
@@ -42,7 +42,7 @@ public class TaskController extends CurdController<TimedTask,TasksService>  {
      */
     @GetMapping("/findTasksGroupDept")
     public WebApiResponse findTasksGroupDept(){
-        return tasksService.findTasksGroupDept();
+        return tasksService.deptDaZhu();
     }
 
     /**

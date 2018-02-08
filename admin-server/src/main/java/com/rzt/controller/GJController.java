@@ -26,7 +26,7 @@ public class GJController extends CurdController<TimedTask,GJService>  {
      */
     @GetMapping("/findGJSum")
     public WebApiResponse findGJ(){
-        return gjService.GJ();
+        return gjService.AlarmList1("");
     }
 
     /**
@@ -37,7 +37,7 @@ public class GJController extends CurdController<TimedTask,GJService>  {
      */
     @GetMapping("/findGJTwoOrThree")
     public WebApiResponse findGJThree(String deptId){
-        return gjService.AlarmList(  deptId);
+        return gjService.AlarmList(deptId);
     }
     /*----------------------------- 三级页下半部  列表数据开始-------------------------------------------- */
     /**

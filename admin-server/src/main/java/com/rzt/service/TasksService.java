@@ -456,4 +456,88 @@ public class TasksService extends CurdService<TimedTask,XSZCTASKRepository>{
             return WebApiResponse.erro("erro");
         }
     }
+
+
+
+
+
+    public WebApiResponse deptDaZhu1() {
+        try {
+            Map map = new HashMap();
+
+
+            Date day = new Date();
+
+            String xsCondition = "group by td_org";
+            String khCondition = "group by u.deptid ";
+            String xsField = "td_org";
+            String khField = "u.deptid";
+
+
+            //正常
+            String xszc = " SELECT " + xsField + " td_org,nvl(sum(decode(stauts, 0, 1, 0)),0) XSWKS,nvl(sum(decode(stauts, 1, 1, 0)),0) XSJXZ,nvl(sum(decode(stauts, 2, 1, 0)),0) XSYWC FROM XS_ZC_TASK WHERE PLAN_END_TIME >= trunc(?1) and  PLAN_START_TIME <= trunc(?1+1) " + xsCondition;
+            List<Map<String, Object>> xszcMap = this.execSql(xszc, day);
+            //保电
+            String txbd = " SELECT " + xsField + " td_org,nvl(sum(decode(stauts, 0, 1, 0)),0) XSWKS,nvl(sum(decode(stauts, 1, 1, 0)),0) XSJXZ,nvl(sum(decode(stauts, 2, 1, 0)),0) XSYWC FROM XS_txbd_TASK WHERE PLAN_END_TIME >= trunc(?1) and  PLAN_START_TIME <= trunc(?1+1) " + xsCondition;
+            List<Map<String, Object>> txbdMap = this.execSql(txbd, day);
+            //看护
+            String kh = "SELECT " + khField + " td_org,nvl(sum(decode(status, 0, 1, 0)),0) KHWKS,nvl(sum(decode(status, 1, 1, 0)),0) KHJXZ,nvl(sum(decode(status, 2, 1, 0)),0) KHYWC FROM KH_TASK k JOIN RZTSYSUSER u ON k.USER_ID = u.ID and PLAN_END_TIME >= trunc(?1) and  PLAN_START_TIME <= trunc(?1+1) " + khCondition;
+            List<Map<String, Object>> khMap = this.execSql(kh, day);
+            //通道单位
+            List<Map<String, Object>> deptnameList;
+            String deptname = " SELECT t.ID,t.DEPTNAME FROM RZTSYSDEPARTMENT t WHERE t.DEPTSORT IS NOT NULL ORDER BY t.DEPTSORT ";
+            deptnameList = this.execSql(deptname);
+
+            Map<String, Object> map1 = new HashMap();
+            Map<String, Object> map2 = new HashMap();
+            Map<String, Object> map3 = new HashMap();
+            for (Map<String, Object> xs : xszcMap) {
+                map1.put(xs.get("TD_ORG").toString(), xs);
+            }
+            for (Map<String, Object> tx : txbdMap) {
+                map2.put(tx.get("TD_ORG").toString(), tx);
+            }
+            for (Map<String, Object> kha : khMap) {
+                map3.put(kha.get("TD_ORG").toString(), kha);
+            }
+            for (Map<String, Object> dept : deptnameList) {
+                String deptId = dept.get("ID").toString();
+                HashMap xsTask = (HashMap) map1.get(deptId);
+                HashMap txTask = (HashMap) map2.get(deptId);
+                HashMap khTask = (HashMap) map3.get(deptId);
+                dept.put("wks", Integer.parseInt(xsTask == null ? "0" : xsTask.get("XSWKS").toString()) + Integer.parseInt(txTask == null ? "0" : txTask.get("XSWKS").toString()) + Integer.parseInt(khTask == null ? "0" : khTask.get("KHWKS").toString()));
+                dept.put("jxz", Integer.parseInt(xsTask == null ? "0" : xsTask.get("XSJXZ").toString()) + Integer.parseInt(txTask == null ? "0" : txTask.get("XSJXZ").toString()) + Integer.parseInt(khTask == null ? "0" : khTask.get("KHJXZ").toString()));
+                dept.put("ywc", Integer.parseInt(xsTask == null ? "0" : xsTask.get("XSYWC").toString()) + Integer.parseInt(txTask == null ? "0" : txTask.get("XSYWC").toString()) + Integer.parseInt(khTask == null ? "0" : khTask.get("KHYWC").toString()));
+            }
+            int WKS = 0;
+            int JXZ  = 0;
+            int YWC = 0;
+            for (Map<String, Object> dept : deptnameList) {
+                String deptId = dept.get("ID").toString();
+
+
+                Integer wks = (Integer) dept.get("wks");
+                WKS+= wks == null ? 0 :wks;
+
+                Integer jxz = (Integer) dept.get("jxz");
+                JXZ+= jxz == null?0:jxz;
+
+                Integer ywc = (Integer) dept.get("ywc");
+                YWC += ywc == null ? 0 : ywc;
+            }
+            HashMap<String, Object> stringObjectHashMap = new HashMap<>();
+            stringObjectHashMap.put("WKS",WKS);
+            stringObjectHashMap.put("JXZ",JXZ);
+            stringObjectHashMap.put("YWC",YWC);
+
+            return WebApiResponse.success(stringObjectHashMap);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("erro");
+        }
+
+}
+
+
+
 }
