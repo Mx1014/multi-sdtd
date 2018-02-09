@@ -79,12 +79,14 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
                     taskType=1;
                 }
                 //插入告警记录
-                lixian((String) userId,taskType);
+                int flag = lixian((String) userId, taskType);
 
-                //置为离线状态
-                userQuit((String) userId);
+                if(flag>0){
+                    //置为离线状态
+                    userQuit((String) userId);
 
-                zSet.remove("currentUser",userId);
+                    zSet.remove("currentUser",userId);
+                }
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -109,7 +111,7 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
         }
     }
 
-    public void lixian(String userId,Integer taskType){
+    public int lixian(String userId,Integer taskType){
         String sql = "";
         if(taskType==2){
             sql = " SELECT kh.ID,d.ID AS  DEPTID,kh.PLAN_START_TIME,kh.PLAN_END_TIME, kh.TASK_NAME,kh.USER_ID FROM  KH_TASK kh  LEFT JOIN RZTSYSDEPARTMENT d " +
@@ -136,7 +138,7 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
         List<Map<String, Object>> maps = execSql(sql,userId);
         //如果查询结果为0，证明这个人当天没有任务
         if(maps.size()==0){
-            return;
+            return 0;
         }
         int flag = 0;
         for (Map<String, Object> map:maps) {
@@ -192,6 +194,7 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
             } catch (Exception e) {
             }
         }
+        return flag;
     }
 
 
