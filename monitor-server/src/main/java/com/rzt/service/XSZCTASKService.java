@@ -249,7 +249,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                 sql += "  AND  TASKNAME like '%"+TaskName+"%'  ";
             }
         if(null != sql && !"".equals(sql)){
-            sql +="   ORDER BY CREATETIME DESC     ";
+            sql +="   ORDER BY ID DESC     ";
         }
 
             pageResult = this.execSqlPage(pageable, sql, list.toArray());
@@ -492,14 +492,14 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                         "  WHERE WORKTYPE = 2 AND k.ID IS NOT  NULL AND k.REAL_START_TIME =" +
                         "   (SELECT max(h.REAL_START_TIME)" +
                         "   FROM XS_ZC_TASK h WHERE h.CM_USER_ID = u.ID) AND k.STAUTS != 0 AND" +
-                        "   k.ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 1 AND THREEDAY = 1) AND  k.STAUTS != 0   AND k.IS_DELETE = 0  AND trunc(k.PLAN_START_TIME) = trunc(sysdate)";
+                        "   k.ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 1 AND THREEDAY = 1) AND  k.STAUTS != 0   AND k.IS_DELETE = 0 ";// AND trunc(k.PLAN_START_TIME) = trunc(sysdate)
                 //看护sql
                 String findSql2 = "SELECT k.TASK_NAME,k.ID,k.STATUS,k.USER_ID" +
                         "  FROM RZTSYSUSER u" +
                         "  LEFT JOIN KH_TASK k ON k.USER_ID = u.ID" +
                         "  WHERE WORKTYPE = 1 AND k.ID IS NOT  NULL AND k.CREATE_TIME =" +
                         "  (SELECT max(h.CREATE_TIME)" +
-                        "   FROM KH_TASK h WHERE h.USER_ID = u.ID) AND k.STATUS != 0 AND k.STATUS != 3  AND  trunc(k.PLAN_START_TIME) = trunc(sysdate) " +
+                        "   FROM KH_TASK h WHERE h.USER_ID = u.ID) AND k.STATUS != 0 AND k.STATUS != 3  " +//AND  trunc(k.PLAN_START_TIME) = trunc(sysdate)
                         "   AND k.ID NOT IN" +
                         "       (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 2 AND THREEDAY =1)";
                 List<Map<String, Object>> maps = this.execSql(findSql1, null);
