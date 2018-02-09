@@ -467,73 +467,73 @@ public class TasksService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository
          */
         String zcXsWks = "SELECT count(1)  " +
                 "FROM XS_ZC_TASK " +
-                "WHERE is_delete = 0 and STAUTS = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= trunc(sysdate)";
+                "WHERE is_delete = 0 and STAUTS = 0 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
         /**
          * 保电巡视未开始
          */
         String bdXsWks = "SELECT count(1)  " +
                 "FROM XS_TXBD_TASK " +
-                "WHERE STAUTS = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= trunc(sysdate)";
+                "WHERE STAUTS = 0 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
         /**
          * 看护未开始
          */
         String khWks = "SELECT count(1)  " +
                 "FROM KH_TASK " +
-                "WHERE STATUS = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= trunc(sysdate)";
+                "WHERE STATUS = 0 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
         /**
          * 现场稽查未开始
          */
         String xcJcWks = "SELECT count(1)  " +
                 "FROM CHECK_LIVE_TASK " +
-                "WHERE STATUS = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= trunc(sysdate)";
+                "WHERE STATUS = 0 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
         /**
          * 正常巡视进行中
          */
         String zcXsJxz = "SELECT count(1)  " +
                 "FROM XS_ZC_TASK " +
-                "WHERE is_delete = 0 and STAUTS = 1 AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
+                "WHERE is_delete = 0 and STAUTS = 1 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
         /**
          * 保电巡视进行中
          */
         String bdXsJxz = "SELECT count(1)  " +
                 "FROM XS_TXBD_TASK " +
-                "WHERE STAUTS = 1 AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
+                "WHERE STAUTS = 1 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
         /**
          * 看护进行中
          */
         String khJxz = "SELECT count(1)  " +
                 "FROM KH_TASK " +
-                "WHERE STATUS = 1 AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
+                "WHERE STATUS = 1 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
         /**
          * 现场稽查进行中
          */
         String xcJcJxz = "SELECT count(1)  " +
                 "FROM CHECK_LIVE_TASK " +
-                "WHERE STATUS = 1  AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= trunc(sysdate)";
+                "WHERE STATUS = 1  AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
         /**
          * 正常巡视已完成
          */
         String zcXsYwc = "SELECT count(1)  " +
                 "FROM XS_ZC_TASK " +
-                "WHERE is_delete = 0 and STAUTS = 2 AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
+                "WHERE is_delete = 0 and STAUTS = 2 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
         /**
          * 保电巡视已完成
          */
         String bdXsYwc = "SELECT count(1)  " +
                 "FROM XS_TXBD_TASK " +
-                "WHERE STAUTS = 2 AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
+                "WHERE STAUTS = 2 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
         /**
          * 看护已完成
          */
         String khYwc = "SELECT count(1)  " +
                 "FROM KH_TASK " +
-                "WHERE STATUS = 2 AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
+                "WHERE STATUS = 2 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
         /**
          *现场稽查已完成
          */
         String xcJcYwc = "SELECT count(1)  " +
                 "FROM CHECK_LIVE_TASK " +
-                "WHERE STATUS = 2 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= trunc(sysdate)";
+                "WHERE STATUS = 2 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
 
            /* String sql1 = "select * from(SELECT CREATETIME FROM TIMED_TASK where THREEDAY=1 ORDER BY CREATETIME DESC ) where ROWNUM=1";
             List<Map<String, Object>> maps = this.execSql(sql1);
@@ -574,20 +574,24 @@ public class TasksService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository
 
         if(null != list && list.size() ==1){
             Map<String, Object> map1 = list.get(0);
-            Integer WKS = Integer.parseInt(map1.get("KHWKS").toString()) +
-                       Integer.parseInt(map1.get("XCJCWKS").toString())+
-                       Integer.parseInt(map1.get("HTJCWKS").toString())+
-                    Integer.parseInt(map1.get("XSWKS").toString());
+            int khwks = Integer.parseInt(map1.get("KHWKS").toString());
+            int xcjcwks = Integer.parseInt(map1.get("XCJCWKS").toString());
+            int htjcwks = Integer.parseInt(map1.get("HTJCWKS").toString());
+            int xswks = Integer.parseInt(map1.get("XSWKS").toString());
+            Integer WKS =  khwks+xcjcwks+htjcwks+xswks;
 
-            Integer JXZ = Integer.parseInt(map1.get("XCJCJXZ").toString())+
-                    Integer.parseInt(map1.get("KHJXZ").toString())+
-                    Integer.parseInt(map1.get("HTJCYKS").toString())+
-                    Integer.parseInt(map1.get("XSJXZ").toString());
+            int xcjcjxz = Integer.parseInt(map1.get("XCJCJXZ").toString());
+            int khjxz = Integer.parseInt(map1.get("KHJXZ").toString());
+            int htjcyks = Integer.parseInt(map1.get("HTJCYKS").toString());
+            int xsjxz = Integer.parseInt(map1.get("XSJXZ").toString());
+            Integer JXZ = xcjcjxz+khjxz+htjcyks+xsjxz;
 
-            Integer YWC = Integer.parseInt(map1.get("XSYWC").toString())+
-                    Integer.parseInt(map1.get("KHYWC").toString())+
-                    Integer.parseInt(map1.get("XCJCYWC").toString())+
-                    Integer.parseInt(map1.get("HTJCYWC").toString());
+            int xsywc = Integer.parseInt(map1.get("XSYWC").toString());
+            int khywc = Integer.parseInt(map1.get("KHYWC").toString());
+            int xcjcywc = Integer.parseInt(map1.get("XCJCYWC").toString());
+            int htjcywc = Integer.parseInt(map1.get("HTJCYWC").toString());
+            Integer YWC = xsywc+khywc+xcjcywc+htjcywc;
+
             HashMap<String, Object> stringObjectHashMap = new HashMap<>();
             stringObjectHashMap.put("WKS",WKS);
             stringObjectHashMap.put("JXZ",JXZ);

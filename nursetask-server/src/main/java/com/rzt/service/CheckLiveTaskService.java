@@ -29,12 +29,11 @@ import org.springframework.util.StringUtils;
 import java.util.*;
 
 /**
- * 类名称：CHECKLIVETASKService    
+ * 类名称：CHECKLIVETASKService
  * 类描述：${table.comment}
  * 创建人：李泽州
  * 创建时间：2018/01/03 15:13:15
  * 修改备注：
- * @version
  */
 @Service
 public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTaskRepository> {
@@ -201,7 +200,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
     }
 
     @Transactional
-    public void paifaKhCheckTask(CheckLiveTask task, String username, String currentUserId) throws Exception {
+    public void paifaKhCheckTask(CheckLiveTask task, String username, String currentUserId, String ids) throws Exception {
 
         if (!StringUtils.isEmpty(currentUserId)) {
             Map<String, Object> map = userInfoFromRedis(currentUserId);
@@ -264,9 +263,11 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
             taskDetail.setKhTaskId(Long.valueOf(split[i]));
             taskDetail.setTaskId(save.getId());
             checkLiveTaskDetailRepository.save(taskDetail);
-            reposiotry.updateLiveSiteStatus(1, Long.valueOf(split[i]));
         }
-
+        String[] split1 = ids.split(",");
+        for (int i = 0; i < split.length; i++) {
+            reposiotry.updateLiveSiteStatus(1, Long.valueOf(split1[i]));
+        }
     }
 
     public Page<Map<String, Object>> appCheckList(Pageable pageable, String userId, String taskType) {
