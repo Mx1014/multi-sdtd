@@ -87,14 +87,4 @@ public class PICTUREJCController extends
 		return service.findById(Long.valueOf(id));
 	}
 
-	@ApiOperation(
-			value = "获取日报通报",
-			notes = "根据taskId获取所有日报通报"
-	)
-	@GetMapping("getDocBytaskId")
-	public Map<String, Object> getDocBytaskId(String date,Integer fileType) {
-		return service.getDocBytaskId(date,fileType);
-	}
-
-
 }

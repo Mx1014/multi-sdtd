@@ -149,7 +149,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             Integer roleType = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
             Object tdId = jsonObject.get("DEPTID");
             Object companyid = jsonObject.get("COMPANYID");
-            buffer.append(" where s.YH_ID=y.ID ");
+            buffer.append(" and yhzt=0 ");
             if (roleType == 1 || roleType == 2) {
                 buffer.append(" and y.YWORG_ID = " + tdId);
             }
@@ -158,33 +158,35 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             }
             if (yhjb != null && !yhjb.equals("")) {
                 String[] split = yhjb.split(",");
-                String result="";
-                for (int i=0;i<split.length;i++){
-                    String s = "'"+split[i]+"'";
-                    result +=s+",";
+                String result = "";
+                for (int i = 0; i < split.length; i++) {
+                    String s = "'" + split[i] + "'";
+                    result += s + ",";
                 }
-                buffer.append(" and y.yhjb1 in (" + result.substring(0,result.lastIndexOf(",")) + ")");
+                buffer.append(" and yhjb1 in (" + result.substring(0, result.lastIndexOf(",")) + ")");
             }
             if (yhlb != null && !yhlb.equals("")) {
                 buffer.append(" and yhlb like ?");
                 params.add("%" + yhlb + "%");
             }
-            buffer.append(" and yhzt = 0 ");
-            String sql = "SELECT DISTINCT(s.yh_id),y.* " +
-                    "FROM KH_YH_HISTORY y ,KH_SITE s " + buffer.toString();
+//            buffer.append(" and yhzt = 0 ");
+            String sql = "SELECT * from KH_YH_HISTORY y  WHERE YHLB LIKE '在施类' " + buffer.toString();
             List<Map<String, Object>> list = this.execSql(sql, params.toArray());
             List<Object> list1 = new ArrayList<>();
             for (Map map : list) {
                 if (map != null && map.size() > 0 && map.get("JD") != null) {
                     sql = "select u.realname from kh_site s left join rztsysuser u on u.id =s.user_id where yh_id=?";
                     List<Map<String, Object>> nameList = this.execSql(sql, Long.parseLong(map.get("ID").toString()));
-                    String realname="";
-                    for (int i=0;i<nameList.size();i++){
-                            if (!realname.contains((nameList.get(i).get("REALNAME")).toString())){
-                                realname +=nameList.get(i).get("REALNAME")+" ";
+                    String realname = "";
+                    map.put("USERNAME", "无");
+                    if (nameList.size() > 0) {
+                        for (int i = 0; i < nameList.size(); i++) {
+                            if (!realname.contains((nameList.get(i).get("REALNAME")).toString())) {
+                                realname += nameList.get(i).get("REALNAME") + " ";
                             }
+                        }
+                        map.put("USERNAME", realname);
                     }
-                    map.put("USERNAME",realname);
                     list1.add(map);
                 }
             }
