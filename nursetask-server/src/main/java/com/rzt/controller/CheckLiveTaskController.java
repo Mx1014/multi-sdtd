@@ -65,9 +65,9 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 
 	@ApiOperation(value = "看护稽查任务派发",notes = "看护稽查任务派发")
 	@GetMapping("/paifaKhCheckTask")
-	public WebApiResponse paifaKhCheckTask(CheckLiveTask task , String username,String currentUserId){
+	public WebApiResponse paifaKhCheckTask(CheckLiveTask task , String username,String currentUserId,String ids){
 		try {
-			this.service.paifaKhCheckTask(task,username,currentUserId);
+			this.service.paifaKhCheckTask(task,username,currentUserId,ids);
 			return WebApiResponse.success("任务派发成功");
 		}catch (Exception e){
 			LOGGER.error("任务派发失败",e);

@@ -149,7 +149,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             Integer roleType = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
             Object tdId = jsonObject.get("DEPTID");
             Object companyid = jsonObject.get("COMPANYID");
-            buffer.append(" and yhzt=0 ");
+            buffer.append(" where yhzt=0 ");
             if (roleType == 1 || roleType == 2) {
                 buffer.append(" and y.YWORG_ID = " + tdId);
             }
@@ -170,7 +170,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 params.add("%" + yhlb + "%");
             }
 //            buffer.append(" and yhzt = 0 ");
-            String sql = "SELECT * from KH_YH_HISTORY y  WHERE YHLB LIKE '在施类' " + buffer.toString();
+            String sql = "SELECT DISTINCT(y.id) as yhid, y.* FROM ( SELECT  y.id as yh_id, y.* FROM KH_YH_HISTORY y WHERE YHLB LIKE '在施类' AND YHZT = 0 UNION ALL SELECT DISTINCT  (s.YH_ID), y.* FROM KH_YH_HISTORY y, KH_SITE s  WHERE s.YH_ID = y.ID AND s.STATUS = 1 AND y.yhzt = 0) y " + buffer.toString();
             List<Map<String, Object>> list = this.execSql(sql, params.toArray());
             List<Object> list1 = new ArrayList<>();
             for (Map map : list) {
