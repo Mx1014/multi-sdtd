@@ -151,10 +151,10 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             Object companyid = jsonObject.get("COMPANYID");
             buffer.append(" where yhzt=0 ");
             if (roleType == 1 || roleType == 2) {
-                buffer.append(" and y.YWORG_ID = " + tdId);
+                buffer.append(" and y.YWORG_ID = '" + tdId+"'");
             }
             if (roleType == 3) {
-                buffer.append(" and y.WXORG_ID = " + companyid);
+                buffer.append(" and y.WXORG_ID ='" + companyid+"'");
             }
             if (yhjb != null && !yhjb.equals("")) {
                 String[] split = yhjb.split(",");
@@ -1116,8 +1116,8 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
 
     public WebApiResponse findYhPicture(long yhId) {
         try {
-            String sql = "SELECT * FROM PICTURE_YH where yh_id=? and  trunc(CREATE_TIME)>=TRUNC(sysdate-7) ";
-            return WebApiResponse.erro("获取成功");
+            String sql = "SELECT * FROM PICTURE_YH where yh_id=? and  trunc(CREATE_TIME)>=TRUNC(sysdate-5) order by CREATE_TIME desc";
+            return WebApiResponse.success(this.execSql(sql,yhId));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("获取失败");

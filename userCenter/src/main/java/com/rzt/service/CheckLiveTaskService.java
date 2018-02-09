@@ -34,7 +34,7 @@ public class CheckLiveTaskService extends CurdService<Cmcoordinate, Cmcoordinate
                 "  LEFT JOIN RZTSYSCOMPANY C ON C.ID = U.COMPANYID where 1=1 ";
 
         List params = new ArrayList<>();
-        //任务状态人查询
+        //任务状态人查询`
         if (!StringUtils.isEmpty(status)) {
             sql += " AND t.status =" + status;
         }
