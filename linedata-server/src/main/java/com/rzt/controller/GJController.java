@@ -1,6 +1,6 @@
 package com.rzt.controller;
 
-import com.rzt.entity.TimedTask;
+import com.rzt.entity.GUZHANG;
 import com.rzt.service.GJService;
 import com.rzt.util.WebApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/GJ")
-public class GJController extends CurdController<TimedTask,GJService>  {
+public class GJController extends CurdController<GUZHANG,GJService>  {
     @Autowired
     private GJService gjService;
 

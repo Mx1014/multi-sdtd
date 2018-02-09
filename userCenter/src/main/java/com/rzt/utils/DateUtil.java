@@ -33,6 +33,38 @@ public class DateUtil {
         partterns[0] = "yyyy-MM-dd HH:mm:ss";
     }
 
+    public static final Date getNowDate() {
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String cdate = sdf.format(cal.getTime());
+        return cal.getTime();
+    }
+
+    public static Date addDate(Date date, double hour) {
+        Calendar cal = Calendar.getInstance();
+        long hour1 = (long) (hour * 3600000);
+        long l = date.getTime() + hour1;
+        cal.setTimeInMillis(l);
+        date = cal.getTime();
+        // return format.format(date);
+        return date;
+    }
+
+    public static String timeUtil(int i) {
+        String date = "";
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+        Calendar c = Calendar.getInstance();
+        c.setTime(new Date());
+        Date m = c.getTime();
+        String mon = df.format(m);
+        if (i == 1) {
+            date = mon + " 00:00";
+        } else {
+            date = mon + " 23:59";
+        }
+        //  task.setPlanEndTime(df.format(new Date()) + " 23:59");
+        return date;
+    }
 
     /**
      * @author LYTG

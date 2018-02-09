@@ -40,8 +40,8 @@ public class XsTaskController extends
      * @return
      */
     @GetMapping("/getXsTaskAll")
-    public WebApiResponse getXsTaskAll(Integer page,Integer size, String taskType,String currentUserId,String userName,String TD,String targetType){
-        return service.getXsTaskAll(page,size,taskType,currentUserId,userName,TD,targetType);
+    public WebApiResponse getXsTaskAll(Integer page,Integer size, String taskType,String currentUserId,String userName,String TD,String targetType,String TaskName){
+        return service.getXsTaskAll(page,size,taskType,currentUserId,userName,TD,targetType,TaskName);
     }
     @GetMapping("/findDeptAuth")
     public String findDeptAuth(String currentUserId){
@@ -118,6 +118,26 @@ public class XsTaskController extends
 
 
     }
+
+    /**
+     * 一级单位手动抽查
+     * @return
+     */
+    @GetMapping("/timedTaskOne")
+    public WebApiResponse timedTaskOne(){
+        service.xsTaskAddAndFindThree();
+        return WebApiResponse.success("success");
+    }
+    /**
+     * 二级单位手动抽查
+     * @return
+     */
+    @GetMapping("/timedTaskTwo")
+    public WebApiResponse timedTaskTwo(){
+        service.xsTaskAddAndFind();
+        return WebApiResponse.success("success");
+    }
+
 
 
 

@@ -101,7 +101,7 @@ public class KHYHHISTORYService extends CurdService<KHYHHISTORY, KHYHHISTORYRepo
             }if(yhjb.equals("jz")){
                 yhjb="建筑隐患";
             }if(yhjb.equals("sm")){
-                yhjb="树木隐患 ";
+                yhjb="树木隐患";
             }
             list.add("%"+yhjb+"%");
             sql += " and yhjb1 like ?" + list.size();

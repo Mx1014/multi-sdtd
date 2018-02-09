@@ -62,7 +62,8 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
      * @param taskType 任务类型  条件查询使用0
      * @return
      */
-    public WebApiResponse getXsTaskAll(Integer page,Integer size, String taskType ,String userId,String userName,String TD,String targetType){
+    public WebApiResponse getXsTaskAll(Integer page,Integer size, String taskType ,String userId
+            ,String userName,String TD,String targetType,String TaskName){
         /**
          *   所有权限	    0
              公司本部权限	1
@@ -92,86 +93,129 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                 switch (i){
                     case 0 :{//一级单位   显示三天周期抽查的任务   ( select sysdate - (3 * 24 * 60 * 60 + 60 * 60) / (1 * 24 * 60 * 60)   from  dual)
 
-                        sql = "  SELECT * FROM (  SELECT DISTINCT t.TASKID," +
-                                "   t.ID," +
-                                "   t.CREATETIME," +
-                                "   t.USER_ID," +
-                                "   t.TASKNAME," +
-                                "    t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did," +
-                                "  d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE,(SELECT COMPANYNAME FROM RZTSYSCOMPANY WHERE ID = xs.WX_ORG) AS COMPANYNAME" +
-                                "    FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
-                                "   LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID LEFT JOIN XS_ZC_TASK xs ON xs.ID = t.TASKID" +
-                                "    WHERE t.CREATETIME >  ( select sysdate - (3 * 24 * 60 * 60 ) / (1 * 24 * 60 * 60)   from  dual)" +
-                                "     AND t.STATUS = 0 AND t.THREEDAY = 1 AND t.TASKTYPE = 1" +
-                                "  UNION ALL" +
-                                "   SELECT DISTINCT t.TASKID," +
-                                "  t.ID," +
-                                "  t.CREATETIME," +
-                                "  t.USER_ID," +
-                                "  t.TASKNAME," +
-                                "  t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did," +
-                                "    d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE" +
-                                "  ,kh.WX_ORG  AS COMPANYNAME" +
-                                "   FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
-                                "  LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID LEFT JOIN KH_TASK kh ON kh.ID = t.TASKID" +
-                                "   WHERE t.CREATETIME >  ( select sysdate - (3 * 24 * 60 * 60 ) / (1 * 24 * 60 * 60)   from  dual)  " +
-                                "   AND t.STATUS = 0 AND t.THREEDAY = 1 AND t.TASKTYPE = 2 ) WHERE 1=1";
+                        sql = "      SELECT * FROM (  SELECT DISTINCT t.TASKID," +
+                                "          t.ID," +
+                                "          t.CREATETIME," +
+                                "          t.USER_ID," +
+                                "          t.TASKNAME," +
+                                "           t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did," +
+                                "         d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE,(SELECT COMPANYNAME FROM RZTSYSCOMPANY WHERE ID = xs.WX_ORG) AS COMPANYNAME" +
+                                "           FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
+                                "          LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID LEFT JOIN XS_ZC_TASK xs ON xs.ID = t.TASKID" +
+                                "           WHERE t.CREATETIME >  ( select sysdate - (3 * 24 * 60 * 60 ) / (1 * 24 * 60 * 60)   from  dual)" +
+                                "            AND t.STATUS = 0 AND t.THREEDAY = 1 AND t.TASKTYPE = 1" +
+                                "         UNION ALL" +
+                                "          SELECT DISTINCT t.TASKID," +
+                                "         t.ID," +
+                                "         t.CREATETIME," +
+                                "         t.USER_ID," +
+                                "         t.TASKNAME," +
+                                "         t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did," +
+                                "           d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE" +
+                                "         ,kh.WX_ORG  AS COMPANYNAME" +
+                                "          FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
+                                "         LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID LEFT JOIN KH_TASK kh ON kh.ID = t.TASKID" +
+                                "          WHERE t.CREATETIME >  ( select sysdate - (3 * 24 * 60 * 60 ) / (1 * 24 * 60 * 60)   from  dual)" +
+                                "          AND t.STATUS = 0 AND t.THREEDAY = 1 AND t.TASKTYPE = 2" +
+                                "           UNION  ALL" +
+                                "                 SELECT DISTINCT t.TASKID," +
+                                "                   t.ID," +
+                                "                   t.CREATETIME," +
+                                "                   t.USER_ID," +
+                                "                   t.TASKNAME," +
+                                "                   t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did," +
+                                "                                                            d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE,com.COMPANYNAME AS COMPANYNAME" +
+                                "                 FROM TIMED_TASK t LEFT JOIN CHECK_LIVE_TASK c ON  t.TASKID = c.ID" +
+                                "                   LEFT JOIN RZTSYSUSER u ON u.ID = c.USER_ID LEFT JOIN RZTSYSDEPARTMENT d" +
+                                "                     ON d.ID = u.DEPTID LEFT JOIN RZTSYSCOMPANY com ON com.ID = u.COMPANYID" +
+                                "                 WHERE  t.CREATETIME >  ( select sysdate - (3 * 24 * 60 * 60 ) / (1 * 24 * 60 * 60)   from  dual)" +
+                                "                        AND t.STATUS = 0 AND t.THREEDAY = 1 AND t.TASKTYPE = 3" +
+                                "    ) WHERE 1=1";
                         break;
                     }case 1 :{//公司本部单位   显示全部周期为三天的任务
 
                         sql = "  SELECT * FROM (  SELECT DISTINCT t.TASKID," +
-                                "   t.ID," +
-                                "   t.CREATETIME," +
-                                "   t.USER_ID," +
-                                "   t.TASKNAME," +
-                                "    t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did," +
-                                "  d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE,(SELECT COMPANYNAME FROM RZTSYSCOMPANY WHERE ID = xs.WX_ORG) AS COMPANYNAME" +
-                                "    FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
-                                "   LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID LEFT JOIN XS_ZC_TASK xs ON xs.ID = t.TASKID" +
-                                "    WHERE t.CREATETIME >  ( select sysdate - (3 * 24 * 60 * 60 ) / (1 * 24 * 60 * 60)   from  dual)" +
-                                "     AND t.STATUS = 0 AND t.THREEDAY = 1 AND t.TASKTYPE = 1" +
-                                "  UNION ALL" +
-                                "   SELECT DISTINCT t.TASKID," +
-                                "  t.ID," +
-                                "  t.CREATETIME," +
-                                "  t.USER_ID," +
-                                "  t.TASKNAME," +
-                                "  t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did," +
-                                "    d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE" +
-                                "  ,kh.WX_ORG  AS COMPANYNAME" +
-                                "   FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
-                                "  LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID LEFT JOIN KH_TASK kh ON kh.ID = t.TASKID" +
-                                "   WHERE t.CREATETIME >  ( select sysdate - (3 * 24 * 60 * 60 ) / (1 * 24 * 60 * 60)   from  dual)  " +
-                                "   AND t.STATUS = 0 AND t.THREEDAY = 1 AND t.TASKTYPE = 2 ) WHERE 1=1";
+                                "           t.ID," +
+                                "           t.CREATETIME," +
+                                "           t.USER_ID," +
+                                "           t.TASKNAME," +
+                                "            t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did," +
+                                "          d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE,(SELECT COMPANYNAME FROM RZTSYSCOMPANY WHERE ID = xs.WX_ORG) AS COMPANYNAME" +
+                                "            FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
+                                "           LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID LEFT JOIN XS_ZC_TASK xs ON xs.ID = t.TASKID" +
+                                "            WHERE t.CREATETIME >  ( select sysdate - (3 * 24 * 60 * 60 ) / (1 * 24 * 60 * 60)   from  dual)" +
+                                "             AND t.STATUS = 0 AND t.THREEDAY = 1 AND t.TASKTYPE = 1" +
+                                "          UNION ALL" +
+                                "           SELECT DISTINCT t.TASKID," +
+                                "          t.ID," +
+                                "          t.CREATETIME," +
+                                "          t.USER_ID," +
+                                "          t.TASKNAME," +
+                                "          t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did," +
+                                "            d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE" +
+                                "          ,kh.WX_ORG  AS COMPANYNAME" +
+                                "           FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
+                                "          LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID LEFT JOIN KH_TASK kh ON kh.ID = t.TASKID" +
+                                "           WHERE t.CREATETIME >  ( select sysdate - (3 * 24 * 60 * 60 ) / (1 * 24 * 60 * 60)   from  dual)" +
+                                "           AND t.STATUS = 0 AND t.THREEDAY = 1 AND t.TASKTYPE = 2" +
+                                "            UNION  ALL" +
+                                "                 SELECT DISTINCT t.TASKID," +
+                                "                   t.ID," +
+                                "                   t.CREATETIME," +
+                                "                   t.USER_ID," +
+                                "                   t.TASKNAME," +
+                                "                   t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did," +
+                                "                                                            d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE,com.COMPANYNAME AS COMPANYNAME" +
+                                "                 FROM TIMED_TASK t LEFT JOIN CHECK_LIVE_TASK c ON  t.TASKID = c.ID" +
+                                "                   LEFT JOIN RZTSYSUSER u ON u.ID = c.USER_ID LEFT JOIN RZTSYSDEPARTMENT d" +
+                                "                     ON d.ID = u.DEPTID LEFT JOIN RZTSYSCOMPANY com ON com.ID = u.COMPANYID" +
+                                "                 WHERE  t.CREATETIME >  ( select sysdate - (3 * 24 * 60 * 60 ) / (1 * 24 * 60 * 60)   from  dual)" +
+                                "                        AND t.STATUS = 0 AND t.THREEDAY = 1 AND t.TASKTYPE = 3" +
+                                "    ) WHERE 1=1";
                         break;
                     }case 2 :{//属地单位   只显示本单位的任务
 
                         if(null != deptid && !"".equals(deptid)){//当前用户单位信息获取成功，进入流程
                             list.add(deptid);
                             sql = " SELECT * FROM ( SELECT DISTINCT t.TASKID," +
-                                    "   t.ID," +
-                                    "   t.CREATETIME," +
-                                    "   t.USER_ID," +
-                                    "   t.TASKNAME," +
-                                    "    t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did," +
-                                    "  d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE,(SELECT COMPANYNAME FROM RZTSYSCOMPANY WHERE ID = xs.WX_ORG) AS COMPANYNAME" +
-                                    "    FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
-                                    "   LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID LEFT JOIN XS_ZC_TASK xs ON xs.ID = t.TASKID" +
-                                    "    WHERE t.CREATETIME > ( SELECT max(CREATETIME) -  600   / (1 * 24 * 60 * 60)" +
-                                    "   FROM TIMED_TASK  WHERE THREEDAY = 0 )     AND t.STATUS = 0 AND t.THREEDAY = 0 AND t.TASKTYPE = 1" +
-                                    "  UNION ALL" +
-                                    "   SELECT DISTINCT t.TASKID," +
-                                    "  t.ID," +
-                                    "  t.CREATETIME," +
-                                    "  t.USER_ID," +
-                                    "  t.TASKNAME," +
-                                    "  t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did," +
-                                    "    d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE" +
-                                    "  ,kh.WX_ORG  AS COMPANYNAME" +
-                                    "   FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
-                                    "  LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID LEFT JOIN KH_TASK kh ON kh.ID = t.TASKID" +
-                                    "    WHERE t.CREATETIME > ( SELECT max(CREATETIME) -  600   / (1 * 24 * 60 * 60)" +
-                                    "      FROM TIMED_TASK  WHERE THREEDAY = 0 )     AND t.STATUS = 0 AND t.THREEDAY = 0 AND t.TASKTYPE = 2 ) WHERE DID  = ?"+list.size();
+                                    "       t.ID," +
+                                    "       t.CREATETIME," +
+                                    "       t.USER_ID," +
+                                    "       t.TASKNAME," +
+                                    "        t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did," +
+                                    "      d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE,(SELECT COMPANYNAME FROM RZTSYSCOMPANY WHERE ID = xs.WX_ORG) AS COMPANYNAME" +
+                                    "        FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
+                                    "       LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID LEFT JOIN XS_ZC_TASK xs ON xs.ID = t.TASKID" +
+                                    "        WHERE t.CREATETIME > ( SELECT max(CREATETIME) -  600   / (1 * 24 * 60 * 60)" +
+                                    "       FROM TIMED_TASK  WHERE THREEDAY = 0 )     AND t.STATUS = 0 AND t.THREEDAY = 0 AND t.TASKTYPE = 1" +
+                                    "      UNION ALL" +
+                                    "       SELECT DISTINCT t.TASKID," +
+                                    "      t.ID," +
+                                    "      t.CREATETIME," +
+                                    "      t.USER_ID," +
+                                    "      t.TASKNAME," +
+                                    "      t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did," +
+                                    "        d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE" +
+                                    "      ,kh.WX_ORG  AS COMPANYNAME" +
+                                    "       FROM TIMED_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID" +
+                                    "      LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID LEFT JOIN KH_TASK kh ON kh.ID = t.TASKID" +
+                                    "      WHERE t.CREATETIME > ( SELECT max(CREATETIME) -  600   / (1 * 24 * 60 * 60)" +
+                                    "      FROM TIMED_TASK  WHERE THREEDAY = 0 )     AND t.STATUS = 0 AND t.THREEDAY = 0 AND t.TASKTYPE = 2" +
+                                    "      UNION ALL" +
+                                    "                SELECT DISTINCT t.TASKID," +
+                                    "                  t.ID," +
+                                    "                  t.CREATETIME," +
+                                    "                  t.USER_ID," +
+                                    "                  t.TASKNAME," +
+                                    "                  t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did," +
+                                    "                                                           d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE,com.COMPANYNAME AS COMPANYNAME" +
+                                    "                FROM TIMED_TASK t LEFT JOIN CHECK_LIVE_TASK c ON  t.TASKID = c.ID" +
+                                    "                  LEFT JOIN RZTSYSUSER u ON u.ID = c.USER_ID LEFT JOIN RZTSYSDEPARTMENT d" +
+                                    "                    ON d.ID = u.DEPTID LEFT JOIN RZTSYSCOMPANY com ON com.ID = u.COMPANYID" +
+                                    "                WHERE  t.CREATETIME > ( SELECT max(CREATETIME) -  600   / (1 * 24 * 60 * 60)" +
+                                    "                                        FROM TIMED_TASK  WHERE THREEDAY = 0 )" +
+                                    "                       AND t.STATUS = 0 AND t.THREEDAY = 0 AND t.TASKTYPE = 3" +
+                                    "       ) WHERE DID  = ?"+list.size();
                         }else {
                             LOGGER.error("获取当前用户单位信息失败");
                             return WebApiResponse.erro("获取当前用户单位信息失败");
@@ -190,7 +234,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
 
         //查询责任人
             if(null != userName && !"".equals(userName)){
-            sql += "  AND  USER_ID in (SELECT ru.ID from RZTSYSUSER ru WHERE ru.REALNAME LIKE '%"+userName+"%')";
+            sql += "  AND  REALNAME LIKE '%"+userName+"%'";
             }
             //通道单位
             if(null != TD && !"".equals(TD)){
@@ -200,9 +244,12 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
             if(null != targetType && !"".equals(targetType)){
                 sql += "  AND  TARGETSTATUS =  "+targetType;
             }
-
+            //任务名称模糊查询
+            if(null != TaskName && !"".equals(TaskName)){
+                sql += "  AND  TASKNAME like '%"+TaskName+"%'  ";
+            }
         if(null != sql && !"".equals(sql)){
-            sql +="   ORDER BY CREATETIME DESC     ";
+            sql +="   ORDER BY ID DESC     ";
         }
 
             pageResult = this.execSqlPage(pageable, sql, list.toArray());
@@ -222,7 +269,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
        //统一时间作为阶段标识
        Date date1 = new Date();
        try {
-            //抽查之前需要记录上一次抽查任务的审核完成情况
+           //抽查之前需要记录上一次抽查任务的审核完成情况
             //查询所有通道单位的sql
             String deptSql = "SELECT d.ID" +
                     "   FROM RZTSYSDEPARTMENT d WHERE d.DEPTPID = '402881e6603a69b801603a6ab1d70000' AND d.ID != '40283781608b848701608b85d3700000'";
@@ -282,9 +329,9 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
 
             //巡视sql
             String findSql1 = "select x.TASK_NAME,x.STAUTS,x.ID,x.CM_USER_ID from XS_ZC_TASK x" +
-                    "  WHERE x.ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 1 ) AND  x.STAUTS != 0  AND  x.STAUTS != 3   AND x.IS_DELETE = 0 ";
+                    "  WHERE x.ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 1 ) AND  x.STAUTS != 0  AND  x.STAUTS != 3   AND x.IS_DELETE = 0   AND trunc(x.PLAN_START_TIME) = trunc(sysdate)";
             //看护sql
-            String findSql2 = "SELECT kht.TASK_NAME,kht.ID,kht.STATUS,USER_ID FROM KH_TASK kht WHERE kht.ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 2 )  AND kht.STATUS != 0  AND  kht.STATUS != 3  ";
+            String findSql2 = "SELECT kht.TASK_NAME,kht.ID,kht.STATUS,USER_ID FROM KH_TASK kht WHERE kht.ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 2 )  AND kht.STATUS != 0 AND  trunc(kht.PLAN_START_TIME) = trunc(sysdate)  AND  kht.STATUS != 3  ";
             List<Map<String, Object>> maps = this.execSql(findSql1, null);
             List<Map<String, Object>> maps2 = this.execSql(findSql2, null);
             Iterator<Map<String, Object>> iterator = maps.iterator();
@@ -316,10 +363,10 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
             }
             LOGGER.info("看护任务抽查完毕");
             //看护稽查
-          /*  String khjcsql = "SELECT ID,STATUS,USER_ID,TASK_NAME  " +
-                    "         FROM CHECK_LIVE_TASK  WHERE STATUS != 0 AND ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 3 )";
+            String khjcsql = "SELECT ID,STATUS,USER_ID,TASK_NAME  " +
+                    "         FROM CHECK_LIVE_TASK  WHERE STATUS != 0 AND STATUS != 3 AND ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 3 )";
             List<Map<String, Object>> khjcmaps = this.execSql(khjcsql, null);
-            Iterator<Map<String, Object>> khjciterator = maps.iterator();
+            Iterator<Map<String, Object>> khjciterator = khjcmaps.iterator();
             while (khjciterator.hasNext()){
                 Map<String, Object> a = khjciterator.next();
                 Integer CheckStatus = 0;
@@ -336,10 +383,10 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
             }
             LOGGER.info("看护稽查任务抽查完毕");
             //巡视稽查
-            String xsjcsql = "SELECT ID,STATUS,USER_ID,TASK_NAME" +
+          /*  String xsjcsql = "SELECT ID,STATUS,USER_ID,TASK_NAME" +
                     "    FROM CHECK_LIVE_TASKXS  WHERE STATUS != 0   AND ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 4 )";
             List<Map<String, Object>> xsjcmaps = this.execSql(xsjcsql, null);
-            Iterator<Map<String, Object>> xsjciterator = maps.iterator();
+            Iterator<Map<String, Object>> xsjciterator = xsjcmaps.iterator();
             while (xsjciterator.hasNext()){
                 Map<String, Object> a = xsjciterator.next();
                 Integer CheckStatus = 0;
@@ -445,14 +492,14 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                         "  WHERE WORKTYPE = 2 AND k.ID IS NOT  NULL AND k.REAL_START_TIME =" +
                         "   (SELECT max(h.REAL_START_TIME)" +
                         "   FROM XS_ZC_TASK h WHERE h.CM_USER_ID = u.ID) AND k.STAUTS != 0 AND" +
-                        "   k.ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 1 AND THREEDAY = 1) AND  k.STAUTS != 0   AND k.IS_DELETE = 0";
+                        "   k.ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 1 AND THREEDAY = 1) AND  k.STAUTS != 0   AND k.IS_DELETE = 0 ";// AND trunc(k.PLAN_START_TIME) = trunc(sysdate)
                 //看护sql
                 String findSql2 = "SELECT k.TASK_NAME,k.ID,k.STATUS,k.USER_ID" +
                         "  FROM RZTSYSUSER u" +
                         "  LEFT JOIN KH_TASK k ON k.USER_ID = u.ID" +
                         "  WHERE WORKTYPE = 1 AND k.ID IS NOT  NULL AND k.CREATE_TIME =" +
                         "  (SELECT max(h.CREATE_TIME)" +
-                        "   FROM KH_TASK h WHERE h.USER_ID = u.ID) AND k.STATUS != 0 AND k.STATUS != 3" +
+                        "   FROM KH_TASK h WHERE h.USER_ID = u.ID) AND k.STATUS != 0 AND k.STATUS != 3  " +//AND  trunc(k.PLAN_START_TIME) = trunc(sysdate)
                         "   AND k.ID NOT IN" +
                         "       (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 2 AND THREEDAY =1)";
                 List<Map<String, Object>> maps = this.execSql(findSql1, null);
@@ -490,10 +537,10 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                 LOGGER.info("看护任务抽查完毕");
 
                 //看护稽查
-            /*String khjcsql = "SELECT ID,STATUS,USER_ID,TASK_NAME  " +
-                    "         FROM CHECK_LIVE_TASK  WHERE STATUS != 0 AND ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 3 )";
+            String khjcsql = "SELECT ID,STATUS,USER_ID,TASK_NAME  " +
+                    "         FROM CHECK_LIVE_TASK  WHERE STATUS != 0  AND STATUS != 3  AND ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 3 )";
             List<Map<String, Object>> khjcmaps = this.execSql(khjcsql, null);
-            Iterator<Map<String, Object>> khjciterator = maps.iterator();
+            Iterator<Map<String, Object>> khjciterator = khjcmaps.iterator();
             while (khjciterator.hasNext()){
                 Map<String, Object> a = khjciterator.next();
                 Integer CheckStatus = 0;
@@ -510,10 +557,10 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
             }
             LOGGER.info("看护稽查任务抽查完毕");
             //巡视稽查
-            String xsjcsql = "SELECT ID,STATUS,USER_ID,TASK_NAME" +
+           /* String xsjcsql = "SELECT ID,STATUS,USER_ID,TASK_NAME" +
                     "    FROM CHECK_LIVE_TASKXS  WHERE STATUS != 0   AND ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 4 )";
             List<Map<String, Object>> xsjcmaps = this.execSql(xsjcsql, null);
-            Iterator<Map<String, Object>> xsjciterator = maps.iterator();
+            Iterator<Map<String, Object>> xsjciterator = xsjcmaps.iterator();
             while (xsjciterator.hasNext()){
                 Map<String, Object> a = xsjciterator.next();
                 Integer CheckStatus = 0;

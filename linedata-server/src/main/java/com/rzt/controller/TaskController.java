@@ -1,19 +1,19 @@
 package com.rzt.controller;
 
 import com.alibaba.fastjson.JSONObject;
-import com.rzt.entity.TimedTask;
+import com.rzt.entity.KHYHHISTORY;
 import com.rzt.service.TasksService;
 import com.rzt.util.WebApiResponse;
+import com.rzt.utils.DateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.HashOperations;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
 
 /**
  * 李成阳
@@ -22,7 +22,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/tasks")
-public class TaskController extends CurdController<TimedTask,TasksService>  {
+public class TaskController extends CurdController<KHYHHISTORY,TasksService>  {
     @Autowired
     private TasksService tasksService;
 
@@ -44,6 +44,7 @@ public class TaskController extends CurdController<TimedTask,TasksService>  {
     public WebApiResponse findTasksGroupDept(){
         return tasksService.deptDaZhu();
     }
+
 
     /**
      * 三级页面使用
@@ -90,5 +91,7 @@ public class TaskController extends CurdController<TimedTask,TasksService>  {
     public WebApiResponse deptDaZhu() {
        return tasksService.deptDaZhu();
     }
+
+
 
 }
