@@ -23,7 +23,7 @@ public class AnswertimeController extends CurdController<RztSysUser, CommonServi
     private RedisTemplate<String, Object> redisTemplate;
 
     @RequestMapping("answertimeList")
-    public WebApiResponse answertimeList(Integer page, Integer size, String currentUserId, String startTime, String endTime, String deptId, String taskType) {
+    public WebApiResponse answertimeList(String realname, String taskname, String companyid, Integer page, Integer size, String currentUserId, String startTime, String endTime, String deptId, String taskType) {
         Pageable pageable = new PageRequest(page, size);
         List listLike = new ArrayList();
         String s = "";
@@ -45,6 +45,18 @@ public class AnswertimeController extends CurdController<RztSysUser, CommonServi
         } else if (!StringUtils.isEmpty(deptId)) {
             listLike.add(deptId);
             s += " AND u.DEPTID = ?" + listLike.size();
+        }
+        if (!StringUtils.isEmpty(companyid)) {
+            listLike.add(companyid);
+            s += " AND u.COMPANYID = ?" + listLike.size();
+        }
+        if (!StringUtils.isEmpty(taskname)) {
+            listLike.add("%" + taskname + "%");
+            s += " AND x.TASK_NAME LIKE ?" + listLike.size();
+        }
+        if (!StringUtils.isEmpty(realname)) {
+            listLike.add("%" + realname + "%");
+            s += " AND u.REALNAME LIKE ?" + listLike.size();
         }
         String allSql = "";
         String xssql = "  SELECT * FROM (SELECT x.TASK_NAME,nvl(x.PLAN_START_TIME,sysdate-2) as PLAN_START_TIME," +

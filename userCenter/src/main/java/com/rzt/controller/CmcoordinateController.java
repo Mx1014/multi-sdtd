@@ -6,9 +6,12 @@
  */
 package com.rzt.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.Cmcoordinate;
 import com.rzt.entity.MyCoordinate;
+import com.rzt.entity.RztSysUser;
 import com.rzt.service.CmcoordinateService;
+import com.rzt.service.RztSysUserService;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.Constances;
 import com.rzt.utils.DateUtil;
@@ -20,15 +23,13 @@ import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -46,6 +47,8 @@ public class CmcoordinateController extends
         CurdController<Cmcoordinate, CmcoordinateService> {
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+    @Autowired
+    private RztSysUserService rztSysUserService;
 
     @PostMapping("addCmcoordinate")
     @Transactional
@@ -85,7 +88,7 @@ public class CmcoordinateController extends
             redisTemplate.expire(key, 2, TimeUnit.DAYS);
 
             //5.存一个zset 用来判断在线离线
-            setOperations.add("currentUser",myCoordinate.getID(),time);
+            setOperations.add("currentUser", myCoordinate.getID(), time);
 //            this.service.add(cmcoordinate);
             return WebApiResponse.success("添加成功");
         } catch (Exception e) {
@@ -105,17 +108,84 @@ public class CmcoordinateController extends
 
     //根据坐标以及距离查询附近所有人，单位为m
     @GetMapping("getRangeUser")
-    public GeoResults getRangeUser(float lon, float lat, int multiplier) {
-        GeoOperations geoOperations = redisTemplate.opsForGeo();
-        Point point = new Point(new Double(lon), new Double(lat));
-        CustomMetric customMetric = new CustomMetric(6.37D, "m");
-        Distance distance = new Distance(multiplier, customMetric);
-        Circle circle = new Circle(point, distance);
-        RedisGeoCommands.GeoRadiusCommandArgs geoRadiusCommandArgs = RedisGeoCommands.GeoRadiusCommandArgs.newGeoRadiusArgs();
-        geoRadiusCommandArgs.includeCoordinates();
-        geoRadiusCommandArgs.includeDistance();
-        GeoResults geoResult = geoOperations.geoRadius("location", circle, geoRadiusCommandArgs);
-        return geoResult;
+    public WebApiResponse getRangeUser(float lon, float lat, int multiplier) {
+        try {
+            GeoOperations geoOperations = redisTemplate.opsForGeo();
+            Point point = new Point(new Double(lon), new Double(lat));
+            CustomMetric customMetric = new CustomMetric(6.37D, "m");
+            Distance distance = new Distance(multiplier, customMetric);
+            Circle circle = new Circle(point, distance);
+            RedisGeoCommands.GeoRadiusCommandArgs geoRadiusCommandArgs = RedisGeoCommands.GeoRadiusCommandArgs.newGeoRadiusArgs();
+            geoRadiusCommandArgs.includeCoordinates();
+            geoRadiusCommandArgs.includeDistance();
+            GeoResults geoResult = geoOperations.geoRadius("location", circle, geoRadiusCommandArgs);
+            Iterator<GeoResult> iterator = geoResult.iterator();
+            List<Map> maps = new ArrayList<>();
+            while (iterator.hasNext()) {
+                boolean flag = false;
+                GeoResult result = iterator.next();
+                RedisGeoCommands.GeoLocation geo = (RedisGeoCommands.GeoLocation) result.getContent();
+                String userid = (String) geo.getName();
+                String userQuery = " SELECT * FROM USERINFO WHERE ID=?1 ";
+                List<Map<String, Object>> one = this.service.execSql(userQuery, userid);
+                if (one.size() == 1) {
+                    Map map = new HashMap();
+                    Point point1 = geo.getPoint();
+                    String username = String.valueOf(one.get(0).get("ID"));
+                    int worktype = Integer.parseInt(one.get(0).get("WORKTYPE").toString());
+                    String realname = String.valueOf(one.get(0).get("REALNAME"));
+                    if (worktype == 1) {
+                        String KHSQL = " SELECT ID,TASK_NAME,PLAN_START_TIME,PLAN_END_TIME,STATUS AS STATUS FROM KH_TASK WHERE PLAN_START_TIME< = trunc(sysdate + 1) AND PLAN_END_TIME >= trunc(sysdate) AND STATUS!=3  AND USER_ID = ?1 ";
+                        taskType(KHSQL, maps, flag, map, username, point1, realname, worktype, userid, one);
+                    } else if (worktype == 2) {
+                        String XSSQL = " SELECT ID,TASK_NAME,PLAN_START_TIME,PLAN_END_TIME,STAUTS AS STATUS FROM XS_ZC_TASK  WHERE is_delete = 0 AND PLAN_START_TIME< = trunc(sysdate + 1) AND PLAN_END_TIME >= trunc(sysdate) AND CM_USER_ID = ?1 ";
+                        taskType(XSSQL, maps, flag, map, username, point1, realname, worktype, userid, one);
+                    } else if (worktype == 3) {
+                        String XCJXZ = "SELECT ID,TASK_NAME,PLAN_START_TIME,PLAN_END_TIME,STATUS AS STATUS  " +
+                                "FROM CHECK_LIVE_TASK " +
+                                "WHERE to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') < plan_end_time AND USER_ID=?1";
+                        taskType(XCJXZ, maps, flag, map, username, point1, realname, worktype, userid, one);
+                    }
+                }
+            }
+            return WebApiResponse.success(maps);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("erro");
+        }
+    }
+
+    private void taskType(String SQL, List<Map> maps, boolean flag, Map map, String username, Point point1, String realname, int worktype, String userid, List<Map<String, Object>> one) {
+        List<Map<String, Object>> maps1 = this.service.execSql(SQL, username);
+        if (maps1.size() > 0) {
+            for (int i1 = 0; i1 < maps1.size(); i1++) {
+                Integer stauts = Integer.parseInt(maps1.get(i1).get("STATUS").toString());
+                if (stauts == 1) {
+                    map.put("STATUS", 1);
+                    break;
+                } else if (stauts == 0) {
+                    flag = true;
+                }
+            }
+            if (StringUtils.isEmpty(map.get("STATUS"))) {
+                if (flag == true) {
+                    map.put("STATUS", 0);
+                } else {
+                    map.put("STATUS", 2);
+                }
+            }
+            map.put("X", point1.getX());
+            map.put("Y", point1.getY());
+            map.put("USERID", userid);
+            map.put("REALNAME", realname);
+            map.put("WORKTYPE", worktype);
+            map.put("PHONE", one.get(0).get("PHONE"));
+            map.put("LOGINSTATUS", one.get(0).get("LOGINSTATUS"));
+            map.put("DEPT", one.get(0).get("DEPT"));
+            map.put("CLASSNAME", one.get(0).get("CLASSNAME"));
+            map.put("TASKXX", maps1);
+            maps.add(map);
+        }
     }
 
     @GetMapping("getUserCoordinate")

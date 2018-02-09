@@ -60,7 +60,7 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
      * 查询无GPS信号的离线人员
      */
     //十分钟一查
-    //@Scheduled(fixedDelay = 600000)
+    @Scheduled(fixedDelay = 600000)
     public void lixianTask(){
 
         ZSetOperations<String, Object> zSet = redisTemplate.opsForZSet();
@@ -79,12 +79,14 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
                     taskType=1;
                 }
                 //插入告警记录
-                lixian((String) userId,taskType);
+                int flag = lixian((String) userId, taskType);
 
-                //置为离线状态
-                userQuit((String) userId);
+                if(flag>0){
+                    //置为离线状态
+                    userQuit((String) userId);
 
-                zSet.remove("currentUser",userId);
+                    zSet.remove("currentUser",userId);
+                }
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -109,7 +111,7 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
         }
     }
 
-    public void lixian(String userId,Integer taskType){
+    public int lixian(String userId,Integer taskType){
         String sql = "";
         if(taskType==2){
             sql = " SELECT kh.ID,d.ID AS  DEPTID,kh.PLAN_START_TIME,kh.PLAN_END_TIME, kh.TASK_NAME,kh.USER_ID FROM  KH_TASK kh  LEFT JOIN RZTSYSDEPARTMENT d " +
@@ -136,7 +138,7 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
         List<Map<String, Object>> maps = execSql(sql,userId);
         //如果查询结果为0，证明这个人当天没有任务
         if(maps.size()==0){
-            return;
+            return 0;
         }
         int flag = 0;
         for (Map<String, Object> map:maps) {
@@ -152,6 +154,15 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
 
                 if(startDate<currentDate && currentDate<endDate){
                     if(flag==0){
+                        String sql1 = "SELECT   ID " +
+                                "FROM PICTURE_TOUR " +
+                                "WHERE TASK_ID =?1 AND CREATE_TIME BETWEEN sysdate-90/(24*60) AND sysdate+10/(24*60)";
+                        Object id = map.get("ID");
+                        List<Map<String, Object>> maps1 = execSql(sql1, id);
+                        if(maps1.size()>0){
+                            continue;
+                        }
+                        flag++;
                         String key = "";
                         if (taskType==2){
                             key = "ONE+"+map.get("ID")+"+2+8+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME")+"+"+reason;
@@ -164,7 +175,7 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
                             resp.saveCheckEjWdw(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(map.get("ID").toString()),3,13,map.get("USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString(),reason);
                         }
                         redisService.setex(key);
-                        flag++;
+
                     }
                 }else if(new Date().getTime()<startDate){
                     String s = "未上线";
@@ -183,6 +194,7 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
             } catch (Exception e) {
             }
         }
+        return flag;
     }
 
 

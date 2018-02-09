@@ -37,6 +37,7 @@ public class OfflinesController extends CurdController<RztSysUser, CommonService
         List listLike = new ArrayList();
         String s = "";
         String s1 = "";
+        String s2 = "";
         JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", currentUserId).toString());
         int roletype = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
         Object deptid = jsonObject.get("DEPTID");
@@ -50,7 +51,7 @@ public class OfflinesController extends CurdController<RztSysUser, CommonService
         }
         if (!StringUtils.isEmpty(loginType)){
             listLike.add(loginType);
-            s1 += "  LOGINSTATUS=?" + listLike.size();
+            s2 += " AND LOGINSTATUS=?" + listLike.size();
         }
         if (!StringUtils.isEmpty(deptId)) {
             listLike.add(deptId);
@@ -124,15 +125,14 @@ public class OfflinesController extends CurdController<RztSysUser, CommonService
                 "        e.a               AS MORE, " +
                 "        u.DEPTID, " +
                 "        e.CREATE_TIME " +
-                //"        e.ONLINE_TIME " +
                 "      FROM (SELECT " +
                 "              count(1)                                                            AS a, " +
                 "              ej.USER_ID, " +
                 "              MAX(ej.CREATE_TIME)                                                 AS CREATE_TIME " +
-                //"              nvl(to_char(MAX(ej.ONLINE_TIME), 'yyyy-MM-dd hh24:mi:ss'), '人员未上线') AS ONLINE_TIME " +
+
                 "            FROM MONITOR_CHECK_EJ ej " +
                 "            WHERE (ej.WARNING_TYPE = 8 OR ej.WARNING_TYPE = 2) AND USER_ID !='null'  " + s +
-                "            GROUP BY USER_ID) e JOIN USERINFO u ON e.USER_ID = u.ID AND u.USERDELETE=1) ch LEFT JOIN MONITOR_CHECK_EJ ce " +
+                "            GROUP BY USER_ID) e JOIN USERINFO u ON e.USER_ID = u.ID AND u.USERDELETE=1 "+s2+" ) ch LEFT JOIN MONITOR_CHECK_EJ ce " +
                 "    ON ch.USER_ID = ce.USER_ID AND ch.CREATE_TIME = ce.CREATE_TIME  " + s1;
         try {
             return WebApiResponse.success(this.service.execSqlPage(pageable, sql, listLike.toArray()));
