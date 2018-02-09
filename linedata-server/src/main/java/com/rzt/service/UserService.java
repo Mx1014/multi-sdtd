@@ -133,7 +133,7 @@ public class UserService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository>
         String xs = " SELECT nvl(sum(decode(LOGINSTATUS,1,1,0)),0) xszx," +
                 "  nvl(sum(decode(LOGINSTATUS,0,1,0)),0) xslx,DEPTID FROM (SELECT CM_USER_ID,DEPTID,CLASSNAME,LOGINSTATUS " +
                 " FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID " +
-                " WHERE USERDELETE = 1  " + s + s2 +
+                " WHERE USERDELETE = 1  AND IS_DELETE=0   " + s + s2 +
                 " GROUP BY DEPTID,CM_USER_ID,CLASSNAME,LOGINSTATUS ) GROUP BY DEPTID ";
         String kh = " SELECT nvl(sum(decode(LOGINSTATUS,1,1,0)),0) khzx," +
                 "  nvl(sum(decode(LOGINSTATUS,0,1,0)),0) khlx,DEPTID FROM (SELECT USER_ID,DEPTID,CLASSNAME,LOGINSTATUS " +
@@ -431,6 +431,180 @@ public class UserService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository>
         }
         LOGGER.info("人员信息详情查询成功");
         return WebApiResponse.success(map);
+    }
+
+
+    public WebApiResponse aaa(){
+        /**
+         * 巡视在线人员
+         */
+        String xsZxUser = " SELECT count(1) " +
+                "FROM (SELECT z.CM_USER_ID " +
+                "      FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID " +
+                "      WHERE LOGINSTATUS = 1 AND USERDELETE = 1 AND z.PLAN_START_TIME< = sysdate AND z.PLAN_END_TIME >= sysdate " +
+                "      GROUP BY z.CM_USER_ID) ";
+        /**
+         * 巡视离线人员
+         */
+        String xsLxUser = " SELECT count(1) FROM (SELECT z.CM_USER_ID " +
+                "  FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID " +
+                "  WHERE LOGINSTATUS = 0 AND USERDELETE = 1  AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= sysdate " +
+                "  GROUP BY z.CM_USER_ID) ";
+        /**
+         * 看护在线人员
+         */
+        String khZxUser = " SELECT count(1)FROM (SELECT count(u.ID) " +
+                "FROM RZTSYSUSER u LEFT JOIN KH_TASK k ON u.ID = k.USER_ID " +
+                "WHERE LOGINSTATUS = 1 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= sysdate " +
+                "GROUP BY k.USER_ID) ";
+        /**
+         * 看护离线人员
+         */
+        String khLxUser = " SELECT count(1)FROM (SELECT count(u.ID) " +
+                "FROM RZTSYSUSER u LEFT JOIN KH_TASK k ON u.ID = k.USER_ID " +
+                "WHERE LOGINSTATUS = 0 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= sysdate " +
+                "GROUP BY k.USER_ID) ";
+
+        /**
+         * 前台稽查在线人员
+         */
+        String qjcZxUser = " SELECT count(1) FROM (SELECT " +
+                "    count(1) " +
+                "  FROM CHECK_LIVE_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID " +
+                "  WHERE u.LOGINSTATUS = 1 AND u.USERDELETE = 1 AND sysdate BETWEEN PLAN_START_TIME AND PLAN_END_TIME GROUP BY k.USER_ID) ";
+        /**
+         * 前台稽查离线人员
+         */
+        String qjcLxUser = " SELECT count(1) FROM (SELECT " +
+                "    count(1) " +
+                "  FROM CHECK_LIVE_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID " +
+                "  WHERE u.LOGINSTATUS = 0 AND u.USERDELETE = 1 AND sysdate BETWEEN PLAN_START_TIME AND PLAN_END_TIME GROUP BY k.USER_ID) ";
+
+        /**
+         * 后台稽查在线人员
+         */
+        String hjcZxUser = " SELECT count(id)  FROM RZTSYSUSER WHERE LOGINSTATUS = 1 AND WORKTYPE = 4 AND USERDELETE = 1  AND USERTYPE=0 ";
+        /**
+         * 后台稽查离线人员
+         */
+        String hjcLxUser = " SELECT count(id)  FROM RZTSYSUSER WHERE LOGINSTATUS = 0 AND WORKTYPE = 4 AND USERDELETE = 1  AND USERTYPE=0 ";
+
+
+        /**
+         * 正常巡视未开始
+         */
+        String zcXsWks = "SELECT count(1)  " +
+                "FROM XS_ZC_TASK " +
+                "WHERE STAUTS = 0 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+        /**
+         * 保电巡视未开始
+         */
+        String bdXsWks = "SELECT count(1)  " +
+                "FROM XS_TXBD_TASK " +
+                "WHERE STAUTS = 0 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+        /**
+         * 看护未开始
+         */
+        String khWks = "SELECT count(1)  " +
+                "FROM KH_TASK " +
+                "WHERE STATUS = 0 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+        /**
+         * 现场稽查未开始
+         */
+        String xcJcWks = "SELECT count(1)  " +
+                "FROM CHECK_LIVE_TASK " +
+                "WHERE STATUS = 0 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+        /**
+         * 正常巡视进行中
+         */
+        String zcXsJxz = "SELECT count(1)  " +
+                "FROM XS_ZC_TASK " +
+                "WHERE STAUTS = 1 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+        /**
+         * 保电巡视进行中
+         */
+        String bdXsJxz = "SELECT count(1)  " +
+                "FROM XS_TXBD_TASK " +
+                "WHERE STAUTS = 1 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+        /**
+         * 看护进行中
+         */
+        String khJxz = "SELECT count(1)  " +
+                "FROM KH_TASK " +
+                "WHERE STATUS = 1 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+        /**
+         * 现场稽查进行中
+         */
+        String xcJcJxz = "SELECT count(1)  " +
+                "FROM CHECK_LIVE_TASK " +
+                "WHERE STATUS = 1 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+        /**
+         * 正常巡视已完成
+         */
+        String zcXsYwc = "SELECT count(1)  " +
+                "FROM XS_ZC_TASK " +
+                "WHERE STAUTS = 2 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+        /**
+         * 保电巡视已完成
+         */
+        String bdXsYwc = "SELECT count(1)  " +
+                "FROM XS_TXBD_TASK " +
+                "WHERE STAUTS = 2 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+        /**
+         * 看护已完成
+         */
+        String khYwc = "SELECT count(1)  " +
+                "FROM KH_TASK " +
+                "WHERE STATUS = 2 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+        /**
+         *现场稽查已完成
+         */
+        String xcJcYwc = "SELECT count(1)  " +
+                "FROM CHECK_LIVE_TASK " +
+                "WHERE STATUS = 2 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
+        /**
+         * 今日治理隐患
+         */
+        String handlesql = "SELECT COUNT(*)  FROM KH_YH_HISTORY WHERE trunc(YHXQ_TIME) =trunc(sysdate)";
+        /**
+         * 今日新增隐患
+         */
+        String addedsql = "SELECT COUNT(*)  FROM KH_YH_HISTORY WHERE trunc(create_time) =trunc(sysdate)";
+        /**
+         * 今日调整隐患
+         */
+        String updateSql = "SELECT COUNT(*)  FROM KH_YH_HISTORY WHERE trunc(update_time) =trunc(sysdate)";
+        /**
+         * 隐患总数
+         */
+        String allSql = "select count(*)  from kh_yh_history where yhzt=0";
+        //遍历Map取出通道单位id用于数据库查询权限
+            String sql = "SELECT " +
+//                    "(" + zxUser + ") as zxUser," +
+//                    "(" + lxUser + ") as lxUser," +
+                    "(" + xsZxUser + ") as xsZxUser," +
+                    "(" + xsLxUser + ") as xsLxUser," +
+                    "(" + khZxUser + ") as khZxUser," +
+                    "(" + khLxUser + ") as khLxUser, " +
+                    "(" + zcXsWks + ")+(" + bdXsWks + ") as XsWks," +
+                    "(" + zcXsJxz + ")+(" + bdXsJxz + ") as XsJxz," +
+                    "(" + zcXsYwc + ")+(" + bdXsYwc + ") as XsYwc," +
+                    "(" + khJxz + ") as khJxz," +
+                    "(" + khWks + ") as khWks, " +
+                    "(" + khYwc + ") as khYwc," +
+                    "(" + xcJcJxz + ") as xcJcJxz," +
+                    "(" + xcJcWks + ") as xcJcWks," +
+                    "(" + xcJcYwc + ") as xcJcYwc," +
+                    "(" + qjcZxUser + ") as qjcZxUser," +
+                    "(" + qjcLxUser + ") as qjcLxUser," +
+                    "(" + hjcZxUser + ") as hjcZxUser," +
+                    "(" + hjcLxUser + ") as hjcLxUser, " +
+                    "(" + handlesql + ") as handlesql," +
+                    "(" + addedsql + ") as addedsql," +
+                    "(" + updateSql + ") as updateSql," +
+                    "(" + allSql + ") as ALLSQL " +
+                    " FROM dual";
+            return WebApiResponse.success(this.execSql(sql));
     }
 
 
