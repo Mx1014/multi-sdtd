@@ -317,7 +317,7 @@ public class UserDisplaySynthesisController extends CurdController<RztSysUser, C
     }
 
     @GetMapping("htjcList")
-    public WebApiResponse htjcList(String loginType, String deptId, Pageable pageable){
+    public WebApiResponse htjcList(String loginType, String deptId,Integer page,Integer size){
         try {
             String s1 = "";
             if (!StringUtils.isEmpty(deptId)){
@@ -355,14 +355,20 @@ public class UserDisplaySynthesisController extends CurdController<RztSysUser, C
                         }
                     }
                 }
-
-                returnMap.put("content",list);
+                List returnList = new ArrayList();
+                int s = list.size()-page*size>size?((page+1)*size):list.size();
+                for (int i=page*size;i<(list.size()-page*size>size?((page+1)*size):list.size());i++){
+                    returnList.add(list.get(i));
+                }
+                returnMap.put("content",returnList);
                 returnMap.put("totalElements",list.size());
-
+                returnMap.put("totalPages",(list.size()%size==0?list.size()/size:list.size()/size+1));
+                returnMap.put("number",page);
+                returnMap.put("size",size);
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            return WebApiResponse.success(list);
+            return WebApiResponse.success(returnMap);
         }catch (Exception e){
             return WebApiResponse.erro("失败");
         }

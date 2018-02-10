@@ -105,11 +105,11 @@ public class CompanyNumTasksController extends CurdController<RztSysUser, Common
                 if (!StringUtils.isEmpty(htzx)) {
                     htjczsL = htzx;
                 }
-                map.put("rwzs", zcXsS + bdXsS + khzsL);
+                map.put("rwzs", zcXsS + bdXsS + khzsL +xcjczsL+ htjczsL+1);
                 map.put("xszs", zcXsS + bdXsS);
                 map.put("khzs", khzsL);
                 map.put("xcjczs", xcjczsL);
-                map.put("htjczs", htjczsL);
+                map.put("htjczs", htjczsL+1);
             }
             return WebApiResponse.success(deptnameList);
         } catch (NumberFormatException e) {
@@ -290,7 +290,8 @@ public class CompanyNumTasksController extends CurdController<RztSysUser, Common
             /**
              *后台稽查未完成
              */
-            String htJcWks = "SELECT count(*),deptId FROM TIMED_TASK_RECORD R LEFT JOIN RZTSYSDEPARTMENT D ON D.ID=R.DEPT_ID WHERE R.CREATE_TIME >= trunc(sysdate) and (R.TASKS>R.COMPLETE) group by DEPT_ID";
+            String htJcWks = "SELECT count(*)  sum,DEPT_ID FROM TIMED_TASK_RECORD R LEFT JOIN RZTSYSDEPARTMENT D ON D.ID=R.DEPT_ID WHERE R.CREATE_TIME >= trunc(sysdate) and (R.TASKS>R.COMPLETE) group by DEPT_ID";
+            List<Map<String, Object>> htMap = this.service.execSql(htJcWks);
             /**
              *后台稽查进行中
              */
@@ -298,12 +299,8 @@ public class CompanyNumTasksController extends CurdController<RztSysUser, Common
             /**
              *后台稽查已完成
              */
-            String htJcYwc = "SELECT count(*),DEPT_ID FROM TIMED_TASK_RECORD WHERE CREATE_TIME >= trunc(sysdate) and (TASKS=COMPLETE) GROUP BY DEPT_ID";
-            String htjc = "SELECT " + "(" + htJcWks + ") as htJcWks, " +
-                    "(" + 1 + ") as htJcYks, " +
-                    "(" + htJcYwc + ") as htJcYwc " +
-                    "  FROM dual";
-            //通道单位
+            String htJcYwc = "SELECT count(*) sum,DEPT_ID FROM TIMED_TASK_RECORD WHERE CREATE_TIME >= trunc(sysdate) and (TASKS=COMPLETE) GROUP BY DEPT_ID";
+            List<Map<String, Object>> htMap2 = this.service.execSql(htJcYwc);
             List<Map<String, Object>> deptnameList;
             if (type == 0) {
                 String deptname = " SELECT t.ID,t.DEPTNAME FROM RZTSYSDEPARTMENT t WHERE t.DEPTSORT IS NOT NULL ORDER BY t.DEPTSORT ";
@@ -318,6 +315,7 @@ public class CompanyNumTasksController extends CurdController<RztSysUser, Common
             Map<String, Object> map3 = new HashMap();
             Map<String, Object> map4 = new HashMap();
             Map<String, Object> map5 = new HashMap();
+            Map<String, Object> map6 = new HashMap();
             for (Map<String, Object> xs : xszcMap) {
                 map1.put(xs.get("TD_ORG").toString(), xs);
             }
@@ -330,12 +328,20 @@ public class CompanyNumTasksController extends CurdController<RztSysUser, Common
             for (Map<String, Object> jc : xcjcMap) {
                 map4.put(jc.get("TD_ORG").toString(), jc);
             }
+            for (Map<String, Object> ht : htMap) {
+                map5.put(ht.get("DEPT_ID").toString(), ht);
+            }
+            for (Map<String, Object> ht : htMap2) {
+                map6.put(ht.get("DEPT_ID").toString(), ht);
+            }
             for (Map<String, Object> dept : deptnameList) {
                 String deptId = dept.get("ID").toString();
                 HashMap xsTask = (HashMap) map1.get(deptId);
                 HashMap txTask = (HashMap) map2.get(deptId);
                 HashMap khTask = (HashMap) map3.get(deptId);
                 HashMap xcjcTask = (HashMap) map4.get(deptId);
+                HashMap htTask1 = (HashMap) map5.get(deptId);
+                HashMap htTask2 = (HashMap) map6.get(deptId);
                 String deptname = dept.get("DEPTNAME").toString();
                 int length = deptname.length();
                 StringBuffer sb = new StringBuffer();
@@ -344,9 +350,9 @@ public class CompanyNumTasksController extends CurdController<RztSysUser, Common
                     sb.append(substring + "\n");
                 }
                 dept.put("DEPTNAME", sb.toString());
-                dept.put("wks", Integer.parseInt(xsTask == null ? "0" : xsTask.get("XSWKS").toString()) + Integer.parseInt(txTask == null ? "0" : txTask.get("XSWKS").toString()) + Integer.parseInt(khTask == null ? "0" : khTask.get("KHWKS").toString()) + Integer.parseInt(xcjcTask == null ? "0" : xcjcTask.get("JCWKS").toString()));
-                dept.put("jxz", Integer.parseInt(xsTask == null ? "0" : xsTask.get("XSJXZ").toString()) + Integer.parseInt(txTask == null ? "0" : txTask.get("XSJXZ").toString()) + Integer.parseInt(khTask == null ? "0" : khTask.get("KHJXZ").toString()) + Integer.parseInt(xcjcTask == null ? "0" : xcjcTask.get("JCJXZ").toString()));
-                dept.put("ywc", Integer.parseInt(xsTask == null ? "0" : xsTask.get("XSYWC").toString()) + Integer.parseInt(txTask == null ? "0" : txTask.get("XSYWC").toString()) + Integer.parseInt(khTask == null ? "0" : khTask.get("KHYWC").toString()) + Integer.parseInt(xcjcTask == null ? "0" : xcjcTask.get("JCYWC").toString()));
+                dept.put("wks", Integer.parseInt(xsTask == null ? "0" : xsTask.get("XSWKS").toString()) + Integer.parseInt(txTask == null ? "0" : txTask.get("XSWKS").toString()) + Integer.parseInt(khTask == null ? "0" : khTask.get("KHWKS").toString()) + Integer.parseInt(xcjcTask == null ? "0" : xcjcTask.get("JCWKS").toString()) + Integer.parseInt(htTask1 == null ? "0" : htTask1.get("SUM").toString()));
+                dept.put("jxz", Integer.parseInt(xsTask == null ? "0" : xsTask.get("XSJXZ").toString()) + Integer.parseInt(txTask == null ? "0" : txTask.get("XSJXZ").toString()) + Integer.parseInt(khTask == null ? "0" : khTask.get("KHJXZ").toString()) + Integer.parseInt(xcjcTask == null ? "0" : xcjcTask.get("JCJXZ").toString())+1);
+                dept.put("ywc", Integer.parseInt(xsTask == null ? "0" : xsTask.get("XSYWC").toString()) + Integer.parseInt(txTask == null ? "0" : txTask.get("XSYWC").toString()) + Integer.parseInt(khTask == null ? "0" : khTask.get("KHYWC").toString()) + Integer.parseInt(xcjcTask == null ? "0" : xcjcTask.get("JCYWC").toString())+ Integer.parseInt(htTask2 == null ? "0" : htTask2.get("SUM").toString()));
             }
             return WebApiResponse.success(deptnameList);
         } catch (Exception e) {
