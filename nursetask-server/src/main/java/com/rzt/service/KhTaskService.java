@@ -160,10 +160,10 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         try {
             String sql = "";
             if (startDate == null) {
-                sql = "select k.id as id,k.status as status,k.task_name as task_name,k.plan_end_time as endTime from kh_task k where k.user_id = ? and trunc(k.plan_start_time)>=trunc(sysdate)"; //";
+                sql = "select k.id as id,k.status as status,k.task_name as task_name,k.plan_end_time as endTime from kh_task k where k.user_id = ? and k.PLAN_END_TIME >= trunc(sysdate) and user_id is not null and k.PLAN_START_TIME <= trunc(sysdate+1) ";
                 return WebApiResponse.success(this.execSql(sql, userId));
             } else {
-                    sql = "select k.id as id,k.status as status,k.task_name as task_name,k.plan_end_time as endTime from kh_task k where k.user_id = ? and trunc(k.plan_start_time) >=trunc(to_date(?,'yyyy-mm-dd hh24:mi:ss')) and trunc(k.plan_end_time)<=trunc(to_date(?,'yyyy-mm-dd hh24:mi:ss')+1)";
+                    sql = "select k.id as id,k.status as status,k.task_name as task_name,k.plan_end_time as endTime from kh_task k where k.user_id = ? and k.PLAN_END_TIME >=trunc(to_date(?,'yyyy-mm-dd hh24:mi:ss')) and k.plan_start_time<=trunc(to_date(?,'yyyy-mm-dd hh24:mi:ss')+1)";
                 return WebApiResponse.success(this.execSql(sql, userId, startDate, startDate));
             }
         } catch (Exception e) {
