@@ -25,7 +25,7 @@ public class UnqualifiedpatrolController extends CurdController<RztSysUser, Comm
     private RedisTemplate<String, Object> redisTemplate;
 
     @RequestMapping("unqualifiedpatrolList")
-    public WebApiResponse unqualifiedpatrolList(String companyid, Integer page, Integer size, String currentUserId, String startTime, String endTime, String deptId, String userName) {
+    public WebApiResponse unqualifiedpatrolList(String loginstatus, String taskname, String companyid, Integer page, Integer size, String currentUserId, String startTime, String endTime, String deptId, String userName) {
         JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", currentUserId).toString());
         int roletype = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
         Object deptid = jsonObject.get("DEPTID");
@@ -56,8 +56,16 @@ public class UnqualifiedpatrolController extends CurdController<RztSysUser, Comm
             listLike.add(companyid);
             s += " AND u.COMPANYID = ?" + listLike.size();
         }
+        if (!StringUtils.isEmpty(taskname)) {
+            listLike.add("%" + taskname + "%");
+            s += " AND x.TASK_NAME LIKE ?" + listLike.size();
+        }
+        if (!StringUtils.isEmpty(loginstatus)) {
+            listLike.add(loginstatus);
+            s += " AND u.LOGINSTATUS  = ?" + listLike.size();
+        }
         //  修改增加未到位类别   增加未到位原因字段      ---> 李成阳
-        String sql = "SELECT e.CREATE_TIME,x.TASK_NAME,u.DEPT,u.COMPANYNAME,u.CLASSNAME,u.REALNAME,u.PHONE, '巡视超速' as  type,e.REASON,e.TASK_ID,e.USER_ID,e.TASK_TYPE" +
+        String sql = "SELECT e.CREATE_TIME,x.TASK_NAME,u.DEPT,u.COMPANYNAME,u.CLASSNAME,u.REALNAME,u.PHONE, '巡视超速' as  type,e.REASON,e.TASK_ID,e.USER_ID,e.TASK_TYPE,u.LOGINSTATUS " +
                 "      FROM MONITOR_CHECK_EJ e LEFT JOIN XS_ZC_TASK x ON e.TASK_ID=x.ID LEFT JOIN USERINFO u ON x.CM_USER_ID = u.ID" +
                 "      WHERE WARNING_TYPE = 5 " + s + "";
        /* String sql = " SELECT *" +
