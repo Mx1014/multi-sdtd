@@ -22,7 +22,7 @@ public class OverdueController extends CurdController<RztSysUser, CommonService>
     private RedisTemplate<String, Object> redisTemplate;
 
     @RequestMapping("overdueList")
-    public WebApiResponse overdueList(String companyid, Integer page, Integer size, String currentUserId, String startTime, String endTime, String deptId) {
+    public WebApiResponse overdueList(String taskname, String loginstatus, String companyid, Integer page, Integer size, String currentUserId, String startTime, String endTime, String deptId) {
         Pageable pageable = new PageRequest(page, size);
         List listLike = new ArrayList();
         String s = "";
@@ -49,8 +49,16 @@ public class OverdueController extends CurdController<RztSysUser, CommonService>
             listLike.add(companyid);
             s1 += " AND u.COMPANYID = ?" + listLike.size();
         }
+        if (!StringUtils.isEmpty(taskname)) {
+            listLike.add("%" + taskname + "%");
+            s1 += " AND k.TASK_NAME LIKE ?" + listLike.size();
+        }
+        if (!StringUtils.isEmpty(loginstatus)) {
+            listLike.add(loginstatus);
+            s1 += " AND u.LOGINSTATUS = ?" + listLike.size();
+        }
         String sql = " SELECT " +
-                "  k.TASK_NAME,u.DEPT,u.CLASSNAME,u.COMPANYNAME,u.REALNAME,u.PHONE,k.PLAN_END_TIME,e.* " +
+                "  k.TASK_NAME,u.DEPT,u.CLASSNAME,u.LOGINSTATUS,u.COMPANYNAME,u.REALNAME,u.PHONE,k.PLAN_END_TIME,e.* " +
                 "FROM (SELECT TASK_ID,USER_ID,TASK_TYPE  " +
                 "      FROM MONITOR_CHECK_EJ " +
                 "      WHERE WARNING_TYPE = 1 " + s +
