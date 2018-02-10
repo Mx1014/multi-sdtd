@@ -156,8 +156,8 @@ public class KhYhHistoryController extends
 
     @ApiOperation(value = "隐患台账图片展示", notes = "隐患台账图片展示")
     @GetMapping("findYhPicture")
-    public WebApiResponse findYhPicture(long yhId) {
-        return this.service.findYhPicture(yhId);
+    public WebApiResponse findYhPicture(String yhId) {
+        return this.service.findYhPicture(Long.parseLong(yhId));
     }
 
     @ApiOperation(value = "隐患台账图片展示", notes = "隐患台账图片展示")
