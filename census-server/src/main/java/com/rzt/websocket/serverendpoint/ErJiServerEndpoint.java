@@ -25,6 +25,7 @@ public class ErJiServerEndpoint {
     public void setRedisTemplate(RedisTemplate<String, Object> redisTemplate) {
         ErJiServerEndpoint.redisTemplate = redisTemplate;
     }
+
     @Resource
     public void setErJiPushService(ErJiPushService erJiPushService) {
         ErJiServerEndpoint.erJiPushService = erJiPushService;
@@ -53,7 +54,17 @@ public class ErJiServerEndpoint {
         String sessionId = session.getId();
         livingSessions.put(sessionId, jsonObject);
         erJiPushService.module11(sessionId);
-
+        erJiPushService.module2();
+        erJiPushService.module3();
+        erJiPushService.module4_1();
+        erJiPushService.module4_2();
+        erJiPushService.module5_1();
+        erJiPushService.module5_2();
+        erJiPushService.module7();
+        erJiPushService.module8();
+        erJiPushService.module9();
+        erJiPushService.module10();
+        erJiPushService.module11();
     }
 
 

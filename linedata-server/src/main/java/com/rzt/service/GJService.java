@@ -1,9 +1,7 @@
 package com.rzt.service;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.rzt.entity.TimedTask;
-import com.rzt.repository.XSZCTASKRepository;
+import com.rzt.entity.GUZHANG;
+import com.rzt.repository.GUZHANGRepository;
 import com.rzt.util.WebApiResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,8 +11,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,7 +22,7 @@ import java.util.Map;
  * 2018/1/31
  */
 @Service
-public class GJService extends CurdService<TimedTask,XSZCTASKRepository>{
+public class GJService extends CurdService<GUZHANG,GUZHANGRepository>{
 
     protected static Logger LOGGER = LoggerFactory.getLogger(GJService.class);
     @Autowired
@@ -272,7 +268,7 @@ public class GJService extends CurdService<TimedTask,XSZCTASKRepository>{
      * @return
      */
     public WebApiResponse OfflinesList(Integer workType, Integer page, Integer size, String startTime, String endTime, String deptId, String taskType,String loginType) {
-        org.springframework.data.domain.Pageable pageable = new PageRequest(page, size);
+        Pageable pageable = new PageRequest(page, size);
         List listLike = new ArrayList();
         String s = "";
         String s1 = "";

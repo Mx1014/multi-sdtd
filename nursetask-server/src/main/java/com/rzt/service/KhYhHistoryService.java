@@ -149,33 +149,44 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             Integer roleType = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
             Object tdId = jsonObject.get("DEPTID");
             Object companyid = jsonObject.get("COMPANYID");
-            buffer.append(" where s.YH_ID=y.ID ");
+            buffer.append(" where yhzt=0 ");
             if (roleType == 1 || roleType == 2) {
-                buffer.append(" and y.YWORG_ID = " + tdId);
+                buffer.append(" and y.YWORG_ID = '" + tdId+"'");
             }
             if (roleType == 3) {
-                buffer.append(" and y.WXORG_ID = " + companyid);
+                buffer.append(" and y.WXORG_ID ='" + companyid+"'");
             }
             if (yhjb != null && !yhjb.equals("")) {
                 String[] split = yhjb.split(",");
-                String result="";
-                for (int i=0;i<split.length;i++){
-                    String s = "'"+split[i]+"'";
-                    result +=s+",";
+                String result = "";
+                for (int i = 0; i < split.length; i++) {
+                    String s = "'" + split[i] + "'";
+                    result += s + ",";
                 }
-                buffer.append(" and y.yhjb1 in (" + result.substring(0,result.lastIndexOf(",")) + ")");
+                buffer.append(" and yhjb1 in (" + result.substring(0, result.lastIndexOf(",")) + ")");
             }
             if (yhlb != null && !yhlb.equals("")) {
                 buffer.append(" and yhlb like ?");
                 params.add("%" + yhlb + "%");
             }
-            buffer.append(" and yhzt = 0 ");
-            String sql = "SELECT DISTINCT(s.yh_id),y.* " +
-                    "FROM KH_YH_HISTORY y ,KH_SITE s " + buffer.toString();
+//            buffer.append(" and yhzt = 0 ");
+            String sql = "SELECT DISTINCT(y.id) as yhid, y.* FROM ( SELECT  y.id as yh_id, y.* FROM KH_YH_HISTORY y WHERE YHLB LIKE '在施类' AND YHZT = 0 UNION ALL SELECT DISTINCT  (s.YH_ID), y.* FROM KH_YH_HISTORY y, KH_SITE s  WHERE s.YH_ID = y.ID AND s.STATUS = 1 AND y.yhzt = 0) y " + buffer.toString();
             List<Map<String, Object>> list = this.execSql(sql, params.toArray());
             List<Object> list1 = new ArrayList<>();
             for (Map map : list) {
                 if (map != null && map.size() > 0 && map.get("JD") != null) {
+                    sql = "select u.realname from kh_site s left join rztsysuser u on u.id =s.user_id where yh_id=?";
+                    List<Map<String, Object>> nameList = this.execSql(sql, Long.parseLong(map.get("ID").toString()));
+                    String realname = "";
+                    map.put("USERNAME", "无");
+                    if (nameList.size() > 0) {
+                        for (int i = 0; i < nameList.size(); i++) {
+                            if (!realname.contains((nameList.get(i).get("REALNAME")).toString())) {
+                                realname += nameList.get(i).get("REALNAME") + " ";
+                            }
+                        }
+                        map.put("USERNAME", realname);
+                    }
                     list1.add(map);
                 }
             }
@@ -1105,8 +1116,8 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
 
     public WebApiResponse findYhPicture(long yhId) {
         try {
-            String sql = "SELECT * FROM PICTURE_YH where yh_id=? and  trunc(CREATE_TIME)>=TRUNC(sysdate-7) ";
-            return WebApiResponse.erro("获取成功");
+            String sql = "SELECT * FROM PICTURE_YH where yh_id=? and  trunc(CREATE_TIME)>=TRUNC(sysdate-5) order by CREATE_TIME desc";
+            return WebApiResponse.success(this.execSql(sql,yhId));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("获取失败");

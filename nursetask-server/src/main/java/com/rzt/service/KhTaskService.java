@@ -51,14 +51,15 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
                 " from kh_task k  left join rztsysuser u on u.id = k.user_id left join RZTSYSDEPARTMENT d on u.classname = d.id  ";
         List params = new ArrayList<>();
         StringBuffer buffer = new StringBuffer();
-        buffer.append(" where k.plan_start_time <= trunc(to_date(?,'YYYY-MM-DD hh24:mi')+1) and plan_end_time>= trunc(to_date(?,'YYYY-MM-DD hh24:mi')) ");
-        params.add(task.getPlanEndTime());
-        params.add(task.getPlanStartTime());
-        /*if (home!=null && home.equals("1")){
+        if (home!=null && home.equals("1")){
             buffer = new StringBuffer();
-            buffer.append(" where  trunc(k.plan_start_time) = trunc(sysdate)");
+            buffer.append(" where  PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= trunc(sysdate)");
             params = new ArrayList<>();
-        }*/
+        }else {
+            buffer.append(" where k.plan_start_time <= trunc(to_date(?,'YYYY-MM-DD hh24:mi')+1) and plan_end_time>= trunc(to_date(?,'YYYY-MM-DD hh24:mi')) ");
+            params.add(task.getPlanEndTime());
+            params.add(task.getPlanStartTime());
+        }
         //查询框
         if (task.getTaskName() != null && !task.getTaskName().equals("")) {
             task.setTaskName("%" + task.getTaskName() + "%");
@@ -159,10 +160,10 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         try {
             String sql = "";
             if (startDate == null) {
-                sql = "select k.id as id,k.status as status,k.task_name as task_name,k.plan_end_time as endTime from kh_task k where k.user_id = ? and trunc(k.plan_start_time)>=trunc(sysdate)"; //";
+                sql = "select k.id as id,k.status as status,k.task_name as task_name,k.plan_end_time as endTime from kh_task k where k.user_id = ? and k.PLAN_END_TIME >= trunc(sysdate) and user_id is not null and k.PLAN_START_TIME <= trunc(sysdate+1) ";
                 return WebApiResponse.success(this.execSql(sql, userId));
             } else {
-                    sql = "select k.id as id,k.status as status,k.task_name as task_name,k.plan_end_time as endTime from kh_task k where k.user_id = ? and trunc(k.plan_start_time) >=trunc(to_date(?,'yyyy-mm-dd hh24:mi:ss')) and trunc(k.plan_end_time)<=trunc(to_date(?,'yyyy-mm-dd hh24:mi:ss')+1)";
+                    sql = "select k.id as id,k.status as status,k.task_name as task_name,k.plan_end_time as endTime from kh_task k where k.user_id = ? and k.PLAN_END_TIME >=trunc(to_date(?,'yyyy-mm-dd hh24:mi:ss')) and k.plan_start_time<=trunc(to_date(?,'yyyy-mm-dd hh24:mi:ss')+1)";
                 return WebApiResponse.success(this.execSql(sql, userId, startDate, startDate));
             }
         } catch (Exception e) {
@@ -396,6 +397,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
 
     //生成任务的逻辑
     public void createTask() {
+        siteRepository.deleteSite();
         List<KhSite> list = siteRepository.findSites();
         for (KhSite site : list) {
             double cycle = site.getCycle();  //一轮任务时长

@@ -1,7 +1,7 @@
 package com.rzt.service;
 
-import com.rzt.entity.TimedTask;
-import com.rzt.repository.XSZCTASKRepository;
+import com.rzt.entity.GUZHANG;
+import com.rzt.repository.GUZHANGRepository;
 import com.rzt.util.WebApiResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,14 +9,17 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 李成阳
  * 2018/1/31
  */
 @Service
-public class YhService extends CurdService<TimedTask,XSZCTASKRepository>{
+public class YhService extends CurdService<GUZHANG,GUZHANGRepository>{
 
     protected static Logger LOGGER = LoggerFactory.getLogger(YhService.class);
 

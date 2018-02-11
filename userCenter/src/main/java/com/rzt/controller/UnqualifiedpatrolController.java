@@ -25,7 +25,7 @@ public class UnqualifiedpatrolController extends CurdController<RztSysUser, Comm
     private RedisTemplate<String, Object> redisTemplate;
 
     @RequestMapping("unqualifiedpatrolList")
-    public WebApiResponse unqualifiedpatrolList(Integer page, Integer size, String currentUserId, String startTime, String endTime, String deptId, String userName) {
+    public WebApiResponse unqualifiedpatrolList(String loginstatus, String taskname, String companyid, Integer page, Integer size, String currentUserId, String startTime, String endTime, String deptId, String userName) {
         JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", currentUserId).toString());
         int roletype = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
         Object deptid = jsonObject.get("DEPTID");
@@ -52,10 +52,22 @@ public class UnqualifiedpatrolController extends CurdController<RztSysUser, Comm
             listLike.add(userName + "%");
             s += " AND u.REALNAME LIKE ?" + listLike.size();
         }
+        if (!StringUtils.isEmpty(companyid)) {
+            listLike.add(companyid);
+            s += " AND u.COMPANYID = ?" + listLike.size();
+        }
+        if (!StringUtils.isEmpty(taskname)) {
+            listLike.add("%" + taskname + "%");
+            s += " AND x.TASK_NAME LIKE ?" + listLike.size();
+        }
+        if (!StringUtils.isEmpty(loginstatus)) {
+            listLike.add(loginstatus);
+            s += " AND u.LOGINSTATUS  = ?" + listLike.size();
+        }
         //  修改增加未到位类别   增加未到位原因字段      ---> 李成阳
-        String sql = "SELECT e.CREATE_TIME,x.TASK_NAME,u.DEPT,u.COMPANYNAME,u.CLASSNAME,u.REALNAME,u.PHONE, '巡视超速' as  type,e.REASON,e.TASK_ID,e.USER_ID,e.TASK_TYPE" +
+        String sql = "SELECT e.CREATE_TIME,x.TASK_NAME,u.DEPT,u.COMPANYNAME,u.CLASSNAME,u.REALNAME,u.PHONE, '巡视超速' as  type,e.REASON,e.TASK_ID,e.USER_ID,e.TASK_TYPE,u.LOGINSTATUS " +
                 "      FROM MONITOR_CHECK_EJ e LEFT JOIN XS_ZC_TASK x ON e.TASK_ID=x.ID LEFT JOIN USERINFO u ON x.CM_USER_ID = u.ID" +
-                "      WHERE WARNING_TYPE = 5 "+s+"";
+                "      WHERE WARNING_TYPE = 5 " + s + "";
        /* String sql = " SELECT *" +
                 "         FROM (SELECT e.CREATE_TIME,x.TASK_NAME,u.DEPT,u.COMPANYNAME,u.CLASSNAME,u.REALNAME,u.PHONE, '巡视超速' as  type,e.REASON" +
                 "      FROM MONITOR_CHECK_EJ e LEFT JOIN XS_ZC_TASK x ON e.TASK_ID=x.ID LEFT JOIN USERINFO u ON x.CM_USER_ID = u.ID" +
@@ -78,51 +90,51 @@ public class UnqualifiedpatrolController extends CurdController<RztSysUser, Comm
             List<Map<String, Object>> result = new ArrayList<>();
             String sql = "select YCDATA,CREATE_TIME from XS_ZC_EXCEPTION WHERE TASK_ID=?1";
             List<Map<String, Object>> maps = this.service.execSql(sql, taskId);
-            maps.forEach(map ->{
+            maps.forEach(map -> {
                 Object ycdata = map.get("YCDATA");
                 JSONArray objects = JSONObject.parseArray(ycdata.toString());
-                for (int i=0;i<objects.size();i++){
-                    Map<String,Object> m = (Map<String, Object>) objects.get(i);
+                for (int i = 0; i < objects.size(); i++) {
+                    Map<String, Object> m = (Map<String, Object>) objects.get(i);
                     result.add(m);
                 }
-                });
+            });
             return WebApiResponse.success(result);
-        }catch (Exception e){
-            return WebApiResponse.erro("erro"+e.getMessage());
+        } catch (Exception e) {
+            return WebApiResponse.erro("erro" + e.getMessage());
         }
     }
 
     @GetMapping("/csPicture")
-    public WebApiResponse csPicture(Long taskId){
+    public WebApiResponse csPicture(Long taskId) {
         List<Map<String, Object>> result = new ArrayList<>();
         try {
 
             String sql = "select YCDATA from XS_ZC_EXCEPTION WHERE TASK_ID=?1";
             List<Map<String, Object>> maps = this.service.execSql(sql, taskId);
             StringBuffer ids = new StringBuffer();
-            for(int j = 0;j<maps.size();j++){
+            for (int j = 0; j < maps.size(); j++) {
                 Map<String, Object> map = maps.get(j);
                 Object ycdata = map.get("YCDATA");
                 JSONArray objects = JSONObject.parseArray(ycdata.toString());
-                for (int i=0;i<objects.size();i++){
-                    Map<String,Object> m = (Map<String, Object>) objects.get(i);
+                for (int i = 0; i < objects.size(); i++) {
+                    Map<String, Object> m = (Map<String, Object>) objects.get(i);
                     String id = (String) m.get("ID");
-                    if(i!=objects.size()-1){
-                        ids.append(id+", ");
-                    }else{
+                    if (i != objects.size() - 1) {
+                        ids.append(id + ", ");
+                    } else {
                         ids.append(id);
                     }
                 }
-                if(j!=maps.size()-1){
+                if (j != maps.size() - 1) {
                     ids.append(",");
                 }
             }
-            String sql1 = "select FILE_PATH,PROCESS_NAME AS OPERATE_NAME ,CREATE_TIME from PICTURE_TOUR where PROCESS_ID in ("+ids.toString()+")";
+            String sql1 = "select FILE_PATH,PROCESS_NAME AS OPERATE_NAME ,CREATE_TIME from PICTURE_TOUR where PROCESS_ID in (" + ids.toString() + ")";
             List<Map<String, Object>> maps1 = this.service.execSql(sql1);
             result.addAll(maps1);
             return WebApiResponse.success(result);
-        }catch (Exception e){
-            return WebApiResponse.erro("erro"+e.getMessage());
+        } catch (Exception e) {
+            return WebApiResponse.erro("erro" + e.getMessage());
         }
     }
 }

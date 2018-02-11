@@ -1,5 +1,6 @@
 package com.rzt.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.rzt.service.CmcoordinateService;
 import com.rzt.service.PcMapShowService;
@@ -132,19 +133,33 @@ public class PcMapShowController {
             JSONObject jcMenAll = JSONObject.parseObject(valueOperations.get("jcMenAll:" + needDateString).toString());
             allMen.putAll(jcMenAll);
         }
+//        Object offLineJudge = valueOperations.get("offLineJudge");
+        //默认90分钟
+        /*int offLineJudgeNum = 5400000;
+        //如果redis有配置 则用redis的数据
+        if(offLineJudge != null) {
+            offLineJudgeNum = Integer.parseInt(offLineJudge.toString()) * 60 * 1000;
+        }*/
+        ArrayList<String> userIds = new ArrayList<>();
+        for (Map<String,Object> map:menInMap) {
+            String userid = map.get("userid").toString();
+            userIds.add(userid);
+        }
+
+        List<Map<String, Object>> userLoginStatusList = cmcoordinateService.execSql("select id,LOGINSTATUS from RZTSYSUSER");
+        HashMap<String, String> userLoginStatusMap = new HashMap<>();
+        for(Map<String,Object> map:userLoginStatusList) {
+            String id = map.get("ID").toString();
+            String loginstatus = map.get("LOGINSTATUS").toString();
+            userLoginStatusMap.put(id,loginstatus);
+        }
+
         Iterator<Map> iterator = menInMap.iterator();
         while (iterator.hasNext()) {
             Map men = iterator.next();
             String userid = men.get("userid").toString();
-
-            Long createtime = Long.parseLong(men.get("createtime").toString());
-            //默认90分钟
-            int offLineJudgeNum = 5400000;
-            //如果redis有配置 则用redis的数据
-            Object offLineJudge = valueOperations.get("offLineJudge");
-            if(offLineJudge != null) {
-                offLineJudgeNum = Integer.parseInt(offLineJudge.toString()) * 60 * 1000;
-            }
+            //离线 不在这儿判断了
+            /*Long createtime = Long.parseLong(men.get("createtime").toString());
             if (timeSecond - createtime > offLineJudgeNum) {
                 //大于九十分钟 离线
                 //显示在线
@@ -161,6 +176,30 @@ public class PcMapShowController {
                     continue;
                 }
                 men.put("loginStatus", 1);
+            }*/
+            String loginStatus1 = userLoginStatusMap.get(userid);
+            if(loginStatus1 != null) {
+                if (loginStatus1.equals("0")) {
+                    //大于九十分钟 离线
+                    //显示在线
+                    if (loginStatus == 1) {
+                        iterator.remove();
+                        continue;
+                    }
+                    men.put("loginStatus", 0);
+                } else if (loginStatus1.equals("1")) {
+                    //小于十分钟 在线
+                    //显示离线
+                    if (loginStatus == 0) {
+                        iterator.remove();
+                        continue;
+                    }
+                    men.put("loginStatus", 1);
+                }
+            } else {
+                //注意这个地方
+                iterator.remove();
+                continue;
             }
 
             if (!allMen.containsKey(userid)) {
@@ -170,6 +209,8 @@ public class PcMapShowController {
                 men.put("statuts", allMen.get(userid));
             }
         }
+
+
     }
 
 
@@ -219,6 +260,129 @@ public class PcMapShowController {
         }
     }
 
+
+    @GetMapping("menAbooutMultiLine")
+    public Object menAbooutMultiLine(String lineIds, String currentUserId, Date startDate, String yhTypes,String gzTypes) {
+        if(StringUtils.isEmpty(lineIds)) {
+           return WebApiResponse.erro("你都不传线路id,你想上天啊?");
+        } else {
+            String[] lineIdArr = lineIds.split(",");
+            try {
+                List resList = new ArrayList();
+                for (String lineId:lineIdArr) {
+                    Object o = menAboutLinesSon(Long.parseLong(lineId), currentUserId, startDate, yhTypes, gzTypes);
+                    resList.add(o);
+                }
+                return WebApiResponse.success(resList);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return WebApiResponse.erro("报错了" + e.getMessage());
+            }
+        }
+    }
+
+
+
+    public Object menAboutLinesSon(Long lineId, String currentUserId, Date startDate, String yhjb, String gzTypes) throws Exception {
+        Map<String, Object> res = new HashMap<String, Object>();
+        //拿到线路上的所有的杆塔
+        List<Map<String, Object>> coordinateList = cmcoordinateService.lineCoordinateList(lineId);
+        Date date = new Date();
+        if (startDate == null) {
+            startDate = date;
+        }
+        String needDateString = DateUtil.dateFormatToDay(startDate);
+        long timeSecond = date.getTime();
+        ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
+        //准备要返回的list
+        List<Map> menInMap = new ArrayList<>();
+        HashOperations<String, String, Map> hashOperations = redisTemplate.opsForHash();
+        String deptId = pcMapShowService.dataAccessByUserId(currentUserId).toString();
+        //显示改线路当天关联的人
+        List<Map<String, Object>> menAboutLine = cmcoordinateService.getMenAboutLine(deptId, lineId);
+        Set<String> keys = new HashSet();
+        //单位 外协 组织 班组 都走这里
+        for (Map<String, Object> user : menAboutLine) {
+            String id = user.get("USERID").toString();
+            keys.add(id);
+        }
+        menInMap = hashOperations.multiGet("menInMap", keys);
+        //-->去除list中为null的元素
+        menInMap.removeAll(Collections.singleton(null));
+        chouYiXia(null, 2, needDateString, timeSecond, menInMap, valueOperations);
+        res.put("menInMap", menInMap);
+        res.put("coordinateList", coordinateList);
+        List<Map<String, Object>> guzhang = getGuzhang(gzTypes, currentUserId,lineId);
+        res.put("guzhang",guzhang);
+        Object yinhuan = getYinhuan(yhjb, currentUserId, null,lineId);
+        res.put("yinhuan",yinhuan);
+        return res;
+    }
+
+
+
+
+    /***
+    * @Method getYinhuan
+    * @Description         
+    * @return java.lang.Object
+    * @date 2018/2/7 14:56
+    * @author nwz
+    */
+    public Object getYinhuan(String yhjb,String currentUserId,String yhlb,Long lineId) throws Exception {
+        Map<String, Object> jsonObject = pcMapShowService.userInfoFromRedis(currentUserId);
+        List params = new ArrayList<>();
+        StringBuffer buffer = new StringBuffer();
+        Integer roleType = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
+        Object tdId = jsonObject.get("DEPTID");
+        Object companyid = jsonObject.get("COMPANYID");
+        buffer.append(" where yhzt=0 ");
+        if (roleType == 1 || roleType == 2) {
+            buffer.append(" and y.YWORG_ID = '" + tdId+"'");
+        }
+        if (roleType == 3) {
+            buffer.append(" and y.WXORG_ID ='" + companyid+"'");
+        }
+        if (yhjb != null && !yhjb.equals("")) {
+            String[] split = yhjb.split(",");
+            String result = "";
+            for (int i = 0; i < split.length; i++) {
+                String s = "'" + split[i] + "'";
+                result += s + ",";
+            }
+            buffer.append(" and yhjb1 in (" + result.substring(0, result.lastIndexOf(",")) + ")");
+        }
+        if (yhlb != null && !yhlb.equals("")) {
+            buffer.append(" and yhlb like ?");
+            params.add("%" + yhlb + "%");
+        }
+        if (lineId != null) {
+            buffer.append(" and y.line_id = ?");
+            params.add(lineId);
+        }
+//            buffer.append(" and yhzt = 0 ");
+        String sql = "SELECT DISTINCT(y.id) as yhid, y.* FROM ( SELECT  y.id as yh_id, y.* FROM KH_YH_HISTORY y WHERE YHLB LIKE '在施类' AND YHZT = 0 UNION ALL SELECT DISTINCT  (s.YH_ID), y.* FROM KH_YH_HISTORY y, KH_SITE s  WHERE s.YH_ID = y.ID AND s.STATUS = 1 AND y.yhzt = 0) y " + buffer.toString();
+        List<Map<String, Object>> list = cmcoordinateService.execSql(sql, params.toArray());
+        List<Object> list1 = new ArrayList<>();
+        for (Map map : list) {
+            if (map != null && map.size() > 0 && map.get("JD") != null) {
+                sql = "select u.realname from kh_site s left join rztsysuser u on u.id =s.user_id where yh_id=?";
+                List<Map<String, Object>> nameList = cmcoordinateService.execSql(sql, Long.parseLong(map.get("ID").toString()));
+                String realname = "";
+                map.put("USERNAME", "无");
+                if (nameList.size() > 0) {
+                    for (int i = 0; i < nameList.size(); i++) {
+                        if (!realname.contains((nameList.get(i).get("REALNAME")).toString())) {
+                            realname += nameList.get(i).get("REALNAME") + " ";
+                        }
+                    }
+                    map.put("USERNAME", realname);
+                }
+                list1.add(map);
+            }
+        }
+        return list1;
+}
 
     /***
      * @Method menInfo
@@ -352,7 +516,6 @@ public class PcMapShowController {
     /***
      * @Method menInLine
      * @Description 线路上的人
-     * @param [lineId, currentUserId]
      * @return java.lang.Object
      * @date 2018/1/14 17:37
      * @author nwz
@@ -457,33 +620,41 @@ public class PcMapShowController {
     @GetMapping("getGuZhang")
     public Object getGuZhang(String currentUserId,String types) {
         try {
-            Map<String, Object> map = pcMapShowService.userInfoFromRedis(currentUserId);
-            String s = "";
-            Integer roletype = Integer.parseInt(map.get("ROLETYPE").toString());
-            if(roletype != 0) {
-                s = "and t.td_org = '" + map.get("DEPT") + "'";
-            }
-            if(StringUtils.isEmpty(types)) {
-               s += " and GZ_REASON1 in ('施工碰线','异物短路','树竹放电') ";
-            } else {
-                String[] typeArr = types.split(",");
-                s += " and GZ_REASON1 in (";
-                for (String type:typeArr) {
-                    s += "'" + type + "',";
-                }
-                s = s.substring(0,s.length() - 1);
-                s += ")";
-            }
-            String sql = "select t.*,tt.TOWER_NAME,ttt.LONGITUDE,ttt.LATITUDE from GUZHANG t join CM_LINE_TOWER tt on t.LINE_ID = tt.LINE_ID and t.GZ_TOWER is not NULL and tt.TOWER_NAME = substr(t.GZ_TOWER,0,instr(GZ_TOWER,'#',1,1)-1) " +
-                    s +
-                    "join cm_tower ttt on ttt.id = tt.TOWER_ID";
-            List<Map<String, Object>> maps = cmcoordinateService.execSql(sql);
+
+            List<Map<String, Object>> maps = getGuzhang(types, currentUserId,null);
             return WebApiResponse.success(maps);
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro(e.getMessage());
         }
 
+    }
+
+    public List<Map<String, Object>> getGuzhang(String types, String currentUserId,Long lineId) throws Exception {
+        Map<String, Object> map = pcMapShowService.userInfoFromRedis(currentUserId);
+        String s = "";
+        Integer roletype = Integer.parseInt(map.get("ROLETYPE").toString());
+        if(roletype != 0) {
+            s = "and t.td_org = '" + map.get("DEPT") + "'";
+        }
+        if(StringUtils.isEmpty(types)) {
+           s += " and GZ_REASON1 in ('施工碰线','异物短路','树竹放电') ";
+        } else {
+            String[] typeArr = types.split(",");
+            s += " and GZ_REASON1 in (";
+            for (String type:typeArr) {
+                s += "'" + type + "',";
+            }
+            s = s.substring(0,s.length() - 1);
+            s += ")";
+        }
+        String sql = "select t.*,tt.TOWER_NAME,ttt.LONGITUDE,ttt.LATITUDE from GUZHANG t join CM_LINE_TOWER tt on t.LINE_ID = tt.LINE_ID and t.GZ_TOWER is not NULL and tt.TOWER_NAME = substr(t.GZ_TOWER,0,instr(GZ_TOWER,'#',1,1)-1) " +
+                s +
+                "join cm_tower ttt on ttt.id = tt.TOWER_ID";
+        if(lineId != null) {
+            sql += " and t.line_id = " +lineId;
+        }
+        return cmcoordinateService.execSql(sql);
     }
 
     /***
@@ -588,7 +759,7 @@ public class PcMapShowController {
         if (khMenAllString == null) {
         } else {
             JSONObject khMenAll = JSONObject.parseObject(khMenAllString.toString());
-            String sql = "SELECT USER_ID,max(status) status from kh_task where PLAN_END_TIME >= trunc(sysdate) and  PLAN_START_TIME <= trunc(sysdate+1) and USER_ID = ? group by user_id";
+            String sql = "SELECT USER_ID,min(status) status from kh_task where PLAN_END_TIME >= trunc(sysdate) and  PLAN_START_TIME <= trunc(sysdate+1) and USER_ID = ? group by user_id";
             try {
                 Map<String, Object> map = cmcoordinateService.execSqlSingleResult(sql, userId);
                 Object status = map.get("STATUS");
