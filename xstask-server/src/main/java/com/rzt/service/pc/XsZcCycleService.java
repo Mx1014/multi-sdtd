@@ -376,7 +376,8 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
             arrList.add(startDate);
             arrList.add(startDate);
         } else {
-            sqlBuffer.append(" and PLAN_END_TIME >= trunc(sysdate) and  PLAN_START_TIME <= trunc(sysdate+1)");
+//            sqlBuffer.append(" and PLAN_END_TIME >= trunc(sysdate) ");
+//            sqlBuffer.append(" and PLAN_END_TIME >= trunc(sysdate) and  PLAN_START_TIME <= trunc(sysdate+1)");
         }
 
 
