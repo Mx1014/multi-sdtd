@@ -24,12 +24,12 @@ public class AlarmDetailsController extends CurdController<RztSysUser, CommonSer
     private RedisTemplate<String, Object> redisTemplate;
 
     @GetMapping("AlarmList")
-    public WebApiResponse AlarmList(String currentUserId, String startTime, String endTime, String deptId) {
+    public WebApiResponse AlarmList(String currentUserId, String startTime, String endTime, String DEPTID) {
         List listLike = new ArrayList();
         String s = "";
         JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", currentUserId).toString());
         int roletype = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
-        if (!StringUtils.isEmpty(deptId)) {
+        if (!StringUtils.isEmpty(DEPTID)) {
             roletype = 1;
         }
         if (roletype == 0) {
@@ -41,8 +41,8 @@ public class AlarmDetailsController extends CurdController<RztSysUser, CommonSer
             } else {
                 s += " AND trunc(CREATE_TIME) = trunc(sysdate) ";
             }
-            if (!StringUtils.isEmpty(deptId)) {
-                listLike.add(deptId);
+            if (!StringUtils.isEmpty(DEPTID)) {
+                listLike.add(DEPTID);
                 s += " AND DEPTID= ?" + listLike.size();
             }
             String alarm = " SELECT " +
@@ -61,7 +61,7 @@ public class AlarmDetailsController extends CurdController<RztSysUser, CommonSer
                     "                                     nvl(sum(decode(WARNING_TYPE, 5, 1, 0)), 0)        AS UNQUALIFIEDPATROL, " +
                     "                                     DEPTID " +
                     "                                   FROM MONITOR_CHECK_EJ " +
-                    "                                   WHERE 1 = 1 AND trunc(CREATE_TIME) = trunc(sysdate) " +
+                    "                                   WHERE 1 = 1  " + s +
                     "                                   GROUP BY DEPTID) A ON T.ID = A.DEPTID " +
                     "WHERE T.DEPTSORT IS NOT NULL " +
                     "ORDER BY T.DEPTSORT ";
@@ -75,8 +75,8 @@ public class AlarmDetailsController extends CurdController<RztSysUser, CommonSer
             Map<String, Integer> map5 = new HashMap();
             Map<String, Integer> map6 = new HashMap();
             Object deptid = jsonObject.get("DEPTID");
-            if (!StringUtils.isEmpty(deptId)) {
-                deptid = deptId;
+            if (!StringUtils.isEmpty(DEPTID)) {
+                deptid = DEPTID;
             }
             listLike.add(deptid);
             if (!StringUtils.isEmpty(startTime) && !StringUtils.isEmpty(endTime)) {

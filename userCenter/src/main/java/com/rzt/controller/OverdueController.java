@@ -22,10 +22,11 @@ public class OverdueController extends CurdController<RztSysUser, CommonService>
     private RedisTemplate<String, Object> redisTemplate;
 
     @RequestMapping("overdueList")
-    public WebApiResponse overdueList(Integer page, Integer size, String currentUserId, String startTime, String endTime, String deptId) {
+    public WebApiResponse overdueList(String taskname, String loginstatus, String companyid, Integer page, Integer size, String currentUserId, String startTime, String endTime, String deptId) {
         Pageable pageable = new PageRequest(page, size);
         List listLike = new ArrayList();
         String s = "";
+        String s1 = "";
         JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", currentUserId).toString());
         int roletype = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
         Object deptid = jsonObject.get("DEPTID");
@@ -44,12 +45,24 @@ public class OverdueController extends CurdController<RztSysUser, CommonService>
         } else {
             s += " AND trunc(CREATE_TIME) = trunc(sysdate) ";
         }
+        if (!StringUtils.isEmpty(companyid)) {
+            listLike.add(companyid);
+            s1 += " AND u.COMPANYID = ?" + listLike.size();
+        }
+        if (!StringUtils.isEmpty(taskname)) {
+            listLike.add("%" + taskname + "%");
+            s1 += " AND k.TASK_NAME LIKE ?" + listLike.size();
+        }
+        if (!StringUtils.isEmpty(loginstatus)) {
+            listLike.add(loginstatus);
+            s1 += " AND u.LOGINSTATUS = ?" + listLike.size();
+        }
         String sql = " SELECT " +
-                "  k.TASK_NAME,u.DEPT,u.CLASSNAME,u.COMPANYNAME,u.REALNAME,u.PHONE,k.PLAN_END_TIME,e.* " +
+                "  k.TASK_NAME,u.DEPT,u.CLASSNAME,u.LOGINSTATUS,u.COMPANYNAME,u.REALNAME,u.PHONE,k.PLAN_END_TIME,e.* " +
                 "FROM (SELECT TASK_ID,USER_ID,TASK_TYPE  " +
                 "      FROM MONITOR_CHECK_EJ " +
                 "      WHERE WARNING_TYPE = 1 " + s +
-                "     ) e LEFT JOIN XS_ZC_TASK k ON e.TASK_ID = k.ID LEFT JOIN USERINFO u ON k.CM_USER_ID = u.ID ";
+                "     ) e LEFT JOIN XS_ZC_TASK k ON e.TASK_ID = k.ID LEFT JOIN USERINFO u ON k.CM_USER_ID = u.ID where 1 = 1 " + s1;
         try {
             return WebApiResponse.success(this.service.execSqlPage(pageable, sql, listLike.toArray()));
         } catch (Exception e) {

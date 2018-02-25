@@ -5,13 +5,21 @@ import com.rzt.entity.RztSysUser;
 import com.rzt.service.CommonService;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DateUtil;
+import org.hibernate.SQLQuery;
+import org.hibernate.transform.Transformers;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -21,6 +29,8 @@ import java.util.*;
 public class UserDisplaySynthesisController extends CurdController<RztSysUser, CommonService> {
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+    @PersistenceContext
+    EntityManager entityManager;
 
     @RequestMapping("userdisplaysynthesisList")
     public WebApiResponse userdisplaysynthesisList(String currentUserId, String startTime, String endTime, String deptId) {
@@ -210,9 +220,9 @@ public class UserDisplaySynthesisController extends CurdController<RztSysUser, C
                     " GROUP BY DEPTID,USER_ID,CLASSNAME,LOGINSTATUS ) GROUP BY DEPTID ";
             String xcjcLogin = " SELECT nvl(sum(decode(LOGINSTATUS,1,1,0)),0) zxjczx," +
                     "  nvl(sum(decode(LOGINSTATUS,0,1,0)),0) zxjclx ,DEPTID FROM (SELECT z.USER_ID AS USERID,DEPTID,CLASSNAME,LOGINSTATUS " +
-                    " FROM RZTSYSUSER r RIGHT JOIN CHECK_LIVE_TASK z ON r.ID = z.USER_ID " + s3 + s2 +
+                    " FROM RZTSYSUSER r RIGHT JOIN CHECK_LIVE_TASK z ON r.ID = z.USER_ID " +
                     " WHERE  USERDELETE = 1   " + s3 + s2 +
-                    " ) GROUP BY DEPTID ";
+                    "  GROUP BY z.USER_ID, DEPTID, CLASSNAME, LOGINSTATUS) GROUP BY DEPTID ";
             Map<String, Object> htjcMap = new HashMap<>();
             try {
                 String user = "SELECT * FROM WORKING_TIMED where 1=1 " + s4;
@@ -262,7 +272,6 @@ public class UserDisplaySynthesisController extends CurdController<RztSysUser, C
             try {
                 xcLoginMap = this.service.execSqlSingleResult(xcjcLogin, listLike.toArray());
             } catch (Exception e) {
-                e.printStackTrace();
             }
             Map<Object, Object> map = new HashMap<>();
             map.put("xsls", Integer.parseInt(xsLoginMap == null ? "0" : xsLoginMap.get("XSLX").toString()));
@@ -306,4 +315,84 @@ public class UserDisplaySynthesisController extends CurdController<RztSysUser, C
         }
         return 1;
     }
+
+    @GetMapping("htjcList")
+    public WebApiResponse htjcList(String loginType, String deptId,Integer page,Integer size){
+        try {
+            String s1 = "";
+            if (!StringUtils.isEmpty(deptId)){
+                s1 += " where dept_id ='"+deptId+"' ";
+            }
+            Map<Object, Object> returnMap = new HashMap<>();
+            List<Object> list = new ArrayList<>();
+            try {
+                String user = "SELECT * FROM WORKING_TIMED "+s1;
+                List<Map<String, Object>> maps = this.service.execSql(user);
+                for (Map map : maps) {
+                    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+                    String format = formatter.format(new Date());
+                    String s = format + " 00:00:00";
+                    String userId = "";
+                    String start = map.get("START_TIME").toString();
+                    String end = map.get("END_TIME").toString();
+                    Date nowDate = DateUtil.getNowDate();
+                    if (nowDate.getTime() >= DateUtil.addDate(DateUtil.parseDate(s), Double.parseDouble(start)).getTime() && nowDate.getTime() <= DateUtil.addDate(DateUtil.parseDate(s), Double.parseDouble(end)).getTime()) {
+                        userId += map.get("DAY_USER").toString();
+                    } else {
+                        userId += map.get("NIGHT_USER").toString();
+                    }
+                    String[] split = userId.split(",");
+                    for (int i = 0; i < split.length; i++) {
+                        String sql = "SELECT d.deptname,u.*  FROM RZTSYSUSER u left join rztsysdepartment d on d.id = u.deptid where u.id=? order by d.deptname ";
+                        Map<String, Object> users = this.service.execSqlSingleResult(sql, split[i]);
+                        if(loginType!=null && !loginType.equals("")){
+                            if (users.get("LOGINSTATUS").toString().equals(loginType)) {
+                                list.add(users);
+                            }
+                        }else {
+//                            this.service.execSqlPage()
+                            list.add(users);
+                        }
+                    }
+                }
+                List returnList = new ArrayList();
+                int s = list.size()-page*size>size?((page+1)*size):list.size();
+                for (int i=page*size;i<(list.size()-page*size>size?((page+1)*size):list.size());i++){
+                    returnList.add(list.get(i));
+                }
+                returnMap.put("content",returnList);
+                returnMap.put("totalElements",list.size());
+                returnMap.put("totalPages",(list.size()%size==0?list.size()/size:list.size()/size+1));
+                returnMap.put("number",page);
+                returnMap.put("size",size);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return WebApiResponse.success(returnMap);
+        }catch (Exception e){
+            return WebApiResponse.erro("失败");
+        }
+    }
+
+   /* public Page<Map<String, Object>> execQuerySqlPage(Pageable pageable,Long sizeQuery) {
+        Query q = this.entityManager.createNativeQuery(sql);
+        Query sizeQuery = this.entityManager.createNativeQuery("select count(*) from (" + sql + ")");
+        if(objects != null && objects.length > 0) {
+            for(int i = 0; i < objects.length; ++i) {
+                q.setParameter(i + 1, objects[i]);
+                sizeQuery.setParameter(i + 1, objects[i]);
+            }
+        }
+
+        long size = 0L;
+        if(pageable != null) {
+            size = Long.valueOf(sizeQuery.getResultList().get(0).toString()).longValue();
+            q.setFirstResult(pageable.getOffset());
+            q.setMaxResults(pageable.getPageSize());
+        }
+
+        ((SQLQuery)q.unwrap(SQLQuery.class)).setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP);
+        return pageable == null?new PageImpl(q.getResultList()):new PageImpl(q.getResultList(), pageable, size);
+    }*/
 }
+
