@@ -137,11 +137,12 @@ public class RztSysDepartmentService extends CurdService<RztSysDepartment, RztSy
 
     @Transactional
     public void deleteNode(String id) {
-        RztSysDepartment rztSysDepartment = this.reposiotry.getOne(id);
-        int width = rztSysDepartment.getRgt() - rztSysDepartment.getLft() + 1;
-        this.reposiotry.deleteByLftBetween(rztSysDepartment.getLft(), rztSysDepartment.getRgt());
-        this.reposiotry.updateNodergt(rztSysDepartment.getRgt(), width);
-        this.reposiotry.updateNodelft(rztSysDepartment.getLft(), width);
+//        RztSysDepartment rztSysDepartment = this.reposiotry.getOne(id);
+////        int width = rztSysDepartment.getRgt() - rztSysDepartment.getLft() + 1;
+////        this.reposiotry.deleteByLftBetween(rztSysDepartment.getLft(), rztSysDepartment.getRgt());
+////        this.reposiotry.updateNodergt(rztSysDepartment.getRgt(), width);
+////        this.reposiotry.updateNodelft(rztSysDepartment.getLft(), width);
+        this.reposiotry.deleteDeptId(id);
     }
 
     /**

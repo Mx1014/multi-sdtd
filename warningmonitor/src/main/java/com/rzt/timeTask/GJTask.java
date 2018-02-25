@@ -54,6 +54,7 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
         khgj.JCOutOfTime();  //稽查超期
         khgj.JCWsx();  //稽查未上线
         khgj.JCWdxc();  //稽查未到达现场
+
     }
 
     /**
@@ -84,9 +85,8 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
                 if(flag>0){
                     //置为离线状态
                     userQuit((String) userId);
-
-                    zSet.remove("currentUser",userId);
                 }
+                zSet.remove("currentUser",userId);
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -118,7 +118,7 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
                     " ON kh.TDYW_ORG = d.DEPTNAME WHERE trunc(kh.PLAN_START_TIME) = trunc(sysdate) AND kh.USER_ID =?1  AND kh.STATUS !=2 AND kh.STATUS !=3";
         }else if(taskType==1){
             sql = "SELECT ID,TD_ORG as DEPTID,PLAN_START_TIME,TASK_NAME,CM_USER_ID,PLAN_END_TIME,STAUTS  " +
-                    "FROM XS_ZC_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND CM_USER_ID=?1  AND STAUTS !=2";
+                    "FROM XS_ZC_TASK WHERE trunc(PLAN_START_TIME) = trunc(sysdate) AND CM_USER_ID=?1  AND STAUTS !=2 AND IS_DELETE=0";
         }else if(taskType==3){
           /*  sql=" SELECT t.ID,t.USER_ID,t.TASK_NAME,t.PLAN_START_TIME,t.PLAN_END_TIME,u.DEPTID FROM CHECK_LIVE_TASK t " +
                     " LEFT JOIN RZTSYSUSER u ON t.USER_ID=u.ID " +
@@ -154,9 +154,18 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
 
                 if(startDate<currentDate && currentDate<endDate){
                     if(flag==0){
-                        String sql1 = "SELECT   ID " +
-                                "FROM PICTURE_TOUR " +
-                                "WHERE TASK_ID =?1 AND CREATE_TIME BETWEEN sysdate-90/(24*60) AND sysdate+10/(24*60)";
+                        String sql1="";
+                        if(taskType==2){
+                            sql1=" SELECT   ID  " +
+                                    " FROM PICTURE_KH  " +
+                                    " WHERE TASK_ID =?1 AND CREATE_TIME BETWEEN sysdate-90/(24*60) AND sysdate+10/(24*60)";
+                        }else if(taskType==1){
+                            sql1 = "SELECT   ID " +
+                                    "FROM PICTURE_TOUR " +
+                                    "WHERE TASK_ID =?1 AND CREATE_TIME BETWEEN sysdate-90/(24*60) AND sysdate+10/(24*60)";
+                        }else{
+                            continue;
+                        }
                         Object id = map.get("ID");
                         List<Map<String, Object>> maps1 = execSql(sql1, id);
                         if(maps1.size()>0){
@@ -177,7 +186,7 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
                         redisService.setex(key);
 
                     }
-                }else if(new Date().getTime()<startDate){
+                }/*else if(new Date().getTime()<startDate){
                     String s = "未上线";
                     String key = "";
                     if (taskType==2){
@@ -190,7 +199,7 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
                     Long time = plan_start_time.getTime() - new Date().getTime();
                     time = time+5400000L;
                     redisService.psetex(key,time);
-                }
+                }*/
             } catch (Exception e) {
             }
         }
