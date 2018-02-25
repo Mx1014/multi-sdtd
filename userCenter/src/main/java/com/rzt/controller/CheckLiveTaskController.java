@@ -21,17 +21,17 @@ import java.util.Map;
 public class CheckLiveTaskController extends CurdController<RztSysUser, CheckLiveTaskService> {
     protected static Logger LOGGER = LoggerFactory.getLogger(CheckLiveTaskService.class);
 
-    @ApiOperation(value = "看护稽查任务已派发看护任务列表接口", notes = "看护稽查任务已派发看护任务列表分页查询，条件搜索")
+    @ApiOperation(value = "看护稽查任务已派发看护任务列表接口",notes = "看护稽查任务已派发看护任务列表分页查询，条件搜索")
     @GetMapping("/listKhCheckTaskPage")
-    public WebApiResponse listKhCheckTaskPage(@RequestParam(value = "page", defaultValue = "0") Integer page,
-                                              @RequestParam(value = "size", defaultValue = "8") Integer size,
-                                              String userId, String tddwId, String currentUserId, String startTime, String endTime, String status, String queryAll, String loginType) {
-        try {
+    public WebApiResponse listKhCheckTaskPage(@RequestParam(value = "page",defaultValue = "0") Integer page,
+                                              @RequestParam(value = "size",defaultValue = "8") Integer size,
+                                              String userId,String tddwId,String currentUserId,String startTime, String endTime,String status,String queryAll,String loginType,String home){
+        try{
             Pageable pageable = new PageRequest(page, size);
-            Page<Map<String, Object>> list = this.service.listKhCheckTaskPage(pageable, userId, tddwId, currentUserId, startTime, endTime, status, queryAll, loginType);
+            Page<Map<String, Object>> list = this.service.listKhCheckTaskPage(pageable, userId, tddwId,currentUserId,startTime,endTime,status,queryAll,loginType,home);
             return WebApiResponse.success(list);
-        } catch (Exception e) {
-            return WebApiResponse.erro("数据获取失败" + e.getMessage());
+        }catch (Exception e){
+            return WebApiResponse.erro("数据获取失败"+e.getMessage());
         }
     }
 
@@ -61,4 +61,5 @@ public class CheckLiveTaskController extends CurdController<RztSysUser, CheckLiv
             return WebApiResponse.erro("查询失败");
         }
     }
+
 }
