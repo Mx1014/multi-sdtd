@@ -59,9 +59,9 @@ public class OfflinesController extends CurdController<RztSysUser, CommonService
         }
         if (!StringUtils.isEmpty(startTime) && !StringUtils.isEmpty(endTime)) {
             listLike.add(startTime);
-            s += " AND CREATE_TIME >= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
+            s += " AND CREATE_TIME-90/(60*24)  >= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
             listLike.add(endTime);
-            s += " AND CREATE_TIME <= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
+            s += " AND CREATE_TIME-90/(60*24)  <= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
         } else {
             s += " AND trunc(CREATE_TIME) = trunc(sysdate) ";
         }
@@ -124,7 +124,7 @@ public class OfflinesController extends CurdController<RztSysUser, CommonService
                 "         u.WORKTYPE AS WORKTYPEs, " +
                 "        e.a               AS MORE, " +
                 "        u.DEPTID, " +
-                "        e.CREATE_TIME " +
+                "        e.CREATE_TIME  -90/(60*24) AS CREATE_TIME" +
                 "      FROM (SELECT " +
                 "              count(1)                                                            AS a, " +
                 "              ej.USER_ID, " +
@@ -133,7 +133,7 @@ public class OfflinesController extends CurdController<RztSysUser, CommonService
                 "            FROM MONITOR_CHECK_EJ ej " +
                 "            WHERE (ej.WARNING_TYPE = 8 OR ej.WARNING_TYPE = 2) AND USER_ID !='null'  " + s +
                 "            GROUP BY USER_ID) e JOIN USERINFO u ON e.USER_ID = u.ID AND u.USERDELETE=1 "+s2+" ) ch LEFT JOIN MONITOR_CHECK_EJ ce " +
-                "    ON ch.USER_ID = ce.USER_ID AND ch.CREATE_TIME = ce.CREATE_TIME  " + s1;
+                "    ON ch.USER_ID = ce.USER_ID AND ch.CREATE_TIME = (ce.CREATE_TIME -90/(60*24))  " + s1;
         try {
             return WebApiResponse.success(this.service.execSqlPage(pageable, sql, listLike.toArray()));
         } catch (Exception e) {
