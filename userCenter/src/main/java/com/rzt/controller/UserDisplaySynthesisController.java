@@ -220,9 +220,9 @@ public class UserDisplaySynthesisController extends CurdController<RztSysUser, C
                     " GROUP BY DEPTID,USER_ID,CLASSNAME,LOGINSTATUS ) GROUP BY DEPTID ";
             String xcjcLogin = " SELECT nvl(sum(decode(LOGINSTATUS,1,1,0)),0) zxjczx," +
                     "  nvl(sum(decode(LOGINSTATUS,0,1,0)),0) zxjclx ,DEPTID FROM (SELECT z.USER_ID AS USERID,DEPTID,CLASSNAME,LOGINSTATUS " +
-                    " FROM RZTSYSUSER r RIGHT JOIN CHECK_LIVE_TASK z ON r.ID = z.USER_ID " + s3 + s2 +
+                    " FROM RZTSYSUSER r RIGHT JOIN CHECK_LIVE_TASK z ON r.ID = z.USER_ID " +
                     " WHERE  USERDELETE = 1   " + s3 + s2 +
-                    " ) GROUP BY DEPTID ";
+                    "  GROUP BY z.USER_ID, DEPTID, CLASSNAME, LOGINSTATUS) GROUP BY DEPTID ";
             Map<String, Object> htjcMap = new HashMap<>();
             try {
                 String user = "SELECT * FROM WORKING_TIMED where 1=1 " + s4;
@@ -272,7 +272,6 @@ public class UserDisplaySynthesisController extends CurdController<RztSysUser, C
             try {
                 xcLoginMap = this.service.execSqlSingleResult(xcjcLogin, listLike.toArray());
             } catch (Exception e) {
-                e.printStackTrace();
             }
             Map<Object, Object> map = new HashMap<>();
             map.put("xsls", Integer.parseInt(xsLoginMap == null ? "0" : xsLoginMap.get("XSLX").toString()));
@@ -318,7 +317,7 @@ public class UserDisplaySynthesisController extends CurdController<RztSysUser, C
     }
 
     @GetMapping("htjcList")
-    public WebApiResponse htjcList(String loginType, String deptId, Pageable pageable){
+    public WebApiResponse htjcList(String loginType, String deptId,Integer page,Integer size){
         try {
             String s1 = "";
             if (!StringUtils.isEmpty(deptId)){
@@ -356,14 +355,20 @@ public class UserDisplaySynthesisController extends CurdController<RztSysUser, C
                         }
                     }
                 }
-
-                returnMap.put("content",list);
+                List returnList = new ArrayList();
+                int s = list.size()-page*size>size?((page+1)*size):list.size();
+                for (int i=page*size;i<(list.size()-page*size>size?((page+1)*size):list.size());i++){
+                    returnList.add(list.get(i));
+                }
+                returnMap.put("content",returnList);
                 returnMap.put("totalElements",list.size());
-
+                returnMap.put("totalPages",(list.size()%size==0?list.size()/size:list.size()/size+1));
+                returnMap.put("number",page);
+                returnMap.put("size",size);
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            return WebApiResponse.success(list);
+            return WebApiResponse.success(returnMap);
         }catch (Exception e){
             return WebApiResponse.erro("失败");
         }
