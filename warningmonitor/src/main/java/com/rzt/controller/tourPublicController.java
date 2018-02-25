@@ -110,7 +110,7 @@ public class tourPublicController extends CurdController<Monitorcheckej, tourPub
     //Long id
     @GetMapping("remoceKey12")
     public void removeKey(){
-        String s = "*+40283781608b848701608b85d3700000+*";
+        String s = "ONE+*+未上线";
         RedisConnection connection = null;
         try {
             connection = redisTemplate.getConnectionFactory().getConnection();
