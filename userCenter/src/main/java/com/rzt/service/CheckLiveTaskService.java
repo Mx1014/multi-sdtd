@@ -24,7 +24,7 @@ public class CheckLiveTaskService extends CurdService<Cmcoordinate, Cmcoordinate
     protected static Logger LOGGER = LoggerFactory.getLogger(CheckLiveTaskService.class);
 
     //看护已派发稽查任务列表
-    public Page<Map<String, Object>> listKhCheckTaskPage(Pageable pageable, String userId, String tddwId, String currentUserId, String startTime, String endTime, String status, String queryAll, String loginType) {
+    public Page<Map<String, Object>> listKhCheckTaskPage(Pageable pageable, String userId, String tddwId, String currentUserId, String startTime, String endTime, String status, String queryAll, String loginType, String home) {
 
         String sql = "select t.id,t.TASK_ID,t.CREATE_TIME,t.TASK_NAME,t.PLAN_START_TIME,t.PLAN_END_TIME,u.REALNAME,d.DEPTNAME, " +
                 "  t.status , t.TASK_TYPE ,u.LOGINSTATUS,C.COMPANYNAME,U.PHONE" +
@@ -34,7 +34,7 @@ public class CheckLiveTaskService extends CurdService<Cmcoordinate, Cmcoordinate
                 "  LEFT JOIN RZTSYSCOMPANY C ON C.ID = U.COMPANYID where 1=1 ";
 
         List params = new ArrayList<>();
-        //任务状态人查询`
+        //任务状态人查询
         if (!StringUtils.isEmpty(status)) {
             sql += " AND t.status =" + status;
         }
@@ -49,10 +49,12 @@ public class CheckLiveTaskService extends CurdService<Cmcoordinate, Cmcoordinate
             sql += " AND u.id =?";
         }
         //时间段查询
-        if (!StringUtils.isEmpty(startTime) && !StringUtils.isEmpty(endTime)) {
+        if (home != null && home.equals("1")) {
+            sql += " AND t.PLAN_START_TIME <= sysdate AND t.PLAN_END_TIME >= trunc(sysdate) ";
+        } else if (!StringUtils.isEmpty(startTime) && !StringUtils.isEmpty(endTime)) {
             params.add(endTime);
             params.add(startTime);
-            sql += " and (to_date(?,'yyyy-MM-dd HH24:mi') > t.plan_start_time or to_date(?,'yyyy-MM-dd HH24:mi') < t.plan_end_time) ";
+            sql += " and to_date(?,'yyyy-MM-dd HH24:mi') > t.plan_start_time and to_date(?,'yyyy-MM-dd HH24:mi') < t.plan_end_time ";
         }
         if (!StringUtils.isEmpty(currentUserId)) {
             Map<String, Object> map = userInfoFromRedis(currentUserId);
@@ -79,19 +81,25 @@ public class CheckLiveTaskService extends CurdService<Cmcoordinate, Cmcoordinate
             }
 
         }
-        if (!"queryAll".equals(queryAll)) {
-            //通道单位查询
-            if (!StringUtils.isEmpty(tddwId)) {
+        if (!StringUtils.isEmpty(tddwId)) {
+            if (tddwId.equals("40283781608b848701608b85d3700000")) {
+                sql += " and t.CHECK_TYPE=1 ";
+            } else {
                 params.add(tddwId);
                 sql += " and t.CHECK_TYPE=2 ";
                 sql += " AND d.ID =?";
-            } else {
-                sql += " and t.CHECK_TYPE=2 ";
             }
         }
+
         return execSqlPage(pageable, sql, params.toArray());
     }
 
+    public Map<String, Object> khTaskDetail(String taskId) throws Exception {
+        String sql = "select s.TASK_NAME,h.yhms,h.yhjb,h.yhjb1,h.YHZRDW,h.YHZRDWLXR,h.YHZRDWDH,h.YHFXSJ,h.gkcs,h.yhxcyy,h.XLZYCD,h.YHLB,d.DEPTNAME from CHECK_LIVE_site s " +
+                " left JOIN KH_YH_HISTORY h on s.YH_ID=h.id " +
+                " LEFT JOIN  RZTSYSDEPARTMENT d on d.ID = s.TDYW_ORGID where s.id = " + taskId;
+        return execSqlSingleResult(sql);
+    }
 
     public Page<Map<String, Object>> listXsCheckTaskPage(Pageable pageable, String startTime, String endTime, String userId, String tddwId, String currentUserId, String status) {
         String sql = "select t.id,t.TASK_ID,t.CREATE_TIME,t.TASK_NAME,u.REALNAME,td.PLAN_START_TIME,td.PLAN_END_TIME,d.DEPTNAME, t.TASK_TYPE,t.status from CHECK_LIVE_TASKXS t " +
