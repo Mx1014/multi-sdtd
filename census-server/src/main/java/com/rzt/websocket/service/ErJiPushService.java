@@ -180,11 +180,19 @@ public class ErJiPushService extends CurdService<websocket, websocketRepository>
         String deptId;
         String module5_1;
         deptId = session.get("DEPTID").toString();
+        /*module5_1 = " SELECT\n" +
+                "  nvl(sum(decode(STATUS, 0, 1, 0)), 0) AS wcl,\n" +
+                "  nvl(sum(decode(STATUS, 1, 1, 0)), 0) AS clz,\n" +
+                "  nvl(sum(decode(STATUS, 2, 1, 0)), 0) AS ycl\n" +
+                "FROM MONITOR_CHECK_EJ WHERE trunc(CREATE_TIME) = trunc(sysdate) AND DEPTID = '" + deptId + "' ";*/
         module5_1 = " SELECT\n" +
                 "  nvl(sum(decode(STATUS, 0, 1, 0)), 0) AS wcl,\n" +
                 "  nvl(sum(decode(STATUS, 1, 1, 0)), 0) AS clz,\n" +
                 "  nvl(sum(decode(STATUS, 2, 1, 0)), 0) AS ycl\n" +
-                "FROM MONITOR_CHECK_EJ WHERE trunc(CREATE_TIME) = trunc(sysdate) AND DEPTID = '" + deptId + "' ";
+                "FROM MONITOR_CHECK_EJ\n" +
+                "WHERE (TASK_TYPE = 1 OR TASK_TYPE = 2 OR TASK_TYPE = 3 OR TASK_TYPE = 4 OR TASK_TYPE = 5 OR TASK_TYPE = 6 OR\n" +
+                "       TASK_TYPE = 7 OR TASK_TYPE = 8 OR TASK_TYPE = 10 OR TASK_TYPE = 11 OR TASK_TYPE = 12 OR TASK_TYPE = 13 OR\n" +
+                "       TASK_TYPE = 14) AND trunc(CREATE_TIME) = trunc(sysdate) AND DEPTID = '" + deptId + "'  ";
         if (allMap.containsKey(deptId)) {
             message = allMap.get(deptId);
         } else {
@@ -215,7 +223,16 @@ public class ErJiPushService extends CurdService<websocket, websocketRepository>
         String deptId;
         String module5_2;
         deptId = session.get("DEPTID").toString();
-        module5_2 = " SELECT nvl(sum(decode(TASK_TYPE, 1, 1, 0)), 0) xs,nvl(sum(decode(TASK_TYPE, 2, 1, 0)), 0) kh,nvl(sum(decode(TASK_TYPE, 3, 1, 0)), 0) jc,0 as yh,0 as tf FROM MONITOR_CHECK_EJ WHERE trunc(CREATE_TIME) = trunc(sysdate) AND DEPTID = '" + deptId + "' ";
+//        module5_2 = " SELECT nvl(sum(decode(TASK_TYPE, 1, 1, 0)), 0) xs,nvl(sum(decode(TASK_TYPE, 2, 1, 0)), 0) kh,nvl(sum(decode(TASK_TYPE, 3, 1, 0)), 0) jc,0 as yh,0 as tf FROM MONITOR_CHECK_EJ WHERE trunc(CREATE_TIME) = trunc(sysdate) AND DEPTID = '" + deptId + "' ";
+        module5_2 = " SELECT\n" +
+                "  nvl(sum(decode(TASK_TYPE, 1, 1, 2, 1, 3, 1, 4, 1, 5, 1, 0)), 0) xs,\n" +
+                "  nvl(sum(decode(TASK_TYPE, 6, 1, 7, 1, 8, 1, 10, 1, 11, 1, 0)), 0) kh,\n" +
+                "  nvl(sum(decode(TASK_TYPE, 12, 1, 13, 1, 14, 1, 0)), 0) jc,\n" +
+                "  0 AS                                    yh,\n" +
+                "  0 AS                                    tf\n" +
+                "FROM MONITOR_CHECK_EJ\n" +
+                "WHERE trunc(CREATE_TIME) = trunc(sysdate)\n" +
+                "      AND DEPTID =  '" + deptId + "' ";
         if (allMap.containsKey(deptId)) {
             message = allMap.get(deptId);
         } else {
@@ -292,7 +309,7 @@ public class ErJiPushService extends CurdService<websocket, websocketRepository>
                     "  nvl(sum(decode(tt.TASK_TYPE, 2, 1, 0)),0) khgj,\n" +
                     "  nvl(sum(decode(tt.TASK_TYPE, 3, 1, 0)),0) xcjc,\n" +
                     "  0                             yhgj\n" +
-                    "FROM MONITOR_CHECK_EJ tt where CREATE_TIME >= trunc(sysdate) and STATUS = 0 and deptid = '"+ deptid +"'";
+                    "FROM MONITOR_CHECK_EJ tt where CREATE_TIME >= trunc(sysdate) and STATUS = 0 and deptid = '" + deptid + "'";
             Map<String, Object> map1 = this.execSqlSingleResult(module9);
             String module9Detail = "SELECT t.*,tt.DESCRIPTION from (SELECT\n" +
                     "  t.WARNING_TYPE,\n" +
@@ -303,19 +320,19 @@ public class ErJiPushService extends CurdService<websocket, websocketRepository>
                     "FROM MONITOR_CHECK_EJ t\n" +
                     "WHERE t.id = (SELECT max(tt.ID)\n" +
                     "              FROM MONITOR_CHECK_EJ tt\n" +
-                    "              WHERE tt.TASK_TYPE = t.TASK_TYPE AND tt.STATUS = 0 AND tt.CREATE_TIME >= trunc(sysdate) and deptid = '"+ deptid +"')) t join WARNING_TYPE tt on t.WARNING_TYPE = tt.WARNING_TYPE ";
+                    "              WHERE tt.TASK_TYPE = t.TASK_TYPE AND tt.STATUS = 0 AND tt.CREATE_TIME >= trunc(sysdate) and deptid = '" + deptid + "')) t join WARNING_TYPE tt on t.WARNING_TYPE = tt.WARNING_TYPE ";
             List<Map<String, Object>> detail = this.execSql(module9Detail);
-            for (Map<String,Object> obj1:detail) {
+            for (Map<String, Object> obj1 : detail) {
                 try {
 
 
                     Integer task_type = Integer.parseInt(obj1.get("TASK_TYPE").toString());
                     Object description = obj1.get("DESCRIPTION");
-                    if(task_type == 1) {
+                    if (task_type == 1) {
                         map1.put("xsgjDetail", description);
-                    } else if(task_type == 2) {
+                    } else if (task_type == 2) {
                         map1.put("khgjDetail", description);
-                    } else if(task_type == 3) {
+                    } else if (task_type == 3) {
                         map1.put("xcjcDetail", description);
                     }
                 } catch (NumberFormatException e) {
