@@ -1,5 +1,6 @@
 package com.rzt.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.RztSysUser;
 import com.rzt.service.CommonService;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -317,7 +319,7 @@ public class UserDisplaySynthesisController extends CurdController<RztSysUser, C
     }
 
     @GetMapping("htjcList")
-    public WebApiResponse htjcList(String loginType, String deptId,Integer page,Integer size){
+    public WebApiResponse htjcList(String currentUserId,String loginType, String deptId,Integer page,Integer size){
         try {
             String s1 = "";
             if (!StringUtils.isEmpty(deptId)){
@@ -394,5 +396,23 @@ public class UserDisplaySynthesisController extends CurdController<RztSysUser, C
         ((SQLQuery)q.unwrap(SQLQuery.class)).setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP);
         return pageable == null?new PageImpl(q.getResultList()):new PageImpl(q.getResultList(), pageable, size);
     }*/
+   public Map<String, Object> userInfoFromRedis(String userId) {
+       HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
+
+       Map<String, Object> jsonObject = null;
+       Object userInformation = hashOperations.get("UserInformation", userId);
+       if (userInformation == null) {
+           String sql = "select * from userinfo where id = ?";
+           try {
+               jsonObject = this.service.execSqlSingleResult(sql, userId);
+           } catch (Exception e) {
+//               LOGGER.error("currentUserId未获取到唯一数据!", e);
+           }
+           hashOperations.put("UserInformation", userId, jsonObject);
+       } else {
+           jsonObject = JSON.parseObject(userInformation.toString(), Map.class);
+       }
+       return jsonObject;
+   }
 }
 
