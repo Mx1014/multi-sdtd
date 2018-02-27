@@ -318,17 +318,27 @@ public class UserDisplaySynthesisController extends CurdController<RztSysUser, C
         return 1;
     }
 
+    //人员情况总览  后台人员情况
     @GetMapping("htjcList")
-    public WebApiResponse htjcList(String currentUserId,String loginType, String deptId,Integer page,Integer size){
+    public WebApiResponse htjcList(String currentUserId, String loginType, String deptId, Integer page, Integer size) {
         try {
+            JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", currentUserId).toString());
+            int roletype = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
+            String deptid = jsonObject.get("DEPTID").toString();
             String s1 = "";
-            if (!StringUtils.isEmpty(deptId)){
-                s1 += " where dept_id ='"+deptId+"' ";
+            if (roletype == 1 || roletype == 2) {
+                s1 += " where dept_id ='" + deptid + "' ";
+            } else if (roletype == 0) {
+                if (!StringUtils.isEmpty(deptId)) {
+                    s1 += " where dept_id ='" + deptId + "' ";
+                }
+            } else {
+                s1 += " where dept_id ='" + 1 + "' ";
             }
             Map<Object, Object> returnMap = new HashMap<>();
             List<Object> list = new ArrayList<>();
             try {
-                String user = "SELECT * FROM WORKING_TIMED "+s1;
+                String user = "SELECT * FROM WORKING_TIMED " + s1;
                 List<Map<String, Object>> maps = this.service.execSql(user);
                 for (Map map : maps) {
                     SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
@@ -347,72 +357,72 @@ public class UserDisplaySynthesisController extends CurdController<RztSysUser, C
                     for (int i = 0; i < split.length; i++) {
                         String sql = "SELECT d.deptname,u.*  FROM RZTSYSUSER u left join rztsysdepartment d on d.id = u.deptid where u.id=? order by d.deptname ";
                         Map<String, Object> users = this.service.execSqlSingleResult(sql, split[i]);
-                        if(loginType!=null && !loginType.equals("")){
+                        if (loginType != null && !loginType.equals("")) {
                             if (users.get("LOGINSTATUS").toString().equals(loginType)) {
                                 list.add(users);
                             }
-                        }else {
+                        } else {
 //                            this.service.execSqlPage()
                             list.add(users);
                         }
                     }
                 }
                 List returnList = new ArrayList();
-                int s = list.size()-page*size>size?((page+1)*size):list.size();
-                for (int i=page*size;i<(list.size()-page*size>size?((page+1)*size):list.size());i++){
+                int s = list.size() - page * size > size ? ((page + 1) * size) : list.size();
+                for (int i = page * size; i < (list.size() - page * size > size ? ((page + 1) * size) : list.size()); i++) {
                     returnList.add(list.get(i));
                 }
-                returnMap.put("content",returnList);
-                returnMap.put("totalElements",list.size());
-                returnMap.put("totalPages",(list.size()%size==0?list.size()/size:list.size()/size+1));
-                returnMap.put("number",page);
-                returnMap.put("size",size);
+                returnMap.put("content", returnList);
+                returnMap.put("totalElements", list.size());
+                returnMap.put("totalPages", (list.size() % size == 0 ? list.size() / size : list.size() / size + 1));
+                returnMap.put("number", page);
+                returnMap.put("size", size);
             } catch (Exception e) {
                 e.printStackTrace();
             }
             return WebApiResponse.success(returnMap);
-        }catch (Exception e){
+        } catch (Exception e) {
             return WebApiResponse.erro("失败");
         }
     }
 
-   /* public Page<Map<String, Object>> execQuerySqlPage(Pageable pageable,Long sizeQuery) {
-        Query q = this.entityManager.createNativeQuery(sql);
-        Query sizeQuery = this.entityManager.createNativeQuery("select count(*) from (" + sql + ")");
-        if(objects != null && objects.length > 0) {
-            for(int i = 0; i < objects.length; ++i) {
-                q.setParameter(i + 1, objects[i]);
-                sizeQuery.setParameter(i + 1, objects[i]);
-            }
-        }
+    /* public Page<Map<String, Object>> execQuerySqlPage(Pageable pageable,Long sizeQuery) {
+         Query q = this.entityManager.createNativeQuery(sql);
+         Query sizeQuery = this.entityManager.createNativeQuery("select count(*) from (" + sql + ")");
+         if(objects != null && objects.length > 0) {
+             for(int i = 0; i < objects.length; ++i) {
+                 q.setParameter(i + 1, objects[i]);
+                 sizeQuery.setParameter(i + 1, objects[i]);
+             }
+         }
 
-        long size = 0L;
-        if(pageable != null) {
-            size = Long.valueOf(sizeQuery.getResultList().get(0).toString()).longValue();
-            q.setFirstResult(pageable.getOffset());
-            q.setMaxResults(pageable.getPageSize());
-        }
+         long size = 0L;
+         if(pageable != null) {
+             size = Long.valueOf(sizeQuery.getResultList().get(0).toString()).longValue();
+             q.setFirstResult(pageable.getOffset());
+             q.setMaxResults(pageable.getPageSize());
+         }
 
-        ((SQLQuery)q.unwrap(SQLQuery.class)).setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP);
-        return pageable == null?new PageImpl(q.getResultList()):new PageImpl(q.getResultList(), pageable, size);
-    }*/
-   public Map<String, Object> userInfoFromRedis(String userId) {
-       HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
+         ((SQLQuery)q.unwrap(SQLQuery.class)).setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP);
+         return pageable == null?new PageImpl(q.getResultList()):new PageImpl(q.getResultList(), pageable, size);
+     }*/
+    public Map<String, Object> userInfoFromRedis(String userId) {
+        HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
 
-       Map<String, Object> jsonObject = null;
-       Object userInformation = hashOperations.get("UserInformation", userId);
-       if (userInformation == null) {
-           String sql = "select * from userinfo where id = ?";
-           try {
-               jsonObject = this.service.execSqlSingleResult(sql, userId);
-           } catch (Exception e) {
+        Map<String, Object> jsonObject = null;
+        Object userInformation = hashOperations.get("UserInformation", userId);
+        if (userInformation == null) {
+            String sql = "select * from userinfo where id = ?";
+            try {
+                jsonObject = this.service.execSqlSingleResult(sql, userId);
+            } catch (Exception e) {
 //               LOGGER.error("currentUserId未获取到唯一数据!", e);
-           }
-           hashOperations.put("UserInformation", userId, jsonObject);
-       } else {
-           jsonObject = JSON.parseObject(userInformation.toString(), Map.class);
-       }
-       return jsonObject;
-   }
+            }
+            hashOperations.put("UserInformation", userId, jsonObject);
+        } else {
+            jsonObject = JSON.parseObject(userInformation.toString(), Map.class);
+        }
+        return jsonObject;
+    }
 }
 
