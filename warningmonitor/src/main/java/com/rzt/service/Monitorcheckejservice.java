@@ -647,5 +647,33 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
         return maps;
     }
 
+    /**
+     * 监控记录查询
+     * @param currentUserId
+     * @param taskId
+     * @return
+     */
+    public Object jkjl(String currentUserId, Long taskId) {
 
+        String deptID = getDeptID(currentUserId);
+
+        if (deptID == null) {
+            return "该用户状态为null";
+        }
+        if ("-1".equals(deptID)) {
+            return "该用户无此权限";
+        }
+
+        String sql ="";
+        List<Map<String, Object>> maps = null;
+        if("0".equals(deptID)){
+           //一级
+            sql = "SELECT CREATE_TIME,CREATE_TIME_Z,CREATE_TIME_C,CHECKC_INFO,CHECKZ_INFO FROM MONITOR_CHECK_YJ WHERE TASK_ID=?1";
+        }else{
+            //二级
+            sql = "SELECT CREATE_TIME,CREATE_TIME_Z,CREATE_TIME_C,CHECKC_INFO,CHECKZ_INFO FROM MONITOR_CHECK_EJ WHERE TASK_ID=?1";
+        }
+        maps = execSql(sql,taskId);
+        return maps;
+    }
 }
