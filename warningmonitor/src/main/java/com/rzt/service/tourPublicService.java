@@ -5,17 +5,18 @@ import com.rzt.repository.Monitorcheckejrepository;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.SnowflakeIdWorker;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class tourPublicService extends CurdService<Monitorcheckej, Monitorcheckejrepository> {
@@ -311,5 +312,42 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
         List<Map<String, Object>> maps = execSql(sql, taskId);
 
         return maps;
+    }
+
+
+    /**
+     * ri
+     * @param
+     * @param fileType
+     * @return
+     */
+    public Map<String,Object> getDocBytaskId(Integer page,Integer size, String startDate,String endDate, Integer fileType) {
+        Map<String, Object> result = new HashMap<>();
+        Pageable pageable = new PageRequest(page, size);
+        List<Object> list = new ArrayList();
+        String s = "";
+
+        if(fileType!=null){
+            list.add(fileType);
+            s+=" AND　FILE_TYPE=?"+list.size();
+        }else{
+            s+=" AND  (FILE_TYPE=4 OR FILE_TYPE=5)";
+        }
+        if(!StringUtils.isEmpty(startDate) && !StringUtils.isEmpty(endDate)){
+            /*list.add(date);
+            s+=" AND trunc(to_date(?"+list.size()+",'yyyy-mm-dd hh24:mi:ss')) =trunc(CREATE_TIME) ";*/
+            list.add(startDate);
+            s += " AND  trunc(CREATE_TIME) BETWEEN trunc(to_date( ?" + list.size() + ",'yyyy-MM-dd hh24:mi:ss')) ";
+            list.add(endDate);
+            s += "  AND trunc(to_date( ?" + list.size() + ",'yyyy-MM-dd hh24:mi:ss')) ";
+        }else{
+            s+=" AND trunc(CREATE_TIME) BETWEEN trunc(sysdate-15) and trunc(sysdate)";
+        }
+        String sql = " SELECT * FROM PICTURE_JC WHERE 1=1"+s+" ORDER BY CREATE_TIME DESC ";
+        //List<Map<String, Object>> maps = execSql(sql, list.toArray());
+        Page<Map<String, Object>> maps1 = execSqlPage(pageable, sql, list.toArray());
+        result.put("success",true);
+        result.put("object",maps1);
+        return result;
     }
 }

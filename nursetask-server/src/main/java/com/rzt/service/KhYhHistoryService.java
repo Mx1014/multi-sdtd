@@ -151,10 +151,10 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             Object companyid = jsonObject.get("COMPANYID");
             buffer.append(" where yhzt=0 ");
             if (roleType == 1 || roleType == 2) {
-                buffer.append(" and y.YWORG_ID = " + tdId);
+                buffer.append(" and y.YWORG_ID = '" + tdId+"'");
             }
             if (roleType == 3) {
-                buffer.append(" and y.WXORG_ID = " + companyid);
+                buffer.append(" and y.WXORG_ID ='" + companyid+"'");
             }
             if (yhjb != null && !yhjb.equals("")) {
                 String[] split = yhjb.split(",");
@@ -179,13 +179,16 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                     List<Map<String, Object>> nameList = this.execSql(sql, Long.parseLong(map.get("ID").toString()));
                     String realname = "";
                     map.put("USERNAME", "无");
-                    if (nameList.size() > 0) {
-                        for (int i = 0; i < nameList.size(); i++) {
-                            if (!realname.contains((nameList.get(i).get("REALNAME")).toString())) {
-                                realname += nameList.get(i).get("REALNAME") + " ";
+                    try {
+                        if (nameList.size() > 0) {
+                            for (int i = 0; i < nameList.size(); i++) {
+                                if (!realname.contains((nameList.get(i).get("REALNAME")).toString())) {
+                                    realname += nameList.get(i).get("REALNAME") + " ";
+                                }
                             }
+                            map.put("USERNAME", realname);
                         }
-                        map.put("USERNAME", realname);
+                    } catch (Exception e) {
                     }
                     list1.add(map);
                 }
@@ -234,7 +237,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
     }
 
     public WebApiResponse exportYhHistory(HttpServletResponse response, Object josn, String currentUserId) {
-        String sql1 = "select y.* from kh_yh_history y left join kh_site c on y.id=c.yh_id where y.yhzt=0 ";
+        String sql1 = "select DISTINCT(c.YH_ID),y.* from kh_yh_history y left join kh_site c on y.id=c.yh_id where y.yhzt=0 ";
         Map jsonObject = JSON.parseObject(josn.toString(), Map.class);
         Integer roleType = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
         Object tdId = jsonObject.get("DEPTID");
@@ -401,8 +404,10 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 }
                 if (task.get("SECTION") != null) {
                     String[] sections = task.get("SECTION").toString().split("-");
-                    row.createCell(6).setCellValue(sections[0]);//起始杆塔
-                    row.createCell(7).setCellValue(sections[1]);//终止杆塔
+                    if(sections.length>1){
+                        row.createCell(6).setCellValue(sections[0]);//起始杆塔
+                        row.createCell(7).setCellValue(sections[1]);//终止杆塔
+                    }
                 }
                 if (task.get("SJXL") != null) {
                     row.createCell(8).setCellValue(task.get("SJXL").toString());
@@ -1116,8 +1121,8 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
 
     public WebApiResponse findYhPicture(long yhId) {
         try {
-            String sql = "SELECT * FROM PICTURE_YH where yh_id=? and  trunc(CREATE_TIME)>=TRUNC(sysdate-7) ";
-            return WebApiResponse.erro("获取成功");
+            String sql = "SELECT * FROM PICTURE_YH where yh_id=? and  trunc(CREATE_TIME)>=TRUNC(sysdate-5) order by CREATE_TIME desc";
+            return WebApiResponse.success(this.execSql(sql,yhId));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("获取失败");

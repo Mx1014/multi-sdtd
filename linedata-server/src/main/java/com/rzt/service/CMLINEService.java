@@ -41,7 +41,7 @@ public class CMLINEService extends CurdService<CMLINE,CMLINERepository> {
 
     public WebApiResponse getLineInfo(String kv, String currentUserId) {
         List<String> list = new ArrayList<>();
-        String sql = "select line_id id,line_name,SECTION,TD_ORG_NAME from cm_line_section where is_del=0 ";
+        String sql = "select line_id id,line_name,SECTION,TD_ORG_NAME,td_org from cm_line_section where is_del=0 ";
         if(StringUtils.isNotEmpty(currentUserId)){
             Map<String, Object> map = userInfoFromRedis(currentUserId);
             Integer roletype = Integer.parseInt(map.get("ROLETYPE").toString());

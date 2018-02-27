@@ -3,6 +3,8 @@ package com.rzt.controller;
 import com.rzt.entity.Monitorcheckej;
 import com.rzt.service.tourPublicService;
 import com.rzt.util.WebApiResponse;
+import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -10,7 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Set;
+import java.util.*;
 
 @RestController
 @RequestMapping("GJKH")
@@ -74,7 +76,7 @@ public class tourPublicController extends CurdController<Monitorcheckej, tourPub
     @GetMapping("KHXXx")
     public WebApiResponse KHXX(String currentUserId,Integer taskType,Integer typeReason){
         try {
-            this.service.KHXX(currentUserId,taskType,typeReason);
+            //this.service.KHXX(currentUserId,taskType,typeReason);
             return WebApiResponse.success("success");
         }catch (Exception e){
             return WebApiResponse.erro("fail"+e.getMessage());
@@ -108,7 +110,7 @@ public class tourPublicController extends CurdController<Monitorcheckej, tourPub
     //Long id
     @GetMapping("remoceKey12")
     public void removeKey(){
-        String s = "*+null+*";
+        String s = "ONE+*+未上线";
         RedisConnection connection = null;
         try {
             connection = redisTemplate.getConnectionFactory().getConnection();
@@ -124,5 +126,19 @@ public class tourPublicController extends CurdController<Monitorcheckej, tourPub
             connection.close();
         }
     }
+
+    /**
+     * 综合展示中的公告
+     */
+    @ApiOperation(
+            value = "获取日报通报",
+            notes = "根据taskId获取所有日报通报"
+    )
+    @GetMapping("getDocBytaskId")
+    public Map<String, Object> getDocBytaskId(Integer page,Integer size, String startDate,String endDate,Integer fileType) {
+        return service.getDocBytaskId(page,size, startDate,endDate,fileType);
+    }
+
+
 
 }

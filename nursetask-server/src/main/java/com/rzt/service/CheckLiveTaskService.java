@@ -146,9 +146,8 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
         }
         //时间段查询
         if (home != null && home.equals("1")) {
-            sql += " AND t.PLAN_START_TIME< = trunc(sysdate+1) AND t.PLAN_END_TIME >= trunc(sysdate) ";
-        }
-        if (!StringUtils.isEmpty(startTime) && !StringUtils.isEmpty(endTime)) {
+            sql += " AND t.PLAN_START_TIME <= sysdate AND t.PLAN_END_TIME >= trunc(sysdate) ";
+        }else if (!StringUtils.isEmpty(startTime) && !StringUtils.isEmpty(endTime)) {
             params.add(endTime);
             params.add(startTime);
             sql += " and to_date(?,'yyyy-MM-dd HH24:mi') > t.plan_start_time and to_date(?,'yyyy-MM-dd HH24:mi') < t.plan_end_time ";
@@ -181,9 +180,13 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
         if (!"queryAll".equals(queryAll)) {
             //通道单位查询
             if (!StringUtils.isEmpty(tddwId)) {
-                params.add(tddwId);
-                sql += " and t.CHECK_TYPE=2 ";
-                sql += " AND d.ID =?";
+                if (tddwId.equals("40283781608b848701608b85d3700000")) {
+                    sql += " and t.CHECK_TYPE=1 ";
+                } else {
+                    params.add(tddwId);
+                    sql += " and t.CHECK_TYPE=2 ";
+                    sql += " AND d.ID =?";
+                }
             } else {
                 sql += " and t.CHECK_TYPE=1 ";
             }
