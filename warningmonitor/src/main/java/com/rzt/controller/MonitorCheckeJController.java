@@ -141,4 +141,16 @@ public class MonitorCheckeJController extends
 		}
 	}
 
+	/**
+	 * 查看检查记录
+	 */
+	@GetMapping("jkjl")
+	public WebApiResponse jkjl(String currentUserId,Long taskId){
+		try {
+			return WebApiResponse.success(ejService.jkjl(currentUserId,taskId));
+		}catch (Exception e){
+			return WebApiResponse.erro("监控记录查询失败："+e.getMessage());
+		}
+	}
+
 }
