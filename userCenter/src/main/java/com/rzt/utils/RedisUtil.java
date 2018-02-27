@@ -29,6 +29,8 @@ public class RedisUtil {
 			connection.pExpireAt(key.getBytes(), expireDate.getTime());
 		} catch (Exception var3) {
 			connection.pExpireAt(key.getBytes(), expireDate.getTime() / 1000L);
+		} finally {
+			connection.close();
 		}
 	}
 

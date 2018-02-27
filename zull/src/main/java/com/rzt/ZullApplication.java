@@ -18,10 +18,7 @@ import redis.clients.jedis.JedisPool;
 @SpringBootApplication
 @EnableEurekaClient
 @EnableFeignClients
-@EnableHystrix
 public class ZullApplication {
-    @Autowired
-    private JedisPool redisTemplate;
     public static void main(String[] args) {
         SpringApplication.run(ZullApplication.class, args);
     }
