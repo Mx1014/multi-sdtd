@@ -27,7 +27,7 @@ public class CompanyNumTasksController extends CurdController<RztSysUser, Common
     RedisTemplate<String, Object> redisTemplate;
 
     @GetMapping("CompanyNumTask")
-    public WebApiResponse CompanyNumTask(String currentUserId, Date day) {
+    public WebApiResponse CompanyNumTask(String currentUserId, Date day,String deptId) {
         HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
         JSONObject jsonObject = JSONObject.parseObject(String.valueOf(hashOperations.get("UserInformation", currentUserId)));
         Integer type = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
@@ -35,7 +35,7 @@ public class CompanyNumTasksController extends CurdController<RztSysUser, Common
             day = new Date();
         }
         if (type == 0) {
-            return CompanyNumTaskYj(day);
+            return CompanyNumTaskYj(day,deptId);
         } else if (type == 1 || type == 2) {
             String deptid = jsonObject.get("DEPTID").toString();
             return CompanyAllTasks(deptid, day);
@@ -43,7 +43,7 @@ public class CompanyNumTasksController extends CurdController<RztSysUser, Common
         return WebApiResponse.erro("NULL");
     }
 
-    public WebApiResponse CompanyNumTaskYj(Date day) {
+    public WebApiResponse CompanyNumTaskYj(Date day,String deptId) {
         List<Map<String, Object>> deptnameList = null;
         try {
             Map<String, Integer> map1 = new HashMap();
@@ -51,17 +51,29 @@ public class CompanyNumTasksController extends CurdController<RztSysUser, Common
             Map<String, Integer> map3 = new HashMap();
             Map<String, Integer> map4 = new HashMap();
             Map<String, Integer> map5 = new HashMap();
-            String zcXsZs = " SELECT count(1) AS num,TD_ORG FROM XS_ZC_TASK WHERE PLAN_END_TIME >= trunc(?1) and  PLAN_START_TIME <= trunc(?1+1) GROUP BY TD_ORG ";
+            String s = "";
+            String s1 = "";
+            String s2 = "";
+            String s3 = "";
+            String s4 = "";
+            if (!StringUtils.isEmpty(deptId)){
+                s +=" and TD_ORG='"+deptId+"' ";
+                s1 +=" and yworg_id='"+deptId+"' ";
+                s2 +=" and u.deptid='"+deptId+"' ";
+                s3 +=" and DEPT_ID='"+deptId+"' ";
+                s4 +=" and id='"+deptId+"' ";
+            }
+            String zcXsZs = " SELECT count(1) AS num,TD_ORG FROM XS_ZC_TASK WHERE PLAN_END_TIME >= trunc(?1) and  PLAN_START_TIME <= trunc(?1+1) "+s+" GROUP BY TD_ORG ";
             List<Map<String, Object>> zcXsZsList = this.service.execSql(zcXsZs, day);
-            String bdXsZs = " SELECT count(1) AS num,TD_ORG FROM XS_TXBD_TASK WHERE PLAN_END_TIME >= trunc(?1) and  PLAN_START_TIME <= trunc(?1+1) GROUP BY TD_ORG ";
+            String bdXsZs = " SELECT count(1) AS num,TD_ORG FROM XS_TXBD_TASK WHERE PLAN_END_TIME >= trunc(?1) and  PLAN_START_TIME <= trunc(?1+1) "+s+" GROUP BY TD_ORG ";
             List<Map<String, Object>> bdXsZsList = this.service.execSql(bdXsZs, day);
-            String khZs = " SELECT nvl(a.num,0) as num,d.ID as TD_ORG FROM (SELECT COUNT(1) as num,TDYW_ORG FROM KH_TASK WHERE PLAN_END_TIME >= trunc(?1) and  PLAN_START_TIME <= trunc(?1+1) GROUP BY TDYW_ORG) a RIGHT JOIN RZTSYSDEPARTMENT d ON a.TDYW_ORG = d.DEPTNAME WHERE DEPTSORT IS NOT NULL ";
+            String khZs = " SELECT nvl(a.num,0) as num,d.ID as TD_ORG FROM (SELECT COUNT(1) as num,TDYW_ORG FROM KH_TASK WHERE PLAN_END_TIME >= trunc(?1) and  PLAN_START_TIME <= trunc(?1+1) "+s1+" GROUP BY TDYW_ORG) a RIGHT JOIN RZTSYSDEPARTMENT d ON a.TDYW_ORG = d.DEPTNAME WHERE DEPTSORT IS NOT NULL ";
             List<Map<String, Object>> khZsList = this.service.execSql(khZs, day);
-            String xcjczs = "SELECT count(1) as num,u.deptid FROM CHECK_LIVE_TASK t left join rztsysuser u on u.id = t.user_id WHERE to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > t.plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') < t.plan_end_time group by u.deptid ";
+            String xcjczs = "SELECT count(1) as num,u.deptid FROM CHECK_LIVE_TASK t left join rztsysuser u on u.id = t.user_id WHERE to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > t.plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') < t.plan_end_time "+s2+" group by u.deptid ";
             List<Map<String, Object>> xcjcist = this.service.execSql(xcjczs);
-            String htjczs = "SELECT count(*) as num,DEPT_ID as td_org FROM TIMED_TASK_RECORD WHERE CREATE_TIME >= trunc(sysdate) GROUP BY DEPT_ID";
+            String htjczs = "SELECT count(*) as num,DEPT_ID as td_org FROM TIMED_TASK_RECORD WHERE CREATE_TIME >= trunc(sysdate) "+s3+" GROUP BY DEPT_ID";
             List<Map<String, Object>> htList = this.service.execSql(htjczs);
-            String deptname = " SELECT t.ID,t.DEPTNAME FROM RZTSYSDEPARTMENT t WHERE t.DEPTSORT IS NOT NULL ORDER BY t.DEPTSORT ";
+            String deptname = " SELECT t.ID,t.DEPTNAME FROM RZTSYSDEPARTMENT t WHERE t.DEPTSORT IS NOT NULL "+s4+" ORDER BY t.DEPTSORT ";
             deptnameList = this.service.execSql(deptname);
             for (int i = 0; i < zcXsZsList.size(); i++) {
                 map1.put(zcXsZsList.get(i).get("TD_ORG").toString(), Integer.parseInt(zcXsZsList.get(i).get("NUM").toString()));

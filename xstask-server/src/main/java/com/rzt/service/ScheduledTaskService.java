@@ -66,7 +66,7 @@ public class ScheduledTaskService {
                 "       WHERE\n" +
                 "         reborn = 0 AND\n" +
                 "         IS_DELETE = 0) t\n" +
-                "  JOIN xs_zc_cycle tt ON t.XS_ZC_CYCLE_ID = tt.id AND tt.is_delete = 0 AND\n" +
+                "  JOIN xs_zc_cycle tt ON t.XS_ZC_CYCLE_ID = tt.id AND tt.is_delete = 0 AND tt.IN_USE = 0 and \n" +
                 "                         (trunc(t.PLAN_START_TIME + tt.CYCLE) = trunc(sysdate) OR\n" +
                 "                          (t.PLAN_END_TIME BETWEEN trunc(sysdate - 1) AND trunc(SYSDATE)))";
         bornTask(condition1);
@@ -168,7 +168,7 @@ public class ScheduledTaskService {
     }
 
     public static void main(String[] args) {
-        String sql =  "SELECT\n" +
+        String sql = "SELECT\n" +
                 "  t.XS_ZC_CYCLE_ID,\n" +
                 "  t.PLAN_START_TIME plantime,\n" +
                 "  t.id              taskid,\n" +
@@ -194,7 +194,7 @@ public class ScheduledTaskService {
                 "       WHERE\n" +
                 "         reborn = 0 AND\n" +
                 "         IS_DELETE = 0) t\n" +
-                "  JOIN xs_zc_cycle tt ON t.XS_ZC_CYCLE_ID = tt.id AND tt.is_delete = 0 AND\n" +
+                "  JOIN xs_zc_cycle tt ON t.XS_ZC_CYCLE_ID = tt.id AND tt.is_delete = 0 AND tt.IN_USE = 0 and \n" +
                 "                         (trunc(t.PLAN_START_TIME + tt.CYCLE) = trunc(sysdate) OR\n" +
                 "                          (t.PLAN_END_TIME BETWEEN trunc(sysdate - 1) AND trunc(SYSDATE)))";
         System.out.println(sql);

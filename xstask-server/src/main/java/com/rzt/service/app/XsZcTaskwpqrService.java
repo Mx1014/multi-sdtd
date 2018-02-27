@@ -55,12 +55,12 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
             //更新redis中的人员 任务的状态
             updateXsMenInfoInRedis(userId);
             //remove掉月宁那边的key
-            removeSomeKey(id);
+            removeSomeKey(userId);
         }
     }
 
-    public void removeSomeKey(Long id) {
-        String s = "TWO+" + id + "+1+4*";
+    public void removeSomeKey(String userId) {
+        String s = "TWO+*+1+4+"+userId+"+*";
         RedisConnection connection = null;
         try {
             connection = redisTemplate.getConnectionFactory().getConnection();
