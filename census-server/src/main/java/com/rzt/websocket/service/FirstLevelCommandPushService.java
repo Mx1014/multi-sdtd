@@ -314,7 +314,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
              */
             String zcXsYwc = "SELECT count(1)  " +
                     "FROM XS_ZC_TASK " +
-                    "WHERE is_delete = 0 and STAUTS = 2 AND PLAN_START_TIME< = trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
+                    "WHERE is_delete = 0 and STAUTS = 2 AND PLAN_START_TIME <= trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
             /**
              * 保电巡视已完成
              */

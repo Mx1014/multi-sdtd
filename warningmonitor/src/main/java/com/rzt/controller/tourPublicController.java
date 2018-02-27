@@ -135,8 +135,8 @@ public class tourPublicController extends CurdController<Monitorcheckej, tourPub
             notes = "根据taskId获取所有日报通报"
     )
     @GetMapping("getDocBytaskId")
-    public Map<String, Object> getDocBytaskId(Integer page,Integer size, String date,Integer fileType) {
-        return service.getDocBytaskId(page,size,date,fileType);
+    public Map<String, Object> getDocBytaskId(Integer page,Integer size, String startDate,String endDate,Integer fileType) {
+        return service.getDocBytaskId(page,size, startDate,endDate,fileType);
     }
 
 

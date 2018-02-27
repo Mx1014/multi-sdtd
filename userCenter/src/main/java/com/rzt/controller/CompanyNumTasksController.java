@@ -27,7 +27,7 @@ public class CompanyNumTasksController extends CurdController<RztSysUser, Common
     RedisTemplate<String, Object> redisTemplate;
 
     @GetMapping("CompanyNumTask")
-    public WebApiResponse CompanyNumTask(String currentUserId, Date day) {
+    public WebApiResponse CompanyNumTask(String currentUserId, Date day, String deptId) {
         HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
         JSONObject jsonObject = JSONObject.parseObject(String.valueOf(hashOperations.get("UserInformation", currentUserId)));
         Integer type = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
@@ -35,7 +35,7 @@ public class CompanyNumTasksController extends CurdController<RztSysUser, Common
             day = new Date();
         }
         if (type == 0) {
-            return CompanyNumTaskYj(day);
+            return CompanyNumTaskYj(day, deptId);
         } else if (type == 1 || type == 2) {
             String deptid = jsonObject.get("DEPTID").toString();
             return CompanyAllTasks(deptid, day);
@@ -43,7 +43,7 @@ public class CompanyNumTasksController extends CurdController<RztSysUser, Common
         return WebApiResponse.erro("NULL");
     }
 
-    public WebApiResponse CompanyNumTaskYj(Date day) {
+    public WebApiResponse CompanyNumTaskYj(Date day, String deptId) {
         List<Map<String, Object>> deptnameList = null;
         try {
             Map<String, Integer> map1 = new HashMap();
@@ -51,17 +51,29 @@ public class CompanyNumTasksController extends CurdController<RztSysUser, Common
             Map<String, Integer> map3 = new HashMap();
             Map<String, Integer> map4 = new HashMap();
             Map<String, Integer> map5 = new HashMap();
-            String zcXsZs = " SELECT count(1) AS num,TD_ORG FROM XS_ZC_TASK WHERE PLAN_END_TIME >= trunc(?1) and  PLAN_START_TIME <= trunc(?1+1) GROUP BY TD_ORG ";
+            String s = "";
+            String s1 = "";
+            String s2 = "";
+            String s3 = "";
+            String s4 = "";
+            if (!StringUtils.isEmpty(deptId)) {
+                s += " and TD_ORG='" + deptId + "' ";
+                s1 += " and yworg_id='" + deptId + "' ";
+                s2 += " and u.deptid='" + deptId + "' ";
+                s3 += " and DEPT_ID='" + deptId + "' ";
+                s4 += " and id='" + deptId + "' ";
+            }
+            String zcXsZs = " SELECT count(1) AS num,TD_ORG FROM XS_ZC_TASK WHERE PLAN_END_TIME >= trunc(?1) and  PLAN_START_TIME <= trunc(?1+1) " + s + " GROUP BY TD_ORG ";
             List<Map<String, Object>> zcXsZsList = this.service.execSql(zcXsZs, day);
-            String bdXsZs = " SELECT count(1) AS num,TD_ORG FROM XS_TXBD_TASK WHERE PLAN_END_TIME >= trunc(?1) and  PLAN_START_TIME <= trunc(?1+1) GROUP BY TD_ORG ";
+            String bdXsZs = " SELECT count(1) AS num,TD_ORG FROM XS_TXBD_TASK WHERE PLAN_END_TIME >= trunc(?1) and  PLAN_START_TIME <= trunc(?1+1) " + s + " GROUP BY TD_ORG ";
             List<Map<String, Object>> bdXsZsList = this.service.execSql(bdXsZs, day);
-            String khZs = " SELECT nvl(a.num,0) as num,d.ID as TD_ORG FROM (SELECT COUNT(1) as num,TDYW_ORG FROM KH_TASK WHERE PLAN_END_TIME >= trunc(?1) and  PLAN_START_TIME <= trunc(?1+1) GROUP BY TDYW_ORG) a RIGHT JOIN RZTSYSDEPARTMENT d ON a.TDYW_ORG = d.DEPTNAME WHERE DEPTSORT IS NOT NULL ";
+            String khZs = " SELECT nvl(a.num,0) as num,d.ID as TD_ORG FROM (SELECT COUNT(1) as num,TDYW_ORG FROM KH_TASK WHERE PLAN_END_TIME >= trunc(?1) and  PLAN_START_TIME <= trunc(?1+1) " + s1 + " GROUP BY TDYW_ORG) a RIGHT JOIN RZTSYSDEPARTMENT d ON a.TDYW_ORG = d.DEPTNAME WHERE DEPTSORT IS NOT NULL ";
             List<Map<String, Object>> khZsList = this.service.execSql(khZs, day);
-            String xcjczs = "SELECT count(1) as num,u.deptid FROM CHECK_LIVE_TASK t left join rztsysuser u on u.id = t.user_id WHERE to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > t.plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') < t.plan_end_time group by u.deptid ";
+            String xcjczs = "SELECT count(1) as num,u.deptid FROM CHECK_LIVE_TASK t left join rztsysuser u on u.id = t.user_id WHERE to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > t.plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') < t.plan_end_time " + s2 + " group by u.deptid ";
             List<Map<String, Object>> xcjcist = this.service.execSql(xcjczs);
-            String htjczs = "SELECT count(*) as num,DEPT_ID as td_org FROM TIMED_TASK_RECORD WHERE CREATE_TIME >= trunc(sysdate) GROUP BY DEPT_ID";
+            String htjczs = "SELECT count(*) as num,DEPT_ID as td_org FROM TIMED_TASK_RECORD WHERE CREATE_TIME >= trunc(sysdate) " + s3 + " GROUP BY DEPT_ID";
             List<Map<String, Object>> htList = this.service.execSql(htjczs);
-            String deptname = " SELECT t.ID,t.DEPTNAME FROM RZTSYSDEPARTMENT t WHERE t.DEPTSORT IS NOT NULL ORDER BY t.DEPTSORT ";
+            String deptname = " SELECT t.ID,t.DEPTNAME FROM RZTSYSDEPARTMENT t WHERE t.DEPTSORT IS NOT NULL " + s4 + " ORDER BY t.DEPTSORT ";
             deptnameList = this.service.execSql(deptname);
             for (int i = 0; i < zcXsZsList.size(); i++) {
                 map1.put(zcXsZsList.get(i).get("TD_ORG").toString(), Integer.parseInt(zcXsZsList.get(i).get("NUM").toString()));
@@ -105,11 +117,12 @@ public class CompanyNumTasksController extends CurdController<RztSysUser, Common
                 if (!StringUtils.isEmpty(htzx)) {
                     htjczsL = htzx;
                 }
-                map.put("rwzs", zcXsS + bdXsS + khzsL +xcjczsL+ htjczsL+1);
+
+                map.put("rwzs", zcXsS + bdXsS + khzsL + xcjczsL + htjczsL);
                 map.put("xszs", zcXsS + bdXsS);
                 map.put("khzs", khzsL);
                 map.put("xcjczs", xcjczsL);
-                map.put("htjczs", htjczsL+1);
+                map.put("htjczs", htjczsL + 1);
             }
             return WebApiResponse.success(deptnameList);
         } catch (NumberFormatException e) {
@@ -118,6 +131,7 @@ public class CompanyNumTasksController extends CurdController<RztSysUser, Common
         }
     }
 
+    //二级综合展示数据
     public WebApiResponse CompanyAllTasks(String deptid, Date day) {
         if (StringUtils.isEmpty(deptid)) {
             return WebApiResponse.erro("Null");
@@ -126,6 +140,8 @@ public class CompanyNumTasksController extends CurdController<RztSysUser, Common
             Map<String, Integer> map1 = new HashMap();
             Map<String, Integer> map2 = new HashMap();
             Map<String, Integer> map3 = new HashMap();
+            Map<String, Integer> map4 = new HashMap();
+            Map<String, Integer> map5 = new HashMap();
             String className = " SELECT ID,DEPTNAME FROM (SELECT ID,DEPTNAME,LASTNODE FROM RZTSYSDEPARTMENT START WITH ID = ?1 CONNECT BY PRIOR ID = DEPTPID) WHERE LASTNODE = 0 ";
             List<Map<String, Object>> classNameList = this.service.execSql(className, deptid);
             String calssZcXsZs = " SELECT count(1) AS num,CLASS_ID FROM XS_ZC_TASK WHERE PLAN_END_TIME >= trunc(?2) and  PLAN_START_TIME <= trunc(?2+1) AND TD_ORG = ?1 GROUP BY CLASS_ID ";
@@ -133,6 +149,14 @@ public class CompanyNumTasksController extends CurdController<RztSysUser, Common
             String calssBdXsZs = " SELECT count(1) AS num,CLASS_ID FROM XS_txbd_TASK WHERE PLAN_END_TIME >= trunc(?2) and  PLAN_START_TIME <= trunc(?2+1) AND TD_ORG = ?1 GROUP BY CLASS_ID ";
             List<Map<String, Object>> calssBdXsZsList = this.service.execSql(calssBdXsZs, deptid, day);
             String calssKhZs = " SELECT count(1) as num,CLASSNAME FROM (SELECT u.CLASSNAME,u.DEPTID FROM KH_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID WHERE PLAN_END_TIME >= trunc(?2) and  PLAN_START_TIME <= trunc(?2+1)) WHERE DEPTID = ?1 GROUP BY CLASSNAME ";
+            String xcjczs = "SELECT count(1) as num,u.CLASSNAME FROM CHECK_LIVE_TASK t left join rztsysuser u on u.id = t.user_id WHERE to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > t.plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') < t.plan_end_time and u.deptid=? group by u.CLASSNAME ";
+            List<Map<String, Object>> xcjcist = this.service.execSql(xcjczs, deptid);
+            String htjczs = "SELECT\n" +
+                    "  count(u.CLASSNAME) as num ,u.CLASSNAME classname \n" +
+                    "FROM TIMED_TASK_RECORD r LEFT JOIN RZTSYSUSER u ON instr(r.EX_USER, u.id) > 0\n" +
+                    "WHERE r.CREATE_TIME >= trunc(sysdate) AND DEPT_ID = '" + deptid + "'\n" +
+                    "GROUP BY u.CLASSNAME\n";
+            List<Map<String, Object>> htList = this.service.execSql(htjczs);
             List<Map<String, Object>> calssKhZsList = this.service.execSql(calssKhZs, deptid, day);
             for (int i = 0; i < calssZcXsZsList.size(); i++) {
                 if (calssZcXsZsList.get(i).get("CLASS_ID") != null) {
@@ -144,6 +168,12 @@ public class CompanyNumTasksController extends CurdController<RztSysUser, Common
             }
             for (int i = 0; i < calssKhZsList.size(); i++) {
                 map3.put(calssKhZsList.get(i).get("CLASSNAME").toString(), Integer.parseInt(calssKhZsList.get(i).get("NUM").toString()));
+            }
+            for (int i = 0; i < xcjcist.size(); i++) {
+                map4.put(xcjcist.get(i).get("CLASSNAME").toString(), Integer.parseInt(xcjcist.get(i).get("NUM").toString()));
+            }
+            for (int i = 0; i < htList.size(); i++) {
+                map5.put(htList.get(i).get("CLASSNAME").toString(), Integer.parseInt(htList.get(i).get("NUM").toString()) / 3);
             }
             for (Map map : classNameList) {
                 Integer zcXsS = 0;
@@ -163,11 +193,47 @@ public class CompanyNumTasksController extends CurdController<RztSysUser, Common
                 if (!StringUtils.isEmpty(KhZss)) {
                     KhZs = KhZss;
                 }
-                map.put("rwzs", zcXsS + bdXsS + KhZs);
+                Integer xcjczsL = 0;
+                Integer jczx = map4.get(id);
+                if (!StringUtils.isEmpty(jczx)) {
+                    xcjczsL = jczx;
+                }
+                Integer htjczsL = 0;
+                Integer htzx = map5.get(id);
+                if (!StringUtils.isEmpty(htzx)) {
+                    htjczsL = htzx;
+                }
                 map.put("xszs", zcXsS + bdXsS);
                 map.put("khzs", KhZs);
-                map.put("xcjczs", 0);
-                map.put("htjczs", 0);
+                map.put("xcjczs", xcjczsL);
+                map.put("rwzs", zcXsS + bdXsS + KhZs + xcjczsL + htjczsL);
+                map.put("htjczs", htjczsL);
+                if (map.get("DEPTNAME").toString().startsWith("后台稽查")) {
+                    String user = "SELECT * FROM WORKING_TIMED WHERE DEPT_ID='" + deptid + "'";
+                    Map<String, Object> map6 = new HashMap<>();
+                    try {
+                        map6 = this.service.execSqlSingleResult(user);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+                    String format = formatter.format(new Date());
+                    String s = format + " 00:00:00";
+                    String start = map6.get("START_TIME").toString();
+                    String end = map6.get("END_TIME").toString();
+                    Date nowDate = DateUtil.getNowDate();
+                    if (nowDate.getTime() >= DateUtil.addDate(DateUtil.parseDate(s), Double.parseDouble(start)).getTime() && nowDate.getTime() <= DateUtil.addDate(DateUtil.parseDate(s), Double.parseDouble(end)).getTime()) {
+                        if (map.get("DEPTNAME").toString().contains("白")) {
+                            map.put("rwzs", zcXsS + bdXsS + KhZs + xcjczsL + htjczsL + 1);
+                            map.put("htjczs", htjczsL + 1);
+                        }
+                    } else {
+                        if (map.get("DEPTNAME").toString().contains("夜")) {
+                            map.put("rwzs", zcXsS + bdXsS + KhZs + xcjczsL + htjczsL + 1);
+                            map.put("htjczs", htjczsL + 1);
+                        }
+                    }
+                }
             }
             return WebApiResponse.success(classNameList);
         } catch (NumberFormatException e) {
@@ -192,11 +258,20 @@ public class CompanyNumTasksController extends CurdController<RztSysUser, Common
             Integer type = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
             String xsField = "TD_ORG";
             String khField = "DEPTID";
-            String htField = "r.dept_id";
+            String htField = "r.dept_id=?";
+            int num = 1;
             if (type != 0) {
                 xsField = "class_id";
                 khField = "classname";
-                htField = "u.classname=";
+                htField = " instr(EX_USER,(SELECT max(ID) " +
+                        "FROM RZTSYSUSER WHERE CLASSNAME = ?)) >0";
+                String sql1 = "select deptname from rztsysdepartment where id = '" + id + "'";
+                Map<String, Object> map1 = this.service.execSqlSingleResult(sql1);
+                if (map1.get("DEPTNAME").toString().equals("后台稽查夜班") || map1.get("DEPTNAME").toString().equals("后台稽查白班")) {
+                    num = 1;
+                } else {
+                    num = 0;
+                }
             }
 
             //正常
@@ -216,17 +291,17 @@ public class CompanyNumTasksController extends CurdController<RztSysUser, Common
             /**
              *后台稽查未完成
              */
-            String htJcWks = "SELECT count(*) FROM TIMED_TASK_RECORD R LEFT JOIN RZTSYSDEPARTMENT D ON D.ID=R.DEPT_ID WHERE R.CREATE_TIME >= trunc(sysdate) and (R.TASKS>R.COMPLETE) and " + htField + "=?";
+            String htJcWks = "SELECT count(*) FROM TIMED_TASK_RECORD R LEFT JOIN RZTSYSDEPARTMENT D ON D.ID=R.DEPT_ID WHERE R.CREATE_TIME >= trunc(sysdate) and (R.TASKS>R.COMPLETE) and " + htField;
             /**
              *后台稽查进行中
              */
-            String htJcYks = "SELECT count(DISTINCT (R.DEPT_ID)) FROM TIMED_TASK_RECORD R LEFT JOIN RZTSYSDEPARTMENT D ON D.ID=R.DEPT_ID and " + htField + "=?";
+            String htJcYks = "SELECT count(DISTINCT (R.DEPT_ID)) FROM TIMED_TASK_RECORD R LEFT JOIN RZTSYSDEPARTMENT D ON D.ID=R.DEPT_ID and " + htField;
             /**
              *后台稽查已完成
              */
-            String htJcYwc = "SELECT count(*) FROM TIMED_TASK_RECORD R LEFT JOIN RZTSYSDEPARTMENT D ON D.ID=R.DEPT_ID WHERE R.CREATE_TIME >= trunc(sysdate) and (R.TASKS=R.COMPLETE) and " + htField + "=?";
+            String htJcYwc = "SELECT count(*) FROM TIMED_TASK_RECORD R LEFT JOIN RZTSYSDEPARTMENT D ON D.ID=R.DEPT_ID WHERE R.CREATE_TIME >= trunc(sysdate) and (R.TASKS=R.COMPLETE) and " + htField;
             String htjc = "SELECT " + "(" + htJcWks + ") as htJcWks, " +
-                    "(" + 1 + ") as htJcYks, " +
+                    "(" + num + ") as htJcYks, " +
                     "(" + htJcYwc + ") as htJcYwc " +
                     "  FROM dual";
             Map<String, Object> htMap = this.service.execSqlSingleResult(htjc, id, id);
@@ -308,7 +383,6 @@ public class CompanyNumTasksController extends CurdController<RztSysUser, Common
             } else {
                 String className = " SELECT ID,DEPTNAME FROM (SELECT ID,DEPTNAME,LASTNODE FROM RZTSYSDEPARTMENT START WITH ID = ?1 CONNECT BY PRIOR ID = DEPTPID) WHERE LASTNODE = 0 ";
                 deptnameList = this.service.execSql(className, deptid);
-
             }
             Map<String, Object> map1 = new HashMap();
             Map<String, Object> map2 = new HashMap();
@@ -351,8 +425,8 @@ public class CompanyNumTasksController extends CurdController<RztSysUser, Common
                 }
                 dept.put("DEPTNAME", sb.toString());
                 dept.put("wks", Integer.parseInt(xsTask == null ? "0" : xsTask.get("XSWKS").toString()) + Integer.parseInt(txTask == null ? "0" : txTask.get("XSWKS").toString()) + Integer.parseInt(khTask == null ? "0" : khTask.get("KHWKS").toString()) + Integer.parseInt(xcjcTask == null ? "0" : xcjcTask.get("JCWKS").toString()) + Integer.parseInt(htTask1 == null ? "0" : htTask1.get("SUM").toString()));
-                dept.put("jxz", Integer.parseInt(xsTask == null ? "0" : xsTask.get("XSJXZ").toString()) + Integer.parseInt(txTask == null ? "0" : txTask.get("XSJXZ").toString()) + Integer.parseInt(khTask == null ? "0" : khTask.get("KHJXZ").toString()) + Integer.parseInt(xcjcTask == null ? "0" : xcjcTask.get("JCJXZ").toString())+1);
-                dept.put("ywc", Integer.parseInt(xsTask == null ? "0" : xsTask.get("XSYWC").toString()) + Integer.parseInt(txTask == null ? "0" : txTask.get("XSYWC").toString()) + Integer.parseInt(khTask == null ? "0" : khTask.get("KHYWC").toString()) + Integer.parseInt(xcjcTask == null ? "0" : xcjcTask.get("JCYWC").toString())+ Integer.parseInt(htTask2 == null ? "0" : htTask2.get("SUM").toString()));
+                dept.put("jxz", Integer.parseInt(xsTask == null ? "0" : xsTask.get("XSJXZ").toString()) + Integer.parseInt(txTask == null ? "0" : txTask.get("XSJXZ").toString()) + Integer.parseInt(khTask == null ? "0" : khTask.get("KHJXZ").toString()) + Integer.parseInt(xcjcTask == null ? "0" : xcjcTask.get("JCJXZ").toString()) + 1);
+                dept.put("ywc", Integer.parseInt(xsTask == null ? "0" : xsTask.get("XSYWC").toString()) + Integer.parseInt(txTask == null ? "0" : txTask.get("XSYWC").toString()) + Integer.parseInt(khTask == null ? "0" : khTask.get("KHYWC").toString()) + Integer.parseInt(xcjcTask == null ? "0" : xcjcTask.get("JCYWC").toString()) + Integer.parseInt(htTask2 == null ? "0" : htTask2.get("SUM").toString()));
             }
             return WebApiResponse.success(deptnameList);
         } catch (Exception e) {

@@ -84,79 +84,206 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
     }
 
 
-    public Object getCheckRecord(String loginUserId, Integer page, Integer size, String startDate, String endDate, Integer taskType, String vLevel, Integer lineId) {
-        String deptID = getDeptID(loginUserId);
-        if (deptID == null) {
-            return "该用户状态为null";
-        } else if ("-1".equals(deptID)) {
-            return "该用户无此权限";
-        }
-        Pageable pageable = new PageRequest(page, size);
+    public Object getCheckRecord(Integer page,Integer size, String taskType ,String userId
+            ,String userName,String TD,String targetType,String TaskName,String startDate,String endDate) {
+        /**
+         *   所有权限	    0
+         公司本部权限	1
+         属地单位权限	2
+         外协队伍权限	3
+         组织权限	    4
+         个人权限	    5
 
-        String sql = "select * from ( SELECT tas.*,xs.TD_ORG,khh.TDYW_ORGID FROM" +
-                "  (SELECT tcr.*,cm.V_LEVEL FROM" +
-                "    (SELECT DISTINCT tc.TASKID,tc.TASKNAME,tc.CHECK_USER,tc.CREATE_TIME,tc.ID,tc.TASKTYPE,tc.THREEDAY,cr.LINE_ID FROM" +
-                "      (SELECT          t.TASKID,          t.TASKNAME,          c.CHECK_USER,          c.CREATE_TIME,          c.ID,          t.TASKTYPE,            t.THREEDAY" +
-                "       FROM TIMED_TASK t        RIGHT JOIN CHECK_DETAIL c ON t.TASKID = c.QUESTION_TASK_ID" +
-                "       WHERE t.STATUS = 1) tc         LEFT JOIN CHECK_RESULT cr ON tc.ID = cr.CHECK_DETAIL_ID) tcr" +
-                "    LEFT JOIN CM_LINE cm ON tcr.LINE_ID = cm.ID) tas" +
-                "  LEFT JOIN XS_ZC_TASK xs ON tas.TASKID = xs.ID" +
-                "    LEFT JOIN ( SELECT kh.ID,si.TDYW_ORGID FROM KH_TASK kh JOIN KH_SITE si ON kh.SITE_ID = si.ID ) khh" +
-                "      ON khh.ID = tas.TASKID )  ORDER BY CREATE_TIME DESC  ";
-
+         */
         List<Object> list = new ArrayList<>();
-        String s = "";
-        if (taskType != null) {
-            list.add(taskType);
-            s += " AND TASKTYPE =?" + list.size();
-        }
-        if (startDate != null && !"".equals(startDate) && endDate != null && !"".equals(endDate)) {
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
-            list.add(startDate);
-            s += "  AND CREATE_TIME BETWEEN to_date( ?" + list.size() + ",'yyyy-MM-dd hh24:mi:ss') ";
-            list.add(endDate);
-            s += "  AND to_date( ?" + list.size() + ",'yyyy-MM-dd hh24:mi:ss')  ";
-        }
-        if (vLevel != null && !"".equals(vLevel)) {
-            list.add(vLevel);
-            s += " AND V_LEVEL = ?" + list.size();
-        }
-        if (lineId != null) {
-            list.add(lineId);
-            s += " AND LINE_ID =?" + list.size();
-        }
-
+        Pageable pageable = new PageRequest(page, size);
+        //sql 中 拉取数据为刷新时间至刷新时间前10分钟
+        String sql = "";
         Page<Map<String, Object>> pageResult = null;
         try {
-            String sqll = "";
-            //最高权限查询所有
-            if ("0".equals(deptID)) {
-                sqll = " select * from ( " + sql + "  ) where 1 = 1  " + s ;
-            } else {
-                sqll = " select * from ( " + sql + " ) where   TD_ORG='" + deptID + "' OR TDYW_ORGID='" + deptID + "'" + s;
+            if(null == userId || "".equals(userId)){
+                return WebApiResponse.success("");
             }
-            pageResult = this.execSqlPage(pageable, sqll, list.toArray());
-            Iterator<Map<String, Object>> iterator = pageResult.iterator();
-            HashOperations hashOperations = redisTemplate.opsForHash();
 
-            while (iterator.hasNext()) {
-                Map<String, Object> next = iterator.next();
+            Object userInformation1 = redisTemplate.opsForHash().get("UserInformation", userId);
+            if(null != userInformation1 && !"".equals(userInformation1)){
+                JSONObject jsonObject1 = JSONObject.parseObject(userInformation1.toString());
+                String roletype = (String) jsonObject1.get("ROLETYPE");//用户权限信息  0 为1级单位  1为二级单位 2为单位 只展示当前单位的任务
+                String deptid = (String) jsonObject1.get("DEPTID");//当角色权限为3时需要只显示本单位的任务信息
+                if(null != roletype && !"".equals(roletype)){//证明当前用户信息正常
+                    int i = Integer.parseInt(roletype);
+                    switch (i){
+                        case 0 :{
 
-                String userID = (String) next.get("CHECK_USER");
-                Object userInformation = hashOperations.get("UserInformation", userID);
-                if (userInformation == null) {
-                    continue;
-                }
-                JSONObject jsonObject = JSONObject.parseObject(userInformation.toString());
-                if (jsonObject != null) {
-                    next.put("DEPT", jsonObject.get("DEPT"));
-                    next.put("COMPANYNAME", jsonObject.get("COMPANYNAME"));
-                    next.put("REALNAME", jsonObject.get("REALNAME"));
-                    next.put("PHONE", jsonObject.get("PHONE"));
+                            sql = "    SELECT * FROM (  SELECT DISTINCT t.TASKID," +
+                                    "   t.ID," +
+                                    "   t.USER_ID,t.THREEDAY," +
+                                    "   t.TASKNAME,cd.CHECK_USER,d.ID AS TDYW_ORGID," +
+                                    "    t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,dd.ID as did,cd.CREATE_TIME," +
+                                    "  dd.DEPTNAME as DEPT,d.DEPTNAME,u.REALNAME as REALNAME,u.PHONE,(SELECT COMPANYNAME FROM RZTSYSCOMPANY WHERE ID = xs.WX_ORG) AS COMPANYNAME" +
+                                    "    FROM TIMED_TASK t  LEFT JOIN CHECK_DETAIL cd ON t.TASKID = cd.QUESTION_TASK_ID" +
+                                    "        LEFT JOIN RZTSYSUSER u ON u.ID = cd.CHECK_USER    LEFT JOIN RZTSYSUSER uu ON uu.ID = t.USER_ID" +
+                                    "           LEFT JOIN RZTSYSDEPARTMENT dd ON dd.ID = uu.DEPTID  " +
+                                    "   LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = cd.CHECK_ORG LEFT JOIN XS_ZC_TASK xs ON xs.ID = t.TASKID" +
+                                    "    WHERE  t.STATUS = 1 AND t.THREEDAY = 1 AND t.TASKTYPE = 1" +
+                                    "  UNION ALL" +
+                                    "   SELECT DISTINCT t.TASKID," +
+                                    "     t.ID," +
+                                    "     t.USER_ID,t.THREEDAY," +
+                                    "     t.TASKNAME,cd.CHECK_USER,d.ID AS TDYW_ORGID," +
+                                    "     t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,dd.ID as did,cd.CREATE_TIME," +
+                                    "     dd.DEPTNAME as DEPT,d.DEPTNAME,u.REALNAME as REALNAME,u.PHONE" +
+                                    "  ,kh.WX_ORG  AS COMPANYNAME" +
+                                    "   FROM TIMED_TASK t  LEFT JOIN CHECK_DETAIL cd ON t.TASKID = cd.QUESTION_TASK_ID" +
+                                    "     LEFT JOIN RZTSYSUSER u ON u.ID = cd.CHECK_USER   LEFT JOIN RZTSYSUSER uu ON uu.ID = t.USER_ID" +
+                                    "           LEFT JOIN RZTSYSDEPARTMENT dd ON dd.ID = uu.DEPTID " +
+                                    "     LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = cd.CHECK_ORG LEFT JOIN KH_TASK kh ON kh.ID = t.TASKID" +
+                                    "   WHERE  t.STATUS = 1 AND t.THREEDAY = 1 AND t.TASKTYPE = 2" +
+                                    "    UNION  ALL" +
+                                    "                 SELECT DISTINCT t.TASKID," +
+                                    "                   t.ID," +
+                                    "                   t.USER_ID,t.THREEDAY," +
+                                    "                   t.TASKNAME,cd.CHECK_USER,d.ID AS TDYW_ORGID," +
+                                    "                   t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,dd.ID as did,cd.CREATE_TIME," +
+                                    "                  dd.DEPTNAME as DEPT,d.DEPTNAME,u.REALNAME as REALNAME,u.PHONE,com.COMPANYNAME AS COMPANYNAME" +
+                                    "                 FROM TIMED_TASK t LEFT JOIN CHECK_LIVE_TASK c ON  t.TASKID = c.ID" +
+                                    "                   LEFT JOIN CHECK_DETAIL cd ON t.TASKID = cd.CHECK_USER" +
+                                    "                   LEFT JOIN RZTSYSUSER u ON u.ID = cd.QUESTION_USER_ID    LEFT JOIN RZTSYSUSER uu ON uu.ID = t.USER_ID" +
+                                    "           LEFT JOIN RZTSYSDEPARTMENT dd ON dd.ID = uu.DEPTID  " +
+                                    "                   LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = cd.CHECK_ORG LEFT JOIN RZTSYSCOMPANY com ON com.ID = u.COMPANYID" +
+                                    "                 WHERE" +
+                                    "                         t.STATUS = 1 AND t.THREEDAY = 1 AND t.TASKTYPE = 3" +
+                                    "    ) WHERE 1=1";
+                            break;
+                        }case 1 :{//公司本部单位   显示全部周期为三天的任务
+
+                            sql = "    SELECT * FROM (  SELECT DISTINCT t.TASKID," +
+                                    "   t.ID," +
+                                    "   t.USER_ID,t.THREEDAY," +
+                                    "   t.TASKNAME,cd.CHECK_USER,d.ID AS TDYW_ORGID," +
+                                    "    t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,dd.ID as did,cd.CREATE_TIME," +
+                                    "  dd.DEPTNAME as DEPT,d.DEPTNAME,u.REALNAME as REALNAME,u.PHONE,(SELECT COMPANYNAME FROM RZTSYSCOMPANY WHERE ID = xs.WX_ORG) AS COMPANYNAME" +
+                                    "    FROM TIMED_TASK t  LEFT JOIN CHECK_DETAIL cd ON t.TASKID = cd.QUESTION_TASK_ID" +
+                                    "        LEFT JOIN RZTSYSUSER u ON u.ID = cd.CHECK_USER    LEFT JOIN RZTSYSUSER uu ON uu.ID = t.USER_ID" +
+                                    "           LEFT JOIN RZTSYSDEPARTMENT dd ON dd.ID = uu.DEPTID  " +
+                                    "   LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = cd.CHECK_ORG LEFT JOIN XS_ZC_TASK xs ON xs.ID = t.TASKID" +
+                                    "    WHERE  t.STATUS = 1 AND t.THREEDAY = 1 AND t.TASKTYPE = 1" +
+                                    "  UNION ALL" +
+                                    "   SELECT DISTINCT t.TASKID," +
+                                    "     t.ID," +
+                                    "     t.USER_ID,t.THREEDAY," +
+                                    "     t.TASKNAME,cd.CHECK_USER,d.ID AS TDYW_ORGID," +
+                                    "     t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,dd.ID as did,cd.CREATE_TIME," +
+                                    "     dd.DEPTNAME as DEPT,d.DEPTNAME,u.REALNAME as REALNAME,u.PHONE" +
+                                    "  ,kh.WX_ORG  AS COMPANYNAME" +
+                                    "   FROM TIMED_TASK t  LEFT JOIN CHECK_DETAIL cd ON t.TASKID = cd.QUESTION_TASK_ID" +
+                                    "     LEFT JOIN RZTSYSUSER u ON u.ID = cd.CHECK_USER   LEFT JOIN RZTSYSUSER uu ON uu.ID = t.USER_ID" +
+                                    "           LEFT JOIN RZTSYSDEPARTMENT dd ON dd.ID = uu.DEPTID " +
+                                    "     LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = cd.CHECK_ORG LEFT JOIN KH_TASK kh ON kh.ID = t.TASKID" +
+                                    "   WHERE  t.STATUS = 1 AND t.THREEDAY = 1 AND t.TASKTYPE = 2" +
+                                    "    UNION  ALL" +
+                                    "                 SELECT DISTINCT t.TASKID," +
+                                    "                   t.ID," +
+                                    "                   t.USER_ID,t.THREEDAY," +
+                                    "                   t.TASKNAME,cd.CHECK_USER,d.ID AS TDYW_ORGID," +
+                                    "                   t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,dd.ID as did,cd.CREATE_TIME," +
+                                    "                  dd.DEPTNAME as DEPT,d.DEPTNAME,u.REALNAME as REALNAME,u.PHONE,com.COMPANYNAME AS COMPANYNAME" +
+                                    "                 FROM TIMED_TASK t LEFT JOIN CHECK_LIVE_TASK c ON  t.TASKID = c.ID" +
+                                    "                   LEFT JOIN CHECK_DETAIL cd ON t.TASKID = cd.CHECK_USER" +
+                                    "                   LEFT JOIN RZTSYSUSER u ON u.ID = cd.QUESTION_USER_ID    LEFT JOIN RZTSYSUSER uu ON uu.ID = t.USER_ID" +
+                                    "           LEFT JOIN RZTSYSDEPARTMENT dd ON dd.ID = uu.DEPTID  " +
+                                    "                   LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = cd.CHECK_ORG LEFT JOIN RZTSYSCOMPANY com ON com.ID = u.COMPANYID" +
+                                    "                 WHERE" +
+                                    "                         t.STATUS = 1 AND t.THREEDAY = 1 AND t.TASKTYPE = 3" +
+                                    "    ) WHERE 1=1";
+                            break;
+                        }case 2 :{//属地单位   只显示本单位的任务
+
+                            if(null != deptid && !"".equals(deptid)){//当前用户单位信息获取成功，进入流程
+                                list.add(deptid);
+
+                                sql = "          SELECT * FROM (  SELECT DISTINCT t.TASKID," +
+                                        "         t.ID," +
+                                        "         t.USER_ID,t.THREEDAY," +
+                                        "         t.TASKNAME,cd.CHECK_USER,d.ID AS TDYW_ORGID," +
+                                        "          t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did,cd.CREATE_TIME," +
+                                        "        d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE,(SELECT COMPANYNAME FROM RZTSYSCOMPANY WHERE ID = xs.WX_ORG) AS COMPANYNAME" +
+                                        "          FROM TIMED_TASK t  LEFT JOIN CHECK_DETAIL cd ON t.TASKID = cd.QUESTION_TASK_ID" +
+                                        "              LEFT JOIN RZTSYSUSER u ON u.ID = cd.CHECK_USER" +
+                                        "         LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = cd.CHECK_ORG LEFT JOIN XS_ZC_TASK xs ON xs.ID = t.TASKID" +
+                                        "          WHERE  t.STATUS = 1 AND t.THREEDAY = 0 AND t.TASKTYPE = 1" +
+                                        "        UNION ALL" +
+                                        "         SELECT DISTINCT t.TASKID," +
+                                        "           t.ID," +
+                                        "           t.USER_ID,t.THREEDAY," +
+                                        "           t.TASKNAME,cd.CHECK_USER,d.ID AS TDYW_ORGID," +
+                                        "           t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did,cd.CREATE_TIME," +
+                                        "           d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE" +
+                                        "        ,kh.WX_ORG  AS COMPANYNAME" +
+                                        "         FROM TIMED_TASK t  LEFT JOIN CHECK_DETAIL cd ON t.TASKID = cd.QUESTION_TASK_ID" +
+                                        "           LEFT JOIN RZTSYSUSER u ON u.ID = cd.CHECK_USER" +
+                                        "           LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = cd.CHECK_ORG LEFT JOIN KH_TASK kh ON kh.ID = t.TASKID" +
+                                        "         WHERE  t.STATUS = 1 AND t.THREEDAY = 0 AND t.TASKTYPE = 2" +
+                                        "          UNION  ALL" +
+                                        "                       SELECT DISTINCT t.TASKID," +
+                                        "                         t.ID," +
+                                        "                         t.USER_ID,t.THREEDAY," +
+                                        "                         t.TASKNAME,cd.CHECK_USER,d.ID AS TDYW_ORGID," +
+                                        "                         t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did,cd.CREATE_TIME," +
+                                        "                        d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE,com.COMPANYNAME AS COMPANYNAME" +
+                                        "                       FROM TIMED_TASK t LEFT JOIN CHECK_LIVE_TASK c ON  t.TASKID = c.ID" +
+                                        "                         LEFT JOIN CHECK_DETAIL cd ON t.TASKID = cd.CHECK_USER" +
+                                        "                         LEFT JOIN RZTSYSUSER u ON u.ID = cd.QUESTION_USER_ID" +
+                                        "                         LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = cd.CHECK_ORG LEFT JOIN RZTSYSCOMPANY com ON com.ID = u.COMPANYID" +
+                                        "                       WHERE" +
+                                        "                               t.STATUS = 1 AND t.THREEDAY = 0 AND t.TASKTYPE = 3" +
+                                        "          ) WHERE   DID  = ?"+list.size();
+                            }else {
+                                LOGGER.error("获取当前用户单位信息失败");
+                                return WebApiResponse.erro("获取当前用户单位信息失败");
+                            }
+                            break;
+                        }default:{
+                            LOGGER.error("获取登录人权限失败,当前权限未知");
+                            return WebApiResponse.erro("获取登录人权限失败,当前权限未知");
+                        }
+                    }
                 }
             }
-        } catch (Exception e) {
-            return WebApiResponse.erro("查询失败" + e.getMessage());
+            if(taskType!=null && !"".equals(taskType.trim())){// 判断当前任务类型  巡视1   看护2  看护稽查3  巡视稽查4
+                sql+= "  AND TASKTYPE = "+taskType;
+            }
+
+            //查询责任人
+            if(null != userName && !"".equals(userName)){
+                sql += "  AND  REALNAME LIKE '%"+userName+"%'";
+            }
+            //通道单位
+            if(null != TD && !"".equals(TD)){
+                sql += "  AND  DID = '"+TD+"'";
+            }
+            //任务状态
+            if(null != targetType && !"".equals(targetType)){
+                sql += "  AND  TARGETSTATUS =  "+targetType;
+            }
+            //任务名称模糊查询
+            if(null != TaskName && !"".equals(TaskName)){
+                sql += "  AND  TASKNAME like '%"+TaskName+"%'  ";
+            }
+            //按时间查询 startDate,String endDate
+            if((null != startDate  &&  !"".equals(startDate)) && (null != endDate && !"".equals(endDate))){
+                sql += "  AND  CREATE_TIME >= to_date('"+startDate+"','YYYY-MM-dd HH24:mi:ss')  AND" +
+                        "    CREATE_TIME <= to_date('"+endDate+"','YYYY-MM-dd HH24:mi:ss')      ";
+            }
+            if(null != sql && !"".equals(sql)){
+                sql +="   ORDER BY CREATE_TIME DESC     ";
+            }
+
+            pageResult = this.execSqlPage(pageable, sql, list.toArray());
+
+        }catch (Exception e){
+            LOGGER.error("抽查任务查询失败"+e.getMessage());
+            return WebApiResponse.erro("抽查任务查询失败"+e.getMessage());
         }
         return WebApiResponse.success(pageResult);
     }
