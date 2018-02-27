@@ -341,7 +341,7 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
             list.add(endDate);
             s += "  AND trunc(to_date( ?" + list.size() + ",'yyyy-MM-dd hh24:mi:ss')) ";
         }else{
-            s+=" AND (trunc(CREATE_TIME)= trunc(sysdate-1) or trunc(CREATE_TIME)= trunc(sysdate))";
+            s+=" AND trunc(CREATE_TIME) BETWEEN trunc(sysdate-15) and trunc(sysdate)";
         }
         String sql = " SELECT * FROM PICTURE_JC WHERE 1=1"+s+" ORDER BY CREATE_TIME DESC ";
         //List<Map<String, Object>> maps = execSql(sql, list.toArray());
