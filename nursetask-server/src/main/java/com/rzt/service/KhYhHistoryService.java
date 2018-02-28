@@ -1125,17 +1125,17 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
 
     public WebApiResponse findLineOrg(long towerId) {
         try {
-            String sql = "SELECT S.TD_ORG_NAME,S.LINE_NAME,S.LINE_ID\n" +
+            /*String sql = "SELECT S.TD_ORG_NAME,S.LINE_NAME,S.LINE_ID\n" +
                     "FROM CM_LINE_SECTION S LEFT JOIN CM_TOWER T ON T.LINE_ID = S.LINE_ID where T.ID = ? ";// and S.TD_ORG_NAME not in ('通州公司')
             List<Map<String, Object>> maps = this.execSql(sql, towerId);
             if (maps.size() > 0) {
                 return WebApiResponse.success("可以采集");
             } else {
                 return WebApiResponse.erro("不可以采集");
-            }
-//            throw new Exception();
+            }*/
+            throw new Exception();
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
             return WebApiResponse.erro("不可以采集");
         }
     }
