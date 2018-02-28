@@ -34,7 +34,7 @@ public class UserService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository>
         List listLike = new ArrayList();
         String s = "";
 
-            s += " AND PLAN_END_TIME >= trunc( SYSDATE ) AND PLAN_START_TIME <= trunc(sysdate+1) ";
+        s += " AND PLAN_END_TIME >= trunc( SYSDATE ) AND PLAN_START_TIME <= trunc(sysdate+1) ";
 
 
         if (!StringUtils.isEmpty(deptId)) {
@@ -375,29 +375,29 @@ public class UserService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository>
                 if(null != worktype && !"".equals(worktype)){
                     String taskSql = "";
                     if("1".equals(worktype)){//看护
-                         taskSql = "   SELECT k.ID as TASKID,k.TASK_NAME," +
+                        taskSql = "   SELECT k.ID as TASKID,k.TASK_NAME," +
                                 "  (SELECT COUNT(1) FROM KH_TASK kh WHERE kh.USER_ID = '"+userId+"'  ) AS sum" +
                                 "  FROM KH_TASK k WHERE k.USER_ID = '"+userId+"'" +
                                 "  AND k.REAL_START_TIME =" +
                                 "      (SELECT max(kk.REAL_START_TIME) FROM KH_TASK kk WHERE kk.USER_ID = '"+userId+"')";
                     }
                     if("2".equals(worktype)){//巡视
-                         taskSql = "   SELECT x.ID  as TASKID,x.TASK_NAME," +
+                        taskSql = "   SELECT x.ID  as TASKID,x.TASK_NAME," +
                                 "  (SELECT count(1) FROM XS_ZC_TASK xz WHERE xz.CM_USER_ID = '"+userId+"') AS sum" +
                                 "   FROM XS_ZC_TASK x WHERE x.CM_USER_ID = '"+userId+"' AND x.REAL_START_TIME =" +
                                 "   (SELECT max(xs.REAL_START_TIME) FROM XS_ZC_TASK xs WHERE xs.CM_USER_ID = '"+userId+"')";
                     }
                     if("3".equals(worktype)){//现场稽查
-                         taskSql = "   SELECT c.ID  as TASKID,c.TASK_NAME," +
+                        taskSql = "   SELECT c.ID  as TASKID,c.TASK_NAME," +
                                 "  (SELECT count(1) FROM CHECK_LIVE_TASK ccc WHERE ccc.USER_ID = '"+userId+"') AS sum" +
                                 "   FROM CHECK_LIVE_TASK c WHERE c.USER_ID = '"+userId+"'" +
                                 "  AND c.REAL_START_TIME = (SELECT max(cc.REAL_START_TIME) FROM CHECK_LIVE_TASK cc WHERE cc.USER_ID = '"+userId+"')";
                     }
                     if("4".equals(worktype)){//后台稽查
                         taskSql = "   SELECT concat(to_char(t.CHECK_TIME,'YYYY-MM-dd HH24:mi:ss'),'期后台稽查任务') AS TASK_NAME," +
-                               "  (SELECT count(1) FROM TIMED_TASK_RECORD ttt WHERE ttt.EX_USER LIKE '%"+userId+"%') AS sum" +
-                               "   FROM TIMED_TASK_RECORD t WHERE t.EX_USER LIKE '%"+userId+"%' AND t.CREATE_TIME =" +
-                               "  (SELECT max(tt.CREATE_TIME) FROM TIMED_TASK_RECORD tt WHERE tt.EX_USER LIKE '%"+userId+"%')";
+                                "  (SELECT count(1) FROM TIMED_TASK_RECORD ttt WHERE ttt.EX_USER LIKE '%"+userId+"%') AS sum" +
+                                "   FROM TIMED_TASK_RECORD t WHERE t.EX_USER LIKE '%"+userId+"%' AND t.CREATE_TIME =" +
+                                "  (SELECT max(tt.CREATE_TIME) FROM TIMED_TASK_RECORD tt WHERE tt.EX_USER LIKE '%"+userId+"%')";
                     }
                     Map<String, Object> map1 = this.execSqlSingleResult(taskSql);
                     map.putAll(map1);
@@ -445,32 +445,32 @@ public class UserService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository>
         try {
             String user = "SELECT * FROM WORKING_TIMED where 1=1  AND DEPT_ID='"+deptid+"' " ;
             htjcMap = this.execSqlSingleResult(user);
-                Map<String, Object> dept = new HashMap<>();
+            Map<String, Object> dept = new HashMap<>();
 
-                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-                String format = formatter.format(new Date());
-                String s1 = format + " 00:00:00";
-                String userId = "";
-                String start = htjcMap.get("START_TIME").toString();
-                String end = htjcMap.get("END_TIME").toString();
-                Date nowDate = DateUtil.getNowDate();
-                if (nowDate.getTime() >= DateUtil.addDate(DateUtil.parseDate(s1), Double.parseDouble(start)).getTime() && nowDate.getTime() <= DateUtil.addDate(DateUtil.parseDate(s1), Double.parseDouble(end)).getTime()) {
-                    userId = htjcMap.get("DAY_USER").toString();
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+            String format = formatter.format(new Date());
+            String s1 = format + " 00:00:00";
+            String userId = "";
+            String start = htjcMap.get("START_TIME").toString();
+            String end = htjcMap.get("END_TIME").toString();
+            Date nowDate = DateUtil.getNowDate();
+            if (nowDate.getTime() >= DateUtil.addDate(DateUtil.parseDate(s1), Double.parseDouble(start)).getTime() && nowDate.getTime() <= DateUtil.addDate(DateUtil.parseDate(s1), Double.parseDouble(end)).getTime()) {
+                userId = htjcMap.get("DAY_USER").toString();
+            } else {
+                userId = htjcMap.get("NIGHT_USER").toString();
+            }
+            String[] split = userId.split(",");
+            for (int i = 0; i < split.length; i++) {
+                String sql = "SELECT LOGINSTATUS status FROM RZTSYSUSER where id=?";
+                Map<String, Object> status = this.execSqlSingleResult(sql, split[i]);
+                if (status.get("STATUS").toString().equals("1")) {
+                    a++;
                 } else {
-                    userId = htjcMap.get("NIGHT_USER").toString();
+                    b++;
                 }
-                String[] split = userId.split(",");
-                for (int i = 0; i < split.length; i++) {
-                    String sql = "SELECT LOGINSTATUS status FROM RZTSYSUSER where id=?";
-                    Map<String, Object> status = this.execSqlSingleResult(sql, split[i]);
-                    if (status.get("STATUS").toString().equals("1")) {
-                        a++;
-                    } else {
-                        b++;
-                    }
-                }
-                dept.put("htzx", a);
-                dept.put("htlx", b);
+            }
+            dept.put("htzx", a);
+            dept.put("htlx", b);
 
 
             xsMap = this.execSql(xs).size()==0?new HashedMap():this.execSql(xs).get(0);
@@ -528,7 +528,7 @@ public class UserService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository>
         }
 
     }
-    //获取当日应执行任务人数
+
     public WebApiResponse getDayUser(String deptId) {
 
         try {

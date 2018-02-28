@@ -67,20 +67,20 @@ public class TaskController extends CurdController<KHYHHISTORY,TasksService>  {
      */
     @GetMapping("/findTasksByStatus")
     public WebApiResponse findTasksByStatus(Integer page,Integer size,String deptId,String flag,String condition){
-      return   tasksService.findTasksByStatus(page,size,deptId,flag,condition);
+        return   tasksService.findTasksByStatus(page,size,deptId,flag,condition);
     }
 
     /**
      * 五级页面使用  查看当前任务详情
-     * @param taskType   任务类型
-     * @param taskId    任务id
+     * @param taskType
+     * @param taskId
      * @param deptId   当任务类型为4时 需要使用部门id和抽查时间查询后台稽查任务
      * @param realTime
      * @return
      */
     @GetMapping("/findTaskInfoByTaskId")
     public WebApiResponse findTaskInfoByTaskId(String taskType,String taskId,String deptId,String realTime){
-       return tasksService.findTaskInfoByTaskId(taskType,taskId,deptId,realTime);
+        return tasksService.findTaskInfoByTaskId(taskType,taskId,deptId,realTime);
     }
 
 

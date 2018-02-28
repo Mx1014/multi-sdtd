@@ -72,39 +72,39 @@ public class TasksService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository
                 "  WHERE trunc(t.CHECK_TIME) = trunc(sysdate)" +*/
 
                 "  ) WHERE  STATUS = '"+flag+"'";
-                if(null != deptId && !"".equals(deptId)){
-                    sql += "  AND DEPT = '"+deptId+"'";
-                }
-                if(null != condition  && !"".equals(condition)){
-                    sql += "  AND ( TASK_NAME like '%"+condition.trim()+"%'  OR  REALNAME like '%"+condition.trim()+"%'  )";
-                }
-                //进行中
-            String htsql1 = "SELECT  DISTINCT CREATE_TIME , ID ,TASKS,COMPLETE,CHECK_TIME,EX_USER  FROM TIMED_TASK_RECORD WHERE trunc(CREATE_TIME) >= trunc(sysdate)\n" +
-                    " AND DEPT_ID = '"+deptId+"' AND TASKS > COMPLETE AND CREATE_TIME = (SELECT max(CREATE_TIME)\n" +
-                    "  FROM TIMED_TASK_RECORD)";
-                //未完成
-            String htsql2 = "SELECT  DISTINCT CREATE_TIME , ID ,TASKS,COMPLETE,CHECK_TIME,EX_USER  FROM TIMED_TASK_RECORD WHERE trunc(CREATE_TIME) >= trunc(sysdate)\n" +
-                    "  AND DEPT_ID = '"+deptId+"' AND TASKS > COMPLETE AND CREATE_TIME != (SELECT max(CREATE_TIME)\n" +
-                    "  FROM TIMED_TASK_RECORD)";
-                 //已完成
-            String htsql3 = "SELECT  DISTINCT CREATE_TIME , ID ,TASKS,COMPLETE,CHECK_TIME,EX_USER  FROM TIMED_TASK_RECORD WHERE trunc(CREATE_TIME) >= trunc(sysdate)\n" +
-                    "   AND DEPT_ID = '"+deptId+"' AND TASKS = COMPLETE";
+        if(null != deptId && !"".equals(deptId)){
+            sql += "  AND DEPT = '"+deptId+"'";
+        }
+        if(null != condition  && !"".equals(condition)){
+            sql += "  AND ( TASK_NAME like '%"+condition.trim()+"%'  OR  REALNAME like '%"+condition.trim()+"%'  )";
+        }
+        //进行中
+        String htsql1 = "SELECT  DISTINCT CREATE_TIME , ID ,TASKS,COMPLETE,CHECK_TIME,EX_USER  FROM TIMED_TASK_RECORD WHERE trunc(CREATE_TIME) >= trunc(sysdate)\n" +
+                " AND DEPT_ID = '"+deptId+"' AND TASKS > COMPLETE AND CREATE_TIME = (SELECT max(CREATE_TIME)\n" +
+                "  FROM TIMED_TASK_RECORD)";
+        //未完成
+        String htsql2 = "SELECT  DISTINCT CREATE_TIME , ID ,TASKS,COMPLETE,CHECK_TIME,EX_USER  FROM TIMED_TASK_RECORD WHERE trunc(CREATE_TIME) >= trunc(sysdate)\n" +
+                "  AND DEPT_ID = '"+deptId+"' AND TASKS > COMPLETE AND CREATE_TIME != (SELECT max(CREATE_TIME)\n" +
+                "  FROM TIMED_TASK_RECORD)";
+        //已完成
+        String htsql3 = "SELECT  DISTINCT CREATE_TIME , ID ,TASKS,COMPLETE,CHECK_TIME,EX_USER  FROM TIMED_TASK_RECORD WHERE trunc(CREATE_TIME) >= trunc(sysdate)\n" +
+                "   AND DEPT_ID = '"+deptId+"' AND TASKS = COMPLETE";
 
 
         Page<Map<String, Object>> maps =null;
-            try {
-                maps = this.execSqlPage(pageRequest, sql, null);
-            }catch (Exception e){
-                    LOGGER.error("查询单位任务列表失败"+e.getMessage());
-                    return WebApiResponse.erro("查询单位任务列表失败"+e.getMessage());
-            }
-             LOGGER.info("查询单位任务列表成功");
-            return WebApiResponse.success(maps);
+        try {
+            maps = this.execSqlPage(pageRequest, sql, null);
+        }catch (Exception e){
+            LOGGER.error("查询单位任务列表失败"+e.getMessage());
+            return WebApiResponse.erro("查询单位任务列表失败"+e.getMessage());
+        }
+        LOGGER.info("查询单位任务列表成功");
+        return WebApiResponse.success(maps);
     }
     /**
      * 五级页面使用  查看当前任务详情
      * @param taskType
-     * @param taskId    任务id
+     * @param taskId
      * @param deptId   当任务类型为4时 需要使用部门id和抽查时间查询后台稽查任务
      * @param realTime  后台稽查任务的开始时间 就是抽查时间 也是任务开始时间
      * @return
@@ -114,80 +114,80 @@ public class TasksService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository
             return WebApiResponse.erro("参数错误 taskType = "+taskType);
         }
         Map<String, Object> map = null;
-       try {
-           if("4".equals(taskType)){
-               //后台稽查
-               String userSql = "  SELECT * FROM TIMED_TASK_RECORD t WHERE t.CHECK_TIME = to_date('"+realTime+"','YYYY-MM-dd HH24:mi:ss')" +
-                       "       AND t.DEPT_ID = '"+deptId+"'";
-               map = this.execSqlSingleResult(userSql);
-               if(null != map ){
-                   Object ex_user = map.get("EX_USER");
-                   if(null != ex_user){
-                       String[] split = ex_user.toString().split(",");
-                       ArrayList<Object> objects = new ArrayList<>();
-                       for (String s : split) {
-                           String sql = " SELECT u.REALNAME,u.PHONE,d.DEPTNAME,dd.DEPTNAME GROUPNAME,com.COMPANYNAME,ddd.DEPTNAME AS DW FROM RZTSYSUSER u LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID" +
-                                   "    LEFT JOIN RZTSYSDEPARTMENT dd ON dd.ID = u.GROUPID" +
-                                   "    LEFT JOIN RZTSYSDEPARTMENT ddd ON ddd.ID = u.CLASSNAME" +
-                                   "    LEFT JOIN RZTSYSCOMPANY com ON com.ID = u.COMPANYID" +
-                                   "    WHERE u.ID = '"+s+"'";
-                           Map<String, Object> map1 = this.execSqlSingleResult(sql);
-                           objects.add(map1);
-                       }
-                    map.put("users",objects);
-                   }
-               }
-               return WebApiResponse.success(map);
-           }
-           if(null == taskId || "".equals(taskId)){
-               return WebApiResponse.erro("参数错误  taskId = "+taskId);
-           }
-           String sql = "";
-           if("3".equals(taskType)){
-               //现场稽查
+        try {
+            if("4".equals(taskType)){
+                //后台稽查
+                String userSql = "  SELECT * FROM TIMED_TASK_RECORD t WHERE t.CHECK_TIME = to_date('"+realTime+"','YYYY-MM-dd HH24:mi:ss')" +
+                        "       AND t.DEPT_ID = '"+deptId+"'";
+                map = this.execSqlSingleResult(userSql);
+                if(null != map ){
+                    Object ex_user = map.get("EX_USER");
+                    if(null != ex_user){
+                        String[] split = ex_user.toString().split(",");
+                        ArrayList<Object> objects = new ArrayList<>();
+                        for (String s : split) {
+                            String sql = " SELECT u.REALNAME,u.PHONE,d.DEPTNAME,dd.DEPTNAME GROUPNAME,com.COMPANYNAME,ddd.DEPTNAME AS DW FROM RZTSYSUSER u LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID" +
+                                    "    LEFT JOIN RZTSYSDEPARTMENT dd ON dd.ID = u.GROUPID" +
+                                    "    LEFT JOIN RZTSYSDEPARTMENT ddd ON ddd.ID = u.CLASSNAME" +
+                                    "    LEFT JOIN RZTSYSCOMPANY com ON com.ID = u.COMPANYID" +
+                                    "    WHERE u.ID = '"+s+"'";
+                            Map<String, Object> map1 = this.execSqlSingleResult(sql);
+                            objects.add(map1);
+                        }
+                        map.put("users",objects);
+                    }
+                }
+                return WebApiResponse.success(map);
+            }
+            if(null == taskId || "".equals(taskId)){
+                return WebApiResponse.erro("参数错误  taskId = "+taskId);
+            }
+            String sql = "";
+            if("3".equals(taskType)){
+                //现场稽查
                 sql = "   SELECT x.ID,x.TASK_NAME,x.PLAN_START_TIME,x.PLAN_END_TIME,cd.REAL_START_TIME,cd.REAL_END_TIME," +
-                       "   x.CREATE_TIME AS PD_TIME,cd.DDXC_TIME,x.STATUS" +
-                       "  ,u.REALNAME,u.PHONE,d.DEPTNAME,dd.DEPTNAME GROUPNAME,com.COMPANYNAME,ddd.DEPTNAME AS DW" +
-                       "  FROM CHECK_LIVE_TASK x" +
-                       "  LEFT JOIN CHECK_LIVE_TASK_DETAIL cd ON cd.TASK_ID = x.ID" +
-                       "  LEFT JOIN RZTSYSUSER u ON u.ID = x.USER_ID" +
-                       "  LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID" +
-                       "  LEFT JOIN RZTSYSDEPARTMENT dd ON dd.ID = u.GROUPID" +
-                       "  LEFT JOIN RZTSYSDEPARTMENT ddd ON ddd.ID = u.CLASSNAME" +
-                       "  LEFT JOIN RZTSYSCOMPANY com ON com.ID = u.COMPANYID" +
-                       "  WHERE x.ID = '"+taskId+"'";
-           }
-           if("2".equals(taskType)){
-               //巡视任务
+                        "   x.CREATE_TIME AS PD_TIME,cd.DDXC_TIME,x.STATUS" +
+                        "  ,u.REALNAME,u.PHONE,d.DEPTNAME,dd.DEPTNAME GROUPNAME,com.COMPANYNAME,ddd.DEPTNAME AS DW" +
+                        "  FROM CHECK_LIVE_TASK x" +
+                        "  LEFT JOIN CHECK_LIVE_TASK_DETAIL cd ON cd.TASK_ID = x.ID" +
+                        "  LEFT JOIN RZTSYSUSER u ON u.ID = x.USER_ID" +
+                        "  LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID" +
+                        "  LEFT JOIN RZTSYSDEPARTMENT dd ON dd.ID = u.GROUPID" +
+                        "  LEFT JOIN RZTSYSDEPARTMENT ddd ON ddd.ID = u.CLASSNAME" +
+                        "  LEFT JOIN RZTSYSCOMPANY com ON com.ID = u.COMPANYID" +
+                        "  WHERE x.ID = '"+taskId+"'";
+            }
+            if("2".equals(taskType)){
+                //巡视任务
                 sql = "  SELECT x.ID,x.TASK_NAME,x.PLAN_START_TIME,x.PLAN_END_TIME,x.PLAN_XS_NUM,x.REAL_START_TIME,x.REAL_END_TIME,x.REAL_XS_NUM," +
-                       "  x.PD_TIME,x.XSKS_TIME,x.DDXC_TIME,x.SFQR_TIME,x.WPTX_TIME,x.STAUTS as STATUS" +
-                       "  ,u.REALNAME,u.PHONE,d.DEPTNAME,dd.DEPTNAME GROUPNAME,com.COMPANYNAME,ddd.DEPTNAME AS DW" +
-                       "  FROM XS_ZC_TASK x LEFT JOIN RZTSYSUSER u ON u.ID = x.CM_USER_ID" +
-                       "  LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID" +
-                       "  LEFT JOIN RZTSYSDEPARTMENT dd ON dd.ID = u.GROUPID" +
-                       "  LEFT JOIN RZTSYSDEPARTMENT ddd ON ddd.ID = u.CLASSNAME" +
-                       "  LEFT JOIN RZTSYSCOMPANY com ON com.ID = u.COMPANYID" +
-                       "  WHERE x.ID = '"+taskId+"'";
+                        "  x.PD_TIME,x.XSKS_TIME,x.DDXC_TIME,x.SFQR_TIME,x.WPTX_TIME,x.STAUTS as STATUS" +
+                        "  ,u.REALNAME,u.PHONE,d.DEPTNAME,dd.DEPTNAME GROUPNAME,com.COMPANYNAME,ddd.DEPTNAME AS DW" +
+                        "  FROM XS_ZC_TASK x LEFT JOIN RZTSYSUSER u ON u.ID = x.CM_USER_ID" +
+                        "  LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID" +
+                        "  LEFT JOIN RZTSYSDEPARTMENT dd ON dd.ID = u.GROUPID" +
+                        "  LEFT JOIN RZTSYSDEPARTMENT ddd ON ddd.ID = u.CLASSNAME" +
+                        "  LEFT JOIN RZTSYSCOMPANY com ON com.ID = u.COMPANYID" +
+                        "  WHERE x.ID = '"+taskId+"'";
 
-           }
-           if("1".equals(taskType)){
-               //看护任务
+            }
+            if("1".equals(taskType)){
+                //看护任务
                 sql = "   SELECT x.ID,x.TASK_NAME,x.PLAN_START_TIME,x.PLAN_END_TIME,x.REAL_START_TIME,x.REAL_END_TIME," +
-                       "  x.CREATE_TIME AS PD_TIME,x.DDXC_TIME,x.SFQR_TIME,x.WPQR_TIME AS WPTX_TIME,x.STATUS" +
-                       "  ,u.REALNAME,u.PHONE,d.DEPTNAME,dd.DEPTNAME GROUPNAME,com.COMPANYNAME,ddd.DEPTNAME AS DW" +
-                       "   FROM KH_TASK x" +
-                       "  LEFT JOIN RZTSYSUSER u ON u.ID = x.USER_ID" +
-                       "  LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID" +
-                       "  LEFT JOIN RZTSYSDEPARTMENT dd ON dd.ID = u.GROUPID" +
-                       "  LEFT JOIN RZTSYSDEPARTMENT ddd ON ddd.ID = u.CLASSNAME" +
-                       "  LEFT JOIN RZTSYSCOMPANY com ON com.ID = u.COMPANYID" +
-                       "   WHERE x.ID = '"+taskId+"'";
-           }
-           map = this.execSqlSingleResult(sql);
-       }catch (Exception e){
+                        "  x.CREATE_TIME AS PD_TIME,x.DDXC_TIME,x.SFQR_TIME,x.WPQR_TIME AS WPTX_TIME,x.STATUS" +
+                        "  ,u.REALNAME,u.PHONE,d.DEPTNAME,dd.DEPTNAME GROUPNAME,com.COMPANYNAME,ddd.DEPTNAME AS DW" +
+                        "   FROM KH_TASK x" +
+                        "  LEFT JOIN RZTSYSUSER u ON u.ID = x.USER_ID" +
+                        "  LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID" +
+                        "  LEFT JOIN RZTSYSDEPARTMENT dd ON dd.ID = u.GROUPID" +
+                        "  LEFT JOIN RZTSYSDEPARTMENT ddd ON ddd.ID = u.CLASSNAME" +
+                        "  LEFT JOIN RZTSYSCOMPANY com ON com.ID = u.COMPANYID" +
+                        "   WHERE x.ID = '"+taskId+"'";
+            }
+            map = this.execSqlSingleResult(sql);
+        }catch (Exception e){
             LOGGER.error("五级页面任务详情查询失败"+e.getMessage());
             return WebApiResponse.erro("五级页面任务详情查询失败"+e.getMessage());
-       }
+        }
         LOGGER.error("五级页面任务详情查询成功");
         return WebApiResponse.success(map);
     }
@@ -390,7 +390,7 @@ public class TasksService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository
         }
         return WebApiResponse.success(list);
 
-}
+    }
 
     /**
      * 按照单位查询任务
@@ -399,114 +399,114 @@ public class TasksService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository
     public WebApiResponse deptDaZhu2(String deptId) {
         List<Map<String, Object>> list = null;
         try {
-        /**
-         * 正常巡视未开始
-         */
-        String zcXsWks = "SELECT count(1)  " +
-                "  FROM XS_ZC_TASK " +
-                "  WHERE is_delete = 0 and STAUTS = 0 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)" +
-                "          AND TD_ORG = '"+deptId+"'  ";
-        /**
-         * 保电巡视未开始 TD_ORG
-         */
-        String bdXsWks = "SELECT count(1)  " +
-                "  FROM XS_TXBD_TASK " +
-                "  WHERE STAUTS = 0 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)" +
-                "           AND TD_ORG = '"+deptId+"'  ";
-        /**
-         * 看护未开始
-         */
-        String khWks = "SELECT count(1)  " +
-                "FROM KH_TASK " +
-                "WHERE STATUS = 0 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)" +
-                "             AND YWORG_ID = '"+deptId+"'  ";
-        /**
-         * 现场稽查未开始
-         */
-        String xcJcWks = "SELECT count(1)" +
-                "  FROM CHECK_LIVE_TASK c LEFT JOIN RZTSYSUSER u ON u.ID = c.USER_ID" +
-                "  WHERE c.STATUS = 0 AND c.PLAN_START_TIME <= sysdate AND c.PLAN_END_TIME >= trunc(sysdate)" +
-                "  AND u.DEPTID = '"+deptId+"'  ";
-        /**
-         * 正常巡视进行中
-         */
-        String zcXsJxz = "SELECT count(1)  " +
-                "  FROM XS_ZC_TASK " +
-                "  WHERE is_delete = 0 and STAUTS = 1 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)" +
-                "      AND TD_ORG = '"+deptId+"' ";
-        /**
-         * 保电巡视进行中
-         */
-        String bdXsJxz = "SELECT count(1)  " +
-                "   FROM XS_TXBD_TASK " +
-                "   WHERE STAUTS = 1 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)" +
-                "          AND TD_ORG = '"+deptId+"'  ";
-        /**
-         * 看护进行中
-         */
-        String khJxz = "SELECT count(1)  " +
-                "  FROM KH_TASK " +
-                "  WHERE STATUS = 1 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)" +
-                "          AND YWORG_ID = '"+deptId+"' ";
-        /**
-         * 现场稽查进行中
-         */
-        String xcJcJxz = "SELECT count(1)" +
-                "  FROM CHECK_LIVE_TASK c LEFT JOIN RZTSYSUSER u ON u.ID = c.USER_ID" +
-                "   WHERE STATUS = 1  AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)" +
-                "  AND u.DEPTID = '"+deptId+"'  ";
-        /**
-         * 正常巡视已完成
-         */
-        String zcXsYwc = "SELECT count(1)  " +
-                "  FROM XS_ZC_TASK " +
-                "   WHERE is_delete = 0 and STAUTS = 2 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)" +
-                "        AND TD_ORG = '"+deptId+"' ";
-        /**
-         * 保电巡视已完成
-         */
-        String bdXsYwc = "SELECT count(1)  " +
-                "   FROM XS_TXBD_TASK " +
-                "   WHERE STAUTS = 2 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)" +
-                "       AND TD_ORG = '"+deptId+"' ";
-        /**
-         * 看护已完成
-         */
-        String khYwc = "SELECT count(1)  " +
-                "  FROM KH_TASK " +
-                "  WHERE STATUS = 2 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)" +
-                "     AND YWORG_ID = '"+deptId+"' ";
-        /**
-         *现场稽查已完成
-         */
+            /**
+             * 正常巡视未开始
+             */
+            String zcXsWks = "SELECT count(1)  " +
+                    "  FROM XS_ZC_TASK " +
+                    "  WHERE is_delete = 0 and STAUTS = 0 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)" +
+                    "          AND TD_ORG = '"+deptId+"'  ";
+            /**
+             * 保电巡视未开始 TD_ORG
+             */
+            String bdXsWks = "SELECT count(1)  " +
+                    "  FROM XS_TXBD_TASK " +
+                    "  WHERE STAUTS = 0 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)" +
+                    "           AND TD_ORG = '"+deptId+"'  ";
+            /**
+             * 看护未开始
+             */
+            String khWks = "SELECT count(1)  " +
+                    "FROM KH_TASK " +
+                    "WHERE STATUS = 0 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)" +
+                    "             AND YWORG_ID = '"+deptId+"'  ";
+            /**
+             * 现场稽查未开始
+             */
+            String xcJcWks = "SELECT count(1)" +
+                    "  FROM CHECK_LIVE_TASK c LEFT JOIN RZTSYSUSER u ON u.ID = c.USER_ID" +
+                    "  WHERE c.STATUS = 0 AND c.PLAN_START_TIME <= sysdate AND c.PLAN_END_TIME >= trunc(sysdate)" +
+                    "  AND u.DEPTID = '"+deptId+"'  ";
+            /**
+             * 正常巡视进行中
+             */
+            String zcXsJxz = "SELECT count(1)  " +
+                    "  FROM XS_ZC_TASK " +
+                    "  WHERE is_delete = 0 and STAUTS = 1 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)" +
+                    "      AND TD_ORG = '"+deptId+"' ";
+            /**
+             * 保电巡视进行中
+             */
+            String bdXsJxz = "SELECT count(1)  " +
+                    "   FROM XS_TXBD_TASK " +
+                    "   WHERE STAUTS = 1 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)" +
+                    "          AND TD_ORG = '"+deptId+"'  ";
+            /**
+             * 看护进行中
+             */
+            String khJxz = "SELECT count(1)  " +
+                    "  FROM KH_TASK " +
+                    "  WHERE STATUS = 1 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)" +
+                    "          AND YWORG_ID = '"+deptId+"' ";
+            /**
+             * 现场稽查进行中
+             */
+            String xcJcJxz = "SELECT count(1)" +
+                    "  FROM CHECK_LIVE_TASK c LEFT JOIN RZTSYSUSER u ON u.ID = c.USER_ID" +
+                    "   WHERE STATUS = 1  AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)" +
+                    "  AND u.DEPTID = '"+deptId+"'  ";
+            /**
+             * 正常巡视已完成
+             */
+            String zcXsYwc = "SELECT count(1)  " +
+                    "  FROM XS_ZC_TASK " +
+                    "   WHERE is_delete = 0 and STAUTS = 2 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)" +
+                    "        AND TD_ORG = '"+deptId+"' ";
+            /**
+             * 保电巡视已完成
+             */
+            String bdXsYwc = "SELECT count(1)  " +
+                    "   FROM XS_TXBD_TASK " +
+                    "   WHERE STAUTS = 2 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)" +
+                    "       AND TD_ORG = '"+deptId+"' ";
+            /**
+             * 看护已完成
+             */
+            String khYwc = "SELECT count(1)  " +
+                    "  FROM KH_TASK " +
+                    "  WHERE STATUS = 2 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)" +
+                    "     AND YWORG_ID = '"+deptId+"' ";
+            /**
+             *现场稽查已完成
+             */
 
-        String xcJcYwc = "SELECT count(1)" +
-                "  FROM CHECK_LIVE_TASK c LEFT JOIN RZTSYSUSER u ON u.ID = c.USER_ID" +
-                "  WHERE STATUS = 2 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)"+
-                "  AND u.DEPTID = '"+deptId+"'  ";
+            String xcJcYwc = "SELECT count(1)" +
+                    "  FROM CHECK_LIVE_TASK c LEFT JOIN RZTSYSUSER u ON u.ID = c.USER_ID" +
+                    "  WHERE STATUS = 2 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)"+
+                    "  AND u.DEPTID = '"+deptId+"'  ";
            /* String sql1 = "select * from(SELECT CREATETIME FROM TIMED_TASK where THREEDAY=1 ORDER BY CREATETIME DESC ) where ROWNUM=1";
             List<Map<String, Object>> maps = this.execSql(sql1);
             Date createtime = DateUtil.parseDate(maps.get(0).get("CREATETIME").toString());
             Date nextTime = DateUtil.addDate(createtime, 72);*/
-        /**
-         *后台稽查未完成
-         */
-        String htJcWks = "SELECT COUNT(1) FROM (SELECT DISTINCT CREATE_TIME FROM TIMED_TASK_RECORD WHERE trunc(CREATE_TIME) >= trunc(sysdate) " +
-                "         and (TASKS>COMPLETE)  AND DEPT_ID = '"+deptId+"' AND CREATE_TIME != (SELECT max(CREATE_TIME)" +
-                "   FROM TIMED_TASK_RECORD) ) ";
-        /**
-         *后台稽查进行中
-         */
+            /**
+             *后台稽查未完成
+             */
+            String htJcWks = "SELECT COUNT(1) FROM (SELECT DISTINCT CREATE_TIME FROM TIMED_TASK_RECORD WHERE trunc(CREATE_TIME) >= trunc(sysdate) " +
+                    "         and (TASKS>COMPLETE)  AND DEPT_ID = '"+deptId+"' AND CREATE_TIME != (SELECT max(CREATE_TIME)" +
+                    "   FROM TIMED_TASK_RECORD) ) ";
+            /**
+             *后台稽查进行中
+             */
 //            String htJcYks = "SELECT count(1) FROM TIMED_TASK t WHERE  t.CREATETIME >  ( select sysdate - (3 * 24 * 60 * 60 + 60 * 60) / (1 * 24 * 60 * 60)   from  dual) AND  THREEDAY  = 1 AND t.STATUS = 1";
-        String htJcYks = "SELECT count(DISTINCT (DEPT_ID)) FROM TIMED_TASK_RECORD  WHERE  DEPT_ID = '"+deptId+"' ";
-        /**
-         *后台稽查已完成
-         */
-        String htJcYwc = "SELECT COUNT(1) FROM (SELECT DISTINCT CREATE_TIME FROM TIMED_TASK_RECORD WHERE trunc(CREATE_TIME) >= trunc(sysdate)" +
-                "         and (TASKS=COMPLETE)  AND DEPT_ID = '"+deptId+"'  AND CREATE_TIME != (SELECT max(CREATE_TIME)" +
-                "   FROM TIMED_TASK_RECORD) ) ";
+            String htJcYks = "SELECT count(DISTINCT (DEPT_ID)) FROM TIMED_TASK_RECORD  WHERE  DEPT_ID = '"+deptId+"' ";
+            /**
+             *后台稽查已完成
+             */
+            String htJcYwc = "SELECT COUNT(1) FROM (SELECT DISTINCT CREATE_TIME FROM TIMED_TASK_RECORD WHERE trunc(CREATE_TIME) >= trunc(sysdate)" +
+                    "         and (TASKS=COMPLETE)  AND DEPT_ID = '"+deptId+"'  AND CREATE_TIME != (SELECT max(CREATE_TIME)" +
+                    "   FROM TIMED_TASK_RECORD) ) ";
 
-        //应开始  未开始 统计
+            //应开始  未开始 统计
             //巡视
             String XSViolation = "SELECT count(1)" +
                     "  FROM XS_ZC_TASK" +
@@ -542,22 +542,22 @@ public class TasksService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository
                     "  WHERE STATUS = 0 AND PLAN_START_TIME >= sysdate" +
                     "  AND u.DEPTID = '"+deptId+"' ";
 
-        String sql = "SELECT " +
-                "(" + zcXsWks + ")+(" + bdXsWks + ") as XsWks," +
-                "(" + zcXsJxz + ")+(" + bdXsJxz + ") as XsJxz," +
-                "(" + zcXsYwc + ")+(" + bdXsYwc + ") as XsYwc," +
-                "(" + khJxz + ") as khJxz," +
-                "(" + khWks + ") as khWks, " +
-                "(" + khYwc + ") as khYwc," +
-                "(" + xcJcJxz + ") as xcJcJxz," +
-                "(" + xcJcWks + ") as xcJcWks," +
-                "(" + xcJcYwc + ") as xcJcYwc, " +
-                "(" + htJcWks + ") as htJcWks, " +
-                "(" + htJcYks + ") as htJcyks, " +
-                "(" + htJcYwc + ") as htJcYwc, " +
-                " ( "+ XSViolation +") + ("+KHViolation+") + ("+XCJCViolation+")  as Violation,"+//应开始  未开始
-                " ( "+ XSArrive +")+ ("+KHArrive+") + ("+XCJCArrive+")  as Arrive "+//未到开始时间
-                "  FROM dual";
+            String sql = "SELECT " +
+                    "(" + zcXsWks + ")+(" + bdXsWks + ") as XsWks," +
+                    "(" + zcXsJxz + ")+(" + bdXsJxz + ") as XsJxz," +
+                    "(" + zcXsYwc + ")+(" + bdXsYwc + ") as XsYwc," +
+                    "(" + khJxz + ") as khJxz," +
+                    "(" + khWks + ") as khWks, " +
+                    "(" + khYwc + ") as khYwc," +
+                    "(" + xcJcJxz + ") as xcJcJxz," +
+                    "(" + xcJcWks + ") as xcJcWks," +
+                    "(" + xcJcYwc + ") as xcJcYwc, " +
+                    "(" + htJcWks + ") as htJcWks, " +
+                    "(" + htJcYks + ") as htJcyks, " +
+                    "(" + htJcYwc + ") as htJcYwc, " +
+                    " ( "+ XSViolation +") + ("+KHViolation+") + ("+XCJCViolation+")  as Violation,"+//应开始  未开始
+                    " ( "+ XSArrive +")+ ("+KHArrive+") + ("+XCJCArrive+")  as Arrive "+//未到开始时间
+                    "  FROM dual";
 
             list = this.execSql(sql);
         }catch (Exception e){
