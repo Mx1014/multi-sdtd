@@ -25,6 +25,16 @@ public class CommonController extends CurdController<RztSysUser, CommonService> 
     }
 
     /**
+     * 二级单位通道查询搜索框
+     * @param currentUserId
+     * @param worktype
+     * @return
+     */
+    @GetMapping("checkDepartmentAll")
+    public List<Map<String, Object>> checkDepartmentAll(String currentUserId, Integer worktype) {
+        return this.service.checkDepartmentAll(currentUserId, worktype);
+    }
+    /**
      * 查询稽查人员
      *
      * @param classId

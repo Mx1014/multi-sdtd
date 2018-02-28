@@ -112,7 +112,7 @@ public interface KhYhHistoryRepository extends JpaRepository<KhYhHistory, String
     @Modifying
     @Transactional
     @Query(value = "update KH_TASK SET TASK_NAME=?2 WHERE YH_ID=?1 AND PLAN_START_TIME >=trunc(sysdate)", nativeQuery = true)
-    void updateKhTask(long yhId,String taskName);
+    void updateKhTask(long yhId, String taskName);
 
     @Modifying
     @Transactional
@@ -136,4 +136,9 @@ public interface KhYhHistoryRepository extends JpaRepository<KhYhHistory, String
     @Transactional
     @Query(value = "update CM_TOWER_UPDATE_RECORD SET STATUS=2 WHERE ID=?1", nativeQuery = true)
     void deleteRecord2(long id);
+
+    @Modifying
+    @Query(value = "insert into CHECK_LIVE_SITE(id,TASK_ID,TASK_TYPE,CREATE_TIME,TASK_NAME,STATUS,line_id,TDYW_ORGID,TDWX_ORGID,yh_id)" +
+            "values(?1,?2,?3,sysdate,?4,?5,?6,?7,?8,?9)", nativeQuery = true)
+    void addCheckSite(long l, Long taskId, int i1, String taskName, int i, Long lineId, String tdywOrgId, String wxOrgId, Long id);
 }
