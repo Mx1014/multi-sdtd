@@ -89,7 +89,7 @@ public class CmcoordinateController extends
 
             //5.存一个zset 用来判断在线离线
             setOperations.add("currentUser", myCoordinate.getID(), time);
-//            this.service.add(cmcoordinate);
+            this.service.add(cmcoordinate);
             return WebApiResponse.success("添加成功");
         } catch (Exception e) {
             e.printStackTrace();
