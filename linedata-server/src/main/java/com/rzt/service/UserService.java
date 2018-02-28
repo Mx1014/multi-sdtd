@@ -27,7 +27,6 @@ public class UserService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository>
     protected static Logger LOGGER = LoggerFactory.getLogger(UserService.class);
 
     /**
-     * 二级页
      * 查询各单位在线人数 离线人数  总人数
      * @return
      */
@@ -108,7 +107,6 @@ public class UserService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository>
     }
 
     /**
-     * 一级页面使用
      * 各单位人员离线信息
      * @return
      */
@@ -117,10 +115,7 @@ public class UserService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository>
 
         List listLike = new ArrayList();
         String s = "";
-        String s2 = "";
         String s3 = "";
-        String s4 = "";
-        String s5 = "";
 
         s += " AND z.PLAN_END_TIME >= trunc( SYSDATE ) AND z.PLAN_START_TIME <= trunc(sysdate+1) ";
         s3 += " and to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > z.plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') < z.plan_end_time ";
@@ -133,21 +128,21 @@ public class UserService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository>
         String xs = " SELECT nvl(sum(decode(LOGINSTATUS,1,1,0)),0) xszx," +
                 "  nvl(sum(decode(LOGINSTATUS,0,1,0)),0) xslx,DEPTID FROM (SELECT CM_USER_ID,DEPTID,CLASSNAME,LOGINSTATUS " +
                 " FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID " +
-                " WHERE USERDELETE = 1  AND IS_DELETE=0   " + s + s2 +
+                " WHERE USERDELETE = 1  AND IS_DELETE=0   " + s  +
                 " GROUP BY DEPTID,CM_USER_ID,CLASSNAME,LOGINSTATUS ) GROUP BY DEPTID ";
         String kh = " SELECT nvl(sum(decode(LOGINSTATUS,1,1,0)),0) khzx," +
                 "  nvl(sum(decode(LOGINSTATUS,0,1,0)),0) khlx,DEPTID FROM (SELECT USER_ID,DEPTID,CLASSNAME,LOGINSTATUS " +
                 " FROM RZTSYSUSER r RIGHT JOIN KH_TASK z ON r.ID = z.USER_ID " +
-                " WHERE USERDELETE = 1  " + s + s2 +
+                " WHERE USERDELETE = 1  " + s  +
                 " GROUP BY DEPTID,USER_ID,CLASSNAME,LOGINSTATUS ) GROUP BY DEPTID ";
         String xcjc = " SELECT nvl(sum(decode(LOGINSTATUS,1,1,0)),0) zxjczx," +
                 "  nvl(sum(decode(LOGINSTATUS,0,1,0)),0) zxjclx ,DEPTID FROM (SELECT z.USER_ID AS USERID,DEPTID,CLASSNAME,LOGINSTATUS " +
-                " FROM RZTSYSUSER r RIGHT JOIN CHECK_LIVE_TASK z ON r.ID = z.USER_ID " + s3 + s2 +
+                " FROM RZTSYSUSER r RIGHT JOIN CHECK_LIVE_TASK z ON r.ID = z.USER_ID " + s3  +
                 " WHERE  USERDELETE = 1   GROUP BY z.USER_ID, DEPTID, CLASSNAME, LOGINSTATUS " +
                 " ) GROUP BY DEPTID ";
         List<Map<String, Object>> htlist = new ArrayList<>();
         try {
-            String user = "SELECT * FROM WORKING_TIMED where 1=1 " + s4;
+            String user = "SELECT * FROM WORKING_TIMED where 1=1 " ;
             List<Map<String, Object>> maps = this.execSql(user);
             for (Map map : maps) {
                 Map<String, Object> dept = new HashMap<>();
@@ -183,7 +178,7 @@ public class UserService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository>
         } catch (Exception e) {
             e.printStackTrace();
         }
-        String deptname = " SELECT t.ID,t.DEPTNAME FROM RZTSYSDEPARTMENT t WHERE t.DEPTSORT IS NOT NULL " + s5 + "ORDER BY t.DEPTSORT ";
+        String deptname = " SELECT t.ID,t.DEPTNAME FROM RZTSYSDEPARTMENT t WHERE t.DEPTSORT IS NOT NULL  ORDER BY t.DEPTSORT ";
         List<Map<String, Object>> xsList = this.execSql(xs, listLike.toArray());
         List<Map<String, Object>> khList = this.execSql(kh, listLike.toArray());
         List<Map<String, Object>> xcjcList = this.execSql(xcjc, listLike.toArray());
@@ -273,58 +268,7 @@ public class UserService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository>
             return WebApiResponse.erro("");
         }
     }
-    /**
-     * 三级页面使用
-     * 各单位人员离线信息
-     * @return
-     */
-    public WebApiResponse findUserInfoThree(String id){
-        if(null == id || "".equals(id)){
-            return WebApiResponse.erro("参数错误   deptId = "+id);
-        }
-        ArrayList<Object> objects = new ArrayList<>();
-        objects.add(id);
-        HashMap<String, Object> obj = new HashMap<>();
 
-        try {
-            //饼状图sql
-            String sql = "   SELECT (SELECT count(1) FROM RZTSYSUSER u WHERE u.LOGINSTATUS = 0 AND u.USERDELETE = 1 AND u.WORKTYPE  != 5 AND  DEPTID =?1) AS OFF_LINE," +
-                    "  (SELECT count(1) FROM RZTSYSUSER u WHERE u.LOGINSTATUS = 1 AND u.USERDELETE = 1 AND u.WORKTYPE  != 5 AND  DEPTID =?1) AS LOGIN," +
-                    "  (SELECT count(1) FROM RZTSYSUSER  WHERE (WORKTYPE = 5 OR USERDELETE = 0) AND  DEPTID =?1) AS DELORADMIN," +
-                    "  (SELECT count(1) FROM RZTSYSUSER WHERE DEPTID =?1) AS SUM" +
-                    "   FROM dual";
-
-            //看护
-                String infoSql = "   SELECT (SELECT count(1) FROM RZTSYSUSER u WHERE u.LOGINSTATUS = 0 AND u.USERDELETE = 1 AND u.WORKTYPE  = 1 AND  DEPTID = ?1) AS KHOFF_LINE," +
-                        "  (SELECT count(1) FROM RZTSYSUSER u WHERE u.LOGINSTATUS = 1 AND u.USERDELETE = 1 AND u.WORKTYPE   = 1 AND  DEPTID = ?1) AS KHLOGIN," +
-                        "  (SELECT count(1) FROM RZTSYSUSER WHERE DEPTID = ?1 AND WORKTYPE   = 1 ) AS KHSUM," +
-                        //巡视
-                        "  (SELECT count(1) FROM RZTSYSUSER u WHERE u.LOGINSTATUS = 0 AND u.USERDELETE = 1 AND u.WORKTYPE  = 2 AND  DEPTID = ?1) AS XSOFF_LINE," +
-                        "  (SELECT count(1) FROM RZTSYSUSER u WHERE u.LOGINSTATUS = 1 AND u.USERDELETE = 1 AND u.WORKTYPE   = 2 AND  DEPTID = ?1) AS XSLOGIN," +
-                        "  (SELECT count(1) FROM RZTSYSUSER WHERE DEPTID = ?1 AND WORKTYPE   = 2 ) AS XSSUM," +
-                        //现场稽查
-                        "  (SELECT count(1) FROM RZTSYSUSER u WHERE u.LOGINSTATUS = 0 AND u.USERDELETE = 1 AND u.WORKTYPE  = 3 AND  DEPTID = ?1) AS QTJCOFF_LINE," +
-                        "  (SELECT count(1) FROM RZTSYSUSER u WHERE u.LOGINSTATUS = 1 AND u.USERDELETE = 1 AND u.WORKTYPE   = 3  AND  DEPTID = ?1) AS QTJCLOGIN," +
-                        "  (SELECT count(1) FROM RZTSYSUSER WHERE DEPTID = ?1 AND WORKTYPE   = 3) AS QTJCSUM," +
-                        //后台稽查
-                        "  (SELECT count(1) FROM RZTSYSUSER u WHERE u.LOGINSTATUS = 0 AND u.USERDELETE = 1 AND u.WORKTYPE  = 4 AND  DEPTID = ?1) AS HTJCOFF_LINE," +
-                        "  (SELECT count(1) FROM RZTSYSUSER u WHERE u.LOGINSTATUS = 1 AND u.USERDELETE = 1 AND u.WORKTYPE  = 4  AND  DEPTID = ?1) AS HTJCLOGIN," +
-                        "  (SELECT count(1) FROM RZTSYSUSER WHERE DEPTID = ?1 AND WORKTYPE  = 4 ) AS HTJCSUM," +
-                        //删除 或领导数
-                        "  (SELECT count(1) FROM RZTSYSUSER  WHERE (WORKTYPE = 5 OR USERDELETE = 0) AND  DEPTID = ?1) AS DELORADMIN" +
-                        "       FROM dual";
-                Map<String, Object> map1 = this.execSqlSingleResult(sql, objects.toArray());
-                obj.put("id", id);
-                obj.put("sum", map1);
-            Map<String, Object> map = this.execSqlSingleResult(infoSql, objects.toArray());
-            obj.put("values",map);
-        } catch (Exception e){
-            LOGGER.error("各单位人员离线信息查询失败"+e.getMessage());
-            return WebApiResponse.erro("各单位人员离线信息查询失败"+e.getMessage());
-        }
-        LOGGER.info("各单位人员离线信息查询成功");
-        return WebApiResponse.success(obj);
-    }
 
     /**
      * 四级页面  查看当前单位所有人 关联任务
@@ -332,18 +276,47 @@ public class UserService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository>
      * @param loginStatus  在线状态
      * @return
      */
-    public WebApiResponse findUserAndTask(Integer page,Integer size,String deptId,String loginStatus ){
+    public WebApiResponse findUserAndTask(Integer page,Integer size,String deptId,String loginStatus,String condition ){
         Page<Map<String, Object>> maps = null;
+        Map<String, Object> htjcMap = null;
         try {
             Pageable pageable = new PageRequest(page, size);
-            String sql = "     SELECT u.ID AS USERID,k.ID AS TASKID ,k.TASK_NAME,k.REAL_START_TIME,k.CREATE_TIME,u.WORKTYPE,u.REALNAME" +
+
+            //   查询  当前值班后台稽查人id
+            String user = "SELECT * FROM WORKING_TIMED where 1=1  AND DEPT_ID='"+deptId+"' " ;
+            htjcMap = this.execSqlSingleResult(user);
+            Map<String, Object> dept = new HashMap<>();
+
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+            String format = formatter.format(new Date());
+            String s1 = format + " 00:00:00";
+            String userId = "";
+            String start = htjcMap.get("START_TIME").toString();
+            String end = htjcMap.get("END_TIME").toString();
+            Date nowDate = DateUtil.getNowDate();
+            if (nowDate.getTime() >= DateUtil.addDate(DateUtil.parseDate(s1), Double.parseDouble(start)).getTime() && nowDate.getTime() <= DateUtil.addDate(DateUtil.parseDate(s1), Double.parseDouble(end)).getTime()) {
+                userId = htjcMap.get("DAY_USER").toString();
+            } else {
+                userId = htjcMap.get("NIGHT_USER").toString();
+            }
+            String[] split = userId.split(",");
+            String userID = "";
+            for (String s : split) {
+                if(null != s && !"".equals(s)){
+                    userID += "," + "'" + s + "'";
+                }
+            }
+            if(null != userID && userID.length() > 0){
+                userID = userID.substring(1,userID.length());
+            }
+            String sql = "   SELECT * from (  SELECT u.ID AS USERID,k.ID AS TASKID ,k.TASK_NAME,k.REAL_START_TIME,k.CREATE_TIME,u.WORKTYPE,u.REALNAME,u.AVATAR" +
                     "      FROM RZTSYSUSER u" +
                     "        LEFT JOIN KH_TASK k ON k.USER_ID = u.ID" +
                     "      WHERE u.LOGINSTATUS = '"+loginStatus+"' AND u.USERDELETE = 1 AND u.WORKTYPE  = 1 AND  DEPTID = '"+deptId+"'" +
                     "            AND k.REAL_START_TIME = (SELECT max(kh.REAL_START_TIME) FROM KH_TASK kh" +
                     "      WHERE kh.USER_ID = u.ID AND  kh.STATUS != 0 AND kh.STATUS !=4) AND k.ID IS NOT NULL" +
                     "          UNION ALL" +
-                    "      SELECT u.ID AS USERID,t.ID AS TASKID ,t.TASK_NAME,t.REAL_START_TIME,t.PD_TIME AS CREATE_TIME,u.WORKTYPE,u.REALNAME" +
+                    "      SELECT u.ID AS USERID,t.ID AS TASKID ,t.TASK_NAME,t.REAL_START_TIME,t.PD_TIME AS CREATE_TIME,u.WORKTYPE,u.REALNAME,u.AVATAR" +
                     "      FROM RZTSYSUSER u" +
                     "        LEFT JOIN XS_ZC_TASK t ON t.CM_USER_ID = u.ID" +
                     "        WHERE u.LOGINSTATUS =  '"+loginStatus+"'  AND u.USERDELETE = 1 AND u.WORKTYPE  = 2" +
@@ -351,7 +324,7 @@ public class UserService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository>
                     "              AND t.REAL_START_TIME = (SELECT max(kh.REAL_START_TIME) FROM XS_ZC_TASK kh WHERE kh.CM_USER_ID = u.ID" +
                     "              AND kh.STAUTS != 0 AND kh.IS_DELETE != 1)" +
                     "          UNION ALL" +
-                    "      SELECT u.ID AS USERID,t.ID AS TASKID ,t.TASK_NAME,c.REAL_START_TIME,t.CREATE_TIME,u.WORKTYPE,u.REALNAME" +
+                    "      SELECT u.ID AS USERID,t.ID AS TASKID ,t.TASK_NAME,c.REAL_START_TIME,t.CREATE_TIME,u.WORKTYPE,u.REALNAME,u.AVATAR" +
                     "      FROM RZTSYSUSER u" +
                     "        LEFT JOIN CHECK_LIVE_TASK t ON t.USER_ID = u.ID LEFT JOIN CHECK_LIVE_TASK_DETAIL c ON c.TASK_ID = t.ID" +
                     "      WHERE u.LOGINSTATUS =  '"+loginStatus+"'  AND u.USERDELETE = 1 AND u.WORKTYPE  = 5" +
@@ -360,8 +333,13 @@ public class UserService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository>
                     "      WHERE kh.USER_ID = u.ID AND kh.STATUS != 0 AND kh.STATUS != 4)" +
                     "        UNION ALL" +
                     "      SELECT u.ID AS USERID,1 AS TASKID,(select concat(u.REALNAME,'后台稽查任务') from dual) AS TASK_NAME" +
-                    "      ,u.CREATETIME AS REAL_START_TIME,u.CREATETIME AS CREATE_TIME,u.WORKTYPE,u.REALNAME" +
-                    "      FROM RZTSYSUSER u WHERE u.WORKTYPE = 4 AND u.DEPTID = '"+deptId+"' AND u.LOGINSTATUS =  '"+loginStatus+"'  AND u.USERDELETE = 1  ";
+                    "      ,u.CREATETIME AS REAL_START_TIME,u.CREATETIME AS CREATE_TIME,u.WORKTYPE,u.REALNAME,u.AVATAR" +
+                    "      FROM RZTSYSUSER u WHERE u.WORKTYPE = 4 AND u.DEPTID = '"+deptId+"' AND u.LOGINSTATUS =  '"+loginStatus+"'  AND u.USERDELETE = 1  " +
+                    "           AND ( u.REALNAME LIKE '%白班%'   OR   u.REALNAME LIKE '%夜班%') AND u.ID IN ("+userID+") ) where 1=1 ";
+
+            if( null != condition && !"".equals(condition)){
+                sql += "  AND ( TASK_NAME like '%"+condition.trim()+"%'  OR  REALNAME like '%"+condition.trim()+"%'  )";
+            }
 
             maps = this.execSqlPage(pageable, sql, null);
 
@@ -384,7 +362,7 @@ public class UserService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository>
         }
         Map<String, Object> map = null;
         try {
-            String sql = "   SELECT u.DEPTID,u.LOGINSTATUS,u.WORKTYPE,u.ID,u.REALNAME,u.PHONE,d.DEPTNAME,dd.DEPTNAME GROUPNAME,com.COMPANYNAME,ddd.DEPTNAME AS DW,u.CERTIFICATE" +
+            String sql = "   SELECT u.DEPTID,u.LOGINSTATUS,u.WORKTYPE,u.ID as USERID,u.REALNAME,u.PHONE,d.DEPTNAME,dd.DEPTNAME GROUPNAME,com.COMPANYNAME,ddd.DEPTNAME AS DW,u.CERTIFICATE,u.AVATAR" +
                     "  FROM RZTSYSUSER u" +
                     "  LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID" +
                     "  LEFT JOIN RZTSYSDEPARTMENT dd ON dd.ID = u.GROUPID" +
@@ -393,24 +371,24 @@ public class UserService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository>
                     "   WHERE u.ID = '"+userId+"'";
             map = this.execSqlSingleResult(sql);
             if(null != map){
-                String worktype = (String) map.get("WORKTYPE");
+                String worktype = map.get("WORKTYPE").toString();
                 if(null != worktype && !"".equals(worktype)){
                     String taskSql = "";
                     if("1".equals(worktype)){//看护
-                         taskSql = "   SELECT k.ID,k.TASK_NAME," +
-                                "  (SELECT COUNT(1) FROM KH_TASK kh WHERE kh.USER_ID = '"+userId+"') AS sum" +
+                         taskSql = "   SELECT k.ID as TASKID,k.TASK_NAME," +
+                                "  (SELECT COUNT(1) FROM KH_TASK kh WHERE kh.USER_ID = '"+userId+"'  ) AS sum" +
                                 "  FROM KH_TASK k WHERE k.USER_ID = '"+userId+"'" +
                                 "  AND k.REAL_START_TIME =" +
                                 "      (SELECT max(kk.REAL_START_TIME) FROM KH_TASK kk WHERE kk.USER_ID = '"+userId+"')";
                     }
                     if("2".equals(worktype)){//巡视
-                         taskSql = "   SELECT x.ID,x.TASK_NAME," +
+                         taskSql = "   SELECT x.ID  as TASKID,x.TASK_NAME," +
                                 "  (SELECT count(1) FROM XS_ZC_TASK xz WHERE xz.CM_USER_ID = '"+userId+"') AS sum" +
                                 "   FROM XS_ZC_TASK x WHERE x.CM_USER_ID = '"+userId+"' AND x.REAL_START_TIME =" +
                                 "   (SELECT max(xs.REAL_START_TIME) FROM XS_ZC_TASK xs WHERE xs.CM_USER_ID = '"+userId+"')";
                     }
                     if("3".equals(worktype)){//现场稽查
-                         taskSql = "   SELECT c.ID,c.TASK_NAME," +
+                         taskSql = "   SELECT c.ID  as TASKID,c.TASK_NAME," +
                                 "  (SELECT count(1) FROM CHECK_LIVE_TASK ccc WHERE ccc.USER_ID = '"+userId+"') AS sum" +
                                 "   FROM CHECK_LIVE_TASK c WHERE c.USER_ID = '"+userId+"'" +
                                 "  AND c.REAL_START_TIME = (SELECT max(cc.REAL_START_TIME) FROM CHECK_LIVE_TASK cc WHERE cc.USER_ID = '"+userId+"')";
@@ -434,178 +412,149 @@ public class UserService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository>
     }
 
 
-    public WebApiResponse aaa(){
-        /**
-         * 巡视在线人员
-         */
-        String xsZxUser = " SELECT count(1) " +
-                "FROM (SELECT z.CM_USER_ID " +
-                "      FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID " +
-                "      WHERE LOGINSTATUS = 1 AND USERDELETE = 1 AND z.PLAN_START_TIME< = sysdate AND z.PLAN_END_TIME >= sysdate " +
-                "      GROUP BY z.CM_USER_ID) ";
-        /**
-         * 巡视离线人员
-         */
-        String xsLxUser = " SELECT count(1) FROM (SELECT z.CM_USER_ID " +
-                "  FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID " +
-                "  WHERE LOGINSTATUS = 0 AND USERDELETE = 1  AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= sysdate " +
-                "  GROUP BY z.CM_USER_ID) ";
-        /**
-         * 看护在线人员
-         */
-        String khZxUser = " SELECT count(1)FROM (SELECT count(u.ID) " +
-                "FROM RZTSYSUSER u LEFT JOIN KH_TASK k ON u.ID = k.USER_ID " +
-                "WHERE LOGINSTATUS = 1 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= sysdate " +
-                "GROUP BY k.USER_ID) ";
-        /**
-         * 看护离线人员
-         */
-        String khLxUser = " SELECT count(1)FROM (SELECT count(u.ID) " +
-                "FROM RZTSYSUSER u LEFT JOIN KH_TASK k ON u.ID = k.USER_ID " +
-                "WHERE LOGINSTATUS = 0 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= sysdate " +
-                "GROUP BY k.USER_ID) ";
-
-        /**
-         * 前台稽查在线人员
-         */
-        String qjcZxUser = " SELECT count(1) FROM (SELECT " +
-                "    count(1) " +
-                "  FROM CHECK_LIVE_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID " +
-                "  WHERE u.LOGINSTATUS = 1 AND u.USERDELETE = 1 AND sysdate BETWEEN PLAN_START_TIME AND PLAN_END_TIME GROUP BY k.USER_ID) ";
-        /**
-         * 前台稽查离线人员
-         */
-        String qjcLxUser = " SELECT count(1) FROM (SELECT " +
-                "    count(1) " +
-                "  FROM CHECK_LIVE_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID " +
-                "  WHERE u.LOGINSTATUS = 0 AND u.USERDELETE = 1 AND sysdate BETWEEN PLAN_START_TIME AND PLAN_END_TIME GROUP BY k.USER_ID) ";
-
-        /**
-         * 后台稽查在线人员
-         */
-        String hjcZxUser = " SELECT count(id)  FROM RZTSYSUSER WHERE LOGINSTATUS = 1 AND WORKTYPE = 4 AND USERDELETE = 1  AND USERTYPE=0 ";
-        /**
-         * 后台稽查离线人员
-         */
-        String hjcLxUser = " SELECT count(id)  FROM RZTSYSUSER WHERE LOGINSTATUS = 0 AND WORKTYPE = 4 AND USERDELETE = 1  AND USERTYPE=0 ";
 
 
-        /**
-         * 正常巡视未开始
-         */
-        String zcXsWks = "SELECT count(1)  " +
-                "FROM XS_ZC_TASK " +
-                "WHERE STAUTS = 0 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
-        /**
-         * 保电巡视未开始
-         */
-        String bdXsWks = "SELECT count(1)  " +
-                "FROM XS_TXBD_TASK " +
-                "WHERE STAUTS = 0 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
-        /**
-         * 看护未开始
-         */
-        String khWks = "SELECT count(1)  " +
-                "FROM KH_TASK " +
-                "WHERE STATUS = 0 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
-        /**
-         * 现场稽查未开始
-         */
-        String xcJcWks = "SELECT count(1)  " +
-                "FROM CHECK_LIVE_TASK " +
-                "WHERE STATUS = 0 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
-        /**
-         * 正常巡视进行中
-         */
-        String zcXsJxz = "SELECT count(1)  " +
-                "FROM XS_ZC_TASK " +
-                "WHERE STAUTS = 1 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
-        /**
-         * 保电巡视进行中
-         */
-        String bdXsJxz = "SELECT count(1)  " +
-                "FROM XS_TXBD_TASK " +
-                "WHERE STAUTS = 1 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
-        /**
-         * 看护进行中
-         */
-        String khJxz = "SELECT count(1)  " +
-                "FROM KH_TASK " +
-                "WHERE STATUS = 1 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
-        /**
-         * 现场稽查进行中
-         */
-        String xcJcJxz = "SELECT count(1)  " +
-                "FROM CHECK_LIVE_TASK " +
-                "WHERE STATUS = 1 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
-        /**
-         * 正常巡视已完成
-         */
-        String zcXsYwc = "SELECT count(1)  " +
-                "FROM XS_ZC_TASK " +
-                "WHERE STAUTS = 2 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
-        /**
-         * 保电巡视已完成
-         */
-        String bdXsYwc = "SELECT count(1)  " +
-                "FROM XS_TXBD_TASK " +
-                "WHERE STAUTS = 2 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
-        /**
-         * 看护已完成
-         */
-        String khYwc = "SELECT count(1)  " +
-                "FROM KH_TASK " +
-                "WHERE STATUS = 2 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
-        /**
-         *现场稽查已完成
-         */
-        String xcJcYwc = "SELECT count(1)  " +
-                "FROM CHECK_LIVE_TASK " +
-                "WHERE STATUS = 2 AND trunc(PLAN_START_TIME) = trunc(sysdate)";
-        /**
-         * 今日治理隐患
-         */
-        String handlesql = "SELECT COUNT(*)  FROM KH_YH_HISTORY WHERE trunc(YHXQ_TIME) =trunc(sysdate)";
-        /**
-         * 今日新增隐患
-         */
-        String addedsql = "SELECT COUNT(*)  FROM KH_YH_HISTORY WHERE trunc(create_time) =trunc(sysdate)";
-        /**
-         * 今日调整隐患
-         */
-        String updateSql = "SELECT COUNT(*)  FROM KH_YH_HISTORY WHERE trunc(update_time) =trunc(sysdate)";
-        /**
-         * 隐患总数
-         */
-        String allSql = "select count(*)  from kh_yh_history where yhzt=0";
-        //遍历Map取出通道单位id用于数据库查询权限
-            String sql = "SELECT " +
-//                    "(" + zxUser + ") as zxUser," +
-//                    "(" + lxUser + ") as lxUser," +
-                    "(" + xsZxUser + ") as xsZxUser," +
-                    "(" + xsLxUser + ") as xsLxUser," +
-                    "(" + khZxUser + ") as khZxUser," +
-                    "(" + khLxUser + ") as khLxUser, " +
-                    "(" + zcXsWks + ")+(" + bdXsWks + ") as XsWks," +
-                    "(" + zcXsJxz + ")+(" + bdXsJxz + ") as XsJxz," +
-                    "(" + zcXsYwc + ")+(" + bdXsYwc + ") as XsYwc," +
-                    "(" + khJxz + ") as khJxz," +
-                    "(" + khWks + ") as khWks, " +
-                    "(" + khYwc + ") as khYwc," +
-                    "(" + xcJcJxz + ") as xcJcJxz," +
-                    "(" + xcJcWks + ") as xcJcWks," +
-                    "(" + xcJcYwc + ") as xcJcYwc," +
-                    "(" + qjcZxUser + ") as qjcZxUser," +
-                    "(" + qjcLxUser + ") as qjcLxUser," +
-                    "(" + hjcZxUser + ") as hjcZxUser," +
-                    "(" + hjcLxUser + ") as hjcLxUser, " +
-                    "(" + handlesql + ") as handlesql," +
-                    "(" + addedsql + ") as addedsql," +
-                    "(" + updateSql + ") as updateSql," +
-                    "(" + allSql + ") as ALLSQL " +
-                    " FROM dual";
-            return WebApiResponse.success(this.execSql(sql));
+    /**
+     * 单位详情页
+     * @return
+     */
+    public WebApiResponse findUserInByDept(String deptid) {
+        //后台稽查计数使用
+        int a = 0;
+        int b = 0;
+
+        Map<String, Object> xsMap =   null;
+        Map<String, Object> khMap =   null;
+        Map<String, Object> xcjcMap = null;
+        Map<String, Object> htjcMap = null;
+        String xs = " SELECT nvl(sum(decode(LOGINSTATUS,1,1,0)),0) xszx," +
+                "  nvl(sum(decode(LOGINSTATUS,0,1,0)),0) xslx,DEPTID FROM (SELECT CM_USER_ID,DEPTID,CLASSNAME,LOGINSTATUS " +
+                " FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID " +
+                " WHERE USERDELETE = 1  AND IS_DELETE=0   AND r.DEPTID='"+deptid+"'  " +
+                " GROUP BY DEPTID,CM_USER_ID,CLASSNAME,LOGINSTATUS ) GROUP BY DEPTID ";
+        String kh = " SELECT nvl(sum(decode(LOGINSTATUS,1,1,0)),0) khzx," +
+                "  nvl(sum(decode(LOGINSTATUS,0,1,0)),0) khlx,DEPTID FROM (SELECT USER_ID,DEPTID,CLASSNAME,LOGINSTATUS" +
+                " FROM RZTSYSUSER r RIGHT JOIN KH_TASK z ON r.ID = z.USER_ID" +
+                " WHERE USERDELETE = 1  AND r.DEPTID='"+deptid+"'" +
+                " GROUP BY DEPTID,USER_ID,CLASSNAME,LOGINSTATUS ) GROUP BY DEPTID ";
+        String xcjc = "SELECT nvl(sum(decode(LOGINSTATUS,1,1,0)),0) zxjczx," +
+                "  nvl(sum(decode(LOGINSTATUS,0,1,0)),0) zxjclx ,DEPTID FROM (SELECT z.USER_ID AS USERID,DEPTID,CLASSNAME,LOGINSTATUS" +
+                " FROM RZTSYSUSER r RIGHT JOIN CHECK_LIVE_TASK z ON r.ID = z.USER_ID" +
+                " WHERE  USERDELETE = 1   AND r.DEPTID='"+deptid+"'  GROUP BY z.USER_ID, DEPTID, CLASSNAME, LOGINSTATUS" +
+                " ) GROUP BY DEPTID";
+        try {
+            String user = "SELECT * FROM WORKING_TIMED where 1=1  AND DEPT_ID='"+deptid+"' " ;
+            htjcMap = this.execSqlSingleResult(user);
+                Map<String, Object> dept = new HashMap<>();
+
+                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+                String format = formatter.format(new Date());
+                String s1 = format + " 00:00:00";
+                String userId = "";
+                String start = htjcMap.get("START_TIME").toString();
+                String end = htjcMap.get("END_TIME").toString();
+                Date nowDate = DateUtil.getNowDate();
+                if (nowDate.getTime() >= DateUtil.addDate(DateUtil.parseDate(s1), Double.parseDouble(start)).getTime() && nowDate.getTime() <= DateUtil.addDate(DateUtil.parseDate(s1), Double.parseDouble(end)).getTime()) {
+                    userId = htjcMap.get("DAY_USER").toString();
+                } else {
+                    userId = htjcMap.get("NIGHT_USER").toString();
+                }
+                String[] split = userId.split(",");
+                for (int i = 0; i < split.length; i++) {
+                    String sql = "SELECT LOGINSTATUS status FROM RZTSYSUSER where id=?";
+                    Map<String, Object> status = this.execSqlSingleResult(sql, split[i]);
+                    if (status.get("STATUS").toString().equals("1")) {
+                        a++;
+                    } else {
+                        b++;
+                    }
+                }
+                dept.put("htzx", a);
+                dept.put("htlx", b);
+
+
+            xsMap = this.execSql(xs).size()==0?new HashedMap():this.execSql(xs).get(0);
+            khMap = this.execSql(kh).size()==0?new HashedMap():this.execSql(kh).get(0);
+            xcjcMap = this.execSql(xcjc).size()==0?new HashedMap():this.execSql(xcjc).get(0);
+
+
+
+
+
+            int XSZX = Integer.parseInt(xsMap.get("XSZX")==null?"0":xsMap.get("XSZX").toString());
+            int KHZX = Integer.parseInt(khMap.get("KHZX")==null?"0":khMap.get("KHZX").toString());
+            int ZXJCZX = Integer.parseInt(xcjcMap.get("ZXJCZX")==null?"0":xcjcMap.get("ZXJCZX").toString());
+            int HTJCZX =a;
+
+            int XSLX = Integer.parseInt(xsMap.get("XSLX")==null?"0":xsMap.get("XSLX").toString());
+            int KHLX = Integer.parseInt(khMap.get("KHLX")==null?"0":khMap.get("KHLX").toString());
+            int ZXJCLX = Integer.parseInt(xcjcMap.get("ZXJCLX")==null?"0":xcjcMap.get("ZXJCLX").toString());
+            int HTJCLX = b;
+
+
+            HashMap<String, Object> hashMap = new HashMap<>();
+
+            int LOGIN = XSZX + KHZX + ZXJCZX + HTJCZX;
+            int OFF_LINE =  XSLX + KHLX + ZXJCLX + HTJCLX ;
+            hashMap.put("SUM", LOGIN + OFF_LINE);
+            hashMap.put("LOGIN", LOGIN);
+            hashMap.put("OFF_LINE", OFF_LINE);
+
+            hashMap.put("XSZX", XSZX);
+            hashMap.put("XSLX", XSLX);
+            hashMap.put("KHZX", KHZX);
+            hashMap.put("KHLX", KHLX);
+            hashMap.put("ZXJCZX", ZXJCZX);
+            hashMap.put("ZXJCLX", ZXJCLX);
+            hashMap.put("HTJCZX", HTJCZX);
+            hashMap.put("HTJCLX", HTJCLX);
+
+            return WebApiResponse.success(hashMap);
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage());
+            return WebApiResponse.erro(e.getMessage());
+        }
     }
 
 
+    public WebApiResponse findUserPic(String userId) {
+        String sql = "SELECT AVATAR FROM RZTSYSUSER WHERE ID = '"+userId+"' ";
+        try {
+            Map<String, Object> map = this.execSqlSingleResult(sql);
+            return WebApiResponse.success(map);
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage());
+            return WebApiResponse.erro(e.getMessage());
+        }
+
+    }
+
+    public WebApiResponse getDayUser(String deptId) {
+
+        try {
+            String sql = "SELECT (" +
+                    "  (SELECT count(1) FROM (" +
+                    //巡视今日应执行任务人数
+                    "    SELECT count(1) FROM XS_ZC_TASK x LEFT JOIN RZTSYSUSER u ON u.ID=x.CM_USER_ID" +
+                    "    WHERE u.DEPTID='"+deptId+"' AND trunc(x.PLAN_START_TIME) = trunc(sysdate)" +
+                    "    GROUP BY u.ID)) +" +
+                    //看护今日应执行任务人数
+                    "  (SELECT COUNT(1) FROM (SELECT count(k.USER_ID)" +
+                    "                         FROM KH_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID" +
+                    "                         where  u.DEPTID='"+deptId+"' AND trunc(k.PLAN_START_TIME) = trunc(sysdate)" +
+                    "                         GROUP BY k.USER_ID))+" +
+                    //现场稽查今日应执行任务人数
+                    "  (SELECT COUNT(1) FROM (SELECT count(c.USER_ID) FROM CHECK_LIVE_TASK c LEFT JOIN RZTSYSUSER u ON u.ID = c.USER_ID" +
+                    "  where  u.DEPTID= '"+deptId+"' AND trunc(c.PLAN_START_TIME) = trunc(sysdate)" +
+                    "  GROUP BY c.USER_ID)) +6" +// 后台稽查人
+                    "   ) AS sum FROM dual";
+            Map<String, Object> map = this.execSqlSingleResult(sql);
+            return  WebApiResponse.success(map.get("SUM"));
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage());
+            return WebApiResponse.erro(e.getMessage());
+        }
+
+
+    }
 }
