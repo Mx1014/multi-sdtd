@@ -83,6 +83,16 @@ public class TaskController extends CurdController<KHYHHISTORY,TasksService>  {
         return tasksService.findTaskInfoByTaskId(taskType,taskId,deptId,realTime);
     }
 
+    /**
+     * 根据任务id和任务类型 查询当前任务的图片
+     * @param taskId
+     * @param taskType
+     * @return
+     */
+    @GetMapping("/findPicByTaskId")
+    public WebApiResponse findPicByTaskId(String taskId,String taskType,Integer page,Integer size){
+        return tasksService.findPicByTaskId(taskId,taskType,page,size);
 
+    }
 
 }
