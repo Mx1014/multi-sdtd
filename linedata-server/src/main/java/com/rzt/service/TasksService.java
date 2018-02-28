@@ -1,5 +1,6 @@
 package com.rzt.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.KHYHHISTORY;
 import com.rzt.repository.KHYHHISTORYRepository;
 import com.rzt.util.WebApiResponse;
@@ -7,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -38,21 +40,31 @@ public class TasksService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository
         }
         PageRequest pageRequest = new PageRequest(page, size);
         // SELECT AVATAR FROM RZTSYSUSER WHERE ID = '"+userId+"'
+        /**
+         * 任务有周期  按照周期内查询
+         */
         String sql = "    SELECT * FROM (" +
                 //巡视
-                "  SELECT to_char(x.ID) AS TASKID,x.STAUTS AS STATUS,x.TASK_NAME,x.REAL_START_TIME,u.REALNAME,u.WORKTYPE,u.DEPTID AS DEPT,u.ID userID,u.AVATAR" +
+                "  SELECT to_char(x.ID) AS TASKID,x.STAUTS AS STATUS,x.TASK_NAME,x.REAL_START_TIME,u.REALNAME,u.WORKTYPE,u.DEPTID AS DEPT,u.ID userID,u.AVATAR,x.PLAN_END_TIME,x.PLAN_START_TIME" +
                 "  FROM XS_ZC_TASK x LEFT JOIN RZTSYSUSER u  ON u.ID = x.CM_USER_ID" +
-                "  WHERE trunc(x.REAL_START_TIME) = trunc(sysdate)" +
+                "  WHERE  u.DEPTID = '"+deptId+"' " +
                 "  UNION ALL" +
                 //看护
-                "  SELECT to_char(k.ID) AS TASKID,k.STATUS,k.TASK_NAME,k.REAL_START_TIME,u.REALNAME,u.WORKTYPE,u.DEPTID AS DEPT,u.ID userID,u.AVATAR" +
-                "  FROM KH_TASK k LEFT JOIN RZTSYSUSER u ON u.ID = k.USER_ID" +
-                "  WHERE trunc(k.REAL_START_TIME) = trunc(sysdate)" +
+                "  SELECT to_char(k.ID) AS TASKID,k.STATUS as STATUS,k.TASK_NAME,k.REAL_START_TIME,u.REALNAME,u.WORKTYPE,u.DEPTID AS DEPT,u.ID userID,u.AVATAR,k.PLAN_END_TIME,k.PLAN_START_TIME " +
+                "   FROM KH_TASK k LEFT JOIN RZTSYSUSER u ON u.ID = k.USER_ID " +
+                "    WHERE  YWORG_ID = '"+deptId+"' " +
                 //现场稽查
                 "  UNION ALL" +
-                "  select to_char(t.id) AS TASKID,t.STATUS,t.TASK_NAME,t.PLAN_START_TIME,u.REALNAME,u.WORKTYPE,u.DEPTID AS DEPT,u.ID userID,u.AVATAR" +
+                "  select to_char(t.id) AS TASKID,t.STATUS as STATUS,t.TASK_NAME,t.PLAN_START_TIME,u.REALNAME,u.WORKTYPE,u.DEPTID AS DEPT,u.ID userID,u.AVATAR,t.PLAN_END_TIME,t.PLAN_START_TIME" +
                 "  from CHECK_LIVE_TASK t" +
-                "    LEFT JOIN  rztsysuser u on u.id=t.USER_ID WHERE trunc(t.PLAN_START_TIME) = trunc(sysdate)" +
+                "    LEFT JOIN  rztsysuser u on u.id=t.USER_ID WHERE " +
+                "      u.DEPTID = '"+deptId+"' " +
+
+
+//                SELECT count(1)  " +
+//        "FROM KH_TASK " +
+//                "WHERE STATUS = 1 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)
+
                 //"  UNION ALL" +
                /* //后台稽查
                 "   SELECT t.ID AS TASKID,CASE  WHEN (t.TASKS = COMPLETE) THEN 2 WHEN (t.COMPLETE <t.TASKS) THEN 1 WHEN (t.COMPLETE = 0) THEN 0 END AS STATUS" +
@@ -71,10 +83,16 @@ public class TasksService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository
                 "  FROM TIMED_TASK_RECORD t LEFT JOIN WORKING_TIMED w ON w.DEPT_ID = t.DEPT_ID" +
                 "  WHERE trunc(t.CHECK_TIME) = trunc(sysdate)" +*/
 
-                "  ) WHERE  STATUS = '"+flag+"'";
-        if(null != deptId && !"".equals(deptId)){
-            sql += "  AND DEPT = '"+deptId+"'";
-        }
+                "  ) WHERE  STATUS = '"+flag+"'  AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate) ";
+
+
+
+              /*  if(!"2".equals(flag)){
+                    sql += "  AND trunc(t.PLAN_START_TIME) = trunc(sysdate)";
+                }else{
+                    sql += "  AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
+                }
+*/
         if(null != condition  && !"".equals(condition)){
             sql += "  AND ( TASK_NAME like '%"+condition.trim()+"%'  OR  REALNAME like '%"+condition.trim()+"%'  )";
         }
@@ -568,6 +586,47 @@ public class TasksService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository
 
     }
 
-
-
+    /**
+     * 获取当前任务图片
+     * @param taskId
+     * @param taskType
+     * @param page
+     * @param size
+     * @return
+     */
+    public WebApiResponse findPicByTaskId(String taskId,String taskType,Integer page,Integer size) {
+        if(null == taskId || "".equals(taskId)) {
+            return WebApiResponse.erro("参数无效TaskId="+taskId);
+        }
+        if(null == taskType || "".equals(taskType)) {
+            return WebApiResponse.erro("参数无效taskType="+taskType);
+        }
+        try {
+            Pageable pageable = new PageRequest(page, size);
+            if(null != taskType && !"".equals(taskType)){
+                String sql = "";
+                if("2".equals(taskType)){//巡视   AND END_TOWER_ID = 0
+                    //巡视图片查询
+                     sql = "SELECT p.ID,FILE_PATH,p.CREATE_TIME,p.PROCESS_NAME,l.OPERATE_NAME,l.START_TOWER_ID" +
+                            "     FROM xs_zc_task k LEFT JOIN XS_ZC_TASK_EXEC x ON k.ID = x.XS_ZC_TASK_ID" +
+                            "      LEFT JOIN XS_ZC_TASK_EXEC_DETAIL l ON x.ID = l.XS_ZC_TASK_EXEC_ID RIGHT JOIN PICTURE_TOUR p ON l.ID = p.PROCESS_ID" +
+                            "       WHERE p.TASK_ID = '"+taskId+"'  AND P.FILE_TYPE = 1  AND OPERATE_NAME IS NOT NULL ORDER BY  p.CREATE_TIME DESC";
+                }
+                if("1".equals(taskType)){//看护
+                    //看护图片的返回
+                     sql = "SELECT p.ID,FILE_PATH,p.CREATE_TIME,p.PROCESS_NAME as OPERATE_NAME" +
+                            "  FROM PICTURE_KH p" +
+                            "    WHERE p.TASK_ID = '"+taskId+"' AND FILE_TYPE = 1   AND p.PROCESS_ID NOT IN (1,2,3)" +
+                            "     ORDER BY p.CREATE_TIME DESC";
+                }
+                Page<Map<String, Object>> maps = this.execSqlPage(pageable, sql, null);
+                LOGGER.info("任务图片查询成功");
+                return WebApiResponse.success(maps);
+            }
+        }catch (Exception e){
+            LOGGER.info("任务图片查询失败"+e.getMessage());
+            return WebApiResponse.erro("任务图片查询失败"+e.getMessage());
+        }
+        return  WebApiResponse.erro("参数错误");
+    }
 }
