@@ -528,7 +528,7 @@ public class UserService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository>
         }
 
     }
-
+    //获取当日应执行任务人数
     public WebApiResponse getDayUser(String deptId) {
 
         try {

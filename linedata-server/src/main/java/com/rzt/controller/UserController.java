@@ -89,7 +89,7 @@ public class UserController extends CurdController<KHYHHISTORY, UserService> {
 
     /**
      * 获取今日应执行任务总人数
-     * @param deptId
+     * @param deptId   部门id
      * @return
      */
     @GetMapping("/getDayUser")

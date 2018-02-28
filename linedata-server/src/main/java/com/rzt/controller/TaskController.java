@@ -72,8 +72,8 @@ public class TaskController extends CurdController<KHYHHISTORY,TasksService>  {
 
     /**
      * 五级页面使用  查看当前任务详情
-     * @param taskType
-     * @param taskId
+     * @param taskType   任务类型
+     * @param taskId    任务id
      * @param deptId   当任务类型为4时 需要使用部门id和抽查时间查询后台稽查任务
      * @param realTime
      * @return
