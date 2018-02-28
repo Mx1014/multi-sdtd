@@ -61,6 +61,49 @@ public class CommonService extends CurdService<RztSysUser, RztSysUserRepository>
         return null;
     }
 
+    public List<Map<String, Object>> checkDepartmentAll(String userId, Integer worktype) {
+        HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
+        JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", userId).toString());
+        Integer roletype = Integer.valueOf(jsonObject.get("ROLETYPE").toString());
+        if (roletype == 0) {
+            String sql = " SELECT ID,DEPTNAME FROM RZTSYSDEPARTMENT WHERE DEPTSORT IS NOT NULL ORDER BY DEPTSORT ";
+           /* String sql = " SELECT * FROM (SELECT " +
+                    "  id       AS \"value\", " +
+                    "  DEPTNAME AS \"label\", " +
+                    "  DEPTPID, " +
+                    "  ID, " +
+                    "  ORGTYPE, " +
+                    "  LASTNODE " +
+                    "FROM RZTSYSDEPARTMENT " +
+                    "START WITH ID = '402881e6603a31e701603a48b5240000' CONNECT BY PRIOR id = DEPTPID) WHERE ORGTYPE = 0 OR ORGTYPE = ?1 ";*/
+            List<Map<String, Object>> list = this.execSql(sql);
+//            List list1 = treeOrgRztsysroleList(list, list.get(0).get("ID").toString());
+            return list;
+        } else if (roletype == 1 || roletype == 2) {
+            List list2 = new ArrayList();
+            String deptid = String.valueOf(jsonObject.get("DEPTID"));
+            String s = "";
+            list2.add(deptid);
+            if (!StringUtils.isEmpty(worktype)) {
+//                list2.add(worktype);
+                s += " OR ORGTYPE = ?" + list2.size();
+            }
+            String sql = " SELECT * FROM (SELECT " +
+                    "  id       AS \"value\", " +
+                    "  DEPTNAME AS \"label\", " +
+                    "  DEPTPID, " +
+                    "  ID, " +
+                    "  ORGTYPE, " +
+                    "  LASTNODE " +
+                    "FROM RZTSYSDEPARTMENT " +
+                    "START WITH ID = ?1 CONNECT BY PRIOR id = DEPTPID) ";
+            List<Map<String, Object>> list = this.execSql(sql, list2.toArray());
+            List list1 = treeOrgRztsysroleList(list, list.get(0).get("DEPTPID").toString());
+            return list1;
+        }
+        return null;
+    }
+
     public List treeOrgRztsysroleList(List<Map<String, Object>> orgList, String parentId) {
         List childOrg = new ArrayList<>();
         for (Map<String, Object> map : orgList) {
