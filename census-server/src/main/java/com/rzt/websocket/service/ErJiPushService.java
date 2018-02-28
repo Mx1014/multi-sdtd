@@ -33,7 +33,7 @@ public class ErJiPushService extends CurdService<websocket, websocketRepository>
         String deptId;
         String module2;
         deptId = session.get("DEPTID").toString();
-        module2 = "select sum(decode(t.STATUS,1,1,0)) ywc,count(1) total from TIMED_TASK t join RZTSYSUSER tt on t.USER_ID = tt.id and tt.DEPTID = '" + deptId + "' and t.CREATETIME > trunc(sysdate)";
+        module2 = "select nvl(sum(decode(t.STATUS, 1, 1, 0)),0) ywc,count(1) total from TIMED_TASK t join RZTSYSUSER tt on t.USER_ID = tt.id and tt.DEPTID = '" + deptId + "' and t.CREATETIME > trunc(sysdate)";
         if (allMap.containsKey(deptId)) {
             message = allMap.get(deptId);
         } else {
@@ -104,12 +104,12 @@ public class ErJiPushService extends CurdService<websocket, websocketRepository>
         module4_1 = " SELECT (SELECT count(1)\n" +
                 "   FROM ACT_HI_ACTINST t LEFT JOIN ACT_RU_VARIABLE h ON t.PROC_INST_ID_ = h.PROC_INST_ID_\n" +
                 "     LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_\n" +
-                "   WHERE h.NAME_ = 'YHID' AND t.PROC_DEF_ID_ LIKE 'wtsh%' AND ASSIGNEE_ = 'sdid' AND t.END_TIME_ IS NOT NULL AND y.YWORG_ID='" + deptId + "' " +
+                "   WHERE h.NAME_ = 'YHID' AND t.PROC_DEF_ID_ LIKE 'wtsh%' AND ASSIGNEE_ = 'sdid' AND t.END_TIME_ IS NOT NULL AND trunc(END_TIME_) = trunc(sysdate) AND y.YWORG_ID='" + deptId + "' " +
                 "  ) AS wsh,\n" +
                 "  (SELECT count(1)\n" +
                 "   FROM ACT_HI_ACTINST t LEFT JOIN ACT_RU_VARIABLE h ON t.PROC_INST_ID_ = h.PROC_INST_ID_\n" +
                 "     LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_\n" +
-                "   WHERE h.NAME_ = 'YHID' AND t.PROC_DEF_ID_ LIKE 'wtsh%' AND ASSIGNEE_ = 'sdid' AND t.END_TIME_ IS NULL AND y.YWORG_ID='" + deptId + "' " +
+                "   WHERE h.NAME_ = 'YHID' AND t.PROC_DEF_ID_ LIKE 'wtsh%' AND ASSIGNEE_ = 'sdid' AND t.END_TIME_ IS NULL  AND trunc(END_TIME_) = trunc(sysdate) AND y.YWORG_ID='" + deptId + "' " +
                 "  )    ysh\n" +
                 "FROM dual ";
         if (allMap.containsKey(deptId)) {
@@ -145,7 +145,7 @@ public class ErJiPushService extends CurdService<websocket, websocketRepository>
         module4_2 = " SELECT count(1) as yh\n" +
                 "FROM ACT_HI_ACTINST t LEFT JOIN ACT_RU_VARIABLE h ON t.PROC_INST_ID_ = h.PROC_INST_ID_\n" +
                 "               LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_\n" +
-                "WHERE  h.NAME_ = 'YHID' AND t.PROC_DEF_ID_ LIKE 'wtsh%' AND ASSIGNEE_ = 'sdid' AND y.YWORG_ID = '" + deptId + "' ";
+                "WHERE  h.NAME_ = 'YHID' AND t.PROC_DEF_ID_ LIKE 'wtsh%' AND ASSIGNEE_ = 'sdid' AND trunc(END_TIME_) = trunc(sysdate) AND  y.YWORG_ID = '" + deptId + "' ";
         if (allMap.containsKey(deptId)) {
             message = allMap.get(deptId);
         } else {

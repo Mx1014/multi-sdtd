@@ -145,13 +145,19 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
 
     public void module3Method(Map<String, Map> allMap, HashMap session) {
         Map message = new HashMap();
-        Integer roletype = Integer.parseInt(session.get("ROLETYPE").toString());
+//        Integer roletype = Integer.parseInt(session.get("ROLETYPE").toString());
         String deptId;
         String module3;
         if (1 == 1 /**roletype == 0*/) {
             deptId = "admin";
-            module3 = "SELECT sum(decode(QUESTION_TYPE,1,1,0)) a,sum(decode(QUESTION_TYPE,2,1,0)) b,sum(decode(QUESTION_TYPE,3,1,0)) c,sum(decode(QUESTION_TYPE,4,1,0)) d from CHECK_RESULT where trunc(create_time) = trunc(sysdate)";
-        } else {
+            module3 = "SELECT\n" +
+                    "  nvl(sum(decode(QUESTION_TYPE, 1, 1, 0)),0) a,\n" +
+                    "  nvl(sum(decode(QUESTION_TYPE, 2, 1, 0)),0) b,\n" +
+                    "  nvl(sum(decode(QUESTION_TYPE, 3, 1, 0)),0) c,\n" +
+                    "  nvl(sum(decode(QUESTION_TYPE, 4, 1, 0)),0) d\n" +
+                    "FROM CHECK_RESULT\n" +
+                    "WHERE trunc(create_time) = trunc(sysdate)";
+        } /*else {
             deptId = session.get("DEPTID").toString();
             module3 = "SELECT\n" +
                     "  nvl(sum(decode(t.QUESTION_TYPE, 1, 1, 0)),0) a,\n" +
@@ -160,7 +166,7 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
                     "  nvl(sum(decode(t.QUESTION_TYPE, 4, 1, 0)),0) d\n" +
                     "FROM CHECK_RESULT t\n" +
                     "  JOIN CHECK_DETAIL tt ON t.CHECK_DETAIL_ID = tt.id join RZTSYSUSER ttt on tt.QUESTION_USER_ID = ttt.id and DEPTID = ?";
-        }
+        }*/
         if (allMap.containsKey(deptId)) {
             message = allMap.get(deptId);
         } else {
