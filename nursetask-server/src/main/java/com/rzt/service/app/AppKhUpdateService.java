@@ -142,6 +142,7 @@ public class AppKhUpdateService extends CurdService<KhTask, AppKhUpdateRepositor
     public WebApiResponse updateEndTime(long taskId, String userId) {
         try {
             this.reposiotry.updateEndTime(DateUtil.dateNow(), taskId);
+            this.reposiotry.updateGj(taskId);
             try {
                 if (userId != null) {
                     userService.updateKhInfoStatusInredis(userId);
