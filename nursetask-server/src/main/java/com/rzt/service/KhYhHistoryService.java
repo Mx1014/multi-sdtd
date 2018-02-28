@@ -177,8 +177,8 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 List<Map<String, Object>> maps = this.execSql(sql, params.toArray());
                 return WebApiResponse.success(this.execSql(sql,params.toArray()));
             } else {
-//                sql = "SELECT DISTINCT(y.id) as yhid, y.* FROM ( SELECT  y.id as yh_id, y.* FROM KH_YH_HISTORY y WHERE YHLB LIKE '在施类' AND YHZT = 0 UNION ALL SELECT DISTINCT  (s.YH_ID), y.* FROM KH_YH_HISTORY y, KH_SITE s  WHERE s.YH_ID = y.ID AND s.STATUS = 1 AND y.yhzt = 0) y " + buffer.toString();
-               sql = "SELECT DISTINCT(y.id) as yhid, y.* FROM KH_YH_HISTORY y, KH_SITE s  WHERE s.YH_ID = y.ID AND s.STATUS = 1 AND y.yhzt = 0 " + buffer.toString();
+               sql = "SELECT DISTINCT(y.id) as yhid, y.* FROM ( SELECT  y.id as yh_id, y.* FROM KH_YH_HISTORY y WHERE YHLB LIKE '在施类' AND YHZT = 0 UNION ALL SELECT DISTINCT  (s.YH_ID), y.* FROM KH_YH_HISTORY y, KH_SITE s  WHERE s.YH_ID = y.ID AND s.STATUS = 1 AND y.yhzt = 0) y " + buffer.toString();
+//               sql = "SELECT DISTINCT(y.id) as yhid, y.* FROM KH_YH_HISTORY y, KH_SITE s  WHERE s.YH_ID = y.ID AND s.STATUS = 1 AND y.yhzt = 0 " + buffer.toString();
                 List<Map<String, Object>> list = this.execSql(sql, params.toArray());
                 List<Object> list1 = new ArrayList<>();
                 for (Map map : list) {
@@ -1102,7 +1102,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             }
             if (map.get("STATUS") != null && map.get("STATUS").toString().equals("0")) {
                 CmTowerUpdateRecord record = new CmTowerUpdateRecord();
-                record.setId(0l);
+                record.setId(0L);
                 record.setLat(lat);
                 record.setLon(lon);
                 record.setLineName(lineName);
@@ -1135,7 +1135,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             }*/
             throw new Exception();
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
             return WebApiResponse.erro("不可以采集");
         }
     }
