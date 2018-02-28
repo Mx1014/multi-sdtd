@@ -52,8 +52,10 @@ public class Subscriber extends JedisPubSub {
                 try{
                     String key ="";
                     if(messages.length>7){
-                        monitorcheckej.saveCheckEjWdw(messages);
-                        key = "ONE+"+messages[1]+"+"+messages[2]+"+"+messages[3]+"+"+messages[4]+"+"+messages[5]+"+"+messages[6]+"+"+messages[7];
+                        boolean flag = monitorcheckej.saveCheckEjWdw(messages);
+                        if(flag==true){
+                            key = "ONE+"+messages[1]+"+"+messages[2]+"+"+messages[3]+"+"+messages[4]+"+"+messages[5]+"+"+messages[6]+"+"+messages[7];
+                        }
                     }else{
                         monitorcheckej.saveCheckEj(messages);
                         key = "ONE+"+messages[1]+"+"+messages[2]+"+"+messages[3]+"+"+messages[4]+"+"+messages[5]+"+"+messages[6];

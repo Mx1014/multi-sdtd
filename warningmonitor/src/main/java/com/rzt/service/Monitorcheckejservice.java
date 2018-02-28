@@ -66,22 +66,28 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
 
     }
     //添加未按时上线原因
-    public void saveCheckEjWdw(String[] messages) {
+    public boolean saveCheckEjWdw(String[] messages) {
+        boolean flag = false;
         //巡视如果任务已经完成则不计
         if(Integer.parseInt(messages[3])==2){
             String sql=" SELECT STAUTS FROM XS_ZC_TASK WHERE ID=?1 ";
+            String sql2 = "SELECT LOGINSTATUS FROM RZTSYSUSER WHERE ID=?1";
             try {
                 Map<String, Object> map = execSqlSingleResult(sql, Long.valueOf(messages[1]));
+                Map<String, Object> map2 = execSqlSingleResult(sql2, messages[3]);
                 //如果任务状态不为2，才将数据插入进去
-                if(map==null || Integer.parseInt(map.get("STAUTS").toString())!=2){
+                if(Integer.parseInt(map.get("STAUTS").toString())!=2 && Integer.parseInt(map2.get("LOGINSTATUS").toString())==0){
                     resp.saveCheckEjWdw(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(messages[1]),Integer.valueOf(messages[2]),Integer.valueOf(messages[3]),messages[4],messages[5],messages[6],messages[7]);
+                    flag = true;
                 }
             } catch (Exception e) {
             }
         }else if(Integer.parseInt(messages[3])==8){
             //看护没有提前完成的
             resp.saveCheckEjWdw(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(messages[1]),Integer.valueOf(messages[2]),Integer.valueOf(messages[3]),messages[4],messages[5],messages[6],messages[7]);
+            flag = true;
         }
+        return flag;
     }
 
     //判断权限，获取当前登录用户的deptId，如果是全部查询则返回0
