@@ -17,6 +17,7 @@ import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DateUtil;
 import com.rzt.utils.ExcelUtil;
 import com.rzt.utils.HanyuPinyinHelper;
+import com.rzt.utils.SnowflakeIdWorker;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -176,7 +177,8 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 List<Map<String, Object>> maps = this.execSql(sql, params.toArray());
                 return WebApiResponse.success(this.execSql(sql,params.toArray()));
             } else {
-                sql = "SELECT DISTINCT(y.id) as yhid, y.* FROM ( SELECT  y.id as yh_id, y.* FROM KH_YH_HISTORY y WHERE YHLB LIKE '在施类' AND YHZT = 0 UNION ALL SELECT DISTINCT  (s.YH_ID), y.* FROM KH_YH_HISTORY y, KH_SITE s  WHERE s.YH_ID = y.ID AND s.STATUS = 1 AND y.yhzt = 0) y " + buffer.toString();
+//                sql = "SELECT DISTINCT(y.id) as yhid, y.* FROM ( SELECT  y.id as yh_id, y.* FROM KH_YH_HISTORY y WHERE YHLB LIKE '在施类' AND YHZT = 0 UNION ALL SELECT DISTINCT  (s.YH_ID), y.* FROM KH_YH_HISTORY y, KH_SITE s  WHERE s.YH_ID = y.ID AND s.STATUS = 1 AND y.yhzt = 0) y " + buffer.toString();
+               sql = "SELECT DISTINCT(y.id) as yhid, y.* FROM KH_YH_HISTORY y, KH_SITE s  WHERE s.YH_ID = y.ID AND s.STATUS = 1 AND y.yhzt = 0 " + buffer.toString();
                 List<Map<String, Object>> list = this.execSql(sql, params.toArray());
                 List<Object> list1 = new ArrayList<>();
                 for (Map map : list) {
@@ -1178,8 +1180,8 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             }
         }
     }
-
-    @Transactional
+    //生成看护点
+    @Transactional(rollbackFor = Exception.class)
     public void saveCycle(long yhId) {
         KhYhHistory yh = this.reposiotry.finds(yhId);
         String kv = yh.getVtype();
@@ -1198,9 +1200,11 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         task.setWxOrgId(yh.getWxorgId());
         task.setTdywOrgId(yh.getTdorgId());
         task.setWxOrg(yh.getTdwxOrg());
-        task.setStatus(0);// 未派发
+        task.setStatus(0);    // 未派发
         task.setYhId(yh.getId());
         task.setCreateTime(DateUtil.dateNow());
         this.cycleService.add(task);
+        long id = new SnowflakeIdWorker(8, 24).nextId();
+        this.reposiotry.addCheckSite(id, task.getId(), 2, task.getTaskName(), 0, task.getLineId(), task.getTdywOrgId(), task.getWxOrgId(), task.getYhId());
     }
 }
