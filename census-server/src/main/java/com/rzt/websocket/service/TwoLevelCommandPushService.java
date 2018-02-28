@@ -213,7 +213,10 @@ public class TwoLevelCommandPushService extends CurdService<websocket, websocket
             /**
              * 离线
              */
-            String offline = "SELECT count(1) as OFFLINES FROM MONITOR_CHECK_EJ  WHERE (WARNING_TYPE = 8 OR WARNING_TYPE = 2) AND trunc(CREATE_TIME) = trunc(sysdate) AND DEPTID= '" + deptid + "'";
+//            String offline = "SELECT count(1) as OFFLINES FROM MONITOR_CHECK_EJ  WHERE (WARNING_TYPE = 8 OR WARNING_TYPE = 2) AND trunc(CREATE_TIME) = trunc(sysdate) AND DEPTID= '" + deptid + "'";
+            String offline = " SELECT count(count(1)) AS OFFLINES " +
+                    "                    FROM MONITOR_CHECK_EJ  " +
+                    "                    WHERE (WARNING_TYPE = 8 OR WARNING_TYPE = 2 OR WARNING_TYPE = 13) AND trunc(CREATE_TIME) = trunc(sysdate) AND USER_ID != 'null' AND TASK_STATUS=0 AND DEPTID= '" + deptid + "' GROUP BY USER_ID ";
             /**
              *未按时开始任务
              */
@@ -350,7 +353,7 @@ public class TwoLevelCommandPushService extends CurdService<websocket, websocket
             String htJcYwc = "SELECT count(*) " +
                     "FROM TIMED_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID " +
                     " WHERE  k.CREATETIME > (SELECT max(CREATETIME)-10/24/60 FROM TIMED_TASK) AND k.THREEDAY = 0 AND k.STATUS = 1 AND u.DEPTID = '" + deptid + "'";*/
-            String htJcWks = "SELECT count(*) FROM TIMED_TASK_RECORD WHERE CREATE_TIME >= trunc(sysdate) and (TASKS>COMPLETE) and dept_id='"+deptid+"'";
+            String htJcWks = "SELECT count(*) FROM TIMED_TASK_RECORD WHERE CREATE_TIME >= trunc(sysdate) and (TASKS>COMPLETE) and dept_id='" + deptid + "'";
             /**
              *后台稽查进行中
              */
@@ -359,7 +362,7 @@ public class TwoLevelCommandPushService extends CurdService<websocket, websocket
             /**
              *后台稽查已完成
              */
-            String htJcYwc = "SELECT count(*) FROM TIMED_TASK_RECORD WHERE CREATE_TIME >= trunc(sysdate) and (TASKS=COMPLETE) and dept_id='"+deptid+"'";
+            String htJcYwc = "SELECT count(*) FROM TIMED_TASK_RECORD WHERE CREATE_TIME >= trunc(sysdate) and (TASKS=COMPLETE) and dept_id='" + deptid + "'";
             String sql = "SELECT " +
                     "(" + zcXsWks + ")+(" + bdXsWks + ") as XsWks," +
                     "(" + zcXsJxz + ")+(" + bdXsJxz + ") as XsJxz," +
@@ -381,6 +384,7 @@ public class TwoLevelCommandPushService extends CurdService<websocket, websocket
             twoLevelCommandServerEndpoint.sendText((Session) session.get("session"), map);
         });
     }
+
     @Scheduled(fixedDelay = 3000)
     public void adminModule6_1() {
         Map<String, HashMap> sendMsg = twoLevelCommandServerEndpoint.sendMsg();
@@ -391,19 +395,19 @@ public class TwoLevelCommandPushService extends CurdService<websocket, websocket
              */
             String zcXsWks = "SELECT count(1)  " +
                     "FROM XS_ZC_TASK " +
-                    "WHERE is_delete = 0 and STAUTS = 0 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate) and td_org='"+deptid+"'";
+                    "WHERE is_delete = 0 and STAUTS = 0 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate) and td_org='" + deptid + "'";
             /**
              * 保电巡视未开始
              */
             String bdXsWks = "SELECT count(1)  " +
                     "FROM XS_TXBD_TASK " +
-                    "WHERE STAUTS = 0 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate) and td_org='"+deptid+"'";
+                    "WHERE STAUTS = 0 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate) and td_org='" + deptid + "'";
             /**
              * 看护未开始
              */
             String khWks = "SELECT count(1)  " +
                     "FROM KH_TASK " +
-                    "WHERE STATUS = 0 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate) and yworg_id='"+deptid+"'";
+                    "WHERE STATUS = 0 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate) and yworg_id='" + deptid + "'";
             /**
              * 现场稽查未开始
              */
@@ -415,19 +419,19 @@ public class TwoLevelCommandPushService extends CurdService<websocket, websocket
              */
             String zcXsJxz = "SELECT count(1)  " +
                     "FROM XS_ZC_TASK " +
-                    "WHERE is_delete = 0 and STAUTS = 1 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)  and td_org='"+deptid+"'";
+                    "WHERE is_delete = 0 and STAUTS = 1 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)  and td_org='" + deptid + "'";
             /**
              * 保电巡视进行中
              */
             String bdXsJxz = "SELECT count(1)  " +
                     "FROM XS_TXBD_TASK " +
-                    "WHERE STAUTS = 1 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate) and td_org='"+deptid+"'";
+                    "WHERE STAUTS = 1 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate) and td_org='" + deptid + "'";
             /**
              * 看护进行中
              */
             String khJxz = "SELECT count(1)  " +
                     "FROM KH_TASK " +
-                    "WHERE STATUS = 1 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate) and yworg_id='"+deptid+"'";
+                    "WHERE STATUS = 1 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate) and yworg_id='" + deptid + "'";
             /**
              * 现场稽查进行中
              */
@@ -439,19 +443,19 @@ public class TwoLevelCommandPushService extends CurdService<websocket, websocket
              */
             String zcXsYwc = "SELECT count(1)  " +
                     "FROM XS_ZC_TASK " +
-                    "WHERE is_delete = 0 and STAUTS = 2 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate) and td_org='"+deptid+"'";
+                    "WHERE is_delete = 0 and STAUTS = 2 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate) and td_org='" + deptid + "'";
             /**
              * 保电巡视已完成
              */
             String bdXsYwc = "SELECT count(1)  " +
                     "FROM XS_TXBD_TASK " +
-                    "WHERE STAUTS = 2 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate) and td_org='"+deptid+"'";
+                    "WHERE STAUTS = 2 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate) and td_org='" + deptid + "'";
             /**
              * 看护已完成
              */
             String khYwc = "SELECT count(1)  " +
                     "FROM KH_TASK " +
-                    "WHERE STATUS = 2 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate) and yworg_id='"+deptid+"'";
+                    "WHERE STATUS = 2 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate) and yworg_id='" + deptid + "'";
             /**
              *现场稽查已完成
              */
@@ -466,7 +470,7 @@ public class TwoLevelCommandPushService extends CurdService<websocket, websocket
             /**
              *后台稽查未完成
              */
-            String htJcWks = "SELECT count(*) FROM TIMED_TASK_RECORD WHERE CREATE_TIME >= trunc(sysdate) and (TASKS>COMPLETE) and dept_id='"+deptid+"'";
+            String htJcWks = "SELECT count(*) FROM TIMED_TASK_RECORD WHERE CREATE_TIME >= trunc(sysdate) and (TASKS>COMPLETE) and dept_id='" + deptid + "'";
             /**
              *后台稽查进行中
              */
@@ -475,7 +479,7 @@ public class TwoLevelCommandPushService extends CurdService<websocket, websocket
             /**
              *后台稽查已完成
              */
-            String htJcYwc = "SELECT count(*) FROM TIMED_TASK_RECORD WHERE CREATE_TIME >= trunc(sysdate) and (TASKS=COMPLETE) and dept_id='"+deptid+"'";
+            String htJcYwc = "SELECT count(*) FROM TIMED_TASK_RECORD WHERE CREATE_TIME >= trunc(sysdate) and (TASKS=COMPLETE) and dept_id='" + deptid + "'";
             String sql = "SELECT " +
                     "(" + zcXsWks + ")+(" + bdXsWks + ") as XsWks," +
                     "(" + zcXsJxz + ")+(" + bdXsJxz + ") as XsJxz," +
@@ -497,6 +501,7 @@ public class TwoLevelCommandPushService extends CurdService<websocket, websocket
             twoLevelCommandServerEndpoint.sendText((Session) session.get("session"), map);
         });
     }
+
     @Scheduled(fixedRate = 30000)
     public void adminModule7() {
         Map<String, HashMap> sendMsg = twoLevelCommandServerEndpoint.sendMsg();
