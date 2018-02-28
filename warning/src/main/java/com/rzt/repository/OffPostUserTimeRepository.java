@@ -36,4 +36,8 @@ public interface OffPostUserTimeRepository extends JpaRepository<OffPostUserTime
 
  @Query(value="select * from warning_off_post_user_time where fk_user_id=?1 and end_time is null and FK_TASK_ID=?2",nativeQuery = true)
  List<OffPostUserTime> findByUserIdAndDateisNull(String userId,Long taskId);
+
+ @Modifying
+ @Query(value = " INSERT INTO WARNING_OFF_POST_USER_TIME(ID,FK_USER_ID,START_TIME,FK_TASK_ID) VALUES (?1,?2,sysdate,?3) ",nativeQuery = true)
+ void addOffUserTime(Long id,String fkUserId,Long taskId);
 }
