@@ -408,22 +408,30 @@ public class CompanyNumTasksController extends CurdController<RztSysUser, Common
             Map<String, Object> map5 = new HashMap();
             Map<String, Object> map6 = new HashMap();
             for (Map<String, Object> xs : xszcMap) {
-                map1.put(xs.get("TD_ORG").toString(), xs);
+                if (xs.get("TD_ORG") != null) {
+                    map1.put(xs.get("TD_ORG").toString(), xs);
+                }
             }
             for (Map<String, Object> tx : txbdMap) {
-                map2.put(tx.get("TD_ORG").toString(), tx);
+                if (tx.get("TD_ORG") != null) {
+                    map2.put(tx.get("TD_ORG").toString(), tx);
+                }
             }
             for (Map<String, Object> kha : khMap) {
-                map3.put(kha.get("TD_ORG").toString(), kha);
+                if (kha.get("TD_ORG") != null)
+                    map3.put(kha.get("TD_ORG").toString(), kha);
             }
             for (Map<String, Object> jc : xcjcMap) {
-                map4.put(jc.get("TD_ORG").toString(), jc);
+                if (jc.get("TD_ORG") != null)
+                    map4.put(jc.get("TD_ORG").toString(), jc);
             }
             for (Map<String, Object> ht : htMap) {
-                map5.put(ht.get("DEPT_ID").toString(), ht);
+                if (ht.get("DEPT_ID") != null)
+                    map5.put(ht.get("DEPT_ID").toString(), ht);
             }
             for (Map<String, Object> ht : htMap2) {
-                map6.put(ht.get("DEPT_ID").toString(), ht);
+                if (ht.get("DEPT_ID") != null)
+                    map6.put(ht.get("DEPT_ID").toString(), ht);
             }
             String deptName1 = "后台";
             String deptName2 = "白班";
@@ -437,12 +445,15 @@ public class CompanyNumTasksController extends CurdController<RztSysUser, Common
                 HashMap htTask1 = (HashMap) map5.get(deptId);
                 HashMap htTask2 = (HashMap) map6.get(deptId);
                 String deptname = dept.get("DEPTNAME").toString();
-                int length = deptname.length();
                 StringBuffer sb = new StringBuffer();
-                for (int i = 0; i < length; i++) {
+                if (deptname.length()>6){
+                    deptname = deptname.substring(0,5);
+                }
+                for (int i = 0; i < deptname.length(); i++) {
                     String substring = deptname.substring(i, i + 1);
                     sb.append(substring + "\n");
                 }
+                deptname = dept.get("DEPTNAME").toString();
                 dept.put("DEPTNAME", sb.toString());
                 dept.put("wks", Integer.parseInt(xsTask == null ? "0" : xsTask.get("XSWKS").toString()) + Integer.parseInt(txTask == null ? "0" : txTask.get("XSWKS").toString()) + Integer.parseInt(khTask == null ? "0" : khTask.get("KHWKS").toString()) + Integer.parseInt(xcjcTask == null ? "0" : xcjcTask.get("JCWKS").toString()) + Integer.parseInt(htTask1 == null ? "0" : htTask1.get("SUM").toString()));
                 dept.put("jxz", Integer.parseInt(xsTask == null ? "0" : xsTask.get("XSJXZ").toString()) + Integer.parseInt(txTask == null ? "0" : txTask.get("XSJXZ").toString()) + Integer.parseInt(khTask == null ? "0" : khTask.get("KHJXZ").toString()) + Integer.parseInt(xcjcTask == null ? "0" : xcjcTask.get("JCJXZ").toString()));
@@ -472,16 +483,18 @@ public class CompanyNumTasksController extends CurdController<RztSysUser, Common
                         if (nowDate.getTime() >= DateUtil.addDate(DateUtil.parseDate(s), Double.parseDouble(start)).getTime() && nowDate.getTime() <= DateUtil.addDate(DateUtil.parseDate(s), Double.parseDouble(end)).getTime()) {
                             if (deptname.contains("白") && deptName2.contains("白")) {
                                 dept.put("jxz", Integer.parseInt(xsTask == null ? "0" : xsTask.get("XSJXZ").toString()) + Integer.parseInt(txTask == null ? "0" : txTask.get("XSJXZ").toString()) + Integer.parseInt(khTask == null ? "0" : khTask.get("KHJXZ").toString()) + Integer.parseInt(xcjcTask == null ? "0" : xcjcTask.get("JCJXZ").toString()) + 1);
-                                dept.put("wks", Integer.parseInt(xsTask == null ? "0" : xsTask.get("XSWKS").toString()) + Integer.parseInt(txTask == null ? "0" : txTask.get("XSWKS").toString()) + Integer.parseInt(khTask == null ? "0" : khTask.get("KHWKS").toString()) + Integer.parseInt(xcjcTask == null ? "0" : xcjcTask.get("JCWKS").toString()) + Integer.parseInt(htTask1 == null ? "0" : Integer.parseInt(htTask1.get("SUM").toString()) / 3 + ""));
-                                dept.put("ywc", Integer.parseInt(xsTask == null ? "0" : xsTask.get("XSYWC").toString()) + Integer.parseInt(txTask == null ? "0" : txTask.get("XSYWC").toString()) + Integer.parseInt(khTask == null ? "0" : khTask.get("KHYWC").toString()) + Integer.parseInt(xcjcTask == null ? "0" : xcjcTask.get("JCYWC").toString()) + Integer.parseInt(htTask2 == null ? "0" : Integer.parseInt(htTask2.get("SUM").toString()) / 3 + ""));
-                           }
+                            }else {
+                                dept.put("jxz", Integer.parseInt(xsTask == null ? "0" : xsTask.get("XSJXZ").toString()) + Integer.parseInt(txTask == null ? "0" : txTask.get("XSJXZ").toString()) + Integer.parseInt(khTask == null ? "0" : khTask.get("KHJXZ").toString()) + Integer.parseInt(xcjcTask == null ? "0" : xcjcTask.get("JCJXZ").toString()));
+                            }
                         } else {
                             if (deptname.contains("夜") && deptName3.contains("夜")) {
                                 dept.put("jxz", Integer.parseInt(xsTask == null ? "0" : xsTask.get("XSJXZ").toString()) + Integer.parseInt(txTask == null ? "0" : txTask.get("XSJXZ").toString()) + Integer.parseInt(khTask == null ? "0" : khTask.get("KHJXZ").toString()) + Integer.parseInt(xcjcTask == null ? "0" : xcjcTask.get("JCJXZ").toString()) + 1);
-                                dept.put("wks", Integer.parseInt(xsTask == null ? "0" : xsTask.get("XSWKS").toString()) + Integer.parseInt(txTask == null ? "0" : txTask.get("XSWKS").toString()) + Integer.parseInt(khTask == null ? "0" : khTask.get("KHWKS").toString()) + Integer.parseInt(xcjcTask == null ? "0" : xcjcTask.get("JCWKS").toString()) + Integer.parseInt(htTask1 == null ? "0" : Integer.parseInt(htTask1.get("SUM").toString()) / 3 + ""));
-                                dept.put("ywc", Integer.parseInt(xsTask == null ? "0" : xsTask.get("XSYWC").toString()) + Integer.parseInt(txTask == null ? "0" : txTask.get("XSYWC").toString()) + Integer.parseInt(khTask == null ? "0" : khTask.get("KHYWC").toString()) + Integer.parseInt(xcjcTask == null ? "0" : xcjcTask.get("JCYWC").toString()) + Integer.parseInt(htTask2 == null ? "0" : Integer.parseInt(htTask2.get("SUM").toString()) / 3 + ""));
+                            }else {
+                                dept.put("jxz", Integer.parseInt(xsTask == null ? "0" : xsTask.get("XSJXZ").toString()) + Integer.parseInt(txTask == null ? "0" : txTask.get("XSJXZ").toString()) + Integer.parseInt(khTask == null ? "0" : khTask.get("KHJXZ").toString()) + Integer.parseInt(xcjcTask == null ? "0" : xcjcTask.get("JCJXZ").toString()));
                             }
                         }
+                        dept.put("wks", Integer.parseInt(xsTask == null ? "0" : xsTask.get("XSWKS").toString()) + Integer.parseInt(txTask == null ? "0" : txTask.get("XSWKS").toString()) + Integer.parseInt(khTask == null ? "0" : khTask.get("KHWKS").toString()) + Integer.parseInt(xcjcTask == null ? "0" : xcjcTask.get("JCWKS").toString()) + Integer.parseInt(htTask1 == null ? "0" : Integer.parseInt(htTask1.get("SUM").toString()) / 3 + ""));
+                        dept.put("ywc", Integer.parseInt(xsTask == null ? "0" : xsTask.get("XSYWC").toString()) + Integer.parseInt(txTask == null ? "0" : txTask.get("XSYWC").toString()) + Integer.parseInt(khTask == null ? "0" : khTask.get("KHYWC").toString()) + Integer.parseInt(xcjcTask == null ? "0" : xcjcTask.get("JCYWC").toString()) + Integer.parseInt(htTask2 == null ? "0" : Integer.parseInt(htTask2.get("SUM").toString()) / 3 + ""));
                     }
 
                 }
