@@ -54,7 +54,7 @@ public class TaskController extends CurdController<KHYHHISTORY,TasksService>  {
      */
     @GetMapping("/threeTasks")
     public WebApiResponse threeTasks(String deptId){
-        return tasksService.threeTasks(deptId);
+        return tasksService.deptDaZhu2(deptId);
     }
 
     /**
@@ -66,8 +66,8 @@ public class TaskController extends CurdController<KHYHHISTORY,TasksService>  {
      * @return
      */
     @GetMapping("/findTasksByStatus")
-    public WebApiResponse findTasksByStatus(Integer page,Integer size,String deptId,String flag){
-      return   tasksService.findTasksByStatus(page,size,deptId,flag);
+    public WebApiResponse findTasksByStatus(Integer page,Integer size,String deptId,String flag,String condition){
+        return   tasksService.findTasksByStatus(page,size,deptId,flag,condition);
     }
 
     /**
@@ -80,16 +80,7 @@ public class TaskController extends CurdController<KHYHHISTORY,TasksService>  {
      */
     @GetMapping("/findTaskInfoByTaskId")
     public WebApiResponse findTaskInfoByTaskId(String taskType,String taskId,String deptId,String realTime){
-       return tasksService.findTaskInfoByTaskId(taskType,taskId,deptId,realTime);
-    }
-
-    /**
-     * 二级页
-     * @return
-     */
-    @GetMapping("deptDaZhu")
-    public WebApiResponse deptDaZhu() {
-       return tasksService.deptDaZhu();
+        return tasksService.findTaskInfoByTaskId(taskType,taskId,deptId,realTime);
     }
 
 
