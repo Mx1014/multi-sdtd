@@ -86,10 +86,9 @@ public class JwtHelper {
     }
 
     public static void main(String[] args) {
-        System.out.println(System.nanoTime());
-        String auth = "eyJ0eXBlIjoiSldUIiwiYWxnIjoiSFMyNTYifQ.eyJ1c2VyIjp7IldPUktUWVBFIjozLCJXT1JLWUVBUiI6MTIsIlJFQUxOQU1FIjoi6LW15YWtIiwiQ0VSVElGSUNBVEUiOiIxNDA0MzAxOTYwMDQyODI5MTEiLCJQSE9ORSI6IjE1MjE1NDY1NDc4IiwiVVNFUkRFTEVURSI6MSwiRU1BSUwiOiJ6aGFvbGl1QDE2My5jb20iLCJDTEFTU05BTUUiOiLmsZ_mtbfljZciLCJVU0VSVFlQRSI6MSwiVVNFUk5BTUUiOiJ6aGFvbGl1IiwiQ09NUEFOWU5BTUUiOiLkuqzlronpobrkv53lronlhazlj7giLCJERVBUIjoi5Liw5Y-w5YWs5Y-4IiwiQ09NUEFOWUlEIjoiMDIyZGFiNDhhZTMwNDQwZDlkMTExMjQ3YjhmYjNiZjMiLCJJRCI6IjQzMTE1MmE5MThmOTRmMDNiNDAyODZjOTU5YmI3ODQ0IiwiREVQVElEIjoiNDAyODgxZTY2MDNhNjliODAxNjAzYTcyNmQ2YTAwMTQiLCJST0xFSUQiOm51bGwsIkxPR0lOU1RBVFVTIjoxLCJBR0UiOjQyLCJDTEFTU0lEIjoiMjgwMjgxOWY2MDkxOWVjMDAxNjA5MmFlZTAxYTAwMDQifSwiZXhwIjoxNTE1MTg3NTExfQ.cPxBvBanJu8AZFzPK1Qf36dVQeloonF3vlV0UiVpb5Y";
-        parseJWT(auth);
-        System.out.println(System.nanoTime());
+        String abc  = "123";
+        abc = abc.substring(0, abc.length() -1 );
+        System.out.println(abc);
     }
 
 }

@@ -356,24 +356,40 @@ public class ErJiPushService extends CurdService<websocket, websocketRepository>
             String sessionId = entry.getKey();
             HashMap session = map.get(sessionId);
             Map message = new HashMap<String, Object>();
+            Object deptid = session.get("DEPTID");
             message.put("module", 10);
-            String module7 = "SELECT\n" +
-                    "  sum((CASE WHEN PROC_DEF_ID_ LIKE 'xssh%'\n" +
-                    "    THEN 1\n" +
-                    "   ELSE 0 END)) xssh,\n" +
-                    "  sum((CASE WHEN PROC_DEF_ID_ LIKE 'wtsh%'\n" +
-                    "    THEN 1\n" +
-                    "   ELSE 0 END)) wtsh,\n" +
-                    "  sum((CASE WHEN PROC_DEF_ID_ LIKE 'defect%'\n" +
-                    "    THEN 1\n" +
-                    "   ELSE 0 END)) defect,\n" +
-                    "  sum((CASE WHEN PROC_DEF_ID_ LIKE 'jcsh%'\n" +
-                    "    THEN 1\n" +
-                    "   ELSE 0 END)) jcsh\n" +
-                    "FROM ACT_RU_TASK\n" +
-                    "WHERE CREATE_TIME_ > trunc(sysdate)";
-            Map<String, Object> map1 = this.execSqlSingleResult(module7);
-            message.put("data", map1);
+//            String module7 = "SELECT\n" +
+//                    "  sum((CASE WHEN PROC_DEF_ID_ LIKE 'xssh%'\n" +
+//                    "    THEN 1\n" +
+//                    "   ELSE 0 END)) xssh,\n" +
+//                    "  sum((CASE WHEN PROC_DEF_ID_ LIKE 'wtsh%'\n" +
+//                    "    THEN 1\n" +
+//                    "   ELSE 0 END)) wtsh,\n" +
+//                    "  sum((CASE WHEN PROC_DEF_ID_ LIKE 'defect%'\n" +
+//                    "    THEN 1\n" +
+//                    "   ELSE 0 END)) defect,\n" +
+//                    "  sum((CASE WHEN PROC_DEF_ID_ LIKE 'jcsh%'\n" +
+//                    "    THEN 1\n" +
+//                    "   ELSE 0 END)) jcsh\n" +
+//                    "FROM ACT_RU_TASK\n" +
+//                    "WHERE CREATE_TIME_ > trunc(sysdate)";
+            String yh = " SELECT\n" +
+                    "  count(1) as yh\n" +
+                    "    FROM ACT_HI_ACTINST t LEFT JOIN ACT_HI_VARINST h ON t.PROC_INST_ID_ = h.PROC_INST_ID_ AND  h.NAME_ = 'YHID'\n" +
+                    "   LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_\n" +
+                    "    WHERE  t.PROC_DEF_ID_ LIKE 'wtsh%'  AND t.END_TIME_ IS NOT  NULL AND y.ID IS NOT NULL AND trunc(END_TIME_)=trunc(sysdate) AND ASSIGNEE_ = 'sdid' AND YWORG_ID ='" + deptid + "'";
+            String xs = " SELECT count(1) as xs\n" +
+                    "FROM ACT_HI_ACTINST t\n" +
+                    "  LEFT JOIN ACT_HI_VARINST h ON t.PROC_INST_ID_ = h.PROC_INST_ID_ AND h.NAME_ = 'XSID'\n" +
+                    "  LEFT JOIN XS_ZC_CYCLE_RECORD x ON x.XS_ZC_CYCLE_ID = h.TEXT_ LEFT JOIN RZTSYSUSER r ON x.CM_USER_ID = r.ID\n" +
+                    "WHERE t.PROC_DEF_ID_ LIKE 'xssh%' AND t.ASSIGNEE_ = 'sdid' AND t.END_TIME_ IS NOT NULL AND r.DEPTID = '" + deptid + "' \n" +
+                    "ORDER BY t.END_TIME_ DESC ";
+            Map<String, Object> stringObjectMap = this.execSqlSingleResult(yh);
+            Map<String, Object> stringObjectMap1 = this.execSqlSingleResult(xs);
+            stringObjectMap.putAll(stringObjectMap1);
+            stringObjectMap.put("qx", 0);
+            stringObjectMap.put("jc", 0);
+            message.put("data", stringObjectMap);
             erJiServerEndpoint.sendText((Session) session.get("session"), message);
         }
     }

@@ -377,7 +377,7 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
 
     @Transactional
     public WebApiResponse userQuit(String id) {
-        String userAccout = "SELECT * FROM RZTSYSUSER where id=?1";
+        String userAccout = "SELECT * FROM USERINFO where id=?1";
         try {
             this.reposiotry.quitUserLOGINSTATUS(id);
             //人员登陆时间添加

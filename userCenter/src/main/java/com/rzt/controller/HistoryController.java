@@ -192,7 +192,7 @@ public class HistoryController extends CurdController<RztSysUser, CommonService>
                 "      GROUP BY YWORG_ID) a RIGHT JOIN (SELECT t.ID, t.DEPTNAME FROM RZTSYSDEPARTMENT t WHERE t.DEPTSORT IS NOT NULL  " + s +
                 "                                       ORDER BY t.DEPTSORT) r  ON a.YWORG_ID = r.ID ";
         try {
-            return WebApiResponse.success(this.service.execSql(sql));
+            return WebApiResponse.success(this.service.execSql(sql,list.toArray()));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("");

@@ -169,7 +169,19 @@ public class UserDisplaySynthesisController extends CurdController<RztSysUser, C
             } else {
                 map.putAll(id3);
             }
-
+            String deptName = (String) map.get("DEPTNAME");
+            if (deptName.contains("本部")) {
+                deptName = "本部";
+            } else {
+                deptName = deptName.substring(0, deptName.length() - 2);
+            }
+            int length = deptName.length();
+            StringBuffer sb = new StringBuffer();
+            for (int i = 0; i < length; i++) {
+                String substring = deptName.substring(i, i + 1);
+                sb.append(substring + "\n");
+            }
+            map.put("DEPT", sb.toString());
         }
         try {
             return WebApiResponse.success(deptnameList);

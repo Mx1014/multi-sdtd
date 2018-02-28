@@ -1,10 +1,12 @@
 package com.rzt.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.KHYHHISTORY;
 import com.rzt.service.UserService;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -88,6 +90,10 @@ public class UserController extends CurdController<KHYHHISTORY, UserService> {
 
     @RequestMapping("userdisplaysynthesisList")
     public WebApiResponse userdisplaysynthesisList(String currentUserId, String startTime, String endTime, String deptId) {
+        HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
+        JSONObject jsonObject = JSONObject.parseObject(String.valueOf(hashOperations.get("UserInformation", currentUserId)));
+        Integer type = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
+        String deptid = jsonObject.get("DEPTID").toString();
         List listLike = new ArrayList();
         String s = "";
         String s2 = "";
