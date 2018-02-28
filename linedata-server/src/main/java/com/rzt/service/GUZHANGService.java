@@ -276,4 +276,19 @@ public class GUZHANGService extends CurdService<GUZHANG,GUZHANGRepository> {
         return WebApiResponse.success(result);
 
     }
+
+    @Transactional
+    public WebApiResponse updatePm(String str) {
+        try{
+            String[] item = str.split(",");
+            for (int i = 0; i < item.length; i++) {
+                String[] s = item[i].split(":");
+                reposiotry.updatePm(s[1],s[0]);
+            }
+        }catch (Exception e){
+            return WebApiResponse.erro("更新失败!");
+        }
+        return WebApiResponse.success("更新成功!");
+
+    }
 }
