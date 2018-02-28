@@ -40,7 +40,9 @@ public class TasksService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository
         }
         PageRequest pageRequest = new PageRequest(page, size);
         // SELECT AVATAR FROM RZTSYSUSER WHERE ID = '"+userId+"'
-
+        /**
+         * 任务有周期  按照周期内查询
+         */
         String sql = "    SELECT * FROM (" +
                 //巡视
                 "  SELECT to_char(x.ID) AS TASKID,x.STAUTS AS STATUS,x.TASK_NAME,x.REAL_START_TIME,u.REALNAME,u.WORKTYPE,u.DEPTID AS DEPT,u.ID userID,u.AVATAR,x.PLAN_END_TIME,x.PLAN_START_TIME" +
