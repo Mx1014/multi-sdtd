@@ -85,10 +85,6 @@ public interface XsZcTaskwpqrRepository extends JpaRepository<XsZcTaskwpqr, Stri
     void bdtxUpdateTaskStatus(Long id);
 
 
-
-
-
-    
     /**
      * 身份确认时间 更改时间 正常巡视
      *
@@ -120,7 +116,7 @@ public interface XsZcTaskwpqrRepository extends JpaRepository<XsZcTaskwpqr, Stri
     @Modifying
     @Transactional
     @Query(value = "update xs_txbd_task set ddxc_time = sysdate,zxys_num = ?2,xscs_num = 1 where id =?1", nativeQuery = true)
-    int bdXsDdxcTime(Long id,Integer zxys);
+    int bdXsDdxcTime(Long id, Integer zxys);
 
     /**
      * 正常巡视 到达现场时间更改
@@ -131,7 +127,7 @@ public interface XsZcTaskwpqrRepository extends JpaRepository<XsZcTaskwpqr, Stri
     @Modifying
     @Transactional
     @Query(value = "update xs_zc_task set ddxc_time  = sysdate,zxys_num = ?2,xscs_num = 1  where id =?1", nativeQuery = true)
-    int zcXsDdxcTime(Long id,Integer zxys);
+    int zcXsDdxcTime(Long id, Integer zxys);
 
     /**
      * 巡视开始 每轮巡视表
@@ -236,8 +232,8 @@ public interface XsZcTaskwpqrRepository extends JpaRepository<XsZcTaskwpqr, Stri
     /**
      * 正常巡视 修改当前任务巡视到的页数
      *
-     * @param zxys   执行页数
-     * @param id 任务ID
+     * @param zxys 执行页数
+     * @param id   任务ID
      * @return
      */
     @Modifying
@@ -248,8 +244,8 @@ public interface XsZcTaskwpqrRepository extends JpaRepository<XsZcTaskwpqr, Stri
     /**
      * 正常巡视 修改当前任务巡视到的页数
      *
-     * @param zxys   执行页数
-     * @param id 任务ID
+     * @param zxys 执行页数
+     * @param id   任务ID
      * @return
      */
     @Modifying
@@ -260,12 +256,11 @@ public interface XsZcTaskwpqrRepository extends JpaRepository<XsZcTaskwpqr, Stri
     /**
      * 保电特巡新增轮详情数据
      *
-     *
      * @param nextId
      * @param aLong
      * @param gznr
-     * @param id 主键
-     * @param execId     轮ID
+     * @param id     主键
+     * @param execId 轮ID
      * @return
      */
     @Modifying
@@ -274,16 +269,14 @@ public interface XsZcTaskwpqrRepository extends JpaRepository<XsZcTaskwpqr, Stri
     void insertTxbdExecDetail(long nextId, Long execID, String gznr, Long startTowerId, Long endTowerID);
 
 
-
     /**
      * 正常巡视新增轮详情数据
-     *
      *
      * @param nextId
      * @param aLong
      * @param gznr
-     * @param id 主键
-     * @param execId     轮ID
+     * @param id     主键
+     * @param execId 轮ID
      * @return
      */
     @Modifying
@@ -295,8 +288,8 @@ public interface XsZcTaskwpqrRepository extends JpaRepository<XsZcTaskwpqr, Stri
     /**
      * 正常巡视 修改当前任务巡视到的页数
      *
-     * @param sfdw   是否到位
-     * @param reason 不到位原因
+     * @param sfdw         是否到位
+     * @param reason       不到位原因
      * @param execDetailId 轮详情id
      * @return
      */
@@ -308,8 +301,8 @@ public interface XsZcTaskwpqrRepository extends JpaRepository<XsZcTaskwpqr, Stri
     /**
      * 正常巡视 修改当前任务巡视到的页数
      *
-     * @param sfdw   是否到位
-     * @param reason 不到位原因
+     * @param sfdw         是否到位
+     * @param reason       不到位原因
      * @param execDetailId 轮详情id
      * @param longtitude
      * @param latitude
@@ -321,52 +314,52 @@ public interface XsZcTaskwpqrRepository extends JpaRepository<XsZcTaskwpqr, Stri
     void updateZcxsExecDetail(Integer sfdw, String reason, Long execDetailId, String longtitude, String latitude);
 
     /***
-    * @Method updateTxbdExecOn
-    * @Description  特巡保电更改轮状态 到进行中
-    * @param [execId]
-    * @return void
-    * @date 2017/12/19 13:51
-    * @author nwz
-    */
+     * @Method updateTxbdExecOn
+     * @Description 特巡保电更改轮状态 到进行中
+     * @param [execId]
+     * @return void
+     * @date 2017/12/19 13:51
+     * @author nwz
+     */
     @Modifying
     @Transactional
     @Query(value = "UPDATE xs_txbd_task_exec SET xs_start_time = sysdate,xs_status = 1 WHERE id =?1", nativeQuery = true)
     void updateTxbdExecOn(Long execId);
 
     /***
-    * @Method updateTxbdExecOff
-    * @Description   特巡保电更改论状态 结束
-    * @param [execId]
-    * @return void
-    * @date 2017/12/19 13:55
-    * @author nwz
-    */
+     * @Method updateTxbdExecOff
+     * @Description 特巡保电更改论状态 结束
+     * @param [execId]
+     * @return void
+     * @date 2017/12/19 13:55
+     * @author nwz
+     */
     @Modifying
     @Transactional
     @Query(value = "UPDATE xs_txbd_task_exec SET xs_end_time = sysdate,xs_status = 2 WHERE id =?1", nativeQuery = true)
     void updateTxbdExecOff(Long execId);
 
     /***
-    * @Method updateZcxsExecOn
-    * @Description
-    * @param [execId]
-    * @return void
-    * @date 2017/12/19 13:57
-    * @author nwz
-    */
+     * @Method updateZcxsExecOn
+     * @Description
+     * @param [execId]
+     * @return void
+     * @date 2017/12/19 13:57
+     * @author nwz
+     */
     @Modifying
     @Transactional
     @Query(value = "UPDATE xs_zc_task_exec SET xs_start_time = sysdate,xs_status = 1 WHERE id =?1", nativeQuery = true)
     void updateZcxsExecOn(Long execId);
 
     /***
-    * @Method updateZcxsExecOff
-    * @Description
-    * @param [execId]
-    * @return void
-    * @date 2017/12/19 13:57
-    * @author nwz
-    */
+     * @Method updateZcxsExecOff
+     * @Description
+     * @param [execId]
+     * @return void
+     * @date 2017/12/19 13:57
+     * @author nwz
+     */
     @Modifying
     @Transactional
     @Query(value = "UPDATE xs_zc_task_exec SET xs_end_time = sysdate,xs_status = 2 WHERE id =?1", nativeQuery = true)
@@ -413,6 +406,16 @@ public interface XsZcTaskwpqrRepository extends JpaRepository<XsZcTaskwpqr, Stri
     @Transactional
     @Query(value = "UPDATE xs_txbd_task SET stauts = 2,real_end_time = sysdate WHERE id =?1", nativeQuery = true)
     void updateTxbdTaskToOff(Long id);
+
+    /**
+     * 修改告警任务类型
+     *
+     * @param id
+     */
+    @Modifying
+    @Transactional
+    @Query(value = " UPDATE MONITOR_CHECK_EJ SET TASK_STATUS=1 WHERE TASK_ID=?1 AND WARNING_TYPE=2 ", nativeQuery = true)
+    void updateMonitorCheckEjXs(Long id);
 
     /***
      * @Method updateZcxsExecOff

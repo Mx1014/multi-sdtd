@@ -263,73 +263,73 @@ public class TwoLevelCommandPushService extends CurdService<websocket, websocket
              */
             String zcXsWks = "SELECT count(1)  " +
                     "FROM XS_ZC_TASK " +
-                    "WHERE STAUTS = 0 AND trunc(PLAN_START_TIME) = trunc(sysdate)  AND TD_ORG='" + deptid + "'";
+                    "WHERE STAUTS = 0 AND PLAN_START_TIME<= trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)  AND TD_ORG='" + deptid + "'";
             /**
              * 保电巡视未开始
              */
             String bdXsWks = "SELECT count(1)  " +
                     "FROM XS_TXBD_TASK " +
-                    "WHERE STAUTS = 0 AND trunc(PLAN_START_TIME) = trunc(sysdate) AND TD_ORG='" + deptid + "'";
+                    "WHERE STAUTS = 0 AND PLAN_START_TIME<= trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate) AND TD_ORG='" + deptid + "'";
             /**
              * 看护未开始
              */
             String khWks = "SELECT count(1)  " +
                     "FROM KH_TASK " +
-                    "WHERE STATUS = 0 AND trunc(PLAN_START_TIME) = trunc(sysdate) AND YWORG_ID = '" + deptid + "'";
+                    "WHERE STATUS = 0 AND PLAN_START_TIME<= trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate) AND YWORG_ID = '" + deptid + "'";
             /**
              * 现场稽查未开始
              */
             String xcJcWks = "SELECT count(1)  " +
                     "FROM CHECK_LIVE_TASK  t left join rztsysuser u on u.id= t.user_id" +
-                    "WHERE STATUS = 0 and check_type=2 and to_date('" + timeUtil(2) + "','yyyy-MM-dd HH24:mi') > plan_start_time and to_date('" + timeUtil(1) + "','yyyy-MM-dd HH24:mi') < plan_end_time AND u.DEPTID='" + deptid + "'";
+                    " WHERE STATUS = 0 and check_type=2 and to_date('" + timeUtil(2) + "','yyyy-MM-dd HH24:mi') > plan_start_time and to_date('" + timeUtil(1) + "','yyyy-MM-dd HH24:mi') < plan_end_time AND u.DEPTID='" + deptid + "'";
             /**
              * 正常巡视进行中
              */
             String zcXsJxz = "SELECT count(1)  " +
                     "FROM XS_ZC_TASK " +
-                    "WHERE STAUTS = 1 AND trunc(PLAN_START_TIME) = trunc(sysdate) AND TD_ORG='" + deptid + "'";
+                    " WHERE STAUTS = 1 AND PLAN_START_TIME<= trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)AND TD_ORG='" + deptid + "'";
             /**
              * 保电巡视进行中
              */
             String bdXsJxz = "SELECT count(1)  " +
                     "FROM XS_TXBD_TASK " +
-                    "WHERE STAUTS = 1 AND trunc(PLAN_START_TIME) = trunc(sysdate) AND TD_ORG='" + deptid + "'";
+                    "WHERE STAUTS = 1 AND PLAN_START_TIME<= trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate) AND TD_ORG='" + deptid + "'";
             /**
              * 看护进行中
              */
             String khJxz = "SELECT count(1)  " +
                     "FROM KH_TASK " +
-                    "WHERE STATUS = 1 AND trunc(PLAN_START_TIME) = trunc(sysdate) AND YWORG_ID = '" + deptid + "'";
+                    "WHERE STATUS = 1 AND PLAN_START_TIME<= trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate) AND YWORG_ID = '" + deptid + "'";
             /**
              * 现场稽查进行中
              */
             String xcJcJxz = "SELECT count(1)  " +
                     "FROM CHECK_LIVE_TASK t left join rztsysuser u on u.id= t.user_id" +
-                    "WHERE STATUS = 1 and check_type=2 and to_date('" + timeUtil(2) + "','yyyy-MM-dd HH24:mi') > plan_start_time and to_date('" + timeUtil(1) + "','yyyy-MM-dd HH24:mi') < plan_end_time AND u.DEPTID='" + deptid + "'";
+                    " WHERE STATUS = 1 and check_type=2 and to_date('" + timeUtil(2) + "','yyyy-MM-dd HH24:mi') > plan_start_time and to_date('" + timeUtil(1) + "','yyyy-MM-dd HH24:mi') < plan_end_time AND u.DEPTID='" + deptid + "'";
             /**
              * 正常巡视已完成
              */
             String zcXsYwc = "SELECT count(1)  " +
                     "FROM XS_ZC_TASK " +
-                    "WHERE STAUTS = 2 AND trunc(PLAN_START_TIME) = trunc(sysdate) AND TD_ORG='" + deptid + "'";
+                    "WHERE STAUTS = 2 AND PLAN_START_TIME<= trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate) AND TD_ORG='" + deptid + "'";
             /**
              * 保电巡视已完成
              */
             String bdXsYwc = "SELECT count(1)  " +
                     "FROM XS_TXBD_TASK " +
-                    "WHERE STAUTS = 2 AND trunc(PLAN_START_TIME) = trunc(sysdate) AND TD_ORG='" + deptid + "'";
+                    "WHERE STAUTS = 2 AND PLAN_START_TIME<= trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate) AND TD_ORG='" + deptid + "'";
             /**
              * 看护已完成
              */
             String khYwc = "SELECT count(1)  " +
                     "FROM KH_TASK " +
-                    "WHERE STATUS = 2 AND trunc(PLAN_START_TIME) = trunc(sysdate) AND YWORG_ID = '" + deptid + "'";
+                    " WHERE STATUS = 2 AND PLAN_START_TIME<= trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate) AND YWORG_ID = '" + deptid + "'";
             /**
              *现场稽查已完成
              */
             String xcJcYwc = "SELECT count(1)  " +
                     "FROM CHECK_LIVE_TASK  t left join rztsysuser u on u.id= t.user_id" +
-                    "WHERE STATUS = 2 and check_type=2 and to_date('" + timeUtil(2) + "','yyyy-MM-dd HH24:mi') > plan_start_time and to_date('" + timeUtil(1) + "','yyyy-MM-dd HH24:mi') <plan_end_time AND u.DEPTID='" + deptid + "'";
+                    " WHERE STATUS = 2 and check_type=2 and to_date('" + timeUtil(2) + "','yyyy-MM-dd HH24:mi') > plan_start_time and to_date('" + timeUtil(1) + "','yyyy-MM-dd HH24:mi') <plan_end_time AND u.DEPTID='" + deptid + "'";
             /*String sql1 = "select * from(SELECT CREATETIME FROM TIMED_TASK where THREEDAY=1 ORDER BY CREATETIME DESC ) where ROWNUM=1";
             List<Map<String, Object>> maps = this.execSql(sql1);
             Date createtime = DateUtil.parseDate(maps.get(0).get("CREATETIME").toString());
@@ -337,19 +337,29 @@ public class TwoLevelCommandPushService extends CurdService<websocket, websocket
             /**
              *后台稽查未完成
              */
-            String htJcWks = "SELECT count(*) " +
+            /*String htJcWks = "SELECT count(*) " +
                     "FROM TIMED_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID " +
                     "WHERE  k.CREATETIME > (SELECT max(CREATETIME)-10/24/60 FROM TIMED_TASK) AND k.THREEDAY = 0 AND k.STATUS = 0 AND u.DEPTID = '" + deptid + "'";
+            *//**
+             *后台稽查进行中
+             *//*
+            String htJcYks = "SELECT count(*) FROM TIMED_TASK where STATUS=1 and THREEDAY=1 and CREATETIME>( SELECT max(CREATETIME) -  600   / (1 * 24 * 60 * 60) FROM TIMED_TASK  WHERE THREEDAY = 1 )";
+            *//**
+             *后台稽查已完成
+             *//*
+            String htJcYwc = "SELECT count(*) " +
+                    "FROM TIMED_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID " +
+                    " WHERE  k.CREATETIME > (SELECT max(CREATETIME)-10/24/60 FROM TIMED_TASK) AND k.THREEDAY = 0 AND k.STATUS = 1 AND u.DEPTID = '" + deptid + "'";*/
+            String htJcWks = "SELECT count(*) FROM TIMED_TASK_RECORD WHERE CREATE_TIME >= trunc(sysdate) and (TASKS>COMPLETE) and dept_id='"+deptid+"'";
             /**
              *后台稽查进行中
              */
-            String htJcYks = "SELECT count(*) FROM TIMED_TASK where STATUS=1 and THREEDAY=1 and CREATETIME>( SELECT max(CREATETIME) -  600   / (1 * 24 * 60 * 60) FROM TIMED_TASK  WHERE THREEDAY = 1 )";
+//            String htJcYks = "SELECT count(1) FROM TIMED_TASK t WHERE  t.CREATETIME >  ( select sysdate - (3 * 24 * 60 * 60 + 60 * 60) / (1 * 24 * 60 * 60)   from  dual) AND  THREEDAY  = 1 AND t.STATUS = 1";
+            String htJcYks = "SELECT count(DISTINCT (DEPT_ID)) FROM TIMED_TASK_RECORD ";
             /**
              *后台稽查已完成
              */
-            String htJcYwc = "SELECT count(*) " +
-                    "FROM TIMED_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID " +
-                    "WHERE  k.CREATETIME > (SELECT max(CREATETIME)-10/24/60 FROM TIMED_TASK) AND k.THREEDAY = 0 AND k.STATUS = 1 AND u.DEPTID = '" + deptid + "'";
+            String htJcYwc = "SELECT count(*) FROM TIMED_TASK_RECORD WHERE CREATE_TIME >= trunc(sysdate) and (TASKS=COMPLETE) and dept_id='"+deptid+"'";
             String sql = "SELECT " +
                     "(" + zcXsWks + ")+(" + bdXsWks + ") as XsWks," +
                     "(" + zcXsJxz + ")+(" + bdXsJxz + ") as XsJxz," +
@@ -360,12 +370,8 @@ public class TwoLevelCommandPushService extends CurdService<websocket, websocket
                     "(" + xcJcJxz + ") as xcJcJxz," +
                     "(" + xcJcWks + ") as xcJcWks," +
                     "(" + xcJcYwc + ") as xcJcYwc, " +
-                    /*"(" + 0 + ") as xcJcJxz," +
-                    "(" + 0 + ") as xcJcWks," +
-                    "(" + 0 + ") as xcJcYwc, " +*/
                     "(" + htJcWks + ") as htJcWks, " +
                     "(1) as htJcYks, " +
-                    // "(" + htJcYks + ") as htJcYks, " +
                     "(" + htJcYwc + ") as htJcYwc " +
                     "  FROM dual";
             List<Map<String, Object>> list = this.execSql(sql);
@@ -375,7 +381,7 @@ public class TwoLevelCommandPushService extends CurdService<websocket, websocket
             twoLevelCommandServerEndpoint.sendText((Session) session.get("session"), map);
         });
     }
-    @Scheduled(fixedDelay = 30000)
+    @Scheduled(fixedDelay = 3000)
     public void adminModule6_1() {
         Map<String, HashMap> sendMsg = twoLevelCommandServerEndpoint.sendMsg();
         sendMsg.forEach((sessionId, session) -> {
@@ -403,7 +409,7 @@ public class TwoLevelCommandPushService extends CurdService<websocket, websocket
              */
             String xcJcWks = "SELECT count(1)  " +
                     "FROM CHECK_LIVE_TASK  t left join rztsysuser u on u.id= t.user_id" +
-                    "WHERE STATUS = 0 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate) and u.deptid='" + deptid + "'";
+                    " WHERE STATUS = 0 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate) and u.deptid='" + deptid + "'";
             /**
              * 正常巡视进行中
              */
@@ -427,7 +433,7 @@ public class TwoLevelCommandPushService extends CurdService<websocket, websocket
              */
             String xcJcJxz = "SELECT count(1)  " +
                     "FROM CHECK_LIVE_TASK  t left join rztsysuser u on u.id= t.user_id" +
-                    "WHERE STATUS = 1  AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate) and u.deptid='" + deptid + "'";
+                    " WHERE STATUS = 1  AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate) and u.deptid='" + deptid + "'";
             /**
              * 正常巡视已完成
              */
@@ -451,7 +457,7 @@ public class TwoLevelCommandPushService extends CurdService<websocket, websocket
              */
             String xcJcYwc = "SELECT count(1)  " +
                     "FROM CHECK_LIVE_TASK  t left join rztsysuser u on u.id= t.user_id" +
-                    "WHERE STATUS = 2 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate) and u.deptid='" + deptid + "'";
+                    " WHERE STATUS = 2 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate) and u.deptid='" + deptid + "'";
 
            /* String sql1 = "select * from(SELECT CREATETIME FROM TIMED_TASK where THREEDAY=1 ORDER BY CREATETIME DESC ) where ROWNUM=1";
             List<Map<String, Object>> maps = this.execSql(sql1);
@@ -460,16 +466,16 @@ public class TwoLevelCommandPushService extends CurdService<websocket, websocket
             /**
              *后台稽查未完成
              */
-            String htJcWks = "SELECT count(*) FROM TIMED_TASK_RECORD WHERE CREATE_TIME >= trunc(sysdate) and (TASKS>COMPLETE)";
+            String htJcWks = "SELECT count(*) FROM TIMED_TASK_RECORD WHERE CREATE_TIME >= trunc(sysdate) and (TASKS>COMPLETE) and dept_id='"+deptid+"'";
             /**
              *后台稽查进行中
              */
 //            String htJcYks = "SELECT count(1) FROM TIMED_TASK t WHERE  t.CREATETIME >  ( select sysdate - (3 * 24 * 60 * 60 + 60 * 60) / (1 * 24 * 60 * 60)   from  dual) AND  THREEDAY  = 1 AND t.STATUS = 1";
-            String htJcYks = "SELECT count(DISTINCT (DEPT_ID)) FROM TIMED_TASK_RECORD";
+            String htJcYks = "SELECT count(DISTINCT (DEPT_ID)) FROM TIMED_TASK_RECORD ";
             /**
              *后台稽查已完成
              */
-            String htJcYwc = "SELECT count(*) FROM TIMED_TASK_RECORD WHERE CREATE_TIME >= trunc(sysdate) and (TASKS=COMPLETE)";
+            String htJcYwc = "SELECT count(*) FROM TIMED_TASK_RECORD WHERE CREATE_TIME >= trunc(sysdate) and (TASKS=COMPLETE) and dept_id='"+deptid+"'";
             String sql = "SELECT " +
                     "(" + zcXsWks + ")+(" + bdXsWks + ") as XsWks," +
                     "(" + zcXsJxz + ")+(" + bdXsJxz + ") as XsJxz," +
@@ -481,7 +487,7 @@ public class TwoLevelCommandPushService extends CurdService<websocket, websocket
                     "(" + xcJcWks + ") as xcJcWks," +
                     "(" + xcJcYwc + ") as xcJcYwc, " +
                     "(" + htJcWks + ") as htJcWks, " +
-                    "(" + htJcYks + ") as htJcYks, " +
+                    "(" + 1 + ") as htJcYks, " +
                     "(" + htJcYwc + ") as htJcYwc " +
                     "  FROM dual";
             List<Map<String, Object>> list = this.execSql(sql);
@@ -601,10 +607,10 @@ public class TwoLevelCommandPushService extends CurdService<websocket, websocket
                 map.put("adminModule", 7);
                 twoLevelCommandServerEndpoint.sendText((Session) session.get("session"), map);
             } else if (Integer.valueOf(session.get("mapType").toString()) == 1) {
-                String khzx = " SELECT rr.ID,count(a.ID) as khzx FROM (SELECT u.ID,u.DEPTID FROM RZTSYSUSER u LEFT JOIN KH_TASK k ON u.ID = k.USER_ID WHERE LOGINSTATUS = 1 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= sysdate GROUP BY u.ID,u.DEPTID) a RIGHT JOIN RZTSYSDEPARTMENT rr ON a.DEPTID = rr.ID WHERE rr.DEPTSORT IS NOT NULL AND rr.ID = '" + deptid + "' GROUP BY rr.ID ";
-                String khlx = " SELECT rr.ID,count(a.ID) as khlx FROM (SELECT u.ID,u.DEPTID FROM RZTSYSUSER u LEFT JOIN KH_TASK k ON u.ID = k.USER_ID WHERE LOGINSTATUS = 0 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= sysdate GROUP BY u.ID,u.DEPTID) a RIGHT JOIN RZTSYSDEPARTMENT rr ON a.DEPTID = rr.ID WHERE rr.DEPTSORT IS NOT NULL AND rr.ID = '" + deptid + "' GROUP BY rr.ID ";
-                String xszx = " SELECT rr.ID,count(a.ID) as xszx FROM (SELECT r.ID,r.DEPTID FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID WHERE LOGINSTATUS = 1 AND USERDELETE = 1 AND z.PLAN_START_TIME< = sysdate AND z.PLAN_END_TIME >= sysdate GROUP BY r.ID,r.DEPTID) a RIGHT JOIN RZTSYSDEPARTMENT rr ON a.DEPTID = rr.ID WHERE rr.DEPTSORT IS NOT NULL AND rr.ID = '" + deptid + "' GROUP BY rr.ID ";
-                String xslx = " SELECT rr.ID,count(a.ID) as xslx FROM (SELECT r.ID,r.DEPTID FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID WHERE LOGINSTATUS = 0 AND USERDELETE = 1 AND z.PLAN_START_TIME< = sysdate AND z.PLAN_END_TIME >= sysdate GROUP BY r.ID,r.DEPTID) a RIGHT JOIN RZTSYSDEPARTMENT rr ON a.DEPTID = rr.ID WHERE rr.DEPTSORT IS NOT NULL AND rr.ID = '" + deptid + "' GROUP BY rr.ID ";
+                String khzx = " SELECT rr.ID,count(a.ID) as khzx FROM (SELECT u.ID,u.DEPTID FROM RZTSYSUSER u LEFT JOIN KH_TASK k ON u.ID = k.USER_ID WHERE LOGINSTATUS = 1 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND PLAN_START_TIME<= sysdate AND PLAN_END_TIME >= sysdate GROUP BY u.ID,u.DEPTID) a RIGHT JOIN RZTSYSDEPARTMENT rr ON a.DEPTID = rr.ID WHERE rr.DEPTSORT IS NOT NULL AND rr.ID = '" + deptid + "' GROUP BY rr.ID ";
+                String khlx = " SELECT rr.ID,count(a.ID) as khlx FROM (SELECT u.ID,u.DEPTID FROM RZTSYSUSER u LEFT JOIN KH_TASK k ON u.ID = k.USER_ID WHERE LOGINSTATUS = 0 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND PLAN_START_TIME<= sysdate AND PLAN_END_TIME >= sysdate GROUP BY u.ID,u.DEPTID) a RIGHT JOIN RZTSYSDEPARTMENT rr ON a.DEPTID = rr.ID WHERE rr.DEPTSORT IS NOT NULL AND rr.ID = '" + deptid + "' GROUP BY rr.ID ";
+                String xszx = " SELECT rr.ID,count(a.ID) as xszx FROM (SELECT r.ID,r.DEPTID FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID WHERE LOGINSTATUS = 1 AND USERDELETE = 1 AND z.PLAN_START_TIME<= sysdate AND z.PLAN_END_TIME >= sysdate GROUP BY r.ID,r.DEPTID) a RIGHT JOIN RZTSYSDEPARTMENT rr ON a.DEPTID = rr.ID WHERE rr.DEPTSORT IS NOT NULL AND rr.ID = '" + deptid + "' GROUP BY rr.ID ";
+                String xslx = " SELECT rr.ID,count(a.ID) as xslx FROM (SELECT r.ID,r.DEPTID FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID WHERE LOGINSTATUS = 0 AND USERDELETE = 1 AND z.PLAN_START_TIME<= sysdate AND z.PLAN_END_TIME >= sysdate GROUP BY r.ID,r.DEPTID) a RIGHT JOIN RZTSYSDEPARTMENT rr ON a.DEPTID = rr.ID WHERE rr.DEPTSORT IS NOT NULL AND rr.ID = '" + deptid + "' GROUP BY rr.ID ";
                 String deptnameSql = " SELECT t.ID,t.DEPTNAME FROM RZTSYSDEPARTMENT t WHERE t.DEPTSORT IS NOT NULL AND ID='" + deptid + "' ORDER BY t.DEPTSORT ";
                 List<Map<String, Object>> deptname = this.execSql(deptnameSql);
                 List<Map<String, Object>> list1 = null;
