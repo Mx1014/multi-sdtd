@@ -65,10 +65,28 @@ public class UnqualifiedpatrolController extends CurdController<RztSysUser, Comm
             s += " AND u.LOGINSTATUS  = ?" + listLike.size();
         }
         //  修改增加未到位类别   增加未到位原因字段      ---> 李成阳
-        String sql = "SELECT e.CREATE_TIME,x.TASK_NAME,u.DEPT,u.COMPANYNAME,u.CLASSNAME,u.REALNAME,u.PHONE, '巡视超速' as  type,e.REASON,e.TASK_ID,e.USER_ID,e.TASK_TYPE,u.LOGINSTATUS " +
-                "      FROM MONITOR_CHECK_EJ e LEFT JOIN XS_ZC_TASK x ON e.TASK_ID=x.ID LEFT JOIN USERINFO u ON x.CM_USER_ID = u.ID" +
-                "      WHERE WARNING_TYPE = 5 " + s + "";
-       /* String sql = " SELECT *" +
+//        String sql = "SELECT e.CREATE_TIME,x.TASK_NAME,u.DEPT,u.COMPANYNAME,u.CLASSNAME,u.REALNAME,u.PHONE, '巡视超速' as  type,e.REASON,e.TASK_ID,e.USER_ID,e.TASK_TYPE,u.LOGINSTATUS " +
+//                "      FROM MONITOR_CHECK_EJ e LEFT JOIN XS_ZC_TASK x ON e.TASK_ID=x.ID LEFT JOIN USERINFO u ON x.CM_USER_ID = u.ID" +
+//                "      WHERE (WARNING_TYPE = 5 OR WARNING_TYPE = 3)  " + s + "";
+        String sql = " SELECT a.*,w.WARNING_NAME AS type  FROM (\n" +
+                "SELECT\n" +
+                "  e.CREATE_TIME,\n" +
+                "  x.TASK_NAME,\n" +
+                "  u.DEPT,\n" +
+                "  u.COMPANYNAME,\n" +
+                "  u.CLASSNAME,\n" +
+                "  u.REALNAME,\n" +
+                "  u.PHONE,\n" +
+                "  WARNING_TYPE,\n" +
+                "  e.REASON,\n" +
+                "  e.TASK_ID,\n" +
+                "  e.USER_ID,\n" +
+                "  e.TASK_TYPE,\n" +
+                "  u.LOGINSTATUS\n" +
+                "FROM MONITOR_CHECK_EJ e LEFT JOIN XS_ZC_TASK x ON e.TASK_ID = x.ID\n" +
+                "  LEFT JOIN USERINFO u ON x.CM_USER_ID = u.ID\n" +
+                "WHERE (WARNING_TYPE = 5 OR WARNING_TYPE = 3)  " + s + " ) a LEFT JOIN WARNING_TYPE w ON a.WARNING_TYPE = w.WARNING_TYPE\n ";
+        /* String sql = " SELECT *" +
                 "         FROM (SELECT e.CREATE_TIME,x.TASK_NAME,u.DEPT,u.COMPANYNAME,u.CLASSNAME,u.REALNAME,u.PHONE, '巡视超速' as  type,e.REASON" +
                 "      FROM MONITOR_CHECK_EJ e LEFT JOIN XS_ZC_TASK x ON e.TASK_ID=x.ID LEFT JOIN USERINFO u ON x.CM_USER_ID = u.ID" +
                 "      WHERE WARNING_TYPE = 5 "+s+" )" +

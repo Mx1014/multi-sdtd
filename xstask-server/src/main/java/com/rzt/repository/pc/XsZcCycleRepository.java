@@ -76,4 +76,14 @@ public interface XsZcCycleRepository extends JpaRepository<XsZcCycle,String> {
     @Transactional
     @Query(value = "INSERT INTO XS_ZC_CYCLE_RECORD (id, XS_ZC_CYCLE_ID, XS_ZC_CYCLE, PLAN_XS_NUM, CHANGE_REASON, DESCRIPTION, PROPOSER_ID, PROPOSER_TIME, PROPOSER_STATUS,PROPOSER_TYPE) values (?1,?2,?3,?4,?5,?6,?7,sysdate,?8,?9)", nativeQuery = true)
     void insertCycleRecord(Long id,Long xsZcCycleId,int cycle,int planXsNum,String changeReason,String description,String proposerId,int proposerStatus,int proposerType);
+
+    @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM MONITOR_CHECK_EJ WHERE TASK_ID IN (?1)  AND TASK_TYPE=1", nativeQuery = true)
+    void deleteMonitorEj(Long[] ids);
+
+    @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM MONITOR_CHECK_YJ WHERE TASK_ID IN (?1)  AND TASK_TYPE=1", nativeQuery = true)
+    void deleteMonitorYj(Long[] ids);
 }

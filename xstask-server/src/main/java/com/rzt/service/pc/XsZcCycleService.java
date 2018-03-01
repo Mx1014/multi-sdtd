@@ -1,8 +1,8 @@
-/**    
- * 文件名：XsZcCycleService           
- * 版本信息：    
- * 日期：2017/12/07 07:50:10    
- * Copyright 融智通科技(北京)股份有限公司 版权所有    
+/**
+ * 文件名：XsZcCycleService
+ * 版本信息：
+ * 日期：2017/12/07 07:50:10
+ * Copyright 融智通科技(北京)股份有限公司 版权所有
  */
 package com.rzt.service.pc;
 
@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -39,14 +40,14 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
 
-/**      
- * 类名称：XsZcCycleService    
- * 类描述：${table.comment}    
- * 创建人：张虎成   
- * 创建时间：2017/12/07 07:50:10 
- * 修改人：张虎成    
- * 修改时间：2017/12/07 07:50:10    
- * 修改备注：    
+/**
+ * 类名称：XsZcCycleService
+ * 类描述：${table.comment}
+ * 创建人：张虎成
+ * 创建时间：2017/12/07 07:50:10
+ * 修改人：张虎成
+ * 修改时间：2017/12/07 07:50:10
+ * 修改备注：
  **-0* @version
  */
 @Service
@@ -379,7 +380,7 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
             if (null != home && home.equals("1")){
                 sqlBuffer.append(" and PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= trunc(sysdate)");
             }else {
-                sqlBuffer.append(" and PLAN_END_TIME >= trunc(sysdate) and  PLAN_START_TIME <= trunc(sysdate+1)");
+//                sqlBuffer.append(" and PLAN_END_TIME >= trunc(sysdate) and  PLAN_START_TIME <= trunc(sysdate+1)");
             }
         }
 
@@ -1092,6 +1093,33 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
         return maps;
     }
 
+    /**
+     *当任务删除时， 删除告警记录
+     */
+    public void deleteMonitor(Long[] ids) {
+        for (Long id:ids) {
+            removeKey("TWO+"+id+"+1+*");
+            removeKey("ONE+"+id+"+1+*");
+        }
+        this.reposiotry.deleteMonitorEj(ids);
+        this.reposiotry.deleteMonitorYj(ids);
+    }
+    public void removeKey(String s){
 
+        RedisConnection connection = null;
+        try {
+            connection = redisTemplate.getConnectionFactory().getConnection();
+            connection.select(1);
+            Set<byte[]> keys = connection.keys(s.getBytes());
+            byte[][] ts = keys.toArray(new byte[][]{});
+            if(ts.length > 0) {
+                connection.del(ts);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            connection.close();
+        }
+    }
 }
 
