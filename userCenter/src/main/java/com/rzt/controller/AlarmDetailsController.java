@@ -85,7 +85,7 @@ public class AlarmDetailsController extends CurdController<RztSysUser, CommonSer
                     "                                                 nvl(sum(decode(WARNING_TYPE, 4, 1, 10, 1, 0)), 0) AS ANSWERTIME,\n" +
                     "                                                 nvl(sum(decode(WARNING_TYPE, 1, 1, 0)), 0)        AS OVERDUE,\n" +
                     "                                                 nvl(sum(decode(WARNING_TYPE, 7, 1, 0)), 0)        AS TEMPORARILY,\n" +
-                    "                                                 nvl(sum(decode(WARNING_TYPE, 5, 1, 0)), 0)        AS UNQUALIFIEDPATROL,\n" +
+                    "                                                 nvl(sum(decode(WARNING_TYPE, 5, 1, 3,1,0)), 0)        AS UNQUALIFIEDPATROL,\n" +
                     "                                                 DEPTID\n" +
                     "                                               FROM MONITOR_CHECK_EJ\n" +
                     "                                               WHERE 1 = 1 AND TASK_STATUS = 0 AND trunc(CREATE_TIME) = trunc(sysdate)\n" +
@@ -156,7 +156,7 @@ public class AlarmDetailsController extends CurdController<RztSysUser, CommonSer
             /**
              * 巡视不合格
              */
-            String xsUnqualifiedpatrol = " SELECT count(1) as unqualifiedpatrol,x.CLASS_ID as CLASS_ID FROM (SELECT TASK_ID FROM MONITOR_CHECK_EJ WHERE WARNING_TYPE = 5  AND DEPTID = ?1  " + s + " ) e LEFT JOIN XS_ZC_TASK x ON e.TASK_ID = x.ID GROUP BY x.CLASS_ID ";
+            String xsUnqualifiedpatrol = " SELECT count(1) as unqualifiedpatrol,x.CLASS_ID as CLASS_ID FROM (SELECT TASK_ID FROM MONITOR_CHECK_EJ WHERE （WARNING_TYPE = 5 or WARNING_TYPE = 3 ) AND DEPTID = ?1  " + s + " ) e LEFT JOIN XS_ZC_TASK x ON e.TASK_ID = x.ID GROUP BY x.CLASS_ID ";
             String className = " SELECT ID,DEPTNAME FROM (SELECT ID,DEPTNAME,LASTNODE FROM RZTSYSDEPARTMENT START WITH ID = ?1 CONNECT BY PRIOR ID = DEPTPID) WHERE LASTNODE = 0 ";
             List<Map<String, Object>> list = this.service.execSql(offlines, listLike.toArray());
             List<Map<String, Object>> list1 = this.service.execSql(xsAnswertime, listLike.toArray());
@@ -207,14 +207,14 @@ public class AlarmDetailsController extends CurdController<RztSysUser, CommonSer
                     OVERDUEs = OVERDUE;
                 }
                 Integer TEMPORARILYs = 0;
-                Integer TEMPORARILY = map6.get(id);
+                Integer TEMPORARILY = map5.get(id);
                 if (!StringUtils.isEmpty(TEMPORARILY)) {
                     TEMPORARILYs = TEMPORARILY;
                 }
                 Integer UNQUALIFIEDPATROLs = 0;
                 Integer UNQUALIFIEDPATROL = map6.get(id);
                 if (!StringUtils.isEmpty(UNQUALIFIEDPATROL)) {
-                    UNQUALIFIEDPATROLs = OFFLINES;
+                    UNQUALIFIEDPATROLs = UNQUALIFIEDPATROL;
                 }
                 map.put("OFFLINES", OFFLINESs);
                 map.put("ANSWERTIME", XSANSWERTIMEs + KHANSWERTIMEs);
@@ -259,7 +259,7 @@ public class AlarmDetailsController extends CurdController<RztSysUser, CommonSer
             String answertimeS = " SELECT nvl(sum(decode(TASK_TYPE, 1, 1, 0)),0) XSANSWERTIME,sum(decode(TASK_TYPE, 2, 1, 0)) KHANSWERTIME FROM MONITOR_CHECK_EJ WHERE (WARNING_TYPE = 4 OR WARNING_TYPE = 10)  " + s;
             String overdueS = " SELECT nvl(sum(decode(TASK_TYPE, 1, 1, 0)),0) OVERDUE FROM MONITOR_CHECK_EJ WHERE WARNING_TYPE = 1  " + s;
             String temporarilyS = " SELECT nvl(sum(decode(TASK_TYPE, 2, 1, 0)),0) TEMPORARILY FROM MONITOR_CHECK_EJ WHERE WARNING_TYPE = 7  " + s;
-            String unqualifiedpatrolS = " SELECT nvl(sum(decode(TASK_TYPE, 1, 1, 0)),0) UNQUALIFIEDPATROL FROM MONITOR_CHECK_EJ WHERE WARNING_TYPE = 5  " + s;
+            String unqualifiedpatrolS = " SELECT nvl(sum(decode(TASK_TYPE, 1, 1, 0)),0) UNQUALIFIEDPATROL FROM MONITOR_CHECK_EJ WHERE (WARNING_TYPE = 5 OR WARNING_TYPE = 3)  " + s;
             List<Map<String, Object>> offlines = this.service.execSql(offlinesS, list.toArray());
             List<Map<String, Object>> answertime = this.service.execSql(answertimeS, list.toArray());
             List<Map<String, Object>> overdue = this.service.execSql(overdueS, list.toArray());

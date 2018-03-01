@@ -26,6 +26,7 @@ import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
@@ -142,7 +143,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         }
     }
 
-    public WebApiResponse listCoordinate(String yhjb, String yhlb, JSONObject josn, String queryAll) {
+    public WebApiResponse listCoordinate(String yhjb, String yhlb, JSONObject josn, String queryAll,String deptId) {
         try {
             List params = new ArrayList<>();
             StringBuffer buffer = new StringBuffer();
@@ -151,7 +152,11 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             Object tdId = jsonObject.get("DEPTID");
             Object companyid = jsonObject.get("COMPANYID");
             buffer.append(" where yhzt=0 ");
-            if (roleType == 1 || roleType == 2) {
+            if (roleType==0){
+                if (!StringUtils.isEmpty(deptId)){
+                    buffer.append(" andy.YWORG_ID = '" + deptId + "'");
+                }
+            }else if (roleType == 1 || roleType == 2) {
                 buffer.append(" and y.YWORG_ID = '" + tdId + "'");
             }
             if (roleType == 3) {
@@ -173,7 +178,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
 //            buffer.append(" and yhzt = 0 ");
             String sql = "";
             if (queryAll != null) {
-                sql = "select * from KH_YH_HISTORY y "+buffer.toString();
+                sql = "select id as yhid,y.* from KH_YH_HISTORY y "+buffer.toString();
                 List<Map<String, Object>> maps = this.execSql(sql, params.toArray());
                 return WebApiResponse.success(this.execSql(sql,params.toArray()));
             } else {

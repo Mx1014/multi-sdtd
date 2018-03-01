@@ -162,7 +162,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
                     for (int i = 0; i < split.length; i++) {
                         String sql = "SELECT LOGINSTATUS status FROM RZTSYSUSER where id=?";
                         Map<String, Object> status = this.execSqlSingleResult(sql, split[i]);
-                        if (status.get("STATUS").toString().equals("1")) {
+                        if (status.get("STATUS").toString().equals("0")) {
                             a++;
                         } else {
                             b++;
@@ -236,7 +236,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
             /**
              * 巡视不合格
              */
-            String unqualifiedpatrol = " SELECT count(1) as unqualifiedpatrol FROM MONITOR_CHECK_EJ WHERE WARNING_TYPE = 5 AND trunc(CREATE_TIME) = trunc(sysdate) ";
+            String unqualifiedpatrol = " SELECT count(1) as unqualifiedpatrol FROM MONITOR_CHECK_EJ WHERE (WARNING_TYPE = 5 OR WARNING_TYPE = 3) AND trunc(CREATE_TIME) = trunc(sysdate) ";
             try {
                 Map map1 = new HashMap();
                 Map map = new HashMap();
