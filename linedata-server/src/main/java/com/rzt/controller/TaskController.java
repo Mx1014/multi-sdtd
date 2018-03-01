@@ -32,8 +32,8 @@ public class TaskController extends CurdController<KHYHHISTORY,TasksService>  {
      * @return
      */
     @GetMapping("/findTaskSum")
-    public WebApiResponse findTaskInfo(){
-        return tasksService.deptDaZhu1();
+    public WebApiResponse findTaskInfo(String tokenUserId){
+        return tasksService.deptDaZhu1(tokenUserId);
     }
     /**
      * 二级页面使用
@@ -41,8 +41,8 @@ public class TaskController extends CurdController<KHYHHISTORY,TasksService>  {
      * @return
      */
     @GetMapping("/findTasksGroupDept")
-    public WebApiResponse findTasksGroupDept(){
-        return tasksService.deptDaZhu();
+    public WebApiResponse findTasksGroupDept(String tokenUserId){
+        return tasksService.deptDaZhu(tokenUserId);
     }
 
 
@@ -83,6 +83,16 @@ public class TaskController extends CurdController<KHYHHISTORY,TasksService>  {
         return tasksService.findTaskInfoByTaskId(taskType,taskId,deptId,realTime);
     }
 
+    /**
+     * 根据任务id和任务类型 查询当前任务的图片
+     * @param taskId
+     * @param taskType
+     * @return
+     */
+    @GetMapping("/findPicByTaskId")
+    public WebApiResponse findPicByTaskId(String taskId,String taskType,Integer page,Integer size){
+        return tasksService.findPicByTaskId(taskId,taskType,page,size);
 
+    }
 
 }

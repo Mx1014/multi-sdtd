@@ -32,7 +32,7 @@ public class OfflinesController extends CurdController<RztSysUser, CommonService
      * @return
      */
     @RequestMapping("OfflinesList")
-    public WebApiResponse OfflinesList(Integer workType, Integer page, Integer size, String currentUserId, String startTime, String endTime, String deptId, String taskType,String loginType) {
+    public WebApiResponse OfflinesList(Integer workType, Integer page, Integer size, String currentUserId, String startTime, String endTime, String deptId, String taskType, String loginType) {
         org.springframework.data.domain.Pageable pageable = new PageRequest(page, size);
         List listLike = new ArrayList();
         String s = "";
@@ -49,7 +49,7 @@ public class OfflinesController extends CurdController<RztSysUser, CommonService
             listLike.add(deptid);
             s += " AND DEPTID= ?" + listLike.size();
         }
-        if (!StringUtils.isEmpty(loginType)){
+        if (!StringUtils.isEmpty(loginType)) {
             listLike.add(loginType);
             s2 += " AND LOGINSTATUS=?" + listLike.size();
         }
@@ -131,8 +131,8 @@ public class OfflinesController extends CurdController<RztSysUser, CommonService
                 "              MAX(ej.CREATE_TIME)                                                 AS CREATE_TIME " +
 
                 "            FROM MONITOR_CHECK_EJ ej " +
-                "            WHERE (ej.WARNING_TYPE = 8 OR ej.WARNING_TYPE = 2) AND USER_ID !='null'  " + s +
-                "            GROUP BY USER_ID) e JOIN USERINFO u ON e.USER_ID = u.ID AND u.USERDELETE=1 "+s2+" ) ch LEFT JOIN MONITOR_CHECK_EJ ce " +
+                "            WHERE (ej.WARNING_TYPE = 8 OR ej.WARNING_TYPE = 2 OR WARNING_TYPE = 13 ) AND USER_ID !='null' AND TASK_STATUS=0 AND USER_LOGIN_TYPE = 0  " + s +
+                "            GROUP BY USER_ID) e JOIN USERINFO u ON e.USER_ID = u.ID AND u.USERDELETE=1 " + s2 + " ) ch LEFT JOIN MONITOR_CHECK_EJ ce " +
                 "    ON ch.USER_ID = ce.USER_ID AND ch.CREATE_TIME = (ce.CREATE_TIME -90/(60*24))  " + s1;
         try {
             return WebApiResponse.success(this.service.execSqlPage(pageable, sql, listLike.toArray()));

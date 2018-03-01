@@ -7,6 +7,7 @@ import com.rzt.util.WebApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -51,7 +52,7 @@ public class HistoryController extends CurdController<RztSysUser, CommonService>
             s1 += " AND YWORG_ID = ?" + listLike1.size();
             listLike2.add(deptId);
             s2 += " AND YWORG_ID = ?" + listLike2.size();
-            listLike3.add(deptid);
+            listLike3.add(deptId);
             s3 += " AND ID=?" + listLike3.size();
 
         }
@@ -61,7 +62,7 @@ public class HistoryController extends CurdController<RztSysUser, CommonService>
             listLike.add(startTime);
             s += " AND CREATE_TIME>= to_date( ?" + listLike.size() + ",'yyyy-MM-dd hh24:mi:ss')";
         } else {
-            s += "  AND CREATE_TIME is not null ";
+            s += " AND trunc(CREATE_TIME) = trunc(sysdate) ";
         }
         if (!StringUtils.isEmpty(startTime) && !StringUtils.isEmpty(endTime)) {
             listLike1.add(endTime);
@@ -69,15 +70,15 @@ public class HistoryController extends CurdController<RztSysUser, CommonService>
             listLike1.add(startTime);
             s1 += " AND UPDATE_TIME>= to_date( ?" + listLike1.size() + ",'yyyy-MM-dd hh24:mi:ss')";
         } else {
-            s1 += "  AND UPDATE_TIME is not null ";
+            s1 += " AND trunc(UPDATE_TIME) = trunc(sysdate) ";
         }
         if (!StringUtils.isEmpty(startTime) && !StringUtils.isEmpty(endTime)) {
             listLike2.add(endTime);
-            s2 += " AND YHXQ_TIME<= to_date(?" + listLike2.size() + ",'yyyy-MM-dd hh24:mi:ss')";
+            s2 += " AND <= to_date(?" + listLike2.size() + ",'yyyy-MM-dd hh24:mi:ss')";
             listLike2.add(startTime);
             s2 += " AND YHXQ_TIME>= to_date( ?" + listLike2.size() + ",'yyyy-MM-dd hh24:mi:ss')";
         } else {
-            s2 += "  AND YHXQ_TIME is not null ";
+            s2 += " AND trunc(YHXQ_TIME) = trunc(sysdate) ";
         }
 
         String creatHistory = " SELECT " +
@@ -158,6 +159,19 @@ public class HistoryController extends CurdController<RztSysUser, CommonService>
             } else {
                 map3.putAll(id2);
             }
+            String deptName = (String) map3.get("DEPTNAME");
+            if (deptName.contains("本部")) {
+                deptName = "本部";
+            } else {
+                deptName = deptName.substring(0, deptName.length() - 2);
+            }
+            int length = deptName.length();
+            StringBuffer sb = new StringBuffer();
+            for (int i = 0; i < length; i++) {
+                String substring = deptName.substring(i, i + 1);
+                sb.append(substring + "\n");
+            }
+            map3.put("DEPT", sb.toString());
         }
         try {
             return WebApiResponse.success(list3);

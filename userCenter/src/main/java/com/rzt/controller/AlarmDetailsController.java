@@ -45,26 +45,73 @@ public class AlarmDetailsController extends CurdController<RztSysUser, CommonSer
                 listLike.add(DEPTID);
                 s += " AND DEPTID= ?" + listLike.size();
             }
-            String alarm = " SELECT " +
-                    "  NVL(A.OFFLINES,0) AS OFFLINES, " +
-                    "  NVL(A.ANSWERTIME,0) AS ANSWERTIME, " +
-                    "  NVL(A.OVERDUE,0) AS OVERDUE, " +
-                    "  NVL(A.TEMPORARILY,0) AS TEMPORARILY, " +
-                    "  NVL(A.UNQUALIFIEDPATROL,0) AS UNQUALIFIEDPATROL, " +
-                    "  T.ID AS DEPTID, " +
-                    "  T.DEPTNAME " +
-                    "FROM RZTSYSDEPARTMENT T LEFT JOIN (SELECT " +
-                    "                                     nvl(sum(decode(WARNING_TYPE, 2, 1, 8, 1, 0)), 0)  AS OFFLINES, " +
-                    "                                     nvl(sum(decode(WARNING_TYPE, 4, 1, 10, 1, 0)), 0) AS ANSWERTIME, " +
-                    "                                     nvl(sum(decode(WARNING_TYPE, 1, 1, 0)), 0)        AS OVERDUE, " +
-                    "                                     nvl(sum(decode(WARNING_TYPE, 7, 1, 0)), 0)        AS TEMPORARILY, " +
-                    "                                     nvl(sum(decode(WARNING_TYPE, 5, 1, 0)), 0)        AS UNQUALIFIEDPATROL, " +
-                    "                                     DEPTID " +
-                    "                                   FROM MONITOR_CHECK_EJ " +
-                    "                                   WHERE 1 = 1  " + s +
-                    "                                   GROUP BY DEPTID) A ON T.ID = A.DEPTID " +
-                    "WHERE T.DEPTSORT IS NOT NULL " +
-                    "ORDER BY T.DEPTSORT ";
+//            String alarm = " SELECT " +
+//                    "  NVL(A.OFFLINES,0) AS OFFLINES, " +
+//                    "  NVL(A.ANSWERTIME,0) AS ANSWERTIME, " +
+//                    "  NVL(A.OVERDUE,0) AS OVERDUE, " +
+//                    "  NVL(A.TEMPORARILY,0) AS TEMPORARILY, " +
+//                    "  NVL(A.UNQUALIFIEDPATROL,0) AS UNQUALIFIEDPATROL, " +
+//                    "  T.ID AS DEPTID, " +
+//                    "  T.DEPTNAME " +
+//                    "FROM RZTSYSDEPARTMENT T LEFT JOIN (SELECT " +
+//                    "                                     nvl(sum(decode(WARNING_TYPE, 2, 1, 8, 1,13,1,0)), 0)  AS OFFLINES, " +
+//                    "                                     nvl(sum(decode(WARNING_TYPE, 4, 1, 10, 1, 0)), 0) AS ANSWERTIME, " +
+//                    "                                     nvl(sum(decode(WARNING_TYPE, 1, 1, 0)), 0)        AS OVERDUE, " +
+//                    "                                     nvl(sum(decode(WARNING_TYPE, 7, 1, 0)), 0)        AS TEMPORARILY, " +
+//                    "                                     nvl(sum(decode(WARNING_TYPE, 5, 1, 0)), 0)        AS UNQUALIFIEDPATROL, " +
+//                    "                                     DEPTID " +
+//                    "                                   FROM MONITOR_CHECK_EJ " +
+//                    "                                   WHERE 1 = 1 AND TASK_STATUS = 0 " + s +
+//                    "                                   GROUP BY DEPTID) A ON T.ID = A.DEPTID " +
+//                    "WHERE T.DEPTSORT IS NOT NULL " +
+//                    "ORDER BY T.DEPTSORT ";
+            String alarm = "SELECT\n" +
+                    "  NVL(A.OFFLINES, 0)          AS OFFLINES,\n" +
+                    "  NVL(A.ANSWERTIME, 0)        AS ANSWERTIME,\n" +
+                    "  NVL(A.OVERDUE, 0)           AS OVERDUE,\n" +
+                    "  NVL(A.TEMPORARILY, 0)       AS TEMPORARILY,\n" +
+                    "  NVL(A.UNQUALIFIEDPATROL, 0) AS UNQUALIFIEDPATROL,\n" +
+                    "  T.ID                        AS DEPTID,\n" +
+                    "  T.DEPTNAME\n" +
+                    "FROM RZTSYSDEPARTMENT T LEFT JOIN (SELECT\n" +
+                    "                                     cc.UNQUALIFIEDPATROL,\n" +
+                    "                                     CC.TEMPORARILY,\n" +
+                    "                                     CC.OVERDUE,\n" +
+                    "                                     CC.ANSWERTIME,\n" +
+                    "                                     CC.OFFLINES,\n" +
+                    "                                     CC.DEPTID\n" +
+                    "                                   FROM (SELECT *\n" +
+                    "                                         FROM (SELECT\n" +
+                    "                                                 nvl(sum(decode(WARNING_TYPE, 4, 1, 10, 1, 0)), 0) AS ANSWERTIME,\n" +
+                    "                                                 nvl(sum(decode(WARNING_TYPE, 1, 1, 0)), 0)        AS OVERDUE,\n" +
+                    "                                                 nvl(sum(decode(WARNING_TYPE, 7, 1, 0)), 0)        AS TEMPORARILY,\n" +
+                    "                                                 nvl(sum(decode(WARNING_TYPE, 5, 1, 0)), 0)        AS UNQUALIFIEDPATROL,\n" +
+                    "                                                 DEPTID\n" +
+                    "                                               FROM MONITOR_CHECK_EJ\n" +
+                    "                                               WHERE 1 = 1 AND TASK_STATUS = 0 AND trunc(CREATE_TIME) = trunc(sysdate)\n" +
+                    "                                               GROUP BY DEPTID) aa LEFT JOIN (SELECT\n" +
+                    "  sum(ddd.ccc) AS OFFLINES,\n" +
+                    "  ddd.DEPTID   AS DEPP\n" +
+                    "FROM (\n" +
+                    "       SELECT\n" +
+                    "         nvl(sum(decode(WARNING_TYPE, 2,\n" +
+                    "                        1, 8,\n" +
+                    "                        1, 13, 1, 0)),\n" +
+                    "             0) AS ccc,\n" +
+                    "         DEPTID\n" +
+                    "       FROM (SELECT DISTINCT\n" +
+                    "               USER_ID,\n" +
+                    "               WARNING_TYPE,\n" +
+                    "               DEPTID\n" +
+                    "             FROM MONITOR_CHECK_EJ\n" +
+                    "       WHERE trunc(CREATE_TIME) =\n" +
+                    "             trunc(sysdate)  AND TASK_STATUS = 0 AND USER_LOGIN_TYPE = 0 )\n" +
+                    "\n" +
+                    "       GROUP BY DEPTID) ddd\n" +
+                    "GROUP BY DEPTID) bb\n" +
+                    "                                             ON aa.DEPTID = bb.DEPP) cc) A ON T.ID = A.DEPTID\n" +
+                    "WHERE T.DEPTSORT IS NOT NULL\n" +
+                    "ORDER BY T.DEPTSORT";
             List<Map<String, Object>> alarms = this.service.execSql(alarm, listLike.toArray());
             return WebApiResponse.success(alarms);
         } else if (roletype == 1 || roletype == 2) {
@@ -91,8 +138,8 @@ public class AlarmDetailsController extends CurdController<RztSysUser, CommonSer
              * 离线人员
              */
             String offlines = " SELECT count(1) AS OFFLINES," +
-                    "  u.CLASSNAME as CLASS_ID FROM (SELECT USER_ID FROM MONITOR_CHECK_EJ  WHERE DEPTID = ?1 AND (WARNING_TYPE = 8 OR WARNING_TYPE = 2) " +
-                    "  " + s + " ) e LEFT JOIN RZTSYSUSER u ON e.USER_ID = u.ID GROUP BY u.CLASSNAME ";
+                    "  u.CLASSNAME as CLASS_ID FROM (SELECT USER_ID FROM MONITOR_CHECK_EJ  WHERE DEPTID = ?1 AND (WARNING_TYPE = 8 OR WARNING_TYPE = 2 OR WARNING_TYPE = 13 )  AND TASK_STATUS = 0 AND USER_LOGIN_TYPE = 0 " +
+                    "  " + s + " GROUP BY USER_ID ) e LEFT JOIN RZTSYSUSER u ON e.USER_ID = u.ID GROUP BY u.CLASSNAME ";
             /**
              *未按时开始任务
              */
@@ -145,27 +192,27 @@ public class AlarmDetailsController extends CurdController<RztSysUser, CommonSer
                     OFFLINESs = OFFLINES;
                 }
                 Integer XSANSWERTIMEs = 0;
-                Integer XSANSWERTIME = map1.get(id);
+                Integer XSANSWERTIME = map2.get(id);
                 if (!StringUtils.isEmpty(XSANSWERTIME)) {
                     XSANSWERTIMEs = XSANSWERTIME;
                 }
                 Integer KHANSWERTIMEs = 0;
-                Integer KHANSWERTIME = map1.get(id);
+                Integer KHANSWERTIME = map3.get(id);
                 if (!StringUtils.isEmpty(KHANSWERTIME)) {
                     KHANSWERTIMEs = KHANSWERTIME;
                 }
                 Integer OVERDUEs = 0;
-                Integer OVERDUE = map1.get(id);
+                Integer OVERDUE = map4.get(id);
                 if (!StringUtils.isEmpty(OVERDUE)) {
                     OVERDUEs = OVERDUE;
                 }
                 Integer TEMPORARILYs = 0;
-                Integer TEMPORARILY = map1.get(id);
+                Integer TEMPORARILY = map6.get(id);
                 if (!StringUtils.isEmpty(TEMPORARILY)) {
                     TEMPORARILYs = TEMPORARILY;
                 }
                 Integer UNQUALIFIEDPATROLs = 0;
-                Integer UNQUALIFIEDPATROL = map1.get(id);
+                Integer UNQUALIFIEDPATROL = map6.get(id);
                 if (!StringUtils.isEmpty(UNQUALIFIEDPATROL)) {
                     UNQUALIFIEDPATROLs = OFFLINES;
                 }
@@ -204,7 +251,11 @@ public class AlarmDetailsController extends CurdController<RztSysUser, CommonSer
             s += " AND trunc(CREATE_TIME) = trunc(sysdate) ";
         }
         try {
-            String offlinesS = " SELECT  nvl(sum(decode(TASK_TYPE, 1, 1, 0)),0) xsOFFLINES , sum(decode(TASK_TYPE, 2, 1, 0)) khOFFLINES,   sum(decode(TASK_TYPE, 3, 1, 0)) xcjcOFFLINES  FROM MONITOR_CHECK_EJ  WHERE (WARNING_TYPE = 8 OR WARNING_TYPE = 2)  " + s;
+            String offlinesS = " SELECT\n" +
+                    "  nvl(sum(decode(TASK_TYPE, 1, 1, 0)), 0) xsOFFLINES,\n" +
+                    "  sum(decode(TASK_TYPE, 2, 1, 0))         khOFFLINES,\n" +
+                    "  sum(decode(TASK_TYPE, 3, 1, 0))         xcjcOFFLINES\n" +
+                    "FROM (SELECT DISTINCT USER_ID,TASK_TYPE FROM MONITOR_CHECK_EJ  WHERE  (WARNING_TYPE = 8 OR WARNING_TYPE = 2 OR WARNING_TYPE = 13) AND TASK_STATUS = 0 AND USER_LOGIN_TYPE = 0  " + s + ") ";
             String answertimeS = " SELECT nvl(sum(decode(TASK_TYPE, 1, 1, 0)),0) XSANSWERTIME,sum(decode(TASK_TYPE, 2, 1, 0)) KHANSWERTIME FROM MONITOR_CHECK_EJ WHERE (WARNING_TYPE = 4 OR WARNING_TYPE = 10)  " + s;
             String overdueS = " SELECT nvl(sum(decode(TASK_TYPE, 1, 1, 0)),0) OVERDUE FROM MONITOR_CHECK_EJ WHERE WARNING_TYPE = 1  " + s;
             String temporarilyS = " SELECT nvl(sum(decode(TASK_TYPE, 2, 1, 0)),0) TEMPORARILY FROM MONITOR_CHECK_EJ WHERE WARNING_TYPE = 7  " + s;
