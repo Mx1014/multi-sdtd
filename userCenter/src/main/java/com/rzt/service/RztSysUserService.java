@@ -365,6 +365,7 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
                             e.printStackTrace();
                         }
                     }
+                    this.reposiotry.updateMonitorCheckEjUserLoginType(1, userid.get(0).get("ID").toString());
                     return WebApiResponse.success(userid1);
                 }
             }
@@ -377,11 +378,12 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
 
     @Transactional
     public WebApiResponse userQuit(String id) {
-        String userAccout = "SELECT * FROM RZTSYSUSER where id=?1";
+        String userAccout = "SELECT * FROM USERINFO where id=?1";
         try {
             this.reposiotry.quitUserLOGINSTATUS(id);
             //人员登陆时间添加
             this.reposiotry.insRztuserLoginTypeTime(id, 0);
+            this.reposiotry.updateMonitorCheckEjUserLoginType(0, id);
             Map<String, Object> stringObjectMap = this.execSqlSingleResult(userAccout, id);
             HashOperations hashOperations = redisTemplate.opsForHash();
             hashOperations.put("UserInformation", id, stringObjectMap);

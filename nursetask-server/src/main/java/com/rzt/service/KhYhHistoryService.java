@@ -17,6 +17,7 @@ import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DateUtil;
 import com.rzt.utils.ExcelUtil;
 import com.rzt.utils.HanyuPinyinHelper;
+import com.rzt.utils.SnowflakeIdWorker;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -25,6 +26,7 @@ import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
@@ -141,7 +143,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         }
     }
 
-    public WebApiResponse listCoordinate(String yhjb, String yhlb, JSONObject josn) {
+    public WebApiResponse listCoordinate(String yhjb, String yhlb, JSONObject josn, String queryAll,String deptId) {
         try {
             List params = new ArrayList<>();
             StringBuffer buffer = new StringBuffer();
@@ -150,11 +152,15 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             Object tdId = jsonObject.get("DEPTID");
             Object companyid = jsonObject.get("COMPANYID");
             buffer.append(" where yhzt=0 ");
-            if (roleType == 1 || roleType == 2) {
-                buffer.append(" and y.YWORG_ID = '" + tdId+"'");
+            if (roleType==0){
+                if (!StringUtils.isEmpty(deptId)){
+                    buffer.append(" andy.YWORG_ID = '" + deptId + "'");
+                }
+            }else if (roleType == 1 || roleType == 2) {
+                buffer.append(" and y.YWORG_ID = '" + tdId + "'");
             }
             if (roleType == 3) {
-                buffer.append(" and y.WXORG_ID ='" + companyid+"'");
+                buffer.append(" and y.WXORG_ID ='" + companyid + "'");
             }
             if (yhjb != null && !yhjb.equals("")) {
                 String[] split = yhjb.split(",");
@@ -170,30 +176,38 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 params.add("%" + yhlb + "%");
             }
 //            buffer.append(" and yhzt = 0 ");
-            String sql = "SELECT DISTINCT(y.id) as yhid, y.* FROM ( SELECT  y.id as yh_id, y.* FROM KH_YH_HISTORY y WHERE YHLB LIKE '在施类' AND YHZT = 0 UNION ALL SELECT DISTINCT  (s.YH_ID), y.* FROM KH_YH_HISTORY y, KH_SITE s  WHERE s.YH_ID = y.ID AND s.STATUS = 1 AND y.yhzt = 0) y " + buffer.toString();
-            List<Map<String, Object>> list = this.execSql(sql, params.toArray());
-            List<Object> list1 = new ArrayList<>();
-            for (Map map : list) {
-                if (map != null && map.size() > 0 && map.get("JD") != null) {
-                    sql = "select u.realname from kh_site s left join rztsysuser u on u.id =s.user_id where yh_id=?";
-                    List<Map<String, Object>> nameList = this.execSql(sql, Long.parseLong(map.get("ID").toString()));
-                    String realname = "";
-                    map.put("USERNAME", "无");
-                    try {
-                        if (nameList.size() > 0) {
-                            for (int i = 0; i < nameList.size(); i++) {
-                                if (!realname.contains((nameList.get(i).get("REALNAME")).toString())) {
-                                    realname += nameList.get(i).get("REALNAME") + " ";
+            String sql = "";
+            if (queryAll != null) {
+                sql = "select id as yhid,y.* from KH_YH_HISTORY y "+buffer.toString();
+                List<Map<String, Object>> maps = this.execSql(sql, params.toArray());
+                return WebApiResponse.success(this.execSql(sql,params.toArray()));
+            } else {
+               sql = "SELECT DISTINCT(y.id) as yhid, y.* FROM ( SELECT  y.id as yh_id, y.* FROM KH_YH_HISTORY y WHERE YHLB LIKE '在施类' AND YHZT = 0 UNION ALL SELECT DISTINCT  (s.YH_ID), y.* FROM KH_YH_HISTORY y, KH_SITE s  WHERE s.YH_ID = y.ID AND s.STATUS = 1 AND y.yhzt = 0) y " + buffer.toString();
+//               sql = "SELECT DISTINCT(y.id) as yhid, y.* FROM KH_YH_HISTORY y, KH_SITE s  WHERE s.YH_ID = y.ID AND s.STATUS = 1 AND y.yhzt = 0 " + buffer.toString();
+                List<Map<String, Object>> list = this.execSql(sql, params.toArray());
+                List<Object> list1 = new ArrayList<>();
+                for (Map map : list) {
+                    if (map != null && map.size() > 0 && map.get("JD") != null) {
+                        sql = "select u.realname from kh_site s left join rztsysuser u on u.id =s.user_id where yh_id=?";
+                        List<Map<String, Object>> nameList = this.execSql(sql, Long.parseLong(map.get("ID").toString()));
+                        String realname = "";
+                        map.put("USERNAME", "无");
+                        try {
+                            if (nameList.size() > 0) {
+                                for (int i = 0; i < nameList.size(); i++) {
+                                    if (!realname.contains((nameList.get(i).get("REALNAME")).toString())) {
+                                        realname += nameList.get(i).get("REALNAME") + " ";
+                                    }
                                 }
+                                map.put("USERNAME", realname);
                             }
-                            map.put("USERNAME", realname);
+                        } catch (Exception e) {
                         }
-                    } catch (Exception e) {
+                        list1.add(map);
                     }
-                    list1.add(map);
                 }
+                return WebApiResponse.success(list1);
             }
-            return WebApiResponse.success(list1);
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("获取失败" + e.getMessage());
@@ -404,7 +418,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 }
                 if (task.get("SECTION") != null) {
                     String[] sections = task.get("SECTION").toString().split("-");
-                    if(sections.length>1){
+                    if (sections.length > 1) {
                         row.createCell(6).setCellValue(sections[0]);//起始杆塔
                         row.createCell(7).setCellValue(sections[1]);//终止杆塔
                     }
@@ -482,11 +496,22 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         return WebApiResponse.success("");
     }
 
+    //修改隐患信息
     public WebApiResponse updateYhHistory(KhYhHistory yh, String startTowerName, String endTowerName) {
         try {
             if (startTowerName != null && !startTowerName.equals("")) {
                 String section = startTowerName + "-" + endTowerName;
+                String sql = "select * from kh_yh_history where id=?";
+                Map<String, Object> map = this.execSqlSingleResult(sql, yh.getId());
                 this.reposiotry.updateYhHistory(yh.getId(), yh.getYhms(), yh.getStartTower(), yh.getEndTower(), yh.getYhzrdw(), yh.getYhzrdwlxr(), yh.getYhzrdwdh(), section);
+                String kv = map.get("VTYPE").toString();
+                if (kv.contains("kV")) {
+                    kv = kv.substring(0, kv.indexOf("k"));
+                }
+                String taskName = kv + "-" + map.get("LINE_NAME") + " " + section + " 号杆塔看护任务";
+                this.reposiotry.updateKhCycle2(yh.getId(), section, taskName);
+                this.reposiotry.updateKhSite(yh.getId(), section, taskName);
+                this.reposiotry.updateKhTask(yh.getId(), taskName);
             } else {
                 this.reposiotry.updateYhHistory2(yh.getId(), yh.getYhms(), yh.getYhzrdw(), yh.getYhzrdwlxr(), yh.getYhzrdwdh());
             }
@@ -894,7 +919,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 String cellValue = ExcelUtil.getCellValue(row.getCell(9));
                 //if (ExcelUtil.getCellValue(row.getCell(9)).equals("施工隐患")){
                 KhCycle cycle = new KhCycle();
-                cycle.setId(0l);
+                cycle.setId(0L);
                 yh.setTaskId(cycle.getId());
                 addKhCycle(yh, cycle);
                 //}
@@ -1082,7 +1107,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             }
             if (map.get("STATUS") != null && map.get("STATUS").toString().equals("0")) {
                 CmTowerUpdateRecord record = new CmTowerUpdateRecord();
-                record.setId(0l);
+                record.setId(0L);
                 record.setLat(lat);
                 record.setLon(lon);
                 record.setLineName(lineName);
@@ -1105,16 +1130,17 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
 
     public WebApiResponse findLineOrg(long towerId) {
         try {
-            String sql = "SELECT S.TD_ORG_NAME,S.LINE_NAME,S.LINE_ID\n" +
+            /*String sql = "SELECT S.TD_ORG_NAME,S.LINE_NAME,S.LINE_ID\n" +
                     "FROM CM_LINE_SECTION S LEFT JOIN CM_TOWER T ON T.LINE_ID = S.LINE_ID where T.ID = ? ";// and S.TD_ORG_NAME not in ('通州公司')
             List<Map<String, Object>> maps = this.execSql(sql, towerId);
             if (maps.size() > 0) {
                 return WebApiResponse.success("可以采集");
             } else {
                 return WebApiResponse.erro("不可以采集");
-            }
+            }*/
+            throw new Exception();
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
             return WebApiResponse.erro("不可以采集");
         }
     }
@@ -1122,7 +1148,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
     public WebApiResponse findYhPicture(long yhId) {
         try {
             String sql = "SELECT * FROM PICTURE_YH where yh_id=? and  trunc(CREATE_TIME)>=TRUNC(sysdate-5) order by CREATE_TIME desc";
-            return WebApiResponse.success(this.execSql(sql,yhId));
+            return WebApiResponse.success(this.execSql(sql, yhId));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("获取失败");
@@ -1160,8 +1186,8 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             }
         }
     }
-
-    @Transactional
+    //生成看护点
+    @Transactional(rollbackFor = Exception.class)
     public void saveCycle(long yhId) {
         KhYhHistory yh = this.reposiotry.finds(yhId);
         String kv = yh.getVtype();
@@ -1180,9 +1206,11 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         task.setWxOrgId(yh.getWxorgId());
         task.setTdywOrgId(yh.getTdorgId());
         task.setWxOrg(yh.getTdwxOrg());
-        task.setStatus(0);// 未派发
+        task.setStatus(0);    // 未派发
         task.setYhId(yh.getId());
         task.setCreateTime(DateUtil.dateNow());
         this.cycleService.add(task);
+        long id = new SnowflakeIdWorker(8, 24).nextId();
+        this.reposiotry.addCheckSite(id, task.getId(), 2, task.getTaskName(), 0, task.getLineId(), task.getTdywOrgId(), task.getWxOrgId(), task.getYhId());
     }
 }

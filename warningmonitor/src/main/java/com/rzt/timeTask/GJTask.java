@@ -99,9 +99,10 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
      * @param userId
      */
     public void userQuit(String userId){
-        String userAccout = "SELECT * FROM RZTSYSUSER where id=?1";
+        String userAccout = "SELECT * FROM USERINFO where id=?1";
         try {
             this.resp.quitUserLOGINSTATUS(userId);
+            this.resp.updateMonitorCheckEjUserLoginType(0,userId);
             Map<String, Object> stringObjectMap = this.execSqlSingleResult(userAccout, userId);
             HashOperations hashOperations = redisTemplate.opsForHash();
             hashOperations.put("UserInformation", userId, stringObjectMap);

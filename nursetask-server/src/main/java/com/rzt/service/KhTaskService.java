@@ -47,7 +47,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
-    public Object listAllKhTask(KhTaskModel task, String status, Pageable pageable, JSONObject json, String yworg, String currentUserId, String home) {
+    public Object listAllKhTask(KhTaskModel task, String status, Pageable pageable, JSONObject json, String yworg, String currentUserId, String home, String tdOrg) {
         task = timeUtil(task);
         Map jsonObject = JSON.parseObject(json.toString(), Map.class);
         Integer roleType = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
@@ -60,7 +60,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         StringBuffer buffer = new StringBuffer();
         if (home != null && home.equals("1")) {
             buffer = new StringBuffer();
-            buffer.append(" where  PLAN_START_TIME< = sysdate AND PLAN_END_TIME >= trunc(sysdate)");
+            buffer.append(" where  PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)");
             params = new ArrayList<>();
         } else {
             buffer.append(" where k.plan_start_time <= trunc(to_date('" + task.getPlanEndTime() + "','YYYY-MM-DD hh24:mi')+1) and plan_end_time>= trunc(to_date('" + task.getPlanStartTime() + "','YYYY-MM-DD hh24:mi')) ");
@@ -97,9 +97,16 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         String sql = "";
 
         if (roleType == 1 || roleType == 2) {
-
-            sql = "select " + result + buffer.toString() + " and k.tdyw_org = (select d.deptname from rztsysuser u, RZTSYSDEPARTMENT d where d.id = u.deptid and u.id = ?)";
-            params.add(currentUserId);
+            if (!StringUtils.isEmpty(tdOrg)) {
+                buffer.append(" and ( DEPTID=? or COMPANYID=? or CLASSNAME=? or GROUPID=? )");
+                params.add(tdOrg);
+                params.add(tdOrg);
+                params.add(tdOrg);
+                params.add(tdOrg);
+            } else {
+                buffer.append("  and k.YWORG_ID = '" + tdId + "'");
+            }
+            sql = "select " + result + buffer.toString();
         } else if (roleType == 3) {
             sql = "select " + result + buffer.toString() + " and k.wx_org = (select d.COMPANYNAME from rztsysuser u,RZTSYSCOMPANY d where u.companyid = d.id and u.id = ?)";
             params.add(currentUserId);
@@ -113,7 +120,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
             if (yworg != null && !yworg.equals("")) {
                 buffer.append(" and k.tdyw_org like ? ");
                 params.add("%" + yworg + "%");
-            }else if (task.getTdOrg() != null && !task.getTdOrg().equals("")) {
+            } else if (task.getTdOrg() != null && !task.getTdOrg().equals("")) {
                 buffer.append(" and k.yworg_id = ?");
                 params.add((task.getTdOrg()));
             }

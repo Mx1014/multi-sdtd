@@ -53,7 +53,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
     //看护稽查列表查询展示
     public Page<Map<String, Object>> listKhCheckPage(Pageable pageable, String lineId, String tddwId, String currentUserId) {
 
-        String sql = "select s.id,s.task_id,s.TASK_NAME,h.yhms,h.yhjb1 yhjb,h.XLZYCD,d.DEPTNAME,s.yh_id from CHECK_LIVE_site s " +
+        String sql = "select s.id,s.task_id,s.TASK_NAME,h.yhms,h.yhjb1 yhjb,h.yhlb,h.XLZYCD,d.DEPTNAME,s.yh_id from CHECK_LIVE_site s " +
                 " left JOIN KH_YH_HISTORY h on s.YH_ID=h.id " +
                 " LEFT JOIN  RZTSYSDEPARTMENT d on d.ID = s.TDYW_ORGID where s.status=0 ";
 
@@ -120,24 +120,18 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
     }
 
     //看护已派发稽查任务
-    public Page<Map<String, Object>> listKhCheckTaskPage(Pageable pageable, String userId, String tddwId, String currentUserId, String startTime, String endTime, String status, String queryAll, String loginType, String home) {
+    public Page<Map<String, Object>> listKhCheckTaskPage(Pageable pageable, String userId, String tddwId, String currentUserId, String startTime, String endTime, String status, String queryAll) {
 
         String sql = "select t.id,t.TASK_ID,t.CREATE_TIME,t.TASK_NAME,t.PLAN_START_TIME,t.PLAN_END_TIME,u.REALNAME,d.DEPTNAME, " +
-                "  t.status , t.TASK_TYPE ,u.LOGINSTATUS,C.COMPANYNAME,U.PHONE" +
+                "  t.status , t.TASK_TYPE " +
                 " from CHECK_LIVE_TASK t " +
                 "  LEFT JOIN  rztsysuser u on u.id=t.USER_ID " +
-                "  LEFT JOIN  RZTSYSDEPARTMENT d on d.ID = u.DEPTID " +
-                "  LEFT JOIN RZTSYSCOMPANY C ON C.ID = U.COMPANYID where 1=1 ";
+                "  LEFT JOIN  RZTSYSDEPARTMENT d on d.ID = u.DEPTID where 1=1 ";
 
         List params = new ArrayList<>();
         //任务状态人查询
         if (!StringUtils.isEmpty(status)) {
             sql += " AND t.status =" + status;
-        }
-        //人员在线状态查询
-        if (!StringUtils.isEmpty(loginType)) {
-            int login = Integer.parseInt(loginType);
-            sql += " AND u.LOGINSTATUS =" + login;
         }
         //稽查人查询
         if (!StringUtils.isEmpty(userId)) {
@@ -145,9 +139,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
             sql += " AND u.id =?";
         }
         //时间段查询
-        if (home != null && home.equals("1")) {
-            sql += " AND t.PLAN_START_TIME <= sysdate AND t.PLAN_END_TIME >= trunc(sysdate) ";
-        }else if (!StringUtils.isEmpty(startTime) && !StringUtils.isEmpty(endTime)) {
+        if (!StringUtils.isEmpty(startTime) && !StringUtils.isEmpty(endTime)) {
             params.add(endTime);
             params.add(startTime);
             sql += " and to_date(?,'yyyy-MM-dd HH24:mi') > t.plan_start_time and to_date(?,'yyyy-MM-dd HH24:mi') < t.plan_end_time ";
@@ -180,18 +172,15 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
         if (!"queryAll".equals(queryAll)) {
             //通道单位查询
             if (!StringUtils.isEmpty(tddwId)) {
-                if (tddwId.equals("40283781608b848701608b85d3700000")) {
-                    sql += " and t.CHECK_TYPE=1 ";
-                } else {
-                    params.add(tddwId);
-                    sql += " and t.CHECK_TYPE=2 ";
-                    sql += " AND d.ID =?";
-                }
+                params.add(tddwId);
+                sql += " and t.CHECK_TYPE=2 ";
+                sql += " AND d.ID =?";
             } else {
                 sql += " and t.CHECK_TYPE=1 ";
             }
         }
 
+        sql += " order by t.id desc ";
         return execSqlPage(pageable, sql, params.toArray());
     }
 
@@ -416,8 +405,10 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
 
     @Transactional
     public void taskComplete(String id, String taskType) {
+
         //0看护 1巡视 0待稽查 1已稽查
         if ("0,0".equals(taskType)) {
+            reposiotry.updateMonitorEj(Long.valueOf(id));
             reposiotry.taskComplete(Long.valueOf(id));
         } else if ("1,0".equals(taskType)) {
             checkLiveTaskXsRepository.taskComplete(Long.valueOf(id));

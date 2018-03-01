@@ -46,7 +46,7 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
         List<Map<String, Object>> maps2 = execSql(sql3);
         String deptnameSql = " SELECT t.ID,t.DEPTNAME FROM RZTSYSDEPARTMENT t WHERE t.DEPTSORT IS NOT NULL ORDER BY t.DEPTSORT ";
         List<Map<String, Object>> dept = execSql(deptnameSql);
-        int i =0;
+        int i = 0;
         for (Map<String, Object> map : dept) {
             Map<String, Object> sumMap = new HashMap<String, Object>();
             String id = (String) map.get("ID");
@@ -61,7 +61,7 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
             sumMap.put("WCL", 0);
             sumMap.put("CLZ", 0);
             sumMap.put("YCL", 0);
-            sumMap.put("DEPTSORT",i++);
+            sumMap.put("DEPTSORT", i++);
             //添加未处理
             for (Map<String, Object> m1 : maps) {
                 if (id.equals(m1.get("DEPTID").toString())) {
@@ -145,13 +145,19 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
 
     public void module3Method(Map<String, Map> allMap, HashMap session) {
         Map message = new HashMap();
-        Integer roletype = Integer.parseInt(session.get("ROLETYPE").toString());
+//        Integer roletype = Integer.parseInt(session.get("ROLETYPE").toString());
         String deptId;
         String module3;
         if (1 == 1 /**roletype == 0*/) {
             deptId = "admin";
-            module3 = "SELECT sum(decode(QUESTION_TYPE,1,1,0)) a,sum(decode(QUESTION_TYPE,2,1,0)) b,sum(decode(QUESTION_TYPE,3,1,0)) c,sum(decode(QUESTION_TYPE,4,1,0)) d from CHECK_RESULT where trunc(create_time) = trunc(sysdate)";
-        } else {
+            module3 = "SELECT\n" +
+                    "  nvl(sum(decode(QUESTION_TYPE, 1, 1, 0)),0) a,\n" +
+                    "  nvl(sum(decode(QUESTION_TYPE, 2, 1, 0)),0) b,\n" +
+                    "  nvl(sum(decode(QUESTION_TYPE, 3, 1, 0)),0) c,\n" +
+                    "  nvl(sum(decode(QUESTION_TYPE, 4, 1, 0)),0) d\n" +
+                    "FROM CHECK_RESULT\n" +
+                    "WHERE trunc(create_time) = trunc(sysdate)";
+        } /*else {
             deptId = session.get("DEPTID").toString();
             module3 = "SELECT\n" +
                     "  nvl(sum(decode(t.QUESTION_TYPE, 1, 1, 0)),0) a,\n" +
@@ -160,7 +166,7 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
                     "  nvl(sum(decode(t.QUESTION_TYPE, 4, 1, 0)),0) d\n" +
                     "FROM CHECK_RESULT t\n" +
                     "  JOIN CHECK_DETAIL tt ON t.CHECK_DETAIL_ID = tt.id join RZTSYSUSER ttt on tt.QUESTION_USER_ID = ttt.id and DEPTID = ?";
-        }
+        }*/
         if (allMap.containsKey(deptId)) {
             message = allMap.get(deptId);
         } else {
@@ -582,7 +588,7 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
         message.put("module", 9);
         // 巡视超速  看护脱岗
         //巡视告警
-        String  xsgj = "SELECT  nvl(sum(decode(j.TASK_TYPE, 1, 1, 0)),0) xsgj FROM MONITOR_CHECK_YJ j\n" +
+        String xsgj = "SELECT  nvl(sum(decode(j.TASK_TYPE, 1, 1, 0)),0) xsgj FROM MONITOR_CHECK_YJ j\n" +
                 "   LEFT JOIN RZTSYSUSER u ON j.USER_ID=u.ID\n" +
                 "   LEFT JOIN XS_ZC_TASK xs ON j.TASK_ID=xs.ID\n" +
                 "where j.STATUS=0 AND j.USER_ID is NOT NULL AND u.USERDELETE=1  AND xs.IS_DELETE=0 AND j.CREATE_TIME >= trunc(sysdate)";
@@ -646,7 +652,7 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
         }
         Map message = new HashMap<String, Object>();
         message.put("module", 9);
-        String  xsgj = "SELECT  nvl(sum(decode(j.TASK_TYPE, 1, 1, 0)),0) xsgj FROM MONITOR_CHECK_YJ j\n" +
+        String xsgj = "SELECT  nvl(sum(decode(j.TASK_TYPE, 1, 1, 0)),0) xsgj FROM MONITOR_CHECK_YJ j\n" +
                 "   LEFT JOIN RZTSYSUSER u ON j.USER_ID=u.ID\n" +
                 "   LEFT JOIN XS_ZC_TASK xs ON j.TASK_ID=xs.ID\n" +
                 "where j.STATUS=0 AND j.USER_ID is NOT NULL AND u.USERDELETE=1  AND xs.IS_DELETE=0 AND j.CREATE_TIME >= trunc(sysdate)";
@@ -707,9 +713,10 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
     public void module10(String sessionId) throws Exception {
         Map<String, HashMap> map = wuDServerEndpoint.sendMsg();
         HashMap session = map.get(sessionId);
+        Object deptid = session.get("DEPTID");
         Map message = new HashMap<String, Object>();
         message.put("module", 10);
-        String module7 = "SELECT\n" +
+        /*String module7 = "SELECT\n" +
                 "  nvl(sum((CASE WHEN PROC_DEF_ID_ LIKE 'xssh%'\n" +
                 "    THEN 1\n" +
                 "   ELSE 0 END)),0) xssh,\n" +
@@ -723,9 +730,37 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
                 "    THEN 1\n" +
                 "   ELSE 0 END)),0) jcsh\n" +
                 "FROM ACT_RU_TASK\n" +
-                "WHERE CREATE_TIME_ > trunc(sysdate)";
-        Map<String, Object> map1 = this.execSqlSingleResult(module7);
-        message.put("data", map1);
+                "WHERE CREATE_TIME_ > trunc(sysdate)";*/
+//        String yh = " SELECT\n" +
+//                "  count(1) as yh\n" +
+//                "    FROM ACT_HI_ACTINST t LEFT JOIN ACT_HI_VARINST h ON t.PROC_INST_ID_ = h.PROC_INST_ID_ AND  h.NAME_ = 'YHID'\n" +
+//                "   LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_\n" +
+//                "    WHERE  t.PROC_DEF_ID_ LIKE 'wtsh%'  AND t.END_TIME_ IS NOT  NULL AND y.ID IS NOT NULL AND trunc(END_TIME_)=trunc(sysdate) AND ASSIGNEE_ = 'sdid' AND YWORG_ID ='" + deptid + "'";
+        String yh = " SELECT\n" +
+                "  (SELECT\n" +
+                "     count(1)\n" +
+                "   FROM ACT_HI_ACTINST t LEFT JOIN ACT_HI_VARINST h ON t.PROC_INST_ID_ = h.PROC_INST_ID_ AND  h.NAME_ = 'YHID'\n" +
+                "     LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_\n" +
+                "   WHERE  t.PROC_DEF_ID_ LIKE 'wtsh%'  AND ASSIGNEE_ = 'jkid'  AND t.END_TIME_ IS NOT  NULL AND y.ID IS NOT NULL\n" +
+                "          ) +\n" +
+                "  (SELECT count(1)\n" +
+                "   FROM ACT_RU_TASK t LEFT JOIN ACT_RU_VARIABLE h ON t.PROC_INST_ID_ = h.PROC_INST_ID_\n" +
+                "     LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_\n" +
+                "   WHERE h.NAME_ = 'YHID' AND t.PROC_DEF_ID_ LIKE 'wtsh%' AND y.ID IS NOT NULL   AND ASSIGNEE_ = 'jkid'\n" +
+                "         ) AS task\n" +
+                "  FROM dual ";
+        String xs = " SELECT count(1) as xs\n" +
+                "FROM ACT_HI_ACTINST t\n" +
+                "  LEFT JOIN ACT_HI_VARINST h ON t.PROC_INST_ID_ = h.PROC_INST_ID_ AND h.NAME_ = 'XSID'\n" +
+                "  LEFT JOIN XS_ZC_CYCLE_RECORD x ON x.XS_ZC_CYCLE_ID = h.TEXT_ LEFT JOIN RZTSYSUSER r ON x.CM_USER_ID = r.ID\n" +
+                "WHERE t.PROC_DEF_ID_ LIKE 'xssh%' AND t.ASSIGNEE_ = 'sdid' AND t.END_TIME_ IS NOT NULL AND r.DEPTID = '" + deptid + "' \n" +
+                "ORDER BY t.END_TIME_ DESC ";
+        Map<String, Object> stringObjectMap = this.execSqlSingleResult(yh);
+        Map<String, Object> stringObjectMap1 = this.execSqlSingleResult(xs);
+        stringObjectMap.putAll(stringObjectMap1);
+        stringObjectMap.put("qx", 0);
+        stringObjectMap.put("jc", 0);
+        message.put("data", stringObjectMap);
         wuDServerEndpoint.sendText((Session) session.get("session"), message);
     }
 
