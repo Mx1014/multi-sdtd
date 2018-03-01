@@ -54,7 +54,7 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
                         "  LEFT JOIN XS_ZC_TASK_EXEC e ON d.XS_ZC_TASK_EXEC_ID=e.ID WHERE IS_DW=1  AND e.XS_ZC_TASK_ID=?1";
                 List<Map<String, Object>> maps = execSql(sql2, taskid);
                 if(maps.size()>0){
-                    Double isDWNum =  Double.parseDouble(maps.get(0).get("count").toString());
+                    Double isDWNum =  Double.parseDouble(maps.get(0).get("COUNT").toString());
                     d = isDWNum / sum;
                 }
             }
