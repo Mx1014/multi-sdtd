@@ -220,6 +220,11 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
                 next.put("COMPANYNAME", jsonObject.get("COMPANYNAME"));
                 next.put("REALNAME", jsonObject.get("REALNAME"));
                 next.put("PHONE", jsonObject.get("PHONE"));
+                if("0".equals(deptId)){
+                    next.put("USER_TYPE",1);
+                }else{
+                    next.put("USER_TYPE",2);
+                }
             }
             /*Integer warning = Integer.parseInt(next.get("WARNING_TYPE").toString());
             if(warning==3){
