@@ -105,7 +105,7 @@ public class AlarmDetailsController extends CurdController<RztSysUser, CommonSer
                     "               DEPTID\n" +
                     "             FROM MONITOR_CHECK_EJ\n" +
                     "       WHERE trunc(CREATE_TIME) =\n" +
-                    "             trunc(sysdate)  AND TASK_STATUS = 0 )\n" +
+                    "             trunc(sysdate)  AND TASK_STATUS = 0 AND USER_LOGIN_TYPE = 0 )\n" +
                     "\n" +
                     "       GROUP BY DEPTID) ddd\n" +
                     "GROUP BY DEPTID) bb\n" +
@@ -138,7 +138,7 @@ public class AlarmDetailsController extends CurdController<RztSysUser, CommonSer
              * 离线人员
              */
             String offlines = " SELECT count(1) AS OFFLINES," +
-                    "  u.CLASSNAME as CLASS_ID FROM (SELECT USER_ID FROM MONITOR_CHECK_EJ  WHERE DEPTID = ?1 AND (WARNING_TYPE = 8 OR WARNING_TYPE = 2 OR WARNING_TYPE = 13 )  AND TASK_STATUS = 0 " +
+                    "  u.CLASSNAME as CLASS_ID FROM (SELECT USER_ID FROM MONITOR_CHECK_EJ  WHERE DEPTID = ?1 AND (WARNING_TYPE = 8 OR WARNING_TYPE = 2 OR WARNING_TYPE = 13 )  AND TASK_STATUS = 0 AND USER_LOGIN_TYPE = 0 " +
                     "  " + s + " GROUP BY USER_ID ) e LEFT JOIN RZTSYSUSER u ON e.USER_ID = u.ID GROUP BY u.CLASSNAME ";
             /**
              *未按时开始任务
@@ -255,7 +255,7 @@ public class AlarmDetailsController extends CurdController<RztSysUser, CommonSer
                     "  nvl(sum(decode(TASK_TYPE, 1, 1, 0)), 0) xsOFFLINES,\n" +
                     "  sum(decode(TASK_TYPE, 2, 1, 0))         khOFFLINES,\n" +
                     "  sum(decode(TASK_TYPE, 3, 1, 0))         xcjcOFFLINES\n" +
-                    "FROM (SELECT DISTINCT USER_ID,TASK_TYPE FROM MONITOR_CHECK_EJ  WHERE  (WARNING_TYPE = 8 OR WARNING_TYPE = 2 OR WARNING_TYPE = 13) AND TASK_STATUS = 0  " + s + ") ";
+                    "FROM (SELECT DISTINCT USER_ID,TASK_TYPE FROM MONITOR_CHECK_EJ  WHERE  (WARNING_TYPE = 8 OR WARNING_TYPE = 2 OR WARNING_TYPE = 13) AND TASK_STATUS = 0 AND USER_LOGIN_TYPE = 0  " + s + ") ";
             String answertimeS = " SELECT nvl(sum(decode(TASK_TYPE, 1, 1, 0)),0) XSANSWERTIME,sum(decode(TASK_TYPE, 2, 1, 0)) KHANSWERTIME FROM MONITOR_CHECK_EJ WHERE (WARNING_TYPE = 4 OR WARNING_TYPE = 10)  " + s;
             String overdueS = " SELECT nvl(sum(decode(TASK_TYPE, 1, 1, 0)),0) OVERDUE FROM MONITOR_CHECK_EJ WHERE WARNING_TYPE = 1  " + s;
             String temporarilyS = " SELECT nvl(sum(decode(TASK_TYPE, 2, 1, 0)),0) TEMPORARILY FROM MONITOR_CHECK_EJ WHERE WARNING_TYPE = 7  " + s;
