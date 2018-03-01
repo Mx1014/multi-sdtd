@@ -2,6 +2,7 @@ package com.rzt.filter;
 
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,11 +21,6 @@ public class AccessTokenFilter extends ZuulFilter {
     private static final Logger LOGGER = LoggerFactory.getLogger(AccessTokenFilter.class);
     @Autowired
     private JedisPool redisTemplate;
-
-    private final String LoginUEI = "/userCenter/RztSysUser/userLogin";
-    private final String swagger = "/swagger-";
-    private final String swaggerSource = "/webjars/";
-    private final String swaggerSource2 = "/v2/";
 
     @Override
     //pre 证明是前置过滤器
@@ -48,8 +44,32 @@ public class AccessTokenFilter extends ZuulFilter {
     public Object run() {
         RequestContext ctx = RequestContext.getCurrentContext();
         HttpServletRequest request = ctx.getRequest();
-        String tokenUser = request.getParameter("tokenUser");
-        request.getparameter
-        return null;
+        String tokenUserId = request.getParameter("tokenUserId");
+        String token = request.getParameter("token");
+        //没有token的放行 例如pc端接口 app登陆接口和图片会仙的接口
+        if(StringUtils.isEmpty(tokenUserId) && StringUtils.isEmpty(token)) {
+            return null;
+        } else {
+            Jedis resource = redisTemplate.getResource();
+            try {
+                String usertoken = resource.hget("USERTOKEN", tokenUserId);
+                if(StringUtils.isEmpty(usertoken)) {
+                    //空的 此时应该终止route 返回错误信息
+                    ctx.setSendZuulResponse(false);
+                    //异常
+                    ctx.setResponseStatusCode(401);
+                    // 返回错误内容
+                    ctx.setResponseBody("{\"flag\":\"0\",\"success\":true}");
+                    return null;
+                } else {
+                    return null;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                resource.close();
+                return null;
+            }
+        }
     }
 }
