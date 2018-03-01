@@ -66,6 +66,7 @@ public class AccessTokenFilter extends ZuulFilter {
                 }
             } catch (Exception e) {
                 e.printStackTrace();
+                return null;
             } finally {
                 resource.close();
                 return null;
