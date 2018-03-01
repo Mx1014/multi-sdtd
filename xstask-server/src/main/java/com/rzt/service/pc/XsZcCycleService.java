@@ -906,7 +906,7 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
         String execlPath = "C:/Users/nwz/Documents/巡视周期导入模板.xlsx";
         try {
 //            importCycle(execlPath);
-           /* Date a = DateUtil.StringToDateForImport("9:00");
+            Date a = DateUtil.StringToDateForImport("9:00");
             Date b = DateUtil.StringToDateForImport("18:00");
             Date c = DateUtil.StringToDateForImport2("1月21日");
 
@@ -919,8 +919,8 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
             String[] split = ac.split("-");
             System.out.println(split.length);
             System.out.println("123456".substring(0,2));
-            System.out.println(c.toString());*/
-            System.out.println(DateUtil.stringNow());
+            System.out.println(c.toString());
+
         } catch (Exception e) {
             e.printStackTrace();
         }
