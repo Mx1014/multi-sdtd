@@ -216,7 +216,7 @@ public class TwoLevelCommandPushService extends CurdService<websocket, websocket
 //            String offline = "SELECT count(1) as OFFLINES FROM MONITOR_CHECK_EJ  WHERE (WARNING_TYPE = 8 OR WARNING_TYPE = 2) AND trunc(CREATE_TIME) = trunc(sysdate) AND DEPTID= '" + deptid + "'";
             String offline = " SELECT count(count(1)) AS OFFLINES " +
                     "                    FROM MONITOR_CHECK_EJ  " +
-                    "                    WHERE (WARNING_TYPE = 8 OR WARNING_TYPE = 2 OR WARNING_TYPE = 13) AND trunc(CREATE_TIME) = trunc(sysdate) AND USER_ID != 'null' AND TASK_STATUS=0 AND DEPTID= '" + deptid + "' GROUP BY USER_ID ";
+                    "                    WHERE (WARNING_TYPE = 8 OR WARNING_TYPE = 2 OR WARNING_TYPE = 13) AND trunc(CREATE_TIME) = trunc(sysdate) AND USER_ID != 'null' AND TASK_STATUS=0 AND USER_LOGIN_TYPE = 0 AND DEPTID= '" + deptid + "' GROUP BY USER_ID ";
             /**
              *未按时开始任务
              */
