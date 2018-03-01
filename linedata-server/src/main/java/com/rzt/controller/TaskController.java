@@ -32,8 +32,8 @@ public class TaskController extends CurdController<KHYHHISTORY,TasksService>  {
      * @return
      */
     @GetMapping("/findTaskSum")
-    public WebApiResponse findTaskInfo(){
-        return tasksService.deptDaZhu1();
+    public WebApiResponse findTaskInfo(String tokenUserId){
+        return tasksService.deptDaZhu1(tokenUserId);
     }
     /**
      * 二级页面使用
@@ -41,8 +41,8 @@ public class TaskController extends CurdController<KHYHHISTORY,TasksService>  {
      * @return
      */
     @GetMapping("/findTasksGroupDept")
-    public WebApiResponse findTasksGroupDept(){
-        return tasksService.deptDaZhu();
+    public WebApiResponse findTasksGroupDept(String tokenUserId){
+        return tasksService.deptDaZhu(tokenUserId);
     }
 
 
