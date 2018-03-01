@@ -52,9 +52,11 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
                 //查询该任务不到位的个数
                 String sql2 = "SELECT count(1) AS count FROM XS_ZC_TASK_EXEC_DETAIL d " +
                         "  LEFT JOIN XS_ZC_TASK_EXEC e ON d.XS_ZC_TASK_EXEC_ID=e.ID WHERE IS_DW=1  AND e.XS_ZC_TASK_ID=?1";
-                Map<String, Object> map = execSqlSingleResult(sql2, taskid);
-                Double isDWNum =  Double.parseDouble(map.get("count").toString());
-                d = isDWNum / sum;
+                List<Map<String, Object>> maps = execSql(sql2, taskid);
+                if(maps.size()>0){
+                    Double isDWNum =  Double.parseDouble(maps.get(0).get("count").toString());
+                    d = isDWNum / sum;
+                }
             }
             //如果大于等于0.3则插入告警
             if(d>=0.3){
