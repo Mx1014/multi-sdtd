@@ -232,7 +232,7 @@ public class TwoLevelCommandPushService extends CurdService<websocket, websocket
             /**
              * 巡视不合格
              */
-            String unqualifiedpatrol = " SELECT count(1) as unqualifiedpatrol FROM MONITOR_CHECK_EJ WHERE WARNING_TYPE = 5 AND trunc(CREATE_TIME) = trunc(sysdate) AND DEPTID= '" + deptid + "'";
+            String unqualifiedpatrol = " SELECT count(1) as unqualifiedpatrol FROM MONITOR_CHECK_EJ WHERE (WARNING_TYPE = 5 OR WARNING_TYPE = 3 )AND trunc(CREATE_TIME) = trunc(sysdate) AND DEPTID= '" + deptid + "'";
             try {
                 Map map1 = new HashMap();
                 Map map = new HashMap();
