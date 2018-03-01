@@ -507,32 +507,6 @@ public class DateUtil {
 		return "刚刚";
 	}
 
-	public static void main(String[] args) throws Throwable {
-		//        System.out.println(format(day00(1,null)));
-		//        System.out.println(format(day59(1,null)));
-		//        System.out.println(lastDay(new Date(),2));
-		//        System.out.println(firstDay(null,0));
-		//          TimeZone zone1=TimeZone.getTimeZone("GMT+8");
-		//          TimeZone zone2=TimeZone.getTimeZone("GMT-5");
-		//          System.out.println(format(new Date(),zone1,FORMAT_TIME));
-		//          System.out.println(format(new Date(),zone2,FORMAT_TIME));
-		//
-		//        System.out.println(format(day00(0,"2017-5-11","GMT+0")));
-		//        System.out.println(format(day00(0,"2017-5-11","GMT+8")));
-		//        System.out.println(format(day00(0,"2017-5-11","GMT-8")));
-		//        Date date1 =parse("2017-05-11 17:53:52");
-		//
-		//        System.out.println(diffDay(date1,new Date()));
-
-//        DateTime dateTime = new DateTime().withDayOfWeek(1);
-//
-//        DateTime dateTime1 = new DateTime().withDayOfWeek(7).withTime(0, 0, 0, 0);
-//        System.out.println(format(dateTime.toDate()));
-//
-//        System.out.println(format(dateTime1.toDate()));
-		System.out.println(Integer.valueOf("0"));
-		System.out.println(format(new Date(),"MM/dd"));
-	}
 
 	public static String timeUtil(int i) {
 		String date = "";

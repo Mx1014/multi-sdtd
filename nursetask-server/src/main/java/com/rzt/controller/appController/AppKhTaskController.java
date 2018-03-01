@@ -156,4 +156,10 @@ public class AppKhTaskController extends
         return this.service.appCompareEndTime(taskId);
     }
 
+    @ApiOperation(value = "查看最新的拍照", notes = "一小时一张  ")
+    @GetMapping("/appComparePz")
+    @ResponseBody
+    public WebApiResponse appComparePz(long taskId){
+        return this.service.appComparePz(taskId);
+    }
 }

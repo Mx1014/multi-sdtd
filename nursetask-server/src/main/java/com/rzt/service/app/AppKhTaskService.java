@@ -9,6 +9,7 @@ import com.rzt.service.KhTaskWpqrService;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.Constances;
 import com.rzt.utils.DateUtil;
+import com.sun.org.apache.bcel.internal.generic.IF_ACMPEQ;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -267,6 +268,28 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
             return -1;
         } else {//相等
             return 0;
+        }
+    }
+
+    public WebApiResponse appComparePz(long taskId) {
+        try {
+            String sql = "select plan_end_time end as time from kh_task where id=" + taskId;
+            Map<String, Object> map = this.execSqlSingleResult(sql);
+            Date end = DateUtil.parseDate(map.get("END").toString());
+            if (end.getTime() <= System.currentTimeMillis()) {
+                try {
+                    sql = "SELECT max(CREATE_TIME) time FROM PICTURE_KH where task_id ="+taskId;
+                    Map<String, Object> map1 = this.execSqlSingleResult(sql);
+                    if (DateUtil.getDatePoor(new Date(),DateUtil.parseDate(map1.get("TIME").toString()))>=1){
+                        return WebApiResponse.erro("超过一小时");
+                    }
+                } catch (Exception e) {
+                    return WebApiResponse.success("没有开始拍照");
+                }
+            }
+            return WebApiResponse.success("没有超过1小时");
+        } catch (Exception e) {
+            return WebApiResponse.erro("报错了"+e.getMessage());
         }
     }
 }
