@@ -101,16 +101,28 @@ public class ErJiPushService extends CurdService<websocket, websocketRepository>
         String deptId;
         String module4_1;
         deptId = session.get("DEPTID").toString();
-        module4_1 = " SELECT (SELECT count(1)\n" +
-                "   FROM ACT_HI_ACTINST t LEFT JOIN ACT_RU_VARIABLE h ON t.PROC_INST_ID_ = h.PROC_INST_ID_\n" +
-                "     LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_\n" +
-                "   WHERE h.NAME_ = 'YHID' AND t.PROC_DEF_ID_ LIKE 'wtsh%' AND ASSIGNEE_ = 'sdid' AND t.END_TIME_ IS NOT NULL AND trunc(END_TIME_) = trunc(sysdate) AND y.YWORG_ID='" + deptId + "' " +
-                "  ) AS wsh,\n" +
+//        module4_1 = " SELECT (SELECT count(1)\n" +
+//                "   FROM ACT_HI_ACTINST t LEFT JOIN ACT_RU_VARIABLE h ON t.PROC_INST_ID_ = h.PROC_INST_ID_\n" +
+//                "     LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_\n" +
+//                "   WHERE h.NAME_ = 'YHID' AND t.PROC_DEF_ID_ LIKE 'wtsh%' AND ASSIGNEE_ = 'sdid' AND t.END_TIME_ IS NOT NULL AND trunc(END_TIME_) = trunc(sysdate) AND y.YWORG_ID='" + deptId + "' " +
+//                "  ) AS wsh,\n" +
+//                "  (SELECT count(1)\n" +
+//                "   FROM ACT_HI_ACTINST t LEFT JOIN ACT_RU_VARIABLE h ON t.PROC_INST_ID_ = h.PROC_INST_ID_\n" +
+//                "     LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_\n" +
+//                "   WHERE h.NAME_ = 'YHID' AND t.PROC_DEF_ID_ LIKE 'wtsh%' AND ASSIGNEE_ = 'sdid' AND t.END_TIME_ IS NULL  AND trunc(END_TIME_) = trunc(sysdate) AND y.YWORG_ID='" + deptId + "' " +
+//                "  )    ysh\n" +
+//                "FROM dual ";
+        module4_1 = " SELECT\n" +
                 "  (SELECT count(1)\n" +
-                "   FROM ACT_HI_ACTINST t LEFT JOIN ACT_RU_VARIABLE h ON t.PROC_INST_ID_ = h.PROC_INST_ID_\n" +
+                "   FROM ACT_HI_ACTINST t LEFT JOIN ACT_HI_VARINST h ON t.PROC_INST_ID_ = h.PROC_INST_ID_ AND h.NAME_ = 'YHID'\n" +
                 "     LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_\n" +
-                "   WHERE h.NAME_ = 'YHID' AND t.PROC_DEF_ID_ LIKE 'wtsh%' AND ASSIGNEE_ = 'sdid' AND t.END_TIME_ IS NULL  AND trunc(END_TIME_) = trunc(sysdate) AND y.YWORG_ID='" + deptId + "' " +
-                "  )    ysh\n" +
+                "   WHERE t.PROC_DEF_ID_ LIKE 'wtsh%' AND ASSIGNEE_ = 'sdid' AND t.END_TIME_ IS NOT NULL AND y.ID IS NOT NULL\n" +
+                "         AND y.YWORG_ID = '" + deptId + "')  AS ysh,\n" +
+                "  (SELECT count(1)\n" +
+                "   FROM ACT_RU_TASK t LEFT JOIN ACT_RU_VARIABLE h ON t.PROC_INST_ID_ = h.PROC_INST_ID_\n" +
+                "     LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_\n" +
+                "   WHERE h.NAME_ = 'YHID' AND t.PROC_DEF_ID_ LIKE 'wtsh%' AND y.ID IS NOT NULL AND ASSIGNEE_ = 'sdid'\n" +
+                "         AND y.YWORG_ID = '" + deptId + "') AS  wsh\n" +
                 "FROM dual ";
         if (allMap.containsKey(deptId)) {
             message = allMap.get(deptId);
@@ -142,10 +154,23 @@ public class ErJiPushService extends CurdService<websocket, websocketRepository>
         String deptId;
         String module4_2;
         deptId = session.get("DEPTID").toString();
-        module4_2 = " SELECT count(1) as yh\n" +
-                "FROM ACT_HI_ACTINST t LEFT JOIN ACT_RU_VARIABLE h ON t.PROC_INST_ID_ = h.PROC_INST_ID_\n" +
-                "               LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_\n" +
-                "WHERE  h.NAME_ = 'YHID' AND t.PROC_DEF_ID_ LIKE 'wtsh%' AND ASSIGNEE_ = 'sdid' AND trunc(END_TIME_) = trunc(sysdate) AND  y.YWORG_ID = '" + deptId + "' ";
+//        module4_2 = " SELECT count(1) as yh\n" +
+//                "FROM ACT_HI_ACTINST t LEFT JOIN ACT_RU_VARIABLE h ON t.PROC_INST_ID_ = h.PROC_INST_ID_\n" +
+//                "               LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_\n" +
+//                "WHERE  h.NAME_ = 'YHID' AND t.PROC_DEF_ID_ LIKE 'wtsh%' AND ASSIGNEE_ = 'sdid' AND trunc(END_TIME_) = trunc(sysdate) AND  y.YWORG_ID = '" + deptId + "' ";
+        module4_2 = " SELECT\n" +
+                "  (SELECT\n" +
+                "     count(1)\n" +
+                "   FROM ACT_HI_ACTINST t LEFT JOIN ACT_HI_VARINST h ON t.PROC_INST_ID_ = h.PROC_INST_ID_ AND  h.NAME_ = 'YHID'\n" +
+                "     LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_\n" +
+                "   WHERE  t.PROC_DEF_ID_ LIKE 'wtsh%'  AND ASSIGNEE_ = 'sdid'  AND t.END_TIME_ IS NOT  NULL AND y.ID IS NOT NULL\n" +
+                "          AND y.YWORG_ID = '" + deptId + "') +\n" +
+                "  (SELECT count(1)\n" +
+                "   FROM ACT_RU_TASK t LEFT JOIN ACT_RU_VARIABLE h ON t.PROC_INST_ID_ = h.PROC_INST_ID_\n" +
+                "     LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_\n" +
+                "   WHERE h.NAME_ = 'YHID' AND t.PROC_DEF_ID_ LIKE 'wtsh%' AND y.ID IS NOT NULL   AND ASSIGNEE_ = 'sdid'\n" +
+                "         AND y.YWORG_ID = '" + deptId + "') AS yh\n" +
+                "  FROM dual ";
         if (allMap.containsKey(deptId)) {
             message = allMap.get(deptId);
         } else {
@@ -373,11 +398,26 @@ public class ErJiPushService extends CurdService<websocket, websocketRepository>
 //                    "   ELSE 0 END)) jcsh\n" +
 //                    "FROM ACT_RU_TASK\n" +
 //                    "WHERE CREATE_TIME_ > trunc(sysdate)";
+//            String yh = " SELECT\n" +
+//                    "  count(1) as yh\n" +
+//                    "    FROM ACT_HI_ACTINST t LEFT JOIN ACT_HI_VARINST h ON t.PROC_INST_ID_ = h.PROC_INST_ID_ AND  h.NAME_ = 'YHID'\n" +
+//                    "   LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_\n" +
+//                    "    WHERE  t.PROC_DEF_ID_ LIKE 'wtsh%'  AND t.END_TIME_ IS NOT  NULL AND y.ID IS NOT NULL AND trunc(END_TIME_)=trunc(sysdate) AND ASSIGNEE_ = 'sdid' AND YWORG_ID ='" + deptid + "'";
+
             String yh = " SELECT\n" +
-                    "  count(1) as yh\n" +
-                    "    FROM ACT_HI_ACTINST t LEFT JOIN ACT_HI_VARINST h ON t.PROC_INST_ID_ = h.PROC_INST_ID_ AND  h.NAME_ = 'YHID'\n" +
-                    "   LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_\n" +
-                    "    WHERE  t.PROC_DEF_ID_ LIKE 'wtsh%'  AND t.END_TIME_ IS NOT  NULL AND y.ID IS NOT NULL AND trunc(END_TIME_)=trunc(sysdate) AND ASSIGNEE_ = 'sdid' AND YWORG_ID ='" + deptid + "'";
+                    "  (SELECT count(1)\n" +
+                    "   FROM ACT_HI_ACTINST t LEFT JOIN ACT_HI_VARINST h ON t.PROC_INST_ID_ = h.PROC_INST_ID_ AND h.NAME_ = 'YHID'\n" +
+                    "     LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_\n" +
+                    "   WHERE t.PROC_DEF_ID_ LIKE 'wtsh%' AND ASSIGNEE_ = 'sdid' AND t.END_TIME_ IS NOT NULL AND y.ID IS NOT NULL\n" +
+                    "         AND y.YWORG_ID = '" + deptid + "')  +\n" +
+                    "  (SELECT count(1)\n" +
+                    "   FROM ACT_RU_TASK t LEFT JOIN ACT_RU_VARIABLE h ON t.PROC_INST_ID_ = h.PROC_INST_ID_\n" +
+                    "     LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_\n" +
+                    "   WHERE h.NAME_ = 'YHID' AND t.PROC_DEF_ID_ LIKE 'wtsh%' AND y.ID IS NOT NULL AND ASSIGNEE_ = 'sdid'\n" +
+                    "         AND y.YWORG_ID = '" + deptid + "') AS yh\n" +
+                    "FROM dual ";
+
+
             String xs = " SELECT count(1) as xs\n" +
                     "FROM ACT_HI_ACTINST t\n" +
                     "  LEFT JOIN ACT_HI_VARINST h ON t.PROC_INST_ID_ = h.PROC_INST_ID_ AND h.NAME_ = 'XSID'\n" +

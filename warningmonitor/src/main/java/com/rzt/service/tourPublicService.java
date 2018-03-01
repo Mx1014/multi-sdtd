@@ -38,14 +38,42 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
     @Transactional(rollbackFor = Exception.class)
     public WebApiResponse xsTourScope(Long taskid, String userid,String reason) {
         try {
-            String sql = "   SELECT TASK_NAME AS TASKNAME,TD_ORG FROM XS_ZC_TASK WHERE ID=?1 ";
-            Map<String, Object> map = this.execSqlSingleResult(sql, taskid);
-            //往二级单位插数据
-            //System.out.println(reason+"----------巡视未到位原因");
-            resp.saveCheckEjWdw(SnowflakeIdWorker.getInstance(10, 12).nextId(),taskid,1,3,userid,map.get("TD_ORG").toString(),map.get("TASKNAME").toString(),reason);
-            String key = "ONE+" + taskid + "+1+3+" + userid + "+" + map.get("TD_ORG").toString() + "+" + map.get("TASKNAME").toString()+"+"+reason;
+            //查询任务的所有塔的个数
+            String sql1 = "SELECT c.SECTION FROM XS_ZC_TASK x RIGHT JOIN  XS_ZC_CYCLE c ON x.XS_ZC_CYCLE_ID=c.ID WHERE x.ID=?1";
+            Map<String, Object> map1 = execSqlSingleResult(sql1, taskid);
+            String section = (String) map1.get("SECTION");
+            String[] split = section.split("-");
+            Double sum = 0.0;
+            if(split.length>1){
+                sum = Double.parseDouble(split[1])-Double.parseDouble(split[0])+1;
+            }
+            Double d = 0.0;
+            if(sum>0){
+                //查询该任务不到位的个数
+                String sql2 = "SELECT count(1) AS count FROM XS_ZC_TASK_EXEC_DETAIL d " +
+                        "  LEFT JOIN XS_ZC_TASK_EXEC e ON d.XS_ZC_TASK_EXEC_ID=e.ID WHERE IS_DW=1  AND e.XS_ZC_TASK_ID=?1";
+                List<Map<String, Object>> maps = execSql(sql2, taskid);
+                if(maps.size()>0){
+                    Double isDWNum =  Double.parseDouble(maps.get(0).get("count").toString());
+                    d = isDWNum / sum;
+                }
+            }
+            //如果大于等于0.3则插入告警
+            if(d>=0.3){
+                //查询是否已经插入告警
+                String sql3 = " SELECT ID FROM MONITOR_CHECK_EJ WHERE TASK_ID=?1 AND WARNING_TYPE=3 AND trunc(CREATE_TIME)=trunc(sysdate) ";
+                List<Map<String, Object>> maps = execSql(sql3, taskid);
+                if(maps.size()==0){
+                    String sql = "   SELECT TASK_NAME AS TASKNAME,TD_ORG FROM XS_ZC_TASK WHERE ID=?1 ";
+                    Map<String, Object> map = this.execSqlSingleResult(sql, taskid);
+                    //往二级单位插数据
+                    //System.out.println(reason+"----------巡视未到位原因");
+                    resp.saveCheckEjWdw(SnowflakeIdWorker.getInstance(10, 12).nextId(),taskid,1,3,userid,map.get("TD_ORG").toString(),map.get("TASKNAME").toString(),reason);
+                    String key = "ONE+" + taskid + "+1+3+" + userid + "+" + map.get("TD_ORG").toString() + "+" + map.get("TASKNAME").toString()+"+"+reason;
 
-            redisService.setex(key);
+                    redisService.setex(key);
+                }
+            }
             return WebApiResponse.success("");
         } catch (Exception e) {
             e.printStackTrace();

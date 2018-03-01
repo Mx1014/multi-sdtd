@@ -79,6 +79,46 @@ public class CMLINEService extends CurdService<CMLINE,CMLINERepository> {
         return WebApiResponse.success(maps);
     }
 
+    public WebApiResponse getLines(String kv, String currentUserId) {
+        List<String> list = new ArrayList<>();
+        String sql = "select id,line_name from cm_line where id in ( select line_id from cm_line_section where is_del=0 ";
+        if(StringUtils.isNotEmpty(currentUserId)){
+            Map<String, Object> map = userInfoFromRedis(currentUserId);
+            Integer roletype = Integer.parseInt(map.get("ROLETYPE").toString());
+            String deptid  = map.get("DEPTID").toString();
+            switch (roletype) {
+                case 0:
+                    break;
+                case 1:
+                    list.add(deptid);
+                    sql += " and td_org= ?" + list.size();
+                    break;
+                case 2:
+                    list.add(deptid);
+                    sql += " and td_org= ?" + list.size();
+                    break;
+                case 3:
+                    //外协角色
+                    break;
+                case 4:
+                    //班组角色
+                    break;
+                case 5:
+                    //个人角色
+                    break;
+            }
+
+        }
+
+        if(kv!=null&&!"".equals(kv.trim())){
+            list.add(kv);
+            sql += " and v_level= ?" + list.size();
+        }
+        sql += ") ORDER BY NLSSORT(line_name,'NLS_SORT = SCHINESE_PINYIN_M')";
+        List<Map<String, Object>> maps = execSql(sql,list.toArray());
+        return WebApiResponse.success(maps);
+    }
+
     public Map<String, Object> userInfoFromRedis(String userId) {
         HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
 
@@ -97,5 +137,6 @@ public class CMLINEService extends CurdService<CMLINE,CMLINERepository> {
         }
         return jsonObject;
     }
+
 
 }

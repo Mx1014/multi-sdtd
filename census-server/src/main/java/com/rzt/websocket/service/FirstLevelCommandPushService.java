@@ -208,7 +208,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
         });
     }
 
-    @Scheduled(fixedDelay = 30000)
+    @Scheduled(fixedDelay = 10000)
     public void adminModule8() {
         Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
         sendMsg.forEach((sessionId, session) -> {

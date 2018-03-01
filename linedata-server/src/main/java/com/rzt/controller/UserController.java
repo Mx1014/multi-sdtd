@@ -3,16 +3,10 @@ package com.rzt.controller;
 import com.rzt.entity.KHYHHISTORY;
 import com.rzt.service.UserService;
 import com.rzt.util.WebApiResponse;
-import com.rzt.utils.DateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.text.SimpleDateFormat;
-import java.util.*;
 
 /**
  * 李成阳
@@ -32,8 +26,8 @@ public class UserController extends CurdController<KHYHHISTORY, UserService> {
      * @return
      */
     @GetMapping("/findUserInfoTwo")
-    public WebApiResponse findUserSum(String deptId) {
-        return userService.findUser(deptId);
+    public WebApiResponse findUserSum(String tokenUserId) {
+        return userService.findUser(tokenUserId);
     }
 
     /**
@@ -42,8 +36,8 @@ public class UserController extends CurdController<KHYHHISTORY, UserService> {
      * @return
      */
     @GetMapping("/findUserSum")
-    public WebApiResponse findUserInfoTwo(String deptId) {
-        return userService.findUserInfoOne(deptId);
+    public WebApiResponse findUserInfoTwo(String tokenUserId) {
+        return userService.findUserInfoOne(tokenUserId);
     }
     /**
      * 按照部门查询
@@ -69,7 +63,6 @@ public class UserController extends CurdController<KHYHHISTORY, UserService> {
 
     /**
      * 四级页面 查询用户详细信息
-     *
      * @return
      */
     @GetMapping("/findUserInfo")

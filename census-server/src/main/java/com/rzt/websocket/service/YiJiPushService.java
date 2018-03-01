@@ -731,11 +731,24 @@ public class YiJiPushService extends CurdService<websocket, websocketRepository>
                 "   ELSE 0 END)),0) jcsh\n" +
                 "FROM ACT_RU_TASK\n" +
                 "WHERE CREATE_TIME_ > trunc(sysdate)";*/
+//        String yh = " SELECT\n" +
+//                "  count(1) as yh\n" +
+//                "    FROM ACT_HI_ACTINST t LEFT JOIN ACT_HI_VARINST h ON t.PROC_INST_ID_ = h.PROC_INST_ID_ AND  h.NAME_ = 'YHID'\n" +
+//                "   LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_\n" +
+//                "    WHERE  t.PROC_DEF_ID_ LIKE 'wtsh%'  AND t.END_TIME_ IS NOT  NULL AND y.ID IS NOT NULL AND trunc(END_TIME_)=trunc(sysdate) AND ASSIGNEE_ = 'sdid' AND YWORG_ID ='" + deptid + "'";
         String yh = " SELECT\n" +
-                "  count(1) as yh\n" +
-                "    FROM ACT_HI_ACTINST t LEFT JOIN ACT_HI_VARINST h ON t.PROC_INST_ID_ = h.PROC_INST_ID_ AND  h.NAME_ = 'YHID'\n" +
-                "   LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_\n" +
-                "    WHERE  t.PROC_DEF_ID_ LIKE 'wtsh%'  AND t.END_TIME_ IS NOT  NULL AND y.ID IS NOT NULL AND trunc(END_TIME_)=trunc(sysdate) AND ASSIGNEE_ = 'sdid' AND YWORG_ID ='" + deptid + "'";
+                "  (SELECT\n" +
+                "     count(1)\n" +
+                "   FROM ACT_HI_ACTINST t LEFT JOIN ACT_HI_VARINST h ON t.PROC_INST_ID_ = h.PROC_INST_ID_ AND  h.NAME_ = 'YHID'\n" +
+                "     LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_\n" +
+                "   WHERE  t.PROC_DEF_ID_ LIKE 'wtsh%'  AND ASSIGNEE_ = 'jkid'  AND t.END_TIME_ IS NOT  NULL AND y.ID IS NOT NULL\n" +
+                "          ) +\n" +
+                "  (SELECT count(1)\n" +
+                "   FROM ACT_RU_TASK t LEFT JOIN ACT_RU_VARIABLE h ON t.PROC_INST_ID_ = h.PROC_INST_ID_\n" +
+                "     LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_\n" +
+                "   WHERE h.NAME_ = 'YHID' AND t.PROC_DEF_ID_ LIKE 'wtsh%' AND y.ID IS NOT NULL   AND ASSIGNEE_ = 'jkid'\n" +
+                "         ) AS task\n" +
+                "  FROM dual ";
         String xs = " SELECT count(1) as xs\n" +
                 "FROM ACT_HI_ACTINST t\n" +
                 "  LEFT JOIN ACT_HI_VARINST h ON t.PROC_INST_ID_ = h.PROC_INST_ID_ AND h.NAME_ = 'XSID'\n" +

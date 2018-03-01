@@ -26,11 +26,47 @@ public class UserService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository>
 
     protected static Logger LOGGER = LoggerFactory.getLogger(UserService.class);
 
+
+    public String findDeptByUserId(String tokenUserId){
+        try{
+            //查询当前用户的部门
+            String deptSql = "SELECT DEPTID" +
+                    "           FROM RZTSYSUSER WHERE ID = '"+tokenUserId+"' ";
+            List<Map<String, Object>> maps = this.execSql(deptSql);
+            if(null != maps && maps.size()>0){
+                Map<String, Object> map = maps.get(0);
+                if(null != map.get("DEPTID")  && !"".equals(map.get("DEPTID"))){
+                    LOGGER.error("用户id查询部门id成功");
+                    return map.get("DEPTID").toString();
+                }else {
+                    return "0";
+                }
+            }else {
+                return "0";
+            }
+        }catch (Exception e){
+            LOGGER.error("用户id查询部门id错误"+e.getMessage());
+        }
+        return "0";
+    }
+
     /**
      * 查询各单位在线人数 离线人数  总人数
      * @return
      */
-    public WebApiResponse findUser(String deptId){
+    public WebApiResponse findUser(String tokenUserId){
+        String deptId = "";
+
+        if(null  ==  tokenUserId ||  "".equals(tokenUserId)){
+            return WebApiResponse.erro("当前登录用户状态错误   tokenUserId"+tokenUserId);
+        }
+        if("0".equals(findDeptByUserId(tokenUserId))){
+            return WebApiResponse.erro("当前登录用户状态错误   tokenUserId"+tokenUserId);
+        }
+        String BJDEPT =   "40283781608b848701608b85d3700000";
+        if(!BJDEPT.equals(findDeptByUserId(tokenUserId))){
+            deptId = findDeptByUserId(tokenUserId);
+        }
         List listLike = new ArrayList();
         String s = "";
 
@@ -110,8 +146,22 @@ public class UserService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository>
      * 各单位人员离线信息
      * @return
      */
-    public WebApiResponse findUserInfoOne(String deptid) {
+    public WebApiResponse findUserInfoOne(String tokenUserId) {
+        String deptId = "";
 
+        if(null  ==  tokenUserId ||  "".equals(tokenUserId)){
+            return WebApiResponse.erro("当前登录用户状态错误   tokenUserId"+tokenUserId);
+        }
+        if("0".equals(findDeptByUserId(tokenUserId))){
+            return WebApiResponse.erro("当前登录用户状态错误   tokenUserId"+tokenUserId);
+        }
+        String BJDEPT =   "40283781608b848701608b85d3700000";
+        String deptSql = "";
+        String deptSql2 = "";
+        if(!BJDEPT.equals(findDeptByUserId(tokenUserId))){
+            deptSql = "  AND r.DEPTID = '"+findDeptByUserId(tokenUserId)+"' ";
+            deptSql2 = "  AND DEPT_ID = '"+findDeptByUserId(tokenUserId)+"' ";
+        }
 
         List listLike = new ArrayList();
         String s = "";
@@ -128,21 +178,21 @@ public class UserService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository>
         String xs = " SELECT nvl(sum(decode(LOGINSTATUS,1,1,0)),0) xszx," +
                 "  nvl(sum(decode(LOGINSTATUS,0,1,0)),0) xslx,DEPTID FROM (SELECT CM_USER_ID,DEPTID,CLASSNAME,LOGINSTATUS " +
                 " FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID " +
-                " WHERE USERDELETE = 1  AND IS_DELETE=0   " + s  +
+                " WHERE USERDELETE = 1  AND IS_DELETE=0   " + s  + deptSql +
                 " GROUP BY DEPTID,CM_USER_ID,CLASSNAME,LOGINSTATUS ) GROUP BY DEPTID ";
         String kh = " SELECT nvl(sum(decode(LOGINSTATUS,1,1,0)),0) khzx," +
                 "  nvl(sum(decode(LOGINSTATUS,0,1,0)),0) khlx,DEPTID FROM (SELECT USER_ID,DEPTID,CLASSNAME,LOGINSTATUS " +
                 " FROM RZTSYSUSER r RIGHT JOIN KH_TASK z ON r.ID = z.USER_ID " +
-                " WHERE USERDELETE = 1  " + s  +
+                " WHERE USERDELETE = 1  " + s  + deptSql +
                 " GROUP BY DEPTID,USER_ID,CLASSNAME,LOGINSTATUS ) GROUP BY DEPTID ";
         String xcjc = " SELECT nvl(sum(decode(LOGINSTATUS,1,1,0)),0) zxjczx," +
                 "  nvl(sum(decode(LOGINSTATUS,0,1,0)),0) zxjclx ,DEPTID FROM (SELECT z.USER_ID AS USERID,DEPTID,CLASSNAME,LOGINSTATUS " +
-                " FROM RZTSYSUSER r RIGHT JOIN CHECK_LIVE_TASK z ON r.ID = z.USER_ID " + s3  +
+                " FROM RZTSYSUSER r RIGHT JOIN CHECK_LIVE_TASK z ON r.ID = z.USER_ID " + s3  + deptSql +
                 " WHERE  USERDELETE = 1   GROUP BY z.USER_ID, DEPTID, CLASSNAME, LOGINSTATUS " +
                 " ) GROUP BY DEPTID ";
         List<Map<String, Object>> htlist = new ArrayList<>();
         try {
-            String user = "SELECT * FROM WORKING_TIMED where 1=1 " ;
+            String user = "SELECT * FROM WORKING_TIMED where 1=1 "+deptSql2 ;
             List<Map<String, Object>> maps = this.execSql(user);
             for (Map map : maps) {
                 Map<String, Object> dept = new HashMap<>();
@@ -557,4 +607,6 @@ public class UserService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository>
 
 
     }
+
+
 }
