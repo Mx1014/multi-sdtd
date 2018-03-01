@@ -192,27 +192,27 @@ public class AlarmDetailsController extends CurdController<RztSysUser, CommonSer
                     OFFLINESs = OFFLINES;
                 }
                 Integer XSANSWERTIMEs = 0;
-                Integer XSANSWERTIME = map1.get(id);
+                Integer XSANSWERTIME = map2.get(id);
                 if (!StringUtils.isEmpty(XSANSWERTIME)) {
                     XSANSWERTIMEs = XSANSWERTIME;
                 }
                 Integer KHANSWERTIMEs = 0;
-                Integer KHANSWERTIME = map1.get(id);
+                Integer KHANSWERTIME = map3.get(id);
                 if (!StringUtils.isEmpty(KHANSWERTIME)) {
                     KHANSWERTIMEs = KHANSWERTIME;
                 }
                 Integer OVERDUEs = 0;
-                Integer OVERDUE = map1.get(id);
+                Integer OVERDUE = map4.get(id);
                 if (!StringUtils.isEmpty(OVERDUE)) {
                     OVERDUEs = OVERDUE;
                 }
                 Integer TEMPORARILYs = 0;
-                Integer TEMPORARILY = map1.get(id);
+                Integer TEMPORARILY = map6.get(id);
                 if (!StringUtils.isEmpty(TEMPORARILY)) {
                     TEMPORARILYs = TEMPORARILY;
                 }
                 Integer UNQUALIFIEDPATROLs = 0;
-                Integer UNQUALIFIEDPATROL = map1.get(id);
+                Integer UNQUALIFIEDPATROL = map6.get(id);
                 if (!StringUtils.isEmpty(UNQUALIFIEDPATROL)) {
                     UNQUALIFIEDPATROLs = OFFLINES;
                 }
