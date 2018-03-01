@@ -3,6 +3,7 @@ server:
 spring:
   application:
     name: api-gateway
+
   redis:
     database: 0
     host: 39.106.206.129

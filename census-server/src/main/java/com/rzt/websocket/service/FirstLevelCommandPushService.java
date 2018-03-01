@@ -97,8 +97,8 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
         sendMsg.forEach((sessionId, session) -> {
             Object deptid = session.get("DEPTID");
             /*
-            * 巡视在线人员
-            */
+             * 巡视在线人员
+             */
             String xsZxUser = " SELECT count(1) SM " +
                     "FROM (SELECT z.CM_USER_ID " +
                     "      FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID " +
@@ -208,14 +208,17 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
         });
     }
 
-    @Scheduled(fixedDelay = 30000)
+    @Scheduled(fixedDelay = 10000)
     public void adminModule8() {
         Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
         sendMsg.forEach((sessionId, session) -> {
             /**
              * 离线
              */
-            String offline = "SELECT count(1) as OFFLINES FROM MONITOR_CHECK_EJ  WHERE (WARNING_TYPE = 8 OR WARNING_TYPE = 2) AND trunc(CREATE_TIME) = trunc(sysdate) AND USER_ID !='null' ";
+//            String offline = "SELECT count(1) as OFFLINES FROM MONITOR_CHECK_EJ  WHERE (WARNING_TYPE = 8 OR WARNING_TYPE = 2) AND trunc(CREATE_TIME) = trunc(sysdate) AND USER_ID !='null' ";
+            String offline = "SELECT count(count(1)) AS OFFLINES " +
+                    "FROM MONITOR_CHECK_EJ " +
+                    "WHERE (WARNING_TYPE = 8 OR WARNING_TYPE = 2 OR WARNING_TYPE = 13) AND trunc(CREATE_TIME) = trunc(sysdate) AND USER_ID != 'null' AND TASK_STATUS=0 AND USER_LOGIN_TYPE = 0 GROUP BY USER_ID ";
 
             /**
              *未按时开始任务

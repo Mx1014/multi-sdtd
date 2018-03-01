@@ -76,7 +76,7 @@ public class tourPublicController extends CurdController<Monitorcheckej, tourPub
     @GetMapping("KHXXx")
     public WebApiResponse KHXX(String currentUserId,Integer taskType,Integer typeReason){
         try {
-            //this.service.KHXX(currentUserId,taskType,typeReason);
+            this.service.KHXX(currentUserId,taskType,typeReason);
             return WebApiResponse.success("success");
         }catch (Exception e){
             return WebApiResponse.erro("fail"+e.getMessage());

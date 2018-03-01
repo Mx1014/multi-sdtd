@@ -78,4 +78,9 @@ public interface RztSysUserRepository extends JpaRepository<RztSysUser, String> 
     @Modifying
     @Query(value = " INSERT INTO RZTUSERLOGINTYPETIME (ID, USERID, TYPE, CREAT_TIME) VALUES (sys_guid(),?,?,sysdate) ", nativeQuery = true)
     void insRztuserLoginTypeTime(String userId, Integer type);
+
+    @Transactional
+    @Modifying
+    @Query(value = " UPDATE MONITOR_CHECK_EJ SET USER_LOGIN_TYPE = ?1 WHERE USER_ID = ?2 ", nativeQuery = true)
+    void updateMonitorCheckEjUserLoginType(Integer loginType, String userId);
 }

@@ -76,4 +76,12 @@ public interface Monitorcheckejrepository extends JpaRepository<Monitorcheckej,S
  @Modifying
  @Query(value = " UPDATE RZTSYSUSER SET LOGINSTATUS = 0 WHERE id=?1 ", nativeQuery = true)
  int quitUserLOGINSTATUS(String id);
+
+ /**
+  *更改二级表中的登录状态
+  */
+ @Transactional
+ @Modifying
+ @Query(value = " UPDATE MONITOR_CHECK_EJ SET USER_LOGIN_TYPE = ?1 WHERE USER_ID = ?2 ", nativeQuery = true)
+ void updateMonitorCheckEjUserLoginType(Integer loginType, String userId);
 }
