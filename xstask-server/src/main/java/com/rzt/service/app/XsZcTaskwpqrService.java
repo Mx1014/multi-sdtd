@@ -1,5 +1,6 @@
 package com.rzt.service.app;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.app.XsZcTaskwpqr;
 import com.rzt.eureka.WarningmonitorServerService;
@@ -7,19 +8,19 @@ import com.rzt.repository.app.XsZcTaskwpqrRepository;
 import com.rzt.service.CurdService;
 import com.rzt.utils.DateUtil;
 import com.rzt.utils.SnowflakeIdWorker;
+import org.apache.commons.lang.StringUtils;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @ProjectName: sdtd2-task
@@ -34,7 +35,6 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
     private RedisTemplate<String, Object> redisTemplate;
     @Autowired
     WarningmonitorServerService warningmonitorServerService;
-
     /***
      * @Method updateJdTime
      * @Description\
@@ -56,12 +56,12 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
             //更新redis中的人员 任务的状态
             updateXsMenInfoInRedis(userId);
             //remove掉月宁那边的key
-            removeSomeKey(userId);
+            removeSomeKey(id);
         }
     }
 
-    public void removeSomeKey(String userId) {
-        String s = "TWO+*+1+4+" + userId + "+*";
+    public void removeSomeKey(Long id) {
+        String s = "TWO+" + id + "+1+4*";
         RedisConnection connection = null;
         try {
             connection = redisTemplate.getConnectionFactory().getConnection();
@@ -285,7 +285,7 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
      * @date 2017/12/18 19:08
      * @author nwz
      */
-    public void updateExecDetail(Integer xslx, Integer sfdw, String reason, Long execDetailId, String longtitude, String latitude, Long taskid, String userid) {
+    public void updateExecDetail(Integer xslx, Integer sfdw, String reason, Long execDetailId, String longtitude, String latitude, Long taskid, String userid) throws Exception {
         if (xslx == 0 || xslx == 1) {
             this.reposiotry.updateTxbdExecDetail(sfdw, reason, execDetailId);
         } else {
@@ -296,7 +296,58 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            //计算十分钟五基塔
+            jiSuanGanTa(execDetailId, taskid, userid);
+
+            //修改状态
             this.reposiotry.updateZcxsExecDetail(sfdw, reason, execDetailId, longtitude, latitude);
+        }
+    }
+
+    private void jiSuanGanTa(Long execDetailId, Long taskid, String userid) {
+        try {
+            String sql = " select * from xs_zc_task_exec_detail where id = ?";
+            Map<String, Object> map = this.execSqlSingleResult(sql, execDetailId);
+            Integer end_tower_id = Integer.parseInt(map.get("END_TOWER_ID").toString());
+            if (end_tower_id == 0) {
+                HashOperations<String, String, String> hashOperations = redisTemplate.opsForHash();
+                String tourGanta = hashOperations.get("tourGanta", taskid+"");
+                Map<String, Object> ganta = new HashMap<String, Object>();
+                ganta.put("ID", execDetailId);
+                ganta.put("END_TIME", DateUtil.stringNow());
+                ganta.put("OPERATE_NAME", map.get("OPERATE_NAME"));
+                if (StringUtils.isEmpty(tourGanta)) {
+                    ArrayList<Map<String, Object>> gantas = new ArrayList<>();
+                    gantas.add(ganta);
+                    hashOperations.put("tourGanta", taskid + "", JSONObject.toJSONString(gantas));
+                } else {
+                    List<Map> gantas = JSONArray.parseArray(tourGanta, Map.class);
+                    if (gantas.size() == 9) {
+                        hashOperations.delete("tourGanta", taskid + "");
+                        Map ganta9th = gantas.get(0);
+                        Object end_time = ganta9th.get("END_TIME");
+                        Date date = DateUtil.stringToDate(end_time.toString());
+                        if (date.getTime() - new Date().getTime() < 10 * 60 * 1000) {
+                            gantas.add(ganta);
+                            long nextId = new SnowflakeIdWorker(18, 21).nextId();
+                            this.reposiotry.insertException(nextId, taskid, "十分钟五基塔", JSONObject.toJSONString(gantas));
+                            try {
+                                warningmonitorServerService.takePhoto(taskid, userid);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                    } else {
+                        gantas.add(ganta);
+                        hashOperations.put("tourGanta", taskid + "", JSONObject.toJSONString(gantas));
+
+                    }
+
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -360,10 +411,8 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
     public void updateTaskStatus(Integer xslx, Long id, String userId) {
         if (xslx == 0 || xslx == 1) {
             this.reposiotry.updateTxbdTaskToOff(id);
-            this.reposiotry.updateMonitorCheckEjXs(id);
         } else {
             this.reposiotry.updateZcxsTaskToOff(id);
-            this.reposiotry.updateMonitorCheckEjXs(id);
             updateXsMenInfoInRedis(userId);
         }
 
@@ -384,13 +433,13 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
      * @author nwz
      */
     public void insertException(Long taskid, String ycms, String ycdata, String userid) {
-        long nextId = new SnowflakeIdWorker(18, 21).nextId();
-        this.reposiotry.insertException(nextId, taskid, ycms, ycdata);
-        try {
-            warningmonitorServerService.takePhoto(taskid, userid);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        long nextId = new SnowflakeIdWorker(18, 21).nextId();
+//        this.reposiotry.insertException(nextId,taskid,ycms,ycdata);
+//        try {
+////            warningmonitorServerService.takePhoto(taskid,userid);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
     }
 
 }

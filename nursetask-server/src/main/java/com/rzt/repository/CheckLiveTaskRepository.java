@@ -62,4 +62,7 @@ public interface CheckLiveTaskRepository extends JpaRepository<CheckLiveTask,Str
     @Query(value = "update check_live_task set USER_ID=?2 where id=?1",nativeQuery = true)
     void updateKhCheckUser(Long id, String userId, String userName);
 
+    @Modifying
+    @Query(value = "UPDATE MONITOR_CHECK_EJ SET TASK_STATUS=1 WHERE TASK_ID=? AND WARNING_TYPE=13",nativeQuery = true)
+    void updateMonitorEj(Long id);
 }

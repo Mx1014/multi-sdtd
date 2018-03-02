@@ -120,7 +120,9 @@ public class XSCycleServiceImpl  extends CurdService<CheckResult, CheckResultRep
                     "        LEFT JOIN XS_ZC_CYCLE_RECORD x ON x.XS_ZC_CYCLE_ID = h.TEXT_" +
                     "      WHERE h.NAME_ = 'XSID' AND t.PROC_DEF_ID_ LIKE 'xssh%'  AND t.ASSIGNEE_ = '"+userId+"') tt WHERE 1=1 ";
 
+            if(!"公司本部".equals(td)){//各属地单位登录账号
 
+            }
             if(null != lineName && !"".equals(lineName) ){
                 sql += "  AND  tt.LINE_NAME LIKE '%"+lineName+"%' ";
             }
@@ -141,9 +143,16 @@ public class XSCycleServiceImpl  extends CurdService<CheckResult, CheckResultRep
                     sql += "  AND  tt.DID =   '"+tdId+"'";
                 }
             }*/
-            if(null != tdId && !"".equals(tdId)){
-                sql += "  AND  tt.DID =   '"+tdId+"'";
+            //判断当前用户所属节点    书否显示所有信息
+            if("sdid".equals(userId) || "sdyjid".equals(userId)){
+                sql += "  AND tt.DEPT = '"+td+"'  ";
+            }else{
+                if(null != tdId && !"".equals(tdId)){
+                    sql += "  AND  tt.DID =   '"+tdId+"'";
+                }
             }
+
+
             maps = this.execSqlPage(pageable, sql, null);
             LOGGER.info("当前节点待办任务查询成功"+userId);
 
@@ -226,8 +235,13 @@ public class XSCycleServiceImpl  extends CurdService<CheckResult, CheckResultRep
                     sql += "  AND  tt.DID =   '"+tdId+"'";
                 }
             }*/
-            if(null != tdId && !"".equals(tdId)){
-                sql += "  AND  tt.DID =   '"+tdId+"'";
+            //判断当前用户所属节点    书否显示所有信息
+            if("sdid".equals(userId) || "sdyjid".equals(userId)){
+                sql += "  AND tt.DEPT = '"+td+"'  ";
+            }else{
+                if(null != tdId && !"".equals(tdId)){
+                    sql += "  AND  tt.DID =   '"+tdId+"'";
+                }
             }
             maps = this.execSqlPage(pageable, sql, null);
             LOGGER.info("当前节点历史任务查询成功"+userId);

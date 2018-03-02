@@ -105,6 +105,7 @@ public class OfflinesController extends CurdController<RztSysUser, CommonService
                 "  ce.REASON, " +
                 "  ce.TASK_TYPE, " +
                 "  ce.TASK_ID, " +
+                " ce.TASK_NAME, " +
                 " nvl(to_char(ce.ONLINE_TIME, 'yyyy-MM-dd hh24:mi:ss'), '人员未上线') AS ONLINE_TIME , " +
                 "  ch.*, " +
                 "  CASE ch.WORKTYPEs " +
