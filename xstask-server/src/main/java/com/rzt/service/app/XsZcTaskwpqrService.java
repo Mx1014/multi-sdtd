@@ -35,7 +35,6 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
     private RedisTemplate<String, Object> redisTemplate;
     @Autowired
     WarningmonitorServerService warningmonitorServerService;
-
     /***
      * @Method updateJdTime
      * @Description\
@@ -312,7 +311,7 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
             Integer end_tower_id = Integer.parseInt(map.get("END_TOWER_ID").toString());
             if (end_tower_id == 0) {
                 HashOperations<String, String, String> hashOperations = redisTemplate.opsForHash();
-                String tourGanta = hashOperations.get("tourGanta", taskid + "");
+                String tourGanta = hashOperations.get("tourGanta", taskid+"");
                 Map<String, Object> ganta = new HashMap<String, Object>();
                 ganta.put("ID", execDetailId);
                 ganta.put("END_TIME", DateUtil.stringNow());
@@ -412,10 +411,10 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
     public void updateTaskStatus(Integer xslx, Long id, String userId) {
         if (xslx == 0 || xslx == 1) {
             this.reposiotry.updateTxbdTaskToOff(id);
-            this.reposiotry.updateTxbdTaskZxys(1, id);
+            this.reposiotry.updateMonitorCheckEjXs(id);
         } else {
             this.reposiotry.updateZcxsTaskToOff(id);
-            this.reposiotry.updateTxbdTaskZxys(1, id);
+            this.reposiotry.updateMonitorCheckEjXs(id);
             updateXsMenInfoInRedis(userId);
         }
 
