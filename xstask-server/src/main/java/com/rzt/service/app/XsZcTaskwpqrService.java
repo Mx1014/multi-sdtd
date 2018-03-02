@@ -411,8 +411,10 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
     public void updateTaskStatus(Integer xslx, Long id, String userId) {
         if (xslx == 0 || xslx == 1) {
             this.reposiotry.updateTxbdTaskToOff(id);
+            this.reposiotry.updateMonitorCheckEjXs(id);
         } else {
             this.reposiotry.updateZcxsTaskToOff(id);
+            this.reposiotry.updateMonitorCheckEjXs(id);
             updateXsMenInfoInRedis(userId);
         }
 

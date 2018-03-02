@@ -27,6 +27,7 @@ public class AlarmDetailsController extends CurdController<RztSysUser, CommonSer
     public WebApiResponse AlarmList(String currentUserId, String startTime, String endTime, String DEPTID) {
         List listLike = new ArrayList();
         String s = "";
+        String s1 = "";
         JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", currentUserId).toString());
         int roletype = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
         if (!StringUtils.isEmpty(DEPTID)) {
@@ -36,10 +37,13 @@ public class AlarmDetailsController extends CurdController<RztSysUser, CommonSer
             if (!StringUtils.isEmpty(startTime) && !StringUtils.isEmpty(endTime)) {
                 listLike.add(startTime);
                 s += " AND CREATE_TIME >= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
+                s1 += " AND ej.CREATE_TIME >= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
                 listLike.add(endTime);
                 s += " AND CREATE_TIME <= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
+                s1 += " AND ej.CREATE_TIME <= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
             } else {
                 s += " AND trunc(CREATE_TIME) = trunc(sysdate) ";
+                s1 += " AND trunc(ej.CREATE_TIME) = trunc(sysdate) ";
             }
             if (!StringUtils.isEmpty(DEPTID)) {
                 listLike.add(DEPTID);
@@ -65,53 +69,107 @@ public class AlarmDetailsController extends CurdController<RztSysUser, CommonSer
 //                    "                                   GROUP BY DEPTID) A ON T.ID = A.DEPTID " +
 //                    "WHERE T.DEPTSORT IS NOT NULL " +
 //                    "ORDER BY T.DEPTSORT ";
-            String alarm = "SELECT\n" +
-                    "  NVL(A.OFFLINES, 0)          AS OFFLINES,\n" +
+//            String alarm = "SELECT\n" +
+//                    "  NVL(A.OFFLINES, 0)          AS OFFLINES,\n" +
+//                    "  NVL(A.ANSWERTIME, 0)        AS ANSWERTIME,\n" +
+//                    "  NVL(A.OVERDUE, 0)           AS OVERDUE,\n" +
+//                    "  NVL(A.TEMPORARILY, 0)       AS TEMPORARILY,\n" +
+//                    "  NVL(A.UNQUALIFIEDPATROL, 0) AS UNQUALIFIEDPATROL,\n" +
+//                    "  T.ID                        AS DEPTID,\n" +
+//                    "  T.DEPTNAME\n" +
+//                    "FROM RZTSYSDEPARTMENT T LEFT JOIN (SELECT\n" +
+//                    "                                     cc.UNQUALIFIEDPATROL,\n" +
+//                    "                                     CC.TEMPORARILY,\n" +
+//                    "                                     CC.OVERDUE,\n" +
+//                    "                                     CC.ANSWERTIME,\n" +
+//                    "                                     CC.OFFLINES,\n" +
+//                    "                                     CC.DEPTID\n" +
+//                    "                                   FROM (SELECT *\n" +
+//                    "                                         FROM (SELECT\n" +
+//                    "                                                 nvl(sum(decode(WARNING_TYPE, 4, 1, 10, 1, 0)), 0) AS ANSWERTIME,\n" +
+//                    "                                                 nvl(sum(decode(WARNING_TYPE, 1, 1, 0)), 0)        AS OVERDUE,\n" +
+//                    "                                                 nvl(sum(decode(WARNING_TYPE, 7, 1, 0)), 0)        AS TEMPORARILY,\n" +
+//                    "                                                 nvl(sum(decode(WARNING_TYPE, 5, 1, 3,1,0)), 0)        AS UNQUALIFIEDPATROL,\n" +
+//                    "                                                 DEPTID\n" +
+//                    "                                               FROM MONITOR_CHECK_EJ\n" +
+//                    "                                               WHERE 1 = 1 AND TASK_STATUS = 0  AND STATUS = 0  AND trunc(CREATE_TIME) = trunc(sysdate)\n" +
+//                    "                                               GROUP BY DEPTID) aa LEFT JOIN (SELECT\n" +
+//                    "  sum(ddd.ccc) AS OFFLINES,\n" +
+//                    "  ddd.DEPTID   AS DEPP\n" +
+//                    "FROM (\n" +
+//                    "       SELECT\n" +
+//                    "         nvl(sum(decode(WARNING_TYPE, 2,\n" +
+//                    "                        1, 8,\n" +
+//                    "                        1, 13, 1, 0)),\n" +
+//                    "             0) AS ccc,\n" +
+//                    "         DEPTID\n" +
+//                    "       FROM (SELECT DISTINCT\n" +
+//                    "               USER_ID,\n" +
+//                    "               WARNING_TYPE,\n" +
+//                    "               DEPTID\n" +
+//                    "             FROM MONITOR_CHECK_EJ\n" +
+//                    "       WHERE trunc(CREATE_TIME) =\n" +
+//                    "             trunc(sysdate)  AND TASK_STATUS = 0 AND STATUS = 0  AND USER_LOGIN_TYPE = 0 )\n" +
+//                    "\n" +
+//                    "       GROUP BY DEPTID) ddd\n" +
+//                    "GROUP BY DEPTID) bb\n" +
+//                    "                                             ON aa.DEPTID = bb.DEPP) cc) A ON T.ID = A.DEPTID\n" +
+//                    "WHERE T.DEPTSORT IS NOT NULL\n" +
+//                    "ORDER BY T.DEPTSORT";
+            String alarm = " SELECT\n" +
+                    " NVL(B.OFFLINES, 0)          AS OFFLINES,\n" +
                     "  NVL(A.ANSWERTIME, 0)        AS ANSWERTIME,\n" +
                     "  NVL(A.OVERDUE, 0)           AS OVERDUE,\n" +
-                    "  NVL(A.TEMPORARILY, 0)       AS TEMPORARILY,\n" +
+                    "  NVL(CC.TEMPORARILY, 0)       AS TEMPORARILY,\n" +
                     "  NVL(A.UNQUALIFIEDPATROL, 0) AS UNQUALIFIEDPATROL,\n" +
                     "  T.ID                        AS DEPTID,\n" +
                     "  T.DEPTNAME\n" +
                     "FROM RZTSYSDEPARTMENT T LEFT JOIN (SELECT\n" +
-                    "                                     cc.UNQUALIFIEDPATROL,\n" +
-                    "                                     CC.TEMPORARILY,\n" +
-                    "                                     CC.OVERDUE,\n" +
-                    "                                     CC.ANSWERTIME,\n" +
-                    "                                     CC.OFFLINES,\n" +
-                    "                                     CC.DEPTID\n" +
-                    "                                   FROM (SELECT *\n" +
-                    "                                         FROM (SELECT\n" +
-                    "                                                 nvl(sum(decode(WARNING_TYPE, 4, 1, 10, 1, 0)), 0) AS ANSWERTIME,\n" +
-                    "                                                 nvl(sum(decode(WARNING_TYPE, 1, 1, 0)), 0)        AS OVERDUE,\n" +
-                    "                                                 nvl(sum(decode(WARNING_TYPE, 7, 1, 0)), 0)        AS TEMPORARILY,\n" +
-                    "                                                 nvl(sum(decode(WARNING_TYPE, 5, 1, 3,1,0)), 0)        AS UNQUALIFIEDPATROL,\n" +
-                    "                                                 DEPTID\n" +
-                    "                                               FROM MONITOR_CHECK_EJ\n" +
-                    "                                               WHERE 1 = 1 AND TASK_STATUS = 0 AND trunc(CREATE_TIME) = trunc(sysdate)\n" +
-                    "                                               GROUP BY DEPTID) aa LEFT JOIN (SELECT\n" +
-                    "  sum(ddd.ccc) AS OFFLINES,\n" +
-                    "  ddd.DEPTID   AS DEPP\n" +
-                    "FROM (\n" +
-                    "       SELECT\n" +
-                    "         nvl(sum(decode(WARNING_TYPE, 2,\n" +
-                    "                        1, 8,\n" +
-                    "                        1, 13, 1, 0)),\n" +
-                    "             0) AS ccc,\n" +
-                    "         DEPTID\n" +
-                    "       FROM (SELECT DISTINCT\n" +
-                    "               USER_ID,\n" +
-                    "               WARNING_TYPE,\n" +
+                    "         *\n" +
+                    "       FROM (SELECT\n" +
+                    "               nvl(sum(decode(WARNING_TYPE, 4, 1, 10, 1, 0)), 0) AS ANSWERTIME,\n" +
+                    "               nvl(sum(decode(WARNING_TYPE, 1, 1, 0)), 0)        AS OVERDUE,\n" +
+                    "               nvl(sum(decode(WARNING_TYPE, 5, 1, 3, 1, 0)), 0)  AS UNQUALIFIEDPATROL,\n" +
                     "               DEPTID\n" +
                     "             FROM MONITOR_CHECK_EJ\n" +
-                    "       WHERE trunc(CREATE_TIME) =\n" +
-                    "             trunc(sysdate)  AND TASK_STATUS = 0 AND USER_LOGIN_TYPE = 0 )\n" +
+                    "             WHERE 1 = 1 AND TASK_STATUS = 0 AND STATUS = 0 AND\n" +
+                    "                   trunc(CREATE_TIME) = trunc(sysdate)\n" +
+                    "             GROUP BY DEPTID)) A ON a.DEPTID = t.ID LEFT JOIN\n" +
+                    "  (SELECT\n" +
+                    "    sum(ddd.ccc) AS OFFLINES,\n" +
+                    "    ddd.DEPTID   AS DEPP\n" +
+                    "  FROM (\n" +
+                    "         SELECT\n" +
+                    "           nvl(sum(decode(WARNING_TYPE, 2,\n" +
+                    "                          1, 8,\n" +
+                    "                          1, 13, 1, 0)),\n" +
+                    "               0) AS ccc,\n" +
+                    "           DEPTID\n" +
+                    "         FROM (SELECT DISTINCT\n" +
+                    "                 USER_ID,\n" +
+                    "                 WARNING_TYPE,\n" +
+                    "                 DEPTID\n" +
+                    "               FROM MONITOR_CHECK_EJ\n" +
+                    "               WHERE trunc(CREATE_TIME) =\n" +
+                    "                     trunc(sysdate) AND\n" +
+                    "                     TASK_STATUS = 0 AND\n" +
+                    "                     STATUS = 0 AND\n" +
+                    "                     USER_LOGIN_TYPE = 0)\n" +
                     "\n" +
-                    "       GROUP BY DEPTID) ddd\n" +
-                    "GROUP BY DEPTID) bb\n" +
-                    "                                             ON aa.DEPTID = bb.DEPP) cc) A ON T.ID = A.DEPTID\n" +
+                    "         GROUP BY DEPTID) ddd\n" +
+                    "  GROUP BY DEPTID) B ON a.DEPTID = b.DEPP LEFT JOIN (SELECT\n" +
+                    "  count(DISTINCT ej.TASK_ID) AS TEMPORARILY,\n" +
+                    "  DEPTID\n" +
+                    "FROM MONITOR_CHECK_EJ ej\n" +
+                    "  LEFT JOIN WARNING_OFF_POST_USER_TIME t\n" +
+                    "    ON ej.USER_ID = t.FK_USER_ID\n" +
+                    "       AND ej.TASK_ID = t.FK_TASK_ID\n" +
+                    "WHERE\n" +
+                    "  ej.WARNING_TYPE = 7 AND trunc(ej.CREATE_TIME) = trunc(sysdate)\n" +
+                    "  AND t.TIME_STATUS = 1 AND t.END_TIME IS NULL\n" +
+                    "GROUP BY EJ.DEPTID) CC ON CC.DEPTID = T.ID\n" +
                     "WHERE T.DEPTSORT IS NOT NULL\n" +
-                    "ORDER BY T.DEPTSORT";
+                    "ORDER BY T.DEPTSORT ";
             List<Map<String, Object>> alarms = this.service.execSql(alarm, listLike.toArray());
             return WebApiResponse.success(alarms);
         } else if (roletype == 1 || roletype == 2) {
@@ -129,34 +187,44 @@ public class AlarmDetailsController extends CurdController<RztSysUser, CommonSer
             if (!StringUtils.isEmpty(startTime) && !StringUtils.isEmpty(endTime)) {
                 listLike.add(startTime);
                 s += " AND CREATE_TIME >= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
+                s1 += " AND ej.CREATE_TIME >= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
                 listLike.add(endTime);
                 s += " AND CREATE_TIME <= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
+                s1 += " AND ej.CREATE_TIME <= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
             } else {
                 s += " AND trunc(CREATE_TIME) = trunc(sysdate) ";
+                s1 += " AND trunc(ej.CREATE_TIME) = trunc(sysdate) ";
             }
             /**
              * 离线人员
              */
             String offlines = " SELECT count(1) AS OFFLINES," +
-                    "  u.CLASSNAME as CLASS_ID FROM (SELECT USER_ID FROM MONITOR_CHECK_EJ  WHERE DEPTID = ?1 AND (WARNING_TYPE = 8 OR WARNING_TYPE = 2 OR WARNING_TYPE = 13 )  AND TASK_STATUS = 0 AND USER_LOGIN_TYPE = 0 " +
+                    "  u.CLASSNAME as CLASS_ID FROM (SELECT USER_ID FROM MONITOR_CHECK_EJ  WHERE DEPTID = ?1 AND (WARNING_TYPE = 8 OR WARNING_TYPE = 2 OR WARNING_TYPE = 13 ) AND STATUS = 0  AND TASK_STATUS = 0 AND USER_LOGIN_TYPE = 0 " +
                     "  " + s + " GROUP BY USER_ID ) e LEFT JOIN RZTSYSUSER u ON e.USER_ID = u.ID GROUP BY u.CLASSNAME ";
             /**
              *未按时开始任务
              */
-            String xsAnswertime = " SELECT count(1) AS XSANSWERTIME,k.CLASS_ID as CLASS_ID  FROM (SELECT TASK_ID FROM MONITOR_CHECK_EJ WHERE (WARNING_TYPE = 4 )  AND DEPTID = ?1 AND TASK_TYPE = 1 " + s + " ) e LEFT JOIN XS_ZC_TASK k ON k.ID = e.TASK_ID GROUP BY k.CLASS_ID ";
-            String khAnswertime = " SELECT count(1) AS KHANSWERTIME,r.CLASSNAME as CLASS_ID FROM (SELECT TASK_ID,USER_ID FROM MONITOR_CHECK_EJ WHERE ( WARNING_TYPE = 10)  AND DEPTID = ?1 AND TASK_TYPE = 2 " + s + " ) e LEFT JOIN KH_TASK k ON k.ID = e.TASK_ID LEFT JOIN RZTSYSUSER r ON e.USER_ID = r.ID GROUP BY r.CLASSNAME ";
+            String xsAnswertime = " SELECT count(1) AS XSANSWERTIME,k.CLASS_ID as CLASS_ID  FROM (SELECT TASK_ID FROM MONITOR_CHECK_EJ WHERE (WARNING_TYPE = 4 )  AND DEPTID = ?1 AND TASK_TYPE = 1 AND STATUS = 0 " + s + " ) e LEFT JOIN XS_ZC_TASK k ON k.ID = e.TASK_ID GROUP BY k.CLASS_ID ";
+            String khAnswertime = " SELECT count(1) AS KHANSWERTIME,r.CLASSNAME as CLASS_ID FROM (SELECT TASK_ID,USER_ID FROM MONITOR_CHECK_EJ WHERE ( WARNING_TYPE = 10) AND STATUS = 0 AND DEPTID = ?1 AND TASK_TYPE = 2 " + s + " ) e LEFT JOIN KH_TASK k ON k.ID = e.TASK_ID LEFT JOIN RZTSYSUSER r ON e.USER_ID = r.ID GROUP BY r.CLASSNAME ";
             /**
              * 超期任务
              */
-            String xsOverdue = " SELECT count(1) as OVERDUE ,k.CLASS_ID as CLASS_ID FROM (SELECT * FROM MONITOR_CHECK_EJ WHERE WARNING_TYPE = 1  AND DEPTID = ?1 " + s + " ) e LEFT JOIN XS_ZC_TASK k ON e.TASK_ID = k.ID GROUP BY k.CLASS_ID ";
+            String xsOverdue = " SELECT count(1) as OVERDUE ,k.CLASS_ID as CLASS_ID FROM (SELECT * FROM MONITOR_CHECK_EJ WHERE WARNING_TYPE = 1  AND STATUS = 0  AND DEPTID = ?1 " + s + " ) e LEFT JOIN XS_ZC_TASK k ON e.TASK_ID = k.ID GROUP BY k.CLASS_ID ";
             /**
              * 看护人员脱岗
              */
-            String khTemporarily = " SELECT count(1) as TEMPORARILY,u.CLASSNAME as CLASS_ID FROM (SELECT DEPTID,TASK_ID FROM MONITOR_CHECK_EJ WHERE WARNING_TYPE = 7  AND DEPTID = ?1  " + s + " ) e LEFT JOIN KH_TASK k ON k.ID = e.TASK_ID LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID GROUP BY CLASSNAME ";
+//            String khTemporarily = " SELECT count(1) as TEMPORARILY,u.CLASSNAME as CLASS_ID FROM (SELECT DEPTID,TASK_ID FROM MONITOR_CHECK_EJ WHERE WARNING_TYPE = 7  AND STATUS = 0  AND DEPTID = ?1  " + s + " ) e LEFT JOIN KH_TASK k ON k.ID = e.TASK_ID LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID GROUP BY CLASSNAME ";
+            String khTemporarily = " SELECT\n" +
+                    "  count(DISTINCT ej.TASK_ID) AS TEMPORARILY,r.CLASSNAME as CLASS_ID\n" +
+                    "FROM MONITOR_CHECK_EJ ej\n" +
+                    "  LEFT JOIN WARNING_OFF_POST_USER_TIME t ON ej.USER_ID = t.FK_USER_ID\n" +
+                    "                                            AND ej.TASK_ID = t.FK_TASK_ID LEFT JOIN KH_TASK k ON ej.TASK_ID = k.ID LEFT JOIN RZTSYSUSER r ON k.USER_ID = r.ID\n" +
+                    " WHERE ej.WARNING_TYPE = 7 AND t.TIME_STATUS = 1 AND t.END_TIME IS NULL AND r.DEPTID =?1  \n" + s1 +
+                    " GROUP BY r.CLASSNAME ";
             /**
              * 巡视不合格
              */
-            String xsUnqualifiedpatrol = " SELECT count(1) as unqualifiedpatrol,x.CLASS_ID as CLASS_ID FROM (SELECT TASK_ID FROM MONITOR_CHECK_EJ WHERE （WARNING_TYPE = 5 or WARNING_TYPE = 3 ) AND DEPTID = ?1  " + s + " ) e LEFT JOIN XS_ZC_TASK x ON e.TASK_ID = x.ID GROUP BY x.CLASS_ID ";
+            String xsUnqualifiedpatrol = " SELECT count(1) as unqualifiedpatrol,x.CLASS_ID as CLASS_ID FROM (SELECT TASK_ID FROM MONITOR_CHECK_EJ WHERE （WARNING_TYPE = 5 or WARNING_TYPE = 3 )  AND STATUS = 0  AND DEPTID = ?1  " + s + " ) e LEFT JOIN XS_ZC_TASK x ON e.TASK_ID = x.ID GROUP BY x.CLASS_ID ";
             String className = " SELECT ID,DEPTNAME FROM (SELECT ID,DEPTNAME,LASTNODE FROM RZTSYSDEPARTMENT START WITH ID = ?1 CONNECT BY PRIOR ID = DEPTPID) WHERE LASTNODE = 0 ";
             List<Map<String, Object>> list = this.service.execSql(offlines, listLike.toArray());
             List<Map<String, Object>> list1 = this.service.execSql(xsAnswertime, listLike.toArray());
@@ -230,6 +298,7 @@ public class AlarmDetailsController extends CurdController<RztSysUser, CommonSer
     @RequestMapping("AlarmZhu")
     public WebApiResponse AlarmZhu(String currentUserId, String startTime, String endTime, String deptId) {
         String s = "";
+        String s1 = "";
         JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", currentUserId).toString());
         int roletype = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
         List list = new ArrayList();
@@ -237,29 +306,40 @@ public class AlarmDetailsController extends CurdController<RztSysUser, CommonSer
             Object deptid = jsonObject.get("DEPTID");
             list.add(deptid);
             s += " AND DEPTID=?" + list.size();
+            s1 += " AND ej.DEPTID=?" + list.size();
         }
         if (!StringUtils.isEmpty(deptId)) {
             list.add(deptId);
             s += " AND DEPTID=?" + list.size();
+            s1 += " AND ej.DEPTID=?" + list.size();
         }
         if (!StringUtils.isEmpty(startTime) && !StringUtils.isEmpty(endTime)) {
             list.add(startTime);
             s += " AND CREATE_TIME >= to_date(?" + list.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
+            s1 += " AND ej.CREATE_TIME >= to_date(?" + list.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
             list.add(endTime);
             s += " AND CREATE_TIME <= to_date(?" + list.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
+            s1 += " AND ej.CREATE_TIME <= to_date(?" + list.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
         } else {
             s += " AND trunc(CREATE_TIME) = trunc(sysdate) ";
+            s1 += " AND trunc(ej.CREATE_TIME) = trunc(sysdate) ";
         }
         try {
             String offlinesS = " SELECT\n" +
                     "  nvl(sum(decode(TASK_TYPE, 1, 1, 0)), 0) xsOFFLINES,\n" +
-                    "  sum(decode(TASK_TYPE, 2, 1, 0))         khOFFLINES,\n" +
-                    "  sum(decode(TASK_TYPE, 3, 1, 0))         xcjcOFFLINES\n" +
-                    "FROM (SELECT DISTINCT USER_ID,TASK_TYPE FROM MONITOR_CHECK_EJ  WHERE  (WARNING_TYPE = 8 OR WARNING_TYPE = 2 OR WARNING_TYPE = 13) AND TASK_STATUS = 0 AND USER_LOGIN_TYPE = 0  " + s + ") ";
-            String answertimeS = " SELECT nvl(sum(decode(TASK_TYPE, 1, 1, 0)),0) XSANSWERTIME,sum(decode(TASK_TYPE, 2, 1, 0)) KHANSWERTIME FROM MONITOR_CHECK_EJ WHERE (WARNING_TYPE = 4 OR WARNING_TYPE = 10)  " + s;
-            String overdueS = " SELECT nvl(sum(decode(TASK_TYPE, 1, 1, 0)),0) OVERDUE FROM MONITOR_CHECK_EJ WHERE WARNING_TYPE = 1  " + s;
-            String temporarilyS = " SELECT nvl(sum(decode(TASK_TYPE, 2, 1, 0)),0) TEMPORARILY FROM MONITOR_CHECK_EJ WHERE WARNING_TYPE = 7  " + s;
-            String unqualifiedpatrolS = " SELECT nvl(sum(decode(TASK_TYPE, 1, 1, 0)),0) UNQUALIFIEDPATROL FROM MONITOR_CHECK_EJ WHERE (WARNING_TYPE = 5 OR WARNING_TYPE = 3)  " + s;
+                    "  nvl(sum(decode(TASK_TYPE, 2, 1, 0)), 0)         khOFFLINES,\n" +
+                    "  nvl(sum(decode(TASK_TYPE, 3, 1, 0)), 0)         xcjcOFFLINES\n" +
+                    "FROM (SELECT DISTINCT USER_ID,TASK_TYPE FROM MONITOR_CHECK_EJ  WHERE  (WARNING_TYPE = 8 OR WARNING_TYPE = 2 OR WARNING_TYPE = 13)  AND STATUS = 0  AND TASK_STATUS = 0 AND USER_LOGIN_TYPE = 0  " + s + ") ";
+            String answertimeS = " SELECT nvl(sum(decode(TASK_TYPE, 1, 1, 0)),0) XSANSWERTIME,sum(decode(TASK_TYPE, 2, 1, 0)) KHANSWERTIME FROM MONITOR_CHECK_EJ WHERE (WARNING_TYPE = 4 OR WARNING_TYPE = 10)  AND STATUS = 0  " + s;
+            String overdueS = " SELECT nvl(sum(decode(TASK_TYPE, 1, 1, 0)),0) OVERDUE FROM MONITOR_CHECK_EJ WHERE WARNING_TYPE = 1  AND STATUS = 0  " + s;
+//            String temporarilyS = " SELECT nvl(sum(decode(TASK_TYPE, 2, 1, 0)),0) TEMPORARILY FROM MONITOR_CHECK_EJ WHERE WARNING_TYPE = 7  AND STATUS = 0  " + s;
+            String temporarilyS = " SELECT\n" +
+                    "  count(DISTINCT ej.TASK_ID) AS TEMPORARILY\n" +
+                    "FROM MONITOR_CHECK_EJ ej\n" +
+                    "  LEFT JOIN WARNING_OFF_POST_USER_TIME t ON ej.USER_ID = t.FK_USER_ID\n" +
+                    "                                            AND ej.TASK_ID = t.FK_TASK_ID LEFT JOIN KH_TASK k ON ej.TASK_ID = k.ID LEFT JOIN RZTSYSUSER r ON k.USER_ID = r.ID\n" +
+                    "WHERE ej.WARNING_TYPE = 7 AND t.TIME_STATUS = 1 AND t.END_TIME IS NULL\n" + s1;
+            String unqualifiedpatrolS = " SELECT nvl(sum(decode(TASK_TYPE, 1, 1, 0)),0) UNQUALIFIEDPATROL FROM MONITOR_CHECK_EJ WHERE (WARNING_TYPE = 5 OR WARNING_TYPE = 3)  AND STATUS = 0  " + s;
             List<Map<String, Object>> offlines = this.service.execSql(offlinesS, list.toArray());
             List<Map<String, Object>> answertime = this.service.execSql(answertimeS, list.toArray());
             List<Map<String, Object>> overdue = this.service.execSql(overdueS, list.toArray());
