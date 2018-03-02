@@ -152,22 +152,21 @@ public class CheckLiveTasksbService extends CurdService<CheckLiveTasksb,CheckLiv
     }
 
     public Page<Map<String,Object>> appChecksbList(Pageable pageable, String userId, String taskType) {
-        if("0,0".equals(taskType)){
-
-        }
         String sql = "";
-
-        List params = new ArrayList<>();
-
-        //通道单位查询
-        if (!StringUtils.isEmpty(userId)) {
-            params.add(userId);
-            sql += " AND t.td_org_id =?";
+        //0待办 1已办
+        if("0".equals(taskType)){
+            sql = "select task_name,plan_start_time,td_org_name from check_live_tasksb where status!=2 ";
+        }else if("1".equals(taskType)){
+            sql = "select task_name,plan_start_time,td_org_name from check_live_tasksb where status=2 ";
         }
-        sql += "  order by t.create_time ";
-        return execSqlPage(pageable, sql, params.toArray());
+        sql += " and user_id=? ";
+        sql += "  order by plan_start_time ";
+        return execSqlPage(pageable, sql,userId);
     }
+
+    @Transactional
     public void checkLiveTasksbComplete(Long id) {
+
 
     }
 
