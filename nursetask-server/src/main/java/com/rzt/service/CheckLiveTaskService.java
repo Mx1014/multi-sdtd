@@ -408,7 +408,7 @@ public class CheckLiveTaskService extends CurdService<CheckLiveTask, CheckLiveTa
 
         //0看护 1巡视 0待稽查 1已稽查
         if ("0,0".equals(taskType)) {
-            reposiotry.updateMonitorEj(Long.valueOf(id));
+//            reposiotry.updateMonitorEj(Long.valueOf(id));
             reposiotry.taskComplete(Long.valueOf(id));
         } else if ("1,0".equals(taskType)) {
             checkLiveTaskXsRepository.taskComplete(Long.valueOf(id));

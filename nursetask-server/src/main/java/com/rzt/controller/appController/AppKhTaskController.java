@@ -117,13 +117,17 @@ public class AppKhTaskController extends
 
     //前端传回用户id  获取多个用户坐标
     @GetMapping("/listPoint")
-    public List listPoint(String ids, String taskId) {
-        //String[] str = ids.split(",");
-        GeoOperations<String, Object> geoOperations = redisTemplate.opsForGeo();
-        List<Point> location = geoOperations.geoPos("location", ids);
-        // Point point = this.service.getPoint(taskId);();
-        // list.add(point);
-        return location;
+    public WebApiResponse listPoint(String ids, String taskId) {
+        try {
+            //String[] str = ids.split(",");
+            GeoOperations<String, Object> geoOperations = redisTemplate.opsForGeo();
+            List<Point> location = geoOperations.geoPos("location", ids);
+            // Point point = this.service.getPoint(taskId);();
+            // list.add(point);
+            return WebApiResponse.success(location);
+        } catch (Exception e) {
+            return WebApiResponse.erro("");
+        }
     }
 
     //获取中心点坐标

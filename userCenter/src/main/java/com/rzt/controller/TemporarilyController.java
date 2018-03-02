@@ -47,6 +47,7 @@ public class TemporarilyController extends CurdController<RztSysUser, CommonServ
             listLike.add(deptId);
             s += " AND DEPTID= ?" + listLike.size();
         }
+
         if (!StringUtils.isEmpty(companyid)) {
             listLike.add(companyid);
             s += " AND u.COMPANYID = ?" + listLike.size();

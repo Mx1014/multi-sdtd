@@ -154,7 +154,17 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             buffer.append(" where yhzt=0 ");
             if (roleType==0){
                 if (!StringUtils.isEmpty(deptId)){
-                    buffer.append(" andy.YWORG_ID = '" + deptId + "'");
+                    if (!org.apache.commons.lang.StringUtils.isEmpty(deptId)) {
+                        String[] split = deptId.split(",");
+                        for (int i=0;i<split.length;i++){
+                            if (i>0){
+                                buffer.append(" or YWORG_ID='" + split[i] + "' ");
+                            }else {
+                                buffer.append( " and ( YWORG_ID='" + split[i] + "' ");
+                            }
+                        }
+                        buffer.append(") ");
+                    }
                 }
             }else if (roleType == 1 || roleType == 2) {
                 buffer.append(" and y.YWORG_ID = '" + tdId + "'");
