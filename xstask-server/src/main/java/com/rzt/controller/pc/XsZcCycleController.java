@@ -123,6 +123,7 @@ public class XsZcCycleController extends
     public Object deletePlan(@RequestParam(value = "ids[]") Long[] ids) {
         try {
 			this.service.logicalDeletePlan(ids);
+			this.service.deleteMonitor(ids);//删除告警中的记录
             return WebApiResponse.success("数据删除成功");
         } catch (Exception var3) {
             return WebApiResponse.erro("数据删除失败" + var3.getStackTrace());
