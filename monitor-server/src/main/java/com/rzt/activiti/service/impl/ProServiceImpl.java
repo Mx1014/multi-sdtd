@@ -106,7 +106,7 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
                   "  (SELECT DISTINCT u.PHONE FROM RZTSYSUSER u WHERE u.ID = y.TBRID) as phone" +
                   "   FROM ACT_RU_TASK t LEFT JOIN ACT_RU_VARIABLE h ON t.PROC_INST_ID_ = h.PROC_INST_ID_" +
                   "  LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_" +
-                  "   WHERE h.NAME_ = 'YHID' AND t.PROC_DEF_ID_ LIKE 'wtsh%'  AND ASSIGNEE_ = ?"+strings.size();
+                  "   WHERE h.NAME_ = 'YHID' AND t.PROC_DEF_ID_ LIKE 'wtsh%' AND y.ID IS NOT NULL   AND ASSIGNEE_ = ?"+strings.size();
                     if(null != YHLB && !"".equals(YHLB)){
                         strings.add(YHLB);
                         sql += "  AND y.YHLB = ?"+strings.size();
@@ -278,7 +278,7 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
                     "    (SELECT DISTINCT  u.PHONE FROM RZTSYSUSER u WHERE u.ID = y.TBRID) as phone" +
                     "     FROM ACT_HI_ACTINST t LEFT JOIN ACT_HI_VARINST h ON t.PROC_INST_ID_ = h.PROC_INST_ID_ AND  h.NAME_ = 'YHID'" +
                     "    LEFT JOIN XS_SB_YH y ON y.ID = h.TEXT_" +
-                    "     WHERE  t.PROC_DEF_ID_ LIKE 'wtsh%'  AND ASSIGNEE_ = '"+userId+"'  AND t.END_TIME_ IS NOT  NULL ";
+                    "     WHERE  t.PROC_DEF_ID_ LIKE 'wtsh%'  AND ASSIGNEE_ = '"+userId+"'  AND t.END_TIME_ IS NOT  NULL AND y.ID IS NOT NULL  ";
             sql += "  AND t.END_TIME_ IS NOT NULL ";
             if(null != YHLB && !"".equals(YHLB)){
                 strings.add(YHLB);
