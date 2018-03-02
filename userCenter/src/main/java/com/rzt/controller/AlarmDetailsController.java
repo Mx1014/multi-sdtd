@@ -338,7 +338,7 @@ public class AlarmDetailsController extends CurdController<RztSysUser, CommonSer
                     "FROM MONITOR_CHECK_EJ ej\n" +
                     "  LEFT JOIN WARNING_OFF_POST_USER_TIME t ON ej.USER_ID = t.FK_USER_ID\n" +
                     "                                            AND ej.TASK_ID = t.FK_TASK_ID LEFT JOIN KH_TASK k ON ej.TASK_ID = k.ID LEFT JOIN RZTSYSUSER r ON k.USER_ID = r.ID\n" +
-                    "WHERE ej.WARNING_TYPE = 7 AND t.TIME_STATUS = 1 AND t.END_TIME IS NULL AND STATUS = 0 \n" + s1;
+                    "WHERE ej.WARNING_TYPE = 7 AND t.TIME_STATUS = 1 AND t.END_TIME IS NULL AND ej.STATUS = 0 \n" + s1;
             String unqualifiedpatrolS = " SELECT nvl(sum(decode(TASK_TYPE, 1, 1, 0)),0) UNQUALIFIEDPATROL FROM MONITOR_CHECK_EJ WHERE (WARNING_TYPE = 5 OR WARNING_TYPE = 3)  AND STATUS = 0  " + s;
             List<Map<String, Object>> offlines = this.service.execSql(offlinesS, list.toArray());
             List<Map<String, Object>> answertime = this.service.execSql(answertimeS, list.toArray());
