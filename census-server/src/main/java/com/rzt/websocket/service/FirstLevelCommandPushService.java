@@ -223,7 +223,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
             /**
              *未按时开始任务
              */
-            String answertime = "SELECT sum(ANSWERTIME) ANSWERTIME FROM (SELECT count(1) AS ANSWERTIME FROM MONITOR_CHECK_EJ e   LEFT JOIN KH_TASK t ON e.TASK_ID = t.ID WHERE (e.WARNING_TYPE = 4 OR e.WARNING_TYPE = 10)  AND e.STATUS = 0 AND TASK_STATUS = 0  AND trunc(e.CREATE_TIME) = trunc(sysdate) AND     trunc(t.PLAN_START_TIME) = trunc(sysdate) UNION ALL SELECT count(1) AS ANSWERTIME FROM MONITOR_CHECK_EJ e  LEFT JOIN XS_ZC_TASK t ON e.TASK_ID = t.ID WHERE (e.WARNING_TYPE = 4 OR e.WARNING_TYPE = 10)  AND STATUS = 0  AND TASK_STATUS = 0  AND trunc(e.CREATE_TIME) = trunc(sysdate) AND trunc(t.PLAN_START_TIME) = trunc(sysdate))";
+            String answertime = "SELECT sum(ANSWERTIME) ANSWERTIME FROM (SELECT count(1) AS ANSWERTIME FROM MONITOR_CHECK_EJ e   LEFT JOIN KH_TASK t ON e.TASK_ID = t.ID WHERE (e.WARNING_TYPE = 4 OR e.WARNING_TYPE = 10)  AND e.STATUS = 0 AND e.TASK_STATUS = 0  AND trunc(e.CREATE_TIME) = trunc(sysdate) AND     trunc(t.PLAN_START_TIME) = trunc(sysdate) UNION ALL SELECT count(1) AS ANSWERTIME FROM MONITOR_CHECK_EJ e  LEFT JOIN XS_ZC_TASK t ON e.TASK_ID = t.ID WHERE (e.WARNING_TYPE = 4 OR e.WARNING_TYPE = 10)  AND e.STATUS = 0  AND e.TASK_STATUS = 0  AND trunc(e.CREATE_TIME) = trunc(sysdate) AND trunc(t.PLAN_START_TIME) = trunc(sysdate))";
 
             /**
              * 超期任务
