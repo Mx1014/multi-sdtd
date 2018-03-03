@@ -34,58 +34,66 @@ public class UnqualifiedpatrolController extends CurdController<RztSysUser, Comm
         String s = "";
         if (!StringUtils.isEmpty(startTime) && !StringUtils.isEmpty(endTime)) {
             listLike.add(startTime);
-            s += " AND e.CREATE_TIME >= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
+//            s += " AND e.CREATE_TIME >= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
+            s += " AND CREATE_TIME >= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
             listLike.add(endTime);
-            s += " AND e.CREATE_TIME <= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
-        } else {
+//            s += " AND e.CREATE_TIME <= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
+            s += " AND CREATE_TIME <= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
+        } /*else {
             s += " AND trunc(e.CREATE_TIME) = trunc(sysdate) ";
-        }
+        }*/
         if (roletype == 1 || roletype == 2) {
             listLike.add(deptid);
-            s += " AND e.DEPTID = ?" + listLike.size();
+//            s += " AND e.DEPTID = ?" + listLike.size();
+            s += " AND DEPTID = ?" + listLike.size();
         }
         if (!StringUtils.isEmpty(deptId)) {
             listLike.add(deptId);
-            s += " AND e.DEPTID = ?" + listLike.size();
+//            s += " AND e.DEPTID = ?" + listLike.size();
+            s += " AND DEPTID = ?" + listLike.size();
         }
         if (!StringUtils.isEmpty(userName)) {
             listLike.add(userName.trim() + "%");
-            s += " AND u.REALNAME LIKE ?" + listLike.size();
+//            s += " AND u.REALNAME LIKE ?" + listLike.size();
+            s += " AND REALNAME LIKE ?" + listLike.size();
         }
         if (!StringUtils.isEmpty(companyid)) {
             listLike.add(companyid);
-            s += " AND u.COMPANYID = ?" + listLike.size();
+//            s += " AND u.COMPANYID = ?" + listLike.size();
+            s += " AND COMPANYID = ?" + listLike.size();
         }
         if (!StringUtils.isEmpty(taskname)) {
             listLike.add("%" + taskname.trim() + "%");
-            s += " AND x.TASK_NAME LIKE ?" + listLike.size();
+//            s += " AND x.TASK_NAME LIKE ?" + listLike.size();
+            s += " AND TASK_NAME LIKE ?" + listLike.size();
         }
         if (!StringUtils.isEmpty(loginstatus)) {
             listLike.add(loginstatus);
-            s += " AND u.LOGINSTATUS  = ?" + listLike.size();
+//            s += " AND u.LOGINSTATUS  = ?" + listLike.size();
+            s += " AND LOGINSTATUS  = ?" + listLike.size();
         }
         //  修改增加未到位类别   增加未到位原因字段      ---> 李成阳
 //        String sql = "SELECT e.CREATE_TIME,x.TASK_NAME,u.DEPT,u.COMPANYNAME,u.CLASSNAME,u.REALNAME,u.PHONE, '巡视超速' as  type,e.REASON,e.TASK_ID,e.USER_ID,e.TASK_TYPE,u.LOGINSTATUS " +
 //                "      FROM MONITOR_CHECK_EJ e LEFT JOIN XS_ZC_TASK x ON e.TASK_ID=x.ID LEFT JOIN USERINFO u ON x.CM_USER_ID = u.ID" +
 //                "      WHERE (WARNING_TYPE = 5 OR WARNING_TYPE = 3)  " + s + "";
-        String sql = " SELECT a.*,w.WARNING_NAME AS type  FROM (\n" +
-                "SELECT\n" +
-                "  e.CREATE_TIME,\n" +
-                "  x.TASK_NAME,\n" +
-                "  u.DEPT,\n" +
-                "  u.COMPANYNAME,\n" +
-                "  u.CLASSNAME,\n" +
-                "  u.REALNAME,\n" +
-                "  u.PHONE,\n" +
-                "  WARNING_TYPE,\n" +
-                "  e.REASON,\n" +
-                "  e.TASK_ID,\n" +
-                "  e.USER_ID,\n" +
-                "  e.TASK_TYPE,\n" +
-                "  u.LOGINSTATUS\n" +
-                "FROM MONITOR_CHECK_EJ e LEFT JOIN XS_ZC_TASK x ON e.TASK_ID = x.ID\n" +
-                "  LEFT JOIN USERINFO u ON x.CM_USER_ID = u.ID\n" +
-                "WHERE (WARNING_TYPE = 5 OR WARNING_TYPE = 3)  AND STATUS = 0  " + s + " ) a LEFT JOIN WARNING_TYPE w ON a.WARNING_TYPE = w.WARNING_TYPE\n ";
+//        String sql = " SELECT a.*,w.WARNING_NAME AS type  FROM (\n" +
+//                "SELECT\n" +
+//                "  e.CREATE_TIME,\n" +
+//                "  x.TASK_NAME,\n" +
+//                "  u.DEPT,\n" +
+//                "  u.COMPANYNAME,\n" +
+//                "  u.CLASSNAME,\n" +
+//                "  u.REALNAME,\n" +
+//                "  u.PHONE,\n" +
+//                "  WARNING_TYPE,\n" +
+//                "  e.REASON,\n" +
+//                "  e.TASK_ID,\n" +
+//                "  e.USER_ID,\n" +
+//                "  e.TASK_TYPE,\n" +
+//                "  u.LOGINSTATUS\n" +
+//                "FROM MONITOR_CHECK_EJ e LEFT JOIN XS_ZC_TASK x ON e.TASK_ID = x.ID\n" +
+//                "  LEFT JOIN USERINFO u ON x.CM_USER_ID = u.ID\n" +
+//                "WHERE (WARNING_TYPE = 5 OR WARNING_TYPE = 3)  AND STATUS = 0  " + s + " ) a LEFT JOIN WARNING_TYPE w ON a.WARNING_TYPE = w.WARNING_TYPE\n ";
         /* String sql = " SELECT *" +
                 "         FROM (SELECT e.CREATE_TIME,x.TASK_NAME,u.DEPT,u.COMPANYNAME,u.CLASSNAME,u.REALNAME,u.PHONE, '巡视超速' as  type,e.REASON" +
                 "      FROM MONITOR_CHECK_EJ e LEFT JOIN XS_ZC_TASK x ON e.TASK_ID=x.ID LEFT JOIN USERINFO u ON x.CM_USER_ID = u.ID" +
@@ -94,6 +102,7 @@ public class UnqualifiedpatrolController extends CurdController<RztSysUser, Comm
                 "    SELECT * FROM (SELECT e.CREATE_TIME,x.TASK_NAME,u.DEPT,u.COMPANYNAME,u.CLASSNAME,u.REALNAME,u.PHONE, '未到位' as  type,e.REASON" +
                 "                   FROM MONITOR_CHECK_EJ e LEFT JOIN XS_ZC_TASK x ON e.TASK_ID=x.ID LEFT JOIN USERINFO u ON x.CM_USER_ID = u.ID" +
                 "                   WHERE WARNING_TYPE = 3  "+s+"  )";*/
+        String sql = " SELECT * FROM UNQUALIFIEDPATROLTABLE where 1 = 1  " + s;
         try {
             return WebApiResponse.success(this.service.execSqlPage(pageable, sql, listLike.toArray()));
         } catch (Exception e) {
