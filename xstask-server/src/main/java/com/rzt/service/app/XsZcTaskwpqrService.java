@@ -49,10 +49,12 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
         if (xslx == 0 || xslx == 1) {
             this.reposiotry.bdtxJiedan(id);//更新接单时间
             this.reposiotry.bdtxUpdateTaskStatus(id);//更新任务状态
+            this.reposiotry.updateMonitorCheckEjXsJxz(id);//更新告警任务状态
             this.reposiotry.updateTxbdTaskZxys(1, id);//更新执行页数
         } else {
             this.reposiotry.zcXsJiedan(id);//更新接单时间
             this.reposiotry.zcXsUpdateTaskStatus(id);//更新任务状态
+            this.reposiotry.updateMonitorCheckEjXsJxz(id);//更新告警任务状态
             this.reposiotry.updateXszcTaskZxys(1, id);//更新执行页数
             //更新redis中的人员 任务的状态
             updateXsMenInfoInRedis(userId);
