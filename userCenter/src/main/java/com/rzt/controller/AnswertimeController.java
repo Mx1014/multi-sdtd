@@ -51,7 +51,7 @@ public class AnswertimeController extends CurdController<RztSysUser, CommonServi
             s += " AND u.COMPANYID = ?" + listLike.size();
         }
         if (!StringUtils.isEmpty(taskname)) {
-            listLike.add("%" + taskname + "%");
+            listLike.add("%" + taskname.trim() + "%");
             s += " AND x.TASK_NAME LIKE ?" + listLike.size();
         }
         if (!StringUtils.isEmpty(loginstatus)) {

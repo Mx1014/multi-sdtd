@@ -53,7 +53,7 @@ public class TemporarilyController extends CurdController<RztSysUser, CommonServ
             s += " AND u.COMPANYID = ?" + listLike.size();
         }
         if (!StringUtils.isEmpty(taskname)) {
-            listLike.add("%" + taskname + "%");
+            listLike.add("%" + taskname.trim() + "%");
             s += " AND k.TASK_NAME LIKE ?" + listLike.size();
         }
         if (!StringUtils.isEmpty(loginstatus)) {

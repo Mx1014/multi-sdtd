@@ -50,7 +50,7 @@ public class OverdueController extends CurdController<RztSysUser, CommonService>
             s1 += " AND u.COMPANYID = ?" + listLike.size();
         }
         if (!StringUtils.isEmpty(taskname)) {
-            listLike.add("%" + taskname + "%");
+            listLike.add("%" + taskname.trim() + "%");
             s1 += " AND k.TASK_NAME LIKE ?" + listLike.size();
         }
         if (!StringUtils.isEmpty(loginstatus)) {

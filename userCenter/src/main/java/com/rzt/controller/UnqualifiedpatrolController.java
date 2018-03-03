@@ -49,7 +49,7 @@ public class UnqualifiedpatrolController extends CurdController<RztSysUser, Comm
             s += " AND e.DEPTID = ?" + listLike.size();
         }
         if (!StringUtils.isEmpty(userName)) {
-            listLike.add(userName + "%");
+            listLike.add(userName.trim() + "%");
             s += " AND u.REALNAME LIKE ?" + listLike.size();
         }
         if (!StringUtils.isEmpty(companyid)) {
@@ -57,7 +57,7 @@ public class UnqualifiedpatrolController extends CurdController<RztSysUser, Comm
             s += " AND u.COMPANYID = ?" + listLike.size();
         }
         if (!StringUtils.isEmpty(taskname)) {
-            listLike.add("%" + taskname + "%");
+            listLike.add("%" + taskname.trim() + "%");
             s += " AND x.TASK_NAME LIKE ?" + listLike.size();
         }
         if (!StringUtils.isEmpty(loginstatus)) {
