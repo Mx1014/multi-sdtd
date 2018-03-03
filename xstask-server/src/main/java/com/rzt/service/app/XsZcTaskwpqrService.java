@@ -35,6 +35,7 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
     private RedisTemplate<String, Object> redisTemplate;
     @Autowired
     WarningmonitorServerService warningmonitorServerService;
+
     /***
      * @Method updateJdTime
      * @Description\
@@ -308,10 +309,10 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
         try {
             String sql = " select * from xs_zc_task_exec_detail where id = ?";
             Map<String, Object> map = this.execSqlSingleResult(sql, execDetailId);
-            Integer end_tower_id = Integer.parseInt(map.get("END_TOWER_ID").toString());
+            Long end_tower_id = Long.parseLong(map.get("END_TOWER_ID").toString());
             if (end_tower_id == 0) {
                 HashOperations<String, String, String> hashOperations = redisTemplate.opsForHash();
-                String tourGanta = hashOperations.get("tourGanta", taskid+"");
+                String tourGanta = hashOperations.get("tourGanta", taskid + "");
                 Map<String, Object> ganta = new HashMap<String, Object>();
                 ganta.put("ID", execDetailId);
                 ganta.put("END_TIME", DateUtil.stringNow());
