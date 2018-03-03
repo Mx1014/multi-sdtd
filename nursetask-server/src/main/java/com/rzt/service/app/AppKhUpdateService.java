@@ -37,6 +37,7 @@ public class AppKhUpdateService extends CurdService<KhTask, AppKhUpdateRepositor
     public WebApiResponse updateRealTime(long taskId, String userId) {
         try {
             int num = this.reposiotry.findNum(taskId);
+            this.reposiotry.updateMonitorCheckEjXsJxz(taskId);
             if (num < 1) {
                 //if (isdw != null && reason != null) {
                 this.reposiotry.updateRealStartTime(taskId, DateUtil.dateNow());
