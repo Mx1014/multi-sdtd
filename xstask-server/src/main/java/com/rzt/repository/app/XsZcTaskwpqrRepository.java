@@ -424,7 +424,7 @@ public interface XsZcTaskwpqrRepository extends JpaRepository<XsZcTaskwpqr, Stri
      */
     @Modifying
     @Transactional
-    @Query(value = " UPDATE MONITOR_CHECK_EJ SET TASK_STATUS=2 WHERE TASK_ID=?1 AND WARNING_TYPE=2 ", nativeQuery = true)
+    @Query(value = " UPDATE MONITOR_CHECK_EJ SET TASK_STATUS=2 WHERE TASK_ID=?1 ", nativeQuery = true)
     void updateMonitorCheckEjXsJxz(Long id);
 
     /***
