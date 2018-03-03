@@ -216,15 +216,15 @@ public class TwoLevelCommandPushService extends CurdService<websocket, websocket
 //            String offline = "SELECT count(1) as OFFLINES FROM MONITOR_CHECK_EJ  WHERE (WARNING_TYPE = 8 OR WARNING_TYPE = 2) AND trunc(CREATE_TIME) = trunc(sysdate) AND DEPTID= '" + deptid + "'";
             String offline = " SELECT count(count(1)) AS OFFLINES " +
                     "                    FROM MONITOR_CHECK_EJ  " +
-                    "                    WHERE (WARNING_TYPE = 8 OR WARNING_TYPE = 2 OR WARNING_TYPE = 13)  AND STATUS = 0   AND trunc(CREATE_TIME) = trunc(sysdate) AND USER_ID != 'null' AND TASK_STATUS=0 AND USER_LOGIN_TYPE = 0 AND DEPTID= '" + deptid + "' GROUP BY USER_ID ";
+                    "                    WHERE (WARNING_TYPE = 8 OR WARNING_TYPE = 2 OR WARNING_TYPE = 13)  AND STATUS = 0   AND trunc(CREATE_TIME) = trunc(sysdate) AND USER_ID != 'null' AND TASK_STATUS=0  AND USER_LOGIN_TYPE = 0 AND DEPTID= '" + deptid + "' GROUP BY USER_ID ";
             /**
              *未按时开始任务
              */
-            String answertime = "SELECT count(1) as ANSWERTIME  FROM MONITOR_CHECK_EJ WHERE (WARNING_TYPE = 4 OR WARNING_TYPE = 10)  AND STATUS = 0  AND trunc(CREATE_TIME) = trunc(sysdate) AND DEPTID= '" + deptid + "'";
+            String answertime = "SELECT count(1) as ANSWERTIME  FROM MONITOR_CHECK_EJ WHERE (WARNING_TYPE = 4 OR WARNING_TYPE = 10)  AND STATUS = 0  AND TASK_STATUS = 0  AND trunc(CREATE_TIME) = trunc(sysdate) AND DEPTID= '" + deptid + "'";
             /**
              * 超期任务
              */
-            String overdue = " SELECT count(1) as OVERDUE FROM MONITOR_CHECK_EJ WHERE WARNING_TYPE = 1  AND trunc(CREATE_TIME) = trunc(sysdate) AND STATUS = 0  AND DEPTID= '" + deptid + "'";
+            String overdue = " SELECT count(1) as OVERDUE FROM MONITOR_CHECK_EJ WHERE WARNING_TYPE = 1  AND trunc(CREATE_TIME) = trunc(sysdate) AND STATUS = 0  AND TASK_STATUS = 0  AND DEPTID= '" + deptid + "'";
             /**
              * 看护人员脱岗
              */
@@ -236,8 +236,8 @@ public class TwoLevelCommandPushService extends CurdService<websocket, websocket
             /**
              * 巡视不合格
              */
-//            String unqualifiedpatrol = " SELECT count(1) as unqualifiedpatrol FROM MONITOR_CHECK_EJ WHERE (WARNING_TYPE = 5 OR WARNING_TYPE = 3 ) AND STATUS = 0  AND trunc(CREATE_TIME) = trunc(sysdate) AND DEPTID= '" + deptid + "'";
-            String unqualifiedpatrol = " SELECT count(1) as unqualifiedpatrol FROM UNQUALIFIEDPATROLTABLE WHERE DEPTID = '" + deptid + "' ";
+            String unqualifiedpatrol = " SELECT count(1) as unqualifiedpatrol FROM MONITOR_CHECK_EJ WHERE (WARNING_TYPE = 5 OR WARNING_TYPE = 3 ) AND STATUS = 0  AND TASK_STATUS = 0  AND trunc(CREATE_TIME) = trunc(sysdate) AND DEPTID= '" + deptid + "'";
+//            String unqualifiedpatrol = " SELECT count(1) as unqualifiedpatrol FROM UNQUALIFIEDPATROLTABLE WHERE DEPTID = '" + deptid + "' ";
             try {
                 Map map1 = new HashMap();
                 Map map = new HashMap();
