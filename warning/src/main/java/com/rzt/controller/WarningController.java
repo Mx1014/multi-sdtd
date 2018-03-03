@@ -54,19 +54,20 @@ public class WarningController extends CurdController<OffPostUser,WarningOffPost
 				}else{
 					//判断该人员状态是否改变
 					if (offUser.getStatus()!=offPostUser.getStatus()){
-						if(offPostUser.getStatus()==0){
-							//回岗
-							List<OffPostUserTime> list = timeService.findByUserIdAndDateisNull(offUser.getUserId(),offUser.getTaskId());
-
-							if(list.size()>0){
-								OffPostUserTime offPostUserTime = list.get(0);
-								//如果该条时间记录已经存在，则只更新回岗时间
-								//offPostUserTime.setEndTime(new Date());
-								timeService.updateOffUserEndTime(offPostUserTime);
-							}
-						}else if(offPostUser.getStatus()==1){
-							//脱岗
-							timeService.addOffUserTime(offPostUser.getUserId(),offPostUser.getTaskId());
+                        List<OffPostUserTime> list = timeService.findByUserIdAndDateisNull(offUser.getUserId(),offUser.getTaskId());
+                        if(offPostUser.getStatus()==0){
+                            //回岗
+                            if(list.size()>0){
+                                OffPostUserTime offPostUserTime = list.get(0);
+                                //如果该条时间记录已经存在，则只更新回岗时间
+                                //offPostUserTime.setEndTime(new Date());
+                                timeService.updateOffUserEndTime(offPostUserTime);
+                            }
+                        }else if(offPostUser.getStatus()==1){
+                            //脱岗
+                            if(list.size()==0){
+                                timeService.addOffUserTime(offPostUser.getUserId(),offPostUser.getTaskId());
+                            }
 						}
 
 						//更新脱岗人员状态

@@ -85,7 +85,7 @@ public class UnqualifiedpatrolController extends CurdController<RztSysUser, Comm
                 "  u.LOGINSTATUS\n" +
                 "FROM MONITOR_CHECK_EJ e LEFT JOIN XS_ZC_TASK x ON e.TASK_ID = x.ID\n" +
                 "  LEFT JOIN USERINFO u ON x.CM_USER_ID = u.ID\n" +
-                "WHERE (WARNING_TYPE = 5 OR WARNING_TYPE = 3)  " + s + " ) a LEFT JOIN WARNING_TYPE w ON a.WARNING_TYPE = w.WARNING_TYPE\n ";
+                "WHERE (WARNING_TYPE = 5 OR WARNING_TYPE = 3)  AND STATUS = 0  " + s + " ) a LEFT JOIN WARNING_TYPE w ON a.WARNING_TYPE = w.WARNING_TYPE\n ";
         /* String sql = " SELECT *" +
                 "         FROM (SELECT e.CREATE_TIME,x.TASK_NAME,u.DEPT,u.COMPANYNAME,u.CLASSNAME,u.REALNAME,u.PHONE, '巡视超速' as  type,e.REASON" +
                 "      FROM MONITOR_CHECK_EJ e LEFT JOIN XS_ZC_TASK x ON e.TASK_ID=x.ID LEFT JOIN USERINFO u ON x.CM_USER_ID = u.ID" +

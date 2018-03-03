@@ -327,7 +327,7 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
                         Map ganta9th = gantas.get(0);
                         Object end_time = ganta9th.get("END_TIME");
                         Date date = DateUtil.stringToDate(end_time.toString());
-                        if (date.getTime() - new Date().getTime() < 10 * 60 * 1000) {
+                        if (new Date().getTime() - date.getTime() < 10 * 60 * 1000) {
                             gantas.add(ganta);
                             long nextId = new SnowflakeIdWorker(18, 21).nextId();
                             this.reposiotry.insertException(nextId, taskid, "十分钟五基塔", JSONObject.toJSONString(gantas));
@@ -411,8 +411,10 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
     public void updateTaskStatus(Integer xslx, Long id, String userId) {
         if (xslx == 0 || xslx == 1) {
             this.reposiotry.updateTxbdTaskToOff(id);
+            this.reposiotry.updateMonitorCheckEjXs(id);
         } else {
             this.reposiotry.updateZcxsTaskToOff(id);
+            this.reposiotry.updateMonitorCheckEjXs(id);
             updateXsMenInfoInRedis(userId);
         }
 
