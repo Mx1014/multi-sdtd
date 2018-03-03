@@ -28,6 +28,7 @@ public class DateUtil {
     private static Logger log = Logger.getLogger(DateUtil.class);
     private static final FastDateFormat SDF = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss");
     private static final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static final SimpleDateFormat formatter2 = new SimpleDateFormat("yyyy-MM-dd");
     private static String partterns[] = new String[5];
 
     static {
@@ -61,7 +62,14 @@ public class DateUtil {
         }
         return new Date();
     }
-
+    public static Date parseDate2(String dateTime) {
+        try {
+            return formatter2.parse(dateTime);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return new Date();
+    }
     public static String stringNow() {
         return SDF.format(new Date());
     }

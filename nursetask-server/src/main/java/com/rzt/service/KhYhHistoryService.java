@@ -818,7 +818,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
 
     @Transactional
     public WebApiResponse ImportYh(MultipartFile file) {
-        int i = 2;
+        int i = 1;
         try {
             // FileInputStream file = new FileInputStream("E:\\win10\\新建文件夹\\WeChat Files\\yawang-\\Files\\检分安云云台看护任务.xls ");
 //            FileInputStream file = new FileInputStream("E:\\826708743\\FileRecv\\隐患列表_20180111-程焕竹.xls");
@@ -882,7 +882,11 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 yh.setYhjb1(ExcelUtil.getCellValue(row.getCell(9)));//隐患级别
                 yh.setYhlb(ExcelUtil.getCellValue(row.getCell(10)));//隐患类别
                 yh.setYhms(ExcelUtil.getCellValue(row.getCell(11)));//隐患描述
-                yh.setYhfxsj(DateUtil.parseDate(ExcelUtil.getCellValue(row.getCell(12))));//隐患发现时间
+                try {
+                    yh.setYhfxsj(DateUtil.parseDate2(ExcelUtil.getCellValue(row.getCell(12))));//隐患发现时间
+                } catch (Exception e) {
+                    yh.setYhfxsj(new Date());
+                }
                 yh.setYhtdqx(ExcelUtil.getCellValue(row.getCell(13)));//字段描述: 隐患地点(区县)
                 yh.setYhtdxzjd(ExcelUtil.getCellValue(row.getCell(14)));//字段描述: 隐患地点(乡镇街道)
                 yh.setYhtdc(ExcelUtil.getCellValue(row.getCell(15)));//字段描述: 隐患地点(村)
@@ -904,10 +908,10 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 yh.setGkcs(ExcelUtil.getCellValue(row.getCell(25)));//管控措施
                 //yh.setZpxgsj(DateUtil.parse(ExcelUtil.getCellValue(row.getCell(27))));//照片修改时间
                 yh.setYhzt(0);//隐患状态
-                yh.setRadius("100.0");
+                yh.setRadius("500.0");
                 yh.setSdgs(2);//execl导入
                 yh.setSfdj(1);//已定级
-                yh.setCreateTime(DateUtil.parseDate(ExcelUtil.getCellValue(row.getCell(12))));
+                yh.setCreateTime(new Date());//DateUtil.parseDate(ExcelUtil.getCellValue(row.getCell(12)))
 
                 String sql = "select t.tower_Id id from cm_line_tower t where t.line_name like ? and t.tower_name like ?";
                 try {
@@ -927,17 +931,18 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                     e.printStackTrace();
                 }
                 String cellValue = ExcelUtil.getCellValue(row.getCell(9));
-                //if (ExcelUtil.getCellValue(row.getCell(9)).equals("施工隐患")){
-                KhCycle cycle = new KhCycle();
-                cycle.setId(0L);
-                yh.setTaskId(cycle.getId());
-                addKhCycle(yh, cycle);
-                //}
-                this.add(yh);
-                row = sheet.getRow(++i);
+                if (ExcelUtil.getCellValue(row.getCell(9)).equals("在施类")) {
+                    KhCycle cycle = new KhCycle();
+                    cycle.setId(0L);
+                    yh.setTaskId(cycle.getId());
+                    addKhCycle(yh, cycle);
+                    //}
                 /*
                 yh.setStartTower();
                 yh.setEndTower();*/
+                }
+                this.add(yh);
+                row = sheet.getRow(++i);
             }
             return WebApiResponse.success("导入成功");
         } catch (Exception e) {
@@ -948,7 +953,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
 
     @Transactional
     public WebApiResponse ImportYh2(MultipartFile file) {
-        int i = 2;
+        int i = 1;
         try {
             // FileInputStream file = new FileInputStream("E:\\win10\\新建文件夹\\WeChat Files\\yawang-\\Files\\检分安云云台看护任务.xls ");
 //            FileInputStream file = new FileInputStream("E:\\826708743\\FileRecv\\隐患列表_20180111-程焕竹.xls");
@@ -957,7 +962,6 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             XSSFSheet sheet = wb.getSheetAt(0);
             XSSFRow row = sheet.getRow(i);
             while (row != null && !"".equals(row.toString().trim())) {
-
                 KhYhHistory yh = new KhYhHistory();
                 XSSFCell cell = row.getCell(1);
                 if (cell == null || "".equals(ExcelUtil.getCellValue2(cell))) {
@@ -1012,7 +1016,11 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 yh.setYhjb1(ExcelUtil.getCellValue2(row.getCell(9)));//隐患级别
                 yh.setYhlb(ExcelUtil.getCellValue2(row.getCell(10)));//隐患类别
                 yh.setYhms(ExcelUtil.getCellValue2(row.getCell(11)));//隐患描述
-                yh.setYhfxsj(DateUtil.parseDate(ExcelUtil.getCellValue2(row.getCell(12))));//隐患发现时间
+                try {
+                    yh.setYhfxsj(DateUtil.parseDate2(ExcelUtil.getCellValue2(row.getCell(12))));//隐患发现时间
+                } catch (Exception e) {
+                    yh.setYhfxsj(new Date());
+                }
                 yh.setYhtdqx(ExcelUtil.getCellValue2(row.getCell(13)));//字段描述: 隐患地点(区县)
                 yh.setYhtdxzjd(ExcelUtil.getCellValue2(row.getCell(14)));//字段描述: 隐患地点(乡镇街道)
                 yh.setYhtdc(ExcelUtil.getCellValue2(row.getCell(15)));//字段描述: 隐患地点(村)
@@ -1037,7 +1045,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 yh.setRadius("100.0");
                 yh.setSdgs(2);//execl导入
                 yh.setSfdj(1);//已定级
-                yh.setCreateTime(DateUtil.parseDate(ExcelUtil.getCellValue2(row.getCell(12))));
+                yh.setCreateTime(new Date());//DateUtil.parseDate(ExcelUtil.getCellValue2(row.getCell(12)))
 
                 String sql = "select t.tower_Id id from cm_line_tower t where t.line_name like ? and t.tower_name like ?";
                 try {
@@ -1057,17 +1065,17 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                     e.printStackTrace();
                 }
                 String cellValue = ExcelUtil.getCellValue2(row.getCell(9));
-                //if (ExcelUtil.getCellValue(row.getCell(9)).equals("施工隐患")){
-                KhCycle cycle = new KhCycle();
-                cycle.setId(0l);
-                yh.setTaskId(cycle.getId());
-                addKhCycle(yh, cycle);
-                //}
-                this.add(yh);
-                row = sheet.getRow(++i);
+                if (ExcelUtil.getCellValue2(row.getCell(10)).equals("在施类")) {
+                    KhCycle cycle = new KhCycle();
+                    cycle.setId(0l);
+                    yh.setTaskId(cycle.getId());
+                    addKhCycle(yh, cycle);
                 /*
                 yh.setStartTower();
                 yh.setEndTower();*/
+                }
+                this.add(yh);
+                row = sheet.getRow(++i);
             }
             return WebApiResponse.success("导入成功");
         } catch (Exception e) {
