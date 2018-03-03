@@ -330,15 +330,15 @@ public class AlarmDetailsController extends CurdController<RztSysUser, CommonSer
                     "  nvl(sum(decode(TASK_TYPE, 2, 1, 0)), 0)         khOFFLINES,\n" +
                     "  nvl(sum(decode(TASK_TYPE, 3, 1, 0)), 0)         xcjcOFFLINES\n" +
                     "FROM (SELECT DISTINCT USER_ID,TASK_TYPE FROM MONITOR_CHECK_EJ  WHERE  (WARNING_TYPE = 8 OR WARNING_TYPE = 2 OR WARNING_TYPE = 13)  AND STATUS = 0  AND TASK_STATUS = 0 AND USER_LOGIN_TYPE = 0  " + s + ") ";
-            String answertimeS = " SELECT nvl(sum(decode(TASK_TYPE, 1, 1, 0)),0) XSANSWERTIME,sum(decode(TASK_TYPE, 2, 1, 0)) KHANSWERTIME FROM MONITOR_CHECK_EJ WHERE (WARNING_TYPE = 4 OR WARNING_TYPE = 10)  AND STATUS = 0  " + s;
-            String overdueS = " SELECT nvl(sum(decode(TASK_TYPE, 1, 1, 0)),0) OVERDUE FROM MONITOR_CHECK_EJ WHERE WARNING_TYPE = 1  AND STATUS = 0  " + s;
+            String answertimeS = " SELECT nvl(sum(decode(TASK_TYPE, 1, 1, 0)),0) XSANSWERTIME,sum(decode(TASK_TYPE, 2, 1, 0)) KHANSWERTIME FROM MONITOR_CHECK_EJ WHERE (WARNING_TYPE = 4 OR WARNING_TYPE = 10)  AND STATUS = 0  AND TASK_STATUS = 0  " + s;
+            String overdueS = " SELECT nvl(sum(decode(TASK_TYPE, 1, 1, 0)),0) OVERDUE FROM MONITOR_CHECK_EJ WHERE WARNING_TYPE = 1  AND STATUS = 0  AND TASK_STATUS = 0  " + s;
             String temporarilyS = " SELECT\n" +
                     "  count(DISTINCT ej.TASK_ID) AS TEMPORARILY\n" +
                     "FROM MONITOR_CHECK_EJ ej\n" +
                     "  LEFT JOIN WARNING_OFF_POST_USER_TIME t ON ej.USER_ID = t.FK_USER_ID\n" +
                     "                                            AND ej.TASK_ID = t.FK_TASK_ID LEFT JOIN KH_TASK k ON ej.TASK_ID = k.ID LEFT JOIN RZTSYSUSER r ON k.USER_ID = r.ID\n" +
                     "WHERE ej.WARNING_TYPE = 7 AND t.TIME_STATUS = 1 AND t.END_TIME IS NULL AND ej.STATUS = 0 \n" + s1;
-            String unqualifiedpatrolS = " SELECT nvl(sum(decode(TASK_TYPE, 1, 1, 0)),0) UNQUALIFIEDPATROL FROM MONITOR_CHECK_EJ WHERE (WARNING_TYPE = 5 OR WARNING_TYPE = 3)  AND  STATUS = 0 " + s;
+            String unqualifiedpatrolS = " SELECT nvl(sum(decode(TASK_TYPE, 1, 1, 0)),0) UNQUALIFIEDPATROL FROM MONITOR_CHECK_EJ WHERE (WARNING_TYPE = 5 OR WARNING_TYPE = 3)  AND  STATUS = 0  AND TASK_STATUS = 0  " + s;
 //            String unqualifiedpatrolS = " SELECT count(1) as UNQUALIFIEDPATROL FROM UNQUALIFIEDPATROLTABLE WHERE 1=1 " + s;
             List<Map<String, Object>> offlines = this.service.execSql(offlinesS, list.toArray());
             List<Map<String, Object>> answertime = this.service.execSql(answertimeS, list.toArray());
