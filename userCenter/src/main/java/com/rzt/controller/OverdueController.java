@@ -50,7 +50,7 @@ public class OverdueController extends CurdController<RztSysUser, CommonService>
             s1 += " AND u.COMPANYID = ?" + listLike.size();
         }
         if (!StringUtils.isEmpty(taskname)) {
-            listLike.add("%" + taskname + "%");
+            listLike.add("%" + taskname.trim() + "%");
             s1 += " AND k.TASK_NAME LIKE ?" + listLike.size();
         }
         if (!StringUtils.isEmpty(loginstatus)) {
@@ -61,7 +61,7 @@ public class OverdueController extends CurdController<RztSysUser, CommonService>
                 "  k.TASK_NAME,u.DEPT,u.CLASSNAME,u.LOGINSTATUS,u.COMPANYNAME,u.REALNAME,u.PHONE,k.PLAN_END_TIME,e.* " +
                 "FROM (SELECT TASK_ID,USER_ID,TASK_TYPE  " +
                 "      FROM MONITOR_CHECK_EJ " +
-                "      WHERE WARNING_TYPE = 1 " + s +
+                "      WHERE WARNING_TYPE = 1  AND STATUS = 0  AND TASK_STATUS = 0  " + s +
                 "     ) e LEFT JOIN XS_ZC_TASK k ON e.TASK_ID = k.ID LEFT JOIN USERINFO u ON k.CM_USER_ID = u.ID where 1 = 1 " + s1;
         try {
             return WebApiResponse.success(this.service.execSqlPage(pageable, sql, listLike.toArray()));

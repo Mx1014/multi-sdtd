@@ -51,7 +51,7 @@ public class AnswertimeController extends CurdController<RztSysUser, CommonServi
             s += " AND u.COMPANYID = ?" + listLike.size();
         }
         if (!StringUtils.isEmpty(taskname)) {
-            listLike.add("%" + taskname + "%");
+            listLike.add("%" + taskname.trim() + "%");
             s += " AND x.TASK_NAME LIKE ?" + listLike.size();
         }
         if (!StringUtils.isEmpty(loginstatus)) {
@@ -63,7 +63,7 @@ public class AnswertimeController extends CurdController<RztSysUser, CommonServi
                 "  x.REAL_START_TIME,u.REALNAME,u.LOGINSTATUS,u.COMPANYNAME,u.DEPT,u.CLASSNAME,u.PHONE, X.STAUTS,e.* " +
                 "FROM (SELECT TASK_ID,USER_ID,TASK_TYPE " +
                 "      FROM MONITOR_CHECK_EJ " +
-                "      WHERE WARNING_TYPE = 4 " + s1 + " ) e LEFT JOIN XS_ZC_TASK x ON e.TASK_ID = x.ID " +
+                "      WHERE WARNING_TYPE = 4  AND STATUS = 0 AND TASK_STATUS = 0  " + s1 + " ) e LEFT JOIN XS_ZC_TASK x ON e.TASK_ID = x.ID " +
                 "  LEFT JOIN USERINFO u ON e.USER_ID = u.ID WHERE 1=1 " +
                 //  AND trunc(x.PLAN_START_TIME) = trunc(sysdate)
                 // 此代码标识当前查询只查询计划开始时间在当天的 --->李成阳
@@ -74,7 +74,7 @@ public class AnswertimeController extends CurdController<RztSysUser, CommonServi
         String khsql = " (SELECT x.TASK_NAME,nvl(x.PLAN_START_TIME,sysdate-2) as PLAN_START_TIME,x.REAL_START_TIME,u.REALNAME,u.LOGINSTATUS,u.COMPANYNAME,u.DEPT,u.CLASSNAME,u.PHONE, X.STATUS as STAUTS,e.* " +
                 " FROM (SELECT TASK_ID,USER_ID,TASK_TYPE " +
                 "      FROM MONITOR_CHECK_EJ " +
-                "      WHERE WARNING_TYPE = 10 " + s1 + " ) e LEFT JOIN KH_TASK x ON e.TASK_ID = x.ID " +
+                "      WHERE WARNING_TYPE = 10  AND STATUS = 0 AND TASK_STATUS = 0  " + s1 + " ) e LEFT JOIN KH_TASK x ON e.TASK_ID = x.ID " +
                 "  LEFT JOIN USERINFO u ON e.USER_ID = u.ID WHERE 1=1" +
                 //  AND trunc(x.PLAN_START_TIME) = trunc(sysdate)
                 // 此代码标识当前查询只查询计划开始时间在当天的 --->李成阳

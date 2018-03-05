@@ -14,6 +14,7 @@
         <option value="$PROJECT_DIR$/xstask-server/pom.xml" />
         <option value="$PROJECT_DIR$/warningmonitor/pom.xml" />
         <option value="$PROJECT_DIR$/userCenter/pom.xml" />
+        <option value="$PROJECT_DIR$/census-server/pom.xml" />
       </list>
     </option>
   </component>

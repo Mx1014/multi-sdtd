@@ -1,6 +1,5 @@
 package com.rzt.controller;
 
-import com.rzt.redisListener.Subscriber;
 import com.rzt.service.Monitorcheckejservice;
 import com.rzt.service.Monitorcheckyjservice;
 import com.rzt.service.RedisService;
@@ -26,8 +25,8 @@ public class RedisController {
     @Autowired
     private Monitorcheckejservice ej;
 
-    @Autowired
-    private Subscriber subscriber;
+//    @Autowired
+//    private Subscriber subscriber;
 
     /**
      * 修改redis定时时间 二级往一级推消息的定时时间
@@ -36,12 +35,12 @@ public class RedisController {
      *@Params [faixTime]
      *@Date 2018/1/9 9:45
      */
-    @PostMapping("setFaixTime")
-    public WebApiResponse setFixTime(Integer faixTime){
-
-        redisService.setFaixTime(faixTime);
-        return WebApiResponse.success("修改成功");
-    }
+//    @PostMapping("setFaixTime")
+//    public WebApiResponse setFixTime(Integer faixTime){
+//
+//        redisService.setFaixTime(faixTime);
+//        return WebApiResponse.success("修改成功");
+//    }
 
 
 

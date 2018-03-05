@@ -44,7 +44,7 @@ public class WarningOffPostUserService extends CurdService<OffPostUser, OffPostU
     }
     @Transactional
     public void addUser(OffPostUser offPostUser){
-        offPostUser.setId(new SnowflakeIdWorker(0,0).nextId());
+        offPostUser.setId(SnowflakeIdWorker.getInstance(0,0).nextId());
         warning.save(offPostUser);
     }
 
@@ -97,7 +97,7 @@ public class WarningOffPostUserService extends CurdService<OffPostUser, OffPostU
     }
 
 
-    public int updateTimeStatus(Object fk_task_id, Object fk_user_id) {
-       return reposiotry.updateTimeStatus(fk_task_id,fk_user_id);
+    public int updateTimeStatus(Object fk_task_id, Object fk_user_id,Long id) {
+       return reposiotry.updateTimeStatus(fk_task_id,fk_user_id,id);
     }
 }

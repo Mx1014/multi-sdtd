@@ -36,14 +36,14 @@ public interface Monitorcheckejrepository extends JpaRepository<Monitorcheckej,S
  //二级单位处理  AND CREATE_TIME=to_date( ?6,'yyyy-MM-dd hh24:mi:ss')
  @Transactional
  @Modifying
- @Query(value = "UPDATE MONITOR_CHECK_EJ SET CREATE_TIME_Z = sysdate,CHECKC_INFO=?4,CHECKZ_APP_INFO=?5,STATUS=1" +
+ @Query(value = "UPDATE MONITOR_CHECK_EJ SET CREATE_TIME_Z = sysdate,CHECKZ_INFO=?4,CHECKZ_APP_INFO=?5,STATUS=1" +
          "  WHERE TASK_ID=?1 AND TASK_TYPE=?2 AND WARNING_TYPE=?3  AND CREATE_TIME=to_date( ?6,'yyyy-MM-dd hh24:mi:ss')",nativeQuery = true)
  int updateEJ(Long taskId, Integer taskType, Integer warningType, String checkInfo, String checkAppInfo, String createTime);
 
  //一级单位处理 AND CREATE_TIME=to_date( ?6,'yyyy-MM-dd hh24:mi:ss')
  @Transactional
  @Modifying
- @Query(value = "UPDATE MONITOR_CHECK_YJ SET CREATE_TIME_Z = sysdate,CHECKC_INFO=?4,CHECKZ_APP_INFO=?5,STATUS=1" +
+ @Query(value = "UPDATE MONITOR_CHECK_YJ SET CREATE_TIME_Z = sysdate,CHECKZ_INFO=?4,CHECKZ_APP_INFO=?5,STATUS=1" +
          "  WHERE TASK_ID=?1 AND TASK_TYPE=?2 AND WARNING_TYPE=?3  AND CREATE_TIME=to_date( ?6,'yyyy-MM-dd hh24:mi:ss')",nativeQuery = true)
  int updateYJ(Long taskId, Integer taskType, Integer warningType, String checkInfo, String checkAppInfo, String createTime);
 

@@ -47,12 +47,13 @@ public class TemporarilyController extends CurdController<RztSysUser, CommonServ
             listLike.add(deptId);
             s += " AND DEPTID= ?" + listLike.size();
         }
+
         if (!StringUtils.isEmpty(companyid)) {
             listLike.add(companyid);
             s += " AND u.COMPANYID = ?" + listLike.size();
         }
         if (!StringUtils.isEmpty(taskname)) {
-            listLike.add("%" + taskname + "%");
+            listLike.add("%" + taskname.trim() + "%");
             s += " AND k.TASK_NAME LIKE ?" + listLike.size();
         }
         if (!StringUtils.isEmpty(loginstatus)) {
@@ -63,10 +64,15 @@ public class TemporarilyController extends CurdController<RztSysUser, CommonServ
                 "( SELECT u.TASK_ID, u.STATUS, t.START_TIME, t.END_TIME FROM WARNING_OFF_POST_USER u " +
                 " LEFT JOIN WARNING_OFF_POST_USER_TIME t ON u.USER_ID=t.FK_USER_ID AND u.TASK_ID=t.FK_TASK_ID WHERE 1=1 " + s1 +
                 " )t LEFT JOIN KH_TASK k ON t.TASK_ID = k.ID JOIN USERINFO u ON k.USER_ID = u.ID " + s;*/
-        String sql = "SELECT t.*,u.COMPANYNAME,u.CLASSNAME,u.REALNAME,u.DEPT,u.PHONE,'1' AS TASK_TYPE,k.TASK_NAME,u.LOGINSTATUS  FROM " +
-                " ( SELECT u.TASK_ID,u.USER_ID, u.STATUS, t.START_TIME, t.END_TIME FROM WARNING_OFF_POST_USER u " +
-                " LEFT JOIN WARNING_OFF_POST_USER_TIME t ON u.USER_ID=t.FK_USER_ID AND u.TASK_ID=t.FK_TASK_ID WHERE 1=1  AND t.TIME_STATUS=1 " + s1 +
-                " )t LEFT JOIN KH_TASK k ON t.TASK_ID = k.ID JOIN USERINFO u ON k.USER_ID = u.ID" + s;
+//        String sql = "SELECT t.*,u.COMPANYNAME,u.CLASSNAME,u.REALNAME,u.DEPT,u.PHONE,'1' AS TASK_TYPE,k.TASK_NAME,u.LOGINSTATUS  FROM " +
+//                " ( SELECT u.TASK_ID,u.USER_ID, u.STATUS, t.START_TIME, t.END_TIME FROM WARNING_OFF_POST_USER u " +
+//                " LEFT JOIN WARNING_OFF_POST_USER_TIME t ON u.USER_ID=t.FK_USER_ID AND u.TASK_ID=t.FK_TASK_ID WHERE 1=1  AND t.TIME_STATUS=1 " + s1 +
+//                " )t LEFT JOIN KH_TASK k ON t.TASK_ID = k.ID JOIN USERINFO u ON k.USER_ID = u.ID" + s;
+        String sql = " SELECT t.*,u.COMPANYNAME,u.CLASSNAME,u.REALNAME,u.DEPT,u.PHONE,'1' AS TASK_TYPE,k.TASK_NAME,u.LOGINSTATUS  FROM\n" +
+                "  ( SELECT u.TASK_ID,u.USER_ID, t.TIME_STATUS AS STATUS, t.START_TIME, t.END_TIME FROM WARNING_OFF_POST_USER u\n" +
+                "   LEFT JOIN WARNING_OFF_POST_USER_TIME t ON u.USER_ID=t.FK_USER_ID AND u.TASK_ID=t.FK_TASK_ID\n" +
+                "  WHERE 1=1  " + s1 + "  AND t.TIME_STATUS=1  AND t.END_TIME IS NULL\n" +
+                "   )t LEFT JOIN KH_TASK k ON t.TASK_ID = k.ID JOIN USERINFO u ON k.USER_ID = u.ID " + s;
         return WebApiResponse.success(this.service.execSqlPage(pageable, sql, listLike.toArray()));
     }
 }

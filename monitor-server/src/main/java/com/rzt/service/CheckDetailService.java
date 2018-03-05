@@ -39,7 +39,6 @@ public class CheckDetailService extends CurdService<CheckDetail,CheckDetailRepos
             if(null != maps && maps.size()>0){
                 checkDetail.setTdOrg(maps.get(0)!=null? (String) maps.get(0).get("TDYW_ORGID") : "");
             }
-
         }
 
 
