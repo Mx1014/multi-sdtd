@@ -65,13 +65,13 @@ public interface KhYhHistoryRepository extends JpaRepository<KhYhHistory, String
 
     @Modifying
     @Transactional
-    @Query(value = "update KH_YH_HISTORY SET YHMS=?2,START_TOWER=?3,end_tower=?4,yhzrdw=?5,yhzrdwlxr=?6,yhzrdwdh=?7,section=?8 WHERE ID=?1", nativeQuery = true)
+    @Query(value = "update KH_YH_HISTORY SET YHMS=?2,START_TOWER=?3,end_tower=?4,yhzrdw=?5,yhzrdwlxr=?6,yhzrdwdh=?7,section=?8,UPDATE_TIME=sysdate WHERE ID=?1", nativeQuery = true)
     void updateYhHistory(Long id, String yhms, String startTower, String endTower, String yhzrdw, String yhzrdwlxr, String yhzrdwlxdh, String section);
 
     @Modifying
     @Transactional
-    @Query(value = "update KH_YH_HISTORY SET YHMS=?2,yhzrdw=?3,yhzrdwlxr=?4,yhzrdwdh=?5 WHERE ID=?1", nativeQuery = true)
-    void updateYhHistory2(Long id, String yhms, String yhzrdw, String yhzrdwlxr, String yhzrdwdh);
+    @Query(value = "update KH_YH_HISTORY SET YHMS=?2,yhzrdw=?3,yhzrdwlxr=?4,yhzrdwdh=?5,YHJB1=?6,YHLB=?7,GKCS=?8,UPDATE_TIME=sysdate WHERE ID=?1", nativeQuery = true)
+    void updateYhHistory2(Long id, String yhms, String yhzrdw, String yhzrdwlxr, String yhzrdwdh,String yhjb,String yhlb,String gkcs);
 
 
     @Modifying
