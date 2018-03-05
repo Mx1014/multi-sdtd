@@ -223,12 +223,12 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
             /**
              *未按时开始任务
              */
-            String answertime = "SELECT sum(ANSWERTIME) ANSWERTIME FROM (SELECT count(1) AS ANSWERTIME FROM MONITOR_CHECK_EJ e   LEFT JOIN KH_TASK t ON e.TASK_ID = t.ID WHERE (e.WARNING_TYPE = 4 OR e.WARNING_TYPE = 10)  AND e.STATUS = 0  AND trunc(e.CREATE_TIME) = trunc(sysdate) AND     trunc(t.PLAN_START_TIME) = trunc(sysdate) UNION ALL SELECT count(1) AS ANSWERTIME FROM MONITOR_CHECK_EJ e  LEFT JOIN XS_ZC_TASK t ON e.TASK_ID = t.ID WHERE (e.WARNING_TYPE = 4 OR e.WARNING_TYPE = 10)  AND STATUS = 0  AND trunc(e.CREATE_TIME) = trunc(sysdate) AND trunc(t.PLAN_START_TIME) = trunc(sysdate))";
+            String answertime = "SELECT sum(ANSWERTIME) ANSWERTIME FROM (SELECT count(1) AS ANSWERTIME FROM MONITOR_CHECK_EJ e   LEFT JOIN KH_TASK t ON e.TASK_ID = t.ID WHERE (e.WARNING_TYPE = 4 OR e.WARNING_TYPE = 10)  AND e.STATUS = 0 AND e.TASK_STATUS = 0  AND trunc(e.CREATE_TIME) = trunc(sysdate) AND     trunc(t.PLAN_START_TIME) = trunc(sysdate) UNION ALL SELECT count(1) AS ANSWERTIME FROM MONITOR_CHECK_EJ e  LEFT JOIN XS_ZC_TASK t ON e.TASK_ID = t.ID WHERE (e.WARNING_TYPE = 4 OR e.WARNING_TYPE = 10)  AND e.STATUS = 0  AND e.TASK_STATUS = 0  AND trunc(e.CREATE_TIME) = trunc(sysdate) AND trunc(t.PLAN_START_TIME) = trunc(sysdate))";
 
             /**
              * 超期任务
              */
-            String overdue = " SELECT count(1) as OVERDUE FROM MONITOR_CHECK_EJ WHERE WARNING_TYPE = 1  AND trunc(CREATE_TIME) = trunc(sysdate) AND STATUS = 0 ";
+            String overdue = " SELECT count(1) as OVERDUE FROM MONITOR_CHECK_EJ WHERE WARNING_TYPE = 1  AND trunc(CREATE_TIME) = trunc(sysdate) AND STATUS = 0 AND TASK_STATUS = 0 ";
             /**
              * 看护人员脱岗
              */
@@ -240,7 +240,11 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
             /**
              * 巡视不合格
              */
-            String unqualifiedpatrol = " SELECT count(1) as unqualifiedpatrol FROM MONITOR_CHECK_EJ WHERE (WARNING_TYPE = 5 OR WARNING_TYPE = 3) AND trunc(CREATE_TIME) = trunc(sysdate) AND STATUS = 0 ";
+            String unqualifiedpatrol = " SELECT count(1) as unqualifiedpatrol FROM MONITOR_CHECK_EJ WHERE (WARNING_TYPE = 5 OR WARNING_TYPE = 3) AND trunc(CREATE_TIME) = trunc(sysdate) AND STATUS = 0 AND TASK_STATUS = 0 ";
+            /**
+             * 临时巡视不合格
+             */
+//            String unqualifiedpatrol = " SELECT A as unqualifiedpatrol FROM UNQUALIFIEDPATROLCOUNT ";
             try {
                 Map map1 = new HashMap();
                 Map map = new HashMap();

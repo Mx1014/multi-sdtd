@@ -1,1 +1,0 @@
-2018-01-23 11:00:40.982 [Thread-6] ERROR com.rzt.redisListener.Subscriber -插入数据失败：worker Id can't be greater than 31 or less than 0
