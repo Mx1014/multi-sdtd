@@ -27,6 +27,7 @@ public class DateUtil {
     private static final SimpleDateFormat fdf = new SimpleDateFormat("HH:mm");
     private static final SimpleDateFormat fdf2 = new SimpleDateFormat("MM-dd");
     private static final SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+    private static final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static String partterns[] = new String[5];
     private static String partterns1[] = new String[5];
 
@@ -42,7 +43,14 @@ public class DateUtil {
      */
     private  DateUtil(){ }
 
-
+    public static Date parseDate(String dateTime) {
+        try {
+            return formatter.parse(dateTime);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return new Date();
+    }
     public static Date dateNow()  {
         try {
             String str = stringNow();

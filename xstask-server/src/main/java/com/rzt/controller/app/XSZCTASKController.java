@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
+import java.util.Map;
+
 /**
  * 类名称：XSZCTASKController
  * 类描述：
@@ -206,6 +208,16 @@ public class XSZCTASKController extends
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("数据库请求失败" + e.getMessage());
+        }
+    }
+    // 修改不间断巡视的结束
+    @GetMapping("updateBjd")
+    public Object insertCycleTower(Long id) {
+        try {
+            Map<String, Object> map = this.service.updateBjd(id);
+            return WebApiResponse.success(map);
+        } catch (Exception var) {
+            return WebApiResponse.erro("图片查找失败" + var.getStackTrace());
         }
     }
 }
