@@ -86,23 +86,30 @@ public class WarningController extends CurdController<OffPostUser,WarningOffPost
 
 
 	/**
-	 * 定时查询 如果脱岗开始时间超过30分钟则正式记为脱岗
+	 * 定时查询 如果脱岗开始时间超过60分钟则正式记为脱岗
 	 */
 	@Scheduled(fixedRate = 60000)
 	public void changeTG(){
 		String sql = "SELECT * FROM WARNING_OFF_POST_USER_TIME WHERE END_TIME is NULL " +
-				"AND (sysdate-START_TIME)*24*60*60>1800 AND TIME_STATUS=0 ";
+				"AND (sysdate-START_TIME)*24*60*60>3600 AND TIME_STATUS=0 ";
 		List<Map<String, Object>> maps = service.execSql(sql);
 		for (Map<String, Object> map :maps){
 			Long fk_task_id = Long.parseLong(map.get("FK_TASK_ID").toString());
-			String fk_user_id = (String) map.get("FK_USER_ID");
-			int i = service.updateTimeStatus(fk_task_id,fk_user_id);
-			if(i>0){
-				try {
-					staffLine.khtg(fk_user_id,fk_task_id);
-				} catch (Exception e) {
-				}
-			}
+			//判断该任务是不是在进行中，只有进行中才进行报警
+			String sql1 = "SELECT * FROM KH_TASK WHERE ID=1? AND STATUS=1";
+
+            List<Map<String, Object>> maps1 = service.execSql(sql1, fk_task_id);
+            if(maps1.size()>0){
+                String fk_user_id = (String) map.get("FK_USER_ID");
+                Long id = Long.parseLong(map.get("ID").toString());
+                int i = service.updateTimeStatus(fk_task_id,fk_user_id,id);
+                if(i>0){
+                    try {
+                        staffLine.khtg(fk_user_id,fk_task_id);
+                    } catch (Exception e) {
+                    }
+                }
+            }
 		}
 	}
 
