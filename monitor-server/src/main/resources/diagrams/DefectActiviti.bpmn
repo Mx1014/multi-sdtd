@@ -3,9 +3,9 @@
   <process id="defect" isClosed="false" isExecutable="true" processType="None">
     <startEvent id="_2" name="StartEvent"/>
     <userTask activiti:assignee="sdid" activiti:exclusive="true" id="_3" name="属地反外力中心"/>
-    <sequenceFlow id="_4" name="缺陷上报   需要定时" sourceRef="_2" targetRef="_3"/>
+    <sequenceFlow id="_4" name="缺陷上报   开始流程" sourceRef="_2" targetRef="_3"/>
     <exclusiveGateway gatewayDirection="Unspecified" id="_5" name="判断节点"/>
-    <sequenceFlow id="_6" sourceRef="_3" targetRef="_5"/>
+    <sequenceFlow id="_6" name="进行下一步时判断创建时间 是否超过24小时" sourceRef="_3" targetRef="_5"/>
     <endEvent id="_9" name="EndEvent"/>
     <userTask activiti:assignee="sdyjid" activiti:exclusive="true" id="_11" name="捡分公司"/>
     <sequenceFlow id="_12" name="处理" sourceRef="_5" targetRef="_11">
@@ -16,14 +16,24 @@
     <sequenceFlow id="_15" name="否认异物" sourceRef="_13" targetRef="_9">
       <conditionExpression xsi:type="tFormalExpression"><![CDATA[${flag == 0}]]></conditionExpression>
     </sequenceFlow>
-    <userTask activiti:assignee="qxtz" activiti:exclusive="true" id="_16" name="入缺陷台账"/>
+    <userTask activiti:assignee="qxtz" activiti:exclusive="true" id="_16" name="入缺陷台账">
+      <extensionElements>
+        <activiti:taskListener class="com.rzt.activiti.listener.DefTZListener" event="create"/>
+      </extensionElements>
+    </userTask>
     <sequenceFlow id="_17" name="确认为异物" sourceRef="_13" targetRef="_16">
       <conditionExpression xsi:type="tFormalExpression"><![CDATA[${flag == 1}]]></conditionExpression>
     </sequenceFlow>
     <sequenceFlow id="_18" sourceRef="_16" targetRef="_9"/>
-    <sequenceFlow id="_7" name="不通过" sourceRef="_5" targetRef="_9">
+    <userTask activiti:assignee="gsbb" activiti:exclusive="true" id="_7" name="公司本部通报">
+      <extensionElements>
+        <activiti:taskListener class="com.rzt.activiti.listener.DefGSListener" event="create"/>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="_8" name="超过24小时" sourceRef="_5" targetRef="_7">
       <conditionExpression xsi:type="tFormalExpression"><![CDATA[${flag == 0}]]></conditionExpression>
     </sequenceFlow>
+    <sequenceFlow id="_10" sourceRef="_7" targetRef="_9"/>
   </process>
   <bpmndi:BPMNDiagram documentation="background=#3C3F41;count=1;horizontalcount=1;orientation=0;width=842.4;height=1195.2;imageableWidth=832.4;imageableHeight=1185.2;imageableX=5.0;imageableY=5.0" id="Diagram-_1" name="New Diagram">
     <bpmndi:BPMNPlane bpmnElement="defect">
@@ -65,6 +75,12 @@
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="_16" id="Shape-_16">
         <omgdc:Bounds height="55.0" width="85.0" x="570.0" y="510.0"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="55.0" width="85.0" x="0.0" y="0.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="_7" id="Shape-_7">
+        <omgdc:Bounds height="55.0" width="85.0" x="795.0" y="90.0"/>
         <bpmndi:BPMNLabel>
           <omgdc:Bounds height="55.0" width="85.0" x="0.0" y="0.0"/>
         </bpmndi:BPMNLabel>
@@ -115,11 +131,18 @@
         <omgdi:waypoint x="370.0" y="117.5"/>
         <omgdi:waypoint x="590.0" y="116.0"/>
         <bpmndi:BPMNLabel>
-          <omgdc:Bounds height="0.0" width="0.0" x="1.0" y="31.0"/>
+          <omgdc:Bounds height="-22.0" width="0.0" x="0.0" y="0.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge bpmnElement="_7" id="BPMNEdge__7" sourceElement="_5" targetElement="_9">
+      <bpmndi:BPMNEdge bpmnElement="_8" id="BPMNEdge__8" sourceElement="_5" targetElement="_7">
         <omgdi:waypoint x="622.0" y="116.0"/>
+        <omgdi:waypoint x="795.0" y="117.5"/>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="0.0" width="0.0" x="0.0" y="0.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="_10" id="BPMNEdge__10" sourceElement="_7" targetElement="_9">
+        <omgdi:waypoint x="880.0" y="117.5"/>
         <omgdi:waypoint x="910.0" y="381.0"/>
         <bpmndi:BPMNLabel>
           <omgdc:Bounds height="0.0" width="0.0" x="0.0" y="0.0"/>
