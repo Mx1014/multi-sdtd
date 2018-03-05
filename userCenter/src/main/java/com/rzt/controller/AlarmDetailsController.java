@@ -98,7 +98,7 @@ public class AlarmDetailsController extends CurdController<RztSysUser, CommonSer
                     "    ON ej.USER_ID = t.FK_USER_ID\n" +
                     "       AND ej.TASK_ID = t.FK_TASK_ID\n" +
                     "WHERE\n" +
-                    "  ej.WARNING_TYPE = 7 AND trunc(ej.CREATE_TIME) = trunc(sysdate)\n" +
+                    "  ej.WARNING_TYPE = 7 AND trunc(t.START_TIME) = trunc(sysdate)\n" +
                     "  AND t.TIME_STATUS = 1 AND t.END_TIME IS NULL\n" +
                     "GROUP BY EJ.DEPTID) CC ON CC.DEPTID = T.ID\n" +
                     "WHERE T.DEPTSORT IS NOT NULL\n" +
@@ -182,13 +182,13 @@ public class AlarmDetailsController extends CurdController<RztSysUser, CommonSer
             if (!StringUtils.isEmpty(startTime) && !StringUtils.isEmpty(endTime)) {
                 listLike.add(startTime);
                 s += " AND CREATE_TIME >= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
-                s1 += " AND ej.CREATE_TIME >= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
+                s1 += " AND t.START_TIME >= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
                 listLike.add(endTime);
                 s += " AND CREATE_TIME <= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
-                s1 += " AND ej.CREATE_TIME <= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
+                s1 += " AND t.START_TIME <= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
             } else {
                 s += " AND trunc(CREATE_TIME) = trunc(sysdate) ";
-                s1 += " AND trunc(ej.CREATE_TIME) = trunc(sysdate) ";
+                s1 += " AND trunc(t.START_TIME) = trunc(sysdate) ";
             }
             /**
              * 离线人员
@@ -316,13 +316,13 @@ public class AlarmDetailsController extends CurdController<RztSysUser, CommonSer
         if (!StringUtils.isEmpty(startTime) && !StringUtils.isEmpty(endTime)) {
             list.add(startTime);
             s += " AND CREATE_TIME >= to_date(?" + list.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
-            s1 += " AND ej.CREATE_TIME >= to_date(?" + list.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
+            s1 += " AND t.START_TIME >= to_date(?" + list.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
             list.add(endTime);
             s += " AND CREATE_TIME <= to_date(?" + list.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
-            s1 += " AND ej.CREATE_TIME <= to_date(?" + list.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
+            s1 += " AND t.START_TIME <= to_date(?" + list.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
         } else {
             s += " AND trunc(CREATE_TIME) = trunc(sysdate) ";
-            s1 += " AND trunc(ej.CREATE_TIME) = trunc(sysdate) ";
+            s1 += " AND trunc(t.START_TIME) = trunc(sysdate) ";
         }
         try {
             String offlinesS = " SELECT\n" +

@@ -22,6 +22,8 @@ import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,7 +58,8 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
     private KhCycleService cycleService;
     @Autowired
     private KhCycleRepository cycleRepository;
-
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
     public Object listAllTaskNotDo(KhTaskModel task, Pageable pageable, String userName, String roleType, String yhjb, String yworg, String currentUserId) {
         List params = new ArrayList<>();
@@ -162,6 +165,16 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
         this.reposiotry.updateDoingTask(yhid, DateUtil.dateNow());
         this.reposiotry.updateYH(yhid, DateUtil.dateNow());
         this.reposiotry.updateKhCycle(yhid);
+        taskRepository.deleteEjById(id);
+        taskRepository.deleteYjById(id);
+        try {
+            String s = "TWO+" + id + "+2+*";
+            removeSomeKey(s);
+            String s1 = "ONE+" + id + "+2+*";
+            removeSomeKey(s1);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -171,6 +184,16 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
         this.reposiotry.updateYH(site.getYhId(), DateUtil.dateNow());
         //  this.reposiotry.updateCheckTask(id);
         this.reposiotry.updateKhCycle(id);
+        taskRepository.deleteEjById(id);
+        taskRepository.deleteYjById(id);
+        try {
+            String s = "TWO+" + id + "+2+*";
+            removeSomeKey(s);
+            String s1 = "ONE+" + id + "+2+*";
+            removeSomeKey(s1);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     //导出返回List<Map>
@@ -544,5 +567,23 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
         KhYhHistory yh = new KhYhHistory();
         yh.setId(0l);
         System.out.println(yh.getId() != null);
+    }
+
+    public void removeSomeKey(String s) {
+        //String s = "TWO+" + id + "+2+*";
+        RedisConnection connection = null;
+        try {
+            connection = redisTemplate.getConnectionFactory().getConnection();
+            connection.select(1);
+            Set<byte[]> keys = connection.keys(s.getBytes());
+            byte[][] ts = keys.toArray(new byte[][]{});
+            if (ts.length > 0) {
+                connection.del(ts);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            connection.close();
+        }
     }
 }
