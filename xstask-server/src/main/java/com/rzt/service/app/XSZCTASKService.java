@@ -485,6 +485,7 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
             long endtime = DateUtil.parseDate(map.get("PLAN_END_TIME").toString()).getTime();
             long currentTimeMillis = System.currentTimeMillis();
             if (endtime <= currentTimeMillis && map.get("PLAN_XS_NUM").toString().equals("0")) {
+                this.reposiotry.updateTasks(id);
                 map.put("STATUS", 1);
             } else {
                 map.put("STATUS", 2);
