@@ -232,7 +232,7 @@ public class TwoLevelCommandPushService extends CurdService<websocket, websocket
             String temporarily = " SELECT count(DISTINCT ej.TASK_ID) AS TEMPORARILY FROM MONITOR_CHECK_EJ ej\n" +
                     "  LEFT JOIN WARNING_OFF_POST_USER_TIME t ON ej.USER_ID=t.FK_USER_ID\n" +
                     "  AND ej.TASK_ID=t.FK_TASK_ID\n" +
-                    " WHERE ej.WARNING_TYPE = 7 AND trunc(ej.CREATE_TIME) = trunc(sysdate) AND t.TIME_STATUS=1 AND t.END_TIME IS NULL  AND DEPTID= '" + deptid + "'";
+                    " WHERE ej.WARNING_TYPE = 7 AND trunc(t.START_TIME) = trunc(sysdate) AND t.TIME_STATUS=1 AND t.END_TIME IS NULL  AND DEPTID= '" + deptid + "'";
             /**
              * 巡视不合格
              */
