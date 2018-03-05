@@ -5,9 +5,13 @@ import com.rzt.util.WebApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 李成阳
@@ -19,20 +23,23 @@ import java.util.HashMap;
 public class DefectController {
     @Autowired
     private DefectServiceImpl defectService;
+
+
+
     /**
      * 开启流程
      * @return
      */
     @GetMapping("/start")
-    public WebApiResponse start(String key , String userName,String flag,String qxId,String info){
+    public WebApiResponse start(String key , String userrId,String flag,String qxId,String info){
         HashMap<String, Object> map = new HashMap<>();
-        map.put("userName",userName);
+        map.put("userrId",userrId);
         map.put("flag",flag);
         map.put("qxId",qxId);
         map.put("info",info);
 
         defectService.start(key,map);
-        return WebApiResponse.success("");
+        return WebApiResponse.success("success");
     }
 
     /**
@@ -56,7 +63,7 @@ public class DefectController {
      * @return
      */
     @GetMapping("/findTaskByUserName")
-    public WebApiResponse toTask(String currentUserId,Integer page,Integer size){
+    public WebApiResponse toTask(String currentUserId, @RequestParam(value = "page",defaultValue = "0") Integer page, @RequestParam(value = "size",defaultValue = "10") Integer size){
         return defectService.checkTasks(currentUserId,page,size);
 
     }

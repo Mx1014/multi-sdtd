@@ -124,11 +124,11 @@ public class ProController {
           //测试稽查  sdid 代表属地监控中心   jkid 代表公司监控中心
           if("sdid".equals(currentUserId) || "jkid".equals(currentUserId)){
             // 当dept.equals(TDYW_ORG)?"2":"1"   等于时代表是第二次派出稽查   不等于是派出第一次稽查
-              /*nurseTaskService.addCheckLiveTasksb(id,
+              nurseTaskService.addCheckLiveTasksb(id,
                       "0",LINE_NAME+"隐患点",YHID,YWORG_ID,
-                      TDYW_ORG,dept.equals(TDYW_ORG)?"2":"1",dept);*/
+                      TDYW_ORG,dept.equals(TDYW_ORG)?"2":"1",dept);
               //  测试模拟稽查   默认为true
-              proService.complete(id,map);
+              //proService.complete(id,map);
           }
 
           if(null == id || "".equals(id)){
