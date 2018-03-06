@@ -408,7 +408,7 @@ public interface XsZcTaskwpqrRepository extends JpaRepository<XsZcTaskwpqr, Stri
     void updateTxbdTaskToOff(Long id);
 
     /**
-     * 修改告警任务类型
+     * 修改告警任务类型 by liuze
      *
      * @param id
      */
@@ -416,6 +416,16 @@ public interface XsZcTaskwpqrRepository extends JpaRepository<XsZcTaskwpqr, Stri
     @Transactional
     @Query(value = " UPDATE MONITOR_CHECK_EJ SET TASK_STATUS=1 WHERE TASK_ID=?1 AND WARNING_TYPE=2 ", nativeQuery = true)
     void updateMonitorCheckEjXs(Long id);
+
+    /**
+     * 修改告警任务类型 by liuze
+     *
+     * @param id
+     */
+    @Modifying
+    @Transactional
+    @Query(value = " UPDATE MONITOR_CHECK_EJ SET TASK_STATUS=2 WHERE TASK_ID=?1 ", nativeQuery = true)
+    void updateMonitorCheckEjXsJxz(Long id);
 
     /***
      * @Method updateZcxsExecOff

@@ -14,7 +14,13 @@
         <option value="$PROJECT_DIR$/xstask-server/pom.xml" />
         <option value="$PROJECT_DIR$/warningmonitor/pom.xml" />
         <option value="$PROJECT_DIR$/userCenter/pom.xml" />
+        <option value="$PROJECT_DIR$/census-server/pom.xml" />
       </list>
+    </option>
+    <option name="ignoredFiles">
+      <set>
+        <option value="$PROJECT_DIR$/admin-server/pom.xml" />
+      </set>
     </option>
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">

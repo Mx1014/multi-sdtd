@@ -6,8 +6,10 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="adminserver" />
         <module name="eureka-server" />
         <module name="exam-server" />
+        <module name="examserver" />
         <module name="file-server" />
         <module name="linedata-server" />
         <module name="monitor-server" />
@@ -19,6 +21,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="adminserver" target="1.8" />
       <module name="census-server" target="1.8" />
       <module name="census-server (1)" target="1.8" />
       <module name="config-server" target="1.8" />
@@ -26,11 +29,13 @@
       <module name="eureka-server" target="1.8" />
       <module name="eureka-server (1)" target="1.8" />
       <module name="exam-server" target="1.8" />
+      <module name="examserver" target="1.8" />
       <module name="file-server" target="1.8" />
       <module name="fileserver" target="1.8" />
       <module name="fileserver1" target="1.8" />
       <module name="linedata-server" target="1.8" />
       <module name="monitor-server" target="1.8" />
+      <module name="multi-sdtd" target="1.8" />
       <module name="nursetask-server" target="1.8" />
       <module name="sdtd2-task" target="1.8" />
       <module name="userCenter" target="1.8" />

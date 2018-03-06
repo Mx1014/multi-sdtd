@@ -51,7 +51,7 @@ public class PcMapShowController {
      * @author nwz
      */
     @GetMapping("menInMap")
-    public Object menInMap(String tdOrg, String workType, String userId, Date startDate, String currentUserId, Integer loginStatus,String lineId) {
+    public Object menInMap(String tdOrg, String workType, String userId, Date startDate, String currentUserId, Integer loginStatus, String lineId) {
         try {
             Date date = new Date();
             if (startDate == null) {
@@ -141,17 +141,17 @@ public class PcMapShowController {
             offLineJudgeNum = Integer.parseInt(offLineJudge.toString()) * 60 * 1000;
         }*/
         ArrayList<String> userIds = new ArrayList<>();
-        for (Map<String,Object> map:menInMap) {
+        for (Map<String, Object> map : menInMap) {
             String userid = map.get("userid").toString();
             userIds.add(userid);
         }
 
         List<Map<String, Object>> userLoginStatusList = cmcoordinateService.execSql("select id,LOGINSTATUS from RZTSYSUSER");
         HashMap<String, String> userLoginStatusMap = new HashMap<>();
-        for(Map<String,Object> map:userLoginStatusList) {
+        for (Map<String, Object> map : userLoginStatusList) {
             String id = map.get("ID").toString();
             String loginstatus = map.get("LOGINSTATUS").toString();
-            userLoginStatusMap.put(id,loginstatus);
+            userLoginStatusMap.put(id, loginstatus);
         }
 
         Iterator<Map> iterator = menInMap.iterator();
@@ -178,7 +178,7 @@ public class PcMapShowController {
                 men.put("loginStatus", 1);
             }*/
             String loginStatus1 = userLoginStatusMap.get(userid);
-            if(loginStatus1 != null) {
+            if (loginStatus1 != null) {
                 if (loginStatus1.equals("0")) {
                     //大于九十分钟 离线
                     //显示在线
@@ -262,9 +262,9 @@ public class PcMapShowController {
 
 
     @GetMapping("menAbooutMultiLine")
-    public Object menAbooutMultiLine(String lineIds, String currentUserId, Date startDate, String yhTypes,String gzTypes) {
-        if(StringUtils.isEmpty(lineIds)) {
-           return WebApiResponse.erro("你都不传线路id,你想上天啊?");
+    public Object et4r1fdvmenAbooutMultiLine(String lineIds, String currentUserId, Date startDate, String yhTypes, String gzTypes, String deptId, String workType, String userId,String loginType) {
+        if (StringUtils.isEmpty(lineIds)) {
+            return WebApiResponse.erro("你都不传线路id,你想上天啊?");
         } else {
             String[] lineIdArr = lineIds.split(",");
             try {
@@ -273,7 +273,7 @@ public class PcMapShowController {
                     Object o = menAboutLinesSon(Long.parseLong(lineId), currentUserId, startDate, yhTypes, gzTypes);
                     resList.add(o);
                 }*/
-                Object o = menAboutLinesAllSon(lineIdArr, currentUserId, startDate, yhTypes, gzTypes);
+                Object o = menAboutLinesAllSon(lineIdArr, currentUserId, startDate, yhTypes, gzTypes, deptId, workType, userId,loginType);
                 resList.add(o);
                 return WebApiResponse.success(resList);
             } catch (Exception e) {
@@ -283,7 +283,24 @@ public class PcMapShowController {
         }
     }
 
-    private Object menAboutLinesAllSon(String[] lineIdArr, String currentUserId, Date startDate, String yhTypes, String gzTypes) throws Exception {
+    //地图上根据线路查询隐患、故障、人员、杆塔
+    private Object menAboutLinesAllSon(String[] lineIdArr, String currentUserId, Date startDate, String yhTypes, String gzTypes, String deptId,String workType,String userId,String loginType) throws Exception {
+        String s = "";
+        String s1 = "";
+        if (!StringUtils.isEmpty(deptId)) {
+            String[] split = deptId.split(",");
+            for (int i = 0; i < split.length; i++) {
+                if (i > 0) {
+                    s += " or YWORG_ID='" + split[i] + "' ";
+                    s1 += " or td_org='" + split[i] + "' ";
+                } else {
+                    s += " and ( YWORG_ID='" + split[i] + "' ";
+                    s1 += " and ( td_org='" + split[i] + "' ";
+                }
+            }
+            s += ") ";
+            s1 += ") ";
+        }
         Map<String, Object> res = new HashMap<String, Object>();
         //拿到线路上的所有的杆塔
         List<Map<String, Object>> coordinateList = cmcoordinateService.lineCoordinateList(lineIdArr);
@@ -298,8 +315,8 @@ public class PcMapShowController {
         List<Map> menInMap = new ArrayList<>();
         HashOperations<String, String, Map> hashOperations = redisTemplate.opsForHash();
 //        String deptId = pcMapShowService.dataAccessByUserId(currentUserId).toString();
-        //显示改线路当天关联的人
-        List<Map<String, Object>> menAboutLine = cmcoordinateService.getMenAboutLine(lineIdArr);
+        //显示改线路当天 关联的人
+        List<Map<String, Object>> menAboutLine = cmcoordinateService.getMenAboutLineMain(lineIdArr, s1,loginType,workType,userId);
         Set<String> keys = new HashSet();
         //单位 外协 组织 班组 都走这里
         for (Map<String, Object> user : menAboutLine) {
@@ -312,14 +329,14 @@ public class PcMapShowController {
         chouYiXia(null, 2, needDateString, timeSecond, menInMap, valueOperations);
         res.put("menInMap", menInMap);
         res.put("coordinateList", coordinateList);
-        List<Map<String, Object>> guzhang = getGuzhang(gzTypes,lineIdArr,null);
-        res.put("guzhang",guzhang);
-        Object yinhuan = getYinhuan2(yhTypes, currentUserId, null,lineIdArr);
-        res.put("yinhuan",yinhuan);
+        List<Map<String, Object>> guzhang = getGuzhang(gzTypes, lineIdArr, null);
+        res.put("guzhang", guzhang);
+        Object yinhuan = getYinhuan2(yhTypes, currentUserId, null, lineIdArr, s);
+        res.put("yinhuan", yinhuan);
         return res;
     }
 
-    private Object getYinhuan2(String yhjb, String currentUserId, String yhlb, String[] lineIdArr) throws Exception {
+    private Object getYinhuan2(String yhjb, String currentUserId, String yhlb, String[] lineIdArr, String deptId) throws Exception {
 //        Map<String, Object> jsonObject = pcMapShowService.userInfoFromRedis(currentUserId);
         List params = new ArrayList<>();
         StringBuffer buffer = new StringBuffer();
@@ -348,20 +365,22 @@ public class PcMapShowController {
         }
         int length = lineIdArr.length;
         buffer.append(" and ( ");
-        for (int i = 0;i < length;i++) {
-            String hehe = lineIdArr[i];
-            String[] split = hehe.split("_");
-            buffer.append(" (y.line_id = ? and y.YWORG_ID = ?) ");
-            if(i < length -1 ) {
-                buffer.append(" or ");
+        for (int i = 0; i < length; i++) {
+            String lineId = lineIdArr[i];
+            if (lineId != null) {
+                String[] split = deptId.split(",");
+                if (i > 0) {
+                    buffer.append(" or line_Id='" + lineId + "' ");
+                } else {
+                    buffer.append(" line_Id='" + lineId + "' ");
+                }
             }
-            params.add(split[0]);
-            params.add(split[1]);
         }
         buffer.append(" ) ");
+        buffer.append(deptId);
 //            buffer.append(" and yhzt = 0 ");
         //String sql = "SELECT DISTINCT(y.id) as yhid, y.* FROM ( SELECT  y.id as yh_id, y.* FROM KH_YH_HISTORY y WHERE YHLB LIKE '在施类' AND YHZT = 0 UNION ALL SELECT DISTINCT  (s.YH_ID), y.* FROM KH_YH_HISTORY y, KH_SITE s  WHERE s.YH_ID = y.ID AND s.STATUS = 1 AND y.yhzt = 0) y " + buffer.toString();
-        String  sql = "select * from KH_YH_HISTORY y " + buffer.toString();
+        String sql = "select * from KH_YH_HISTORY y " + buffer.toString();
         List<Map<String, Object>> list = cmcoordinateService.execSql(sql, params.toArray());
         List<Object> list1 = new ArrayList<>();
         for (Map map : list) {
@@ -384,17 +403,17 @@ public class PcMapShowController {
         return list1;
     }
 
-    private List<Map<String,Object>> getGuzhang(String gzTypes, String[] lineIdArr,String types) {
+    private List<Map<String, Object>> getGuzhang(String gzTypes, String[] lineIdArr, String types) {
         String s = "";
-        if(StringUtils.isEmpty(types)) {
+        if (StringUtils.isEmpty(types)) {
             s += " and GZ_REASON1 in ('施工碰线','异物短路','树竹放电') ";
         } else {
             String[] typeArr = types.split(",");
             s += " and GZ_REASON1 in (";
-            for (String type:typeArr) {
+            for (String type : typeArr) {
                 s += "'" + type + "',";
             }
-            s = s.substring(0,s.length() - 1);
+            s = s.substring(0, s.length() - 1);
             s += ")";
         }
         String sql = "select t.*,tt.TOWER_NAME,ttt.LONGITUDE,ttt.LATITUDE from GUZHANG t join CM_LINE_TOWER tt on t.LINE_ID = tt.LINE_ID and t.GZ_TOWER is not NULL and tt.TOWER_NAME = substr(t.GZ_TOWER,0,instr(GZ_TOWER,'#',1,1)-1) " +
@@ -403,18 +422,17 @@ public class PcMapShowController {
         List<Object> params = new ArrayList<Object>();
         StringBuffer sqlBuffer = new StringBuffer("");
         int length = lineIdArr.length;
-        for (int i = 0;i < length;i++) {
+        for (int i = 0; i < length; i++) {
             String hehe = lineIdArr[i];
-            String[] split = hehe.split("_");
             sqlBuffer.append(" (t.line_id = ?) ");
-            if(i < length -1 ) {
+            if (i < length - 1) {
                 sqlBuffer.append(" or ");
             }
-            params.add(split[0]);
+            params.add(hehe);
 //            params.add(split[1]);
         }
         sql += " and ( " + sqlBuffer.toString() + " )";
-        return cmcoordinateService.execSql(sql,params.toArray());
+        return cmcoordinateService.execSql(sql, params.toArray());
     }
 
 
@@ -447,24 +465,22 @@ public class PcMapShowController {
         chouYiXia(null, 2, needDateString, timeSecond, menInMap, valueOperations);
         res.put("menInMap", menInMap);
         res.put("coordinateList", coordinateList);
-        List<Map<String, Object>> guzhang = getGuzhang(gzTypes, currentUserId,lineId);
-        res.put("guzhang",guzhang);
-        Object yinhuan = getYinhuan(yhjb, currentUserId, null,lineId);
-        res.put("yinhuan",yinhuan);
+        List<Map<String, Object>> guzhang = getGuzhang(gzTypes, currentUserId, lineId);
+        res.put("guzhang", guzhang);
+        Object yinhuan = getYinhuan(yhjb, currentUserId, null, lineId);
+        res.put("yinhuan", yinhuan);
         return res;
     }
 
 
-
-
     /***
-    * @Method getYinhuan
-    * @Description         
-    * @return java.lang.Object
-    * @date 2018/2/7 14:56
-    * @author nwz
-    */
-    public Object getYinhuan(String yhjb,String currentUserId,String yhlb,Long lineId) throws Exception {
+     * @Method getYinhuan
+     * @Description
+     * @return java.lang.Object
+     * @date 2018/2/7 14:56
+     * @author nwz
+     */
+    public Object getYinhuan(String yhjb, String currentUserId, String yhlb, Long lineId) throws Exception {
         Map<String, Object> jsonObject = pcMapShowService.userInfoFromRedis(currentUserId);
         List params = new ArrayList<>();
         StringBuffer buffer = new StringBuffer();
@@ -473,10 +489,10 @@ public class PcMapShowController {
         Object companyid = jsonObject.get("COMPANYID");
         buffer.append(" where yhzt=0 ");
         if (roleType == 1 || roleType == 2) {
-            buffer.append(" and y.YWORG_ID = '" + tdId+"'");
+            buffer.append(" and y.YWORG_ID = '" + tdId + "'");
         }
         if (roleType == 3) {
-            buffer.append(" and y.WXORG_ID ='" + companyid+"'");
+            buffer.append(" and y.WXORG_ID ='" + companyid + "'");
         }
         if (yhjb != null && !yhjb.equals("")) {
             String[] split = yhjb.split(",");
@@ -497,7 +513,7 @@ public class PcMapShowController {
         }
 //            buffer.append(" and yhzt = 0 ");
         //String sql = "SELECT DISTINCT(y.id) as yhid, y.* FROM ( SELECT  y.id as yh_id, y.* FROM KH_YH_HISTORY y WHERE YHLB LIKE '在施类' AND YHZT = 0 UNION ALL SELECT DISTINCT  (s.YH_ID), y.* FROM KH_YH_HISTORY y, KH_SITE s  WHERE s.YH_ID = y.ID AND s.STATUS = 1 AND y.yhzt = 0) y " + buffer.toString();
-        String  sql = "select * from KH_YH_HISTORY y "+buffer.toString();
+        String sql = "select * from KH_YH_HISTORY y " + buffer.toString();
         List<Map<String, Object>> list = cmcoordinateService.execSql(sql, params.toArray());
         List<Object> list1 = new ArrayList<>();
         for (Map map : list) {
@@ -518,7 +534,7 @@ public class PcMapShowController {
             }
         }
         return list1;
-}
+    }
 
     /***
      * @Method menInfo
@@ -754,10 +770,10 @@ public class PcMapShowController {
     }
 
     @GetMapping("getGuZhang")
-    public Object getGuZhang(String currentUserId,String types) {
+    public Object getGuZhang(String currentUserId, String types) {
         try {
 
-            List<Map<String, Object>> maps = getGuzhang(types, currentUserId,null);
+            List<Map<String, Object>> maps = getGuzhang(types, currentUserId, null);
             return WebApiResponse.success(maps);
         } catch (Exception e) {
             e.printStackTrace();
@@ -766,29 +782,29 @@ public class PcMapShowController {
 
     }
 
-    public List<Map<String, Object>> getGuzhang(String types, String currentUserId,Long lineId) throws Exception {
+    public List<Map<String, Object>> getGuzhang(String types, String currentUserId, Long lineId) throws Exception {
         Map<String, Object> map = pcMapShowService.userInfoFromRedis(currentUserId);
         String s = "";
         Integer roletype = Integer.parseInt(map.get("ROLETYPE").toString());
-        if(roletype != 0) {
+        if (roletype != 0) {
             s = "and t.td_org = '" + map.get("DEPT") + "'";
         }
-        if(StringUtils.isEmpty(types)) {
-           s += " and GZ_REASON1 in ('施工碰线','异物短路','树竹放电') ";
+        if (StringUtils.isEmpty(types)) {
+            s += " and GZ_REASON1 in ('施工碰线','异物短路','树竹放电') ";
         } else {
             String[] typeArr = types.split(",");
             s += " and GZ_REASON1 in (";
-            for (String type:typeArr) {
+            for (String type : typeArr) {
                 s += "'" + type + "',";
             }
-            s = s.substring(0,s.length() - 1);
+            s = s.substring(0, s.length() - 1);
             s += ")";
         }
         String sql = "select t.*,tt.TOWER_NAME,ttt.LONGITUDE,ttt.LATITUDE from GUZHANG t join CM_LINE_TOWER tt on t.LINE_ID = tt.LINE_ID and t.GZ_TOWER is not NULL and tt.TOWER_NAME = substr(t.GZ_TOWER,0,instr(GZ_TOWER,'#',1,1)-1) " +
                 s +
                 "join cm_tower ttt on ttt.id = tt.TOWER_ID";
-        if(lineId != null) {
-            sql += " and t.line_id = " +lineId;
+        if (lineId != null) {
+            sql += " and t.line_id = " + lineId;
         }
         return cmcoordinateService.execSql(sql);
     }
@@ -849,6 +865,7 @@ public class PcMapShowController {
             return WebApiResponse.erro("数据查询失败" + e.getMessage());
         }
     }
+
     /***
      * @Method menCurrentDayJC
      * @Description 刷新flushMenInDept缓存
@@ -908,14 +925,14 @@ public class PcMapShowController {
     }
 
     @GetMapping("flushRztSysdata")
-    public Object flushRztSysdata(){
+    public Object flushRztSysdata() {
         String sql = " SELECT * FROM RZTSYSDATA ";
         List<Map<String, Object>> maps = cmcoordinateService.execSql(sql);
         HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
 
         for (Map map : maps) {
             Object roleid = map.get("ROLEID");
-            if(roleid == null) {
+            if (roleid == null) {
                 break;
             }
             hashOperations.put("RZTSYSDATA", roleid, map);

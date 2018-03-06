@@ -105,6 +105,7 @@ public class OfflinesController extends CurdController<RztSysUser, CommonService
                 "  ce.REASON, " +
                 "  ce.TASK_TYPE, " +
                 "  ce.TASK_ID, " +
+                " ce.TASK_NAME, " +
                 " nvl(to_char(ce.ONLINE_TIME, 'yyyy-MM-dd hh24:mi:ss'), '人员未上线') AS ONLINE_TIME , " +
                 "  ch.*, " +
                 "  CASE ch.WORKTYPEs " +
@@ -131,7 +132,7 @@ public class OfflinesController extends CurdController<RztSysUser, CommonService
                 "              MAX(ej.CREATE_TIME)                                                 AS CREATE_TIME " +
 
                 "            FROM MONITOR_CHECK_EJ ej " +
-                "            WHERE (ej.WARNING_TYPE = 8 OR ej.WARNING_TYPE = 2 OR WARNING_TYPE = 13 ) AND USER_ID !='null' AND TASK_STATUS=0 AND USER_LOGIN_TYPE = 0  " + s +
+                "            WHERE (ej.WARNING_TYPE = 8 OR ej.WARNING_TYPE = 2 OR WARNING_TYPE = 13 )  AND STATUS = 0  AND USER_ID !='null' AND TASK_STATUS=0 AND USER_LOGIN_TYPE = 0  " + s +
                 "            GROUP BY USER_ID) e JOIN USERINFO u ON e.USER_ID = u.ID AND u.USERDELETE=1 " + s2 + " ) ch LEFT JOIN MONITOR_CHECK_EJ ce " +
                 "    ON ch.USER_ID = ce.USER_ID AND ch.CREATE_TIME = (ce.CREATE_TIME -90/(60*24))  " + s1;
         try {

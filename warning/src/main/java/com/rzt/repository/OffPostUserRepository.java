@@ -30,6 +30,6 @@ public interface OffPostUserRepository extends JpaRepository<OffPostUser,String>
 
     @Transactional
     @Modifying
-    @Query(value = "UPDATE WARNING_OFF_POST_USER_TIME SET TIME_STATUS=1 WHERE FK_TASK_ID=?1 AND FK_USER_ID=?2",nativeQuery = true)
-    int updateTimeStatus(Object fk_task_id, Object fk_user_id);
+    @Query(value = "UPDATE WARNING_OFF_POST_USER_TIME SET TIME_STATUS=1 WHERE FK_TASK_ID=?1 AND FK_USER_ID=?2 AND ID=?3",nativeQuery = true)
+    int updateTimeStatus(Object fk_task_id, Object fk_user_id,Long id);
 }

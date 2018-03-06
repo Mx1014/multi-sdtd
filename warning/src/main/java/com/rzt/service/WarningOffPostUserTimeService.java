@@ -62,7 +62,7 @@ public class WarningOffPostUserTimeService extends CurdService<OffPostUserTime, 
         offPostUserTime.setStartTime(new Date());
         offPostUserTime.setFkTaskId(taskId);
         repository.save(offPostUserTime);*/
-        repository.addOffUserTime(new SnowflakeIdWorker(5,10).nextId(),userId,taskId);
+        repository.addOffUserTime(SnowflakeIdWorker.getInstance(5,10).nextId(),userId,taskId);
     }
 
 

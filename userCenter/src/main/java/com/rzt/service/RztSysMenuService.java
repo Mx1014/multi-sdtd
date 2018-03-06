@@ -434,4 +434,45 @@ public class RztSysMenuService extends CurdService<RztSysMenu, RztSysMenuReposit
             return WebApiResponse.erro("fail to edit");
         }
     }
+
+    /**
+     * 菜单权限
+     *
+     * @param currentUserId
+     * @return
+     */
+    public List<Map<String, Object>> roleMenu(String currentUserId) {
+        Set set = new HashSet();
+        Object userInformation1 = redisTemplate.opsForHash().get("UserInformation", currentUserId);
+        JSONObject jsonObject = JSONObject.parseObject(userInformation1.toString());
+        String s = "";
+        String rztmenuprivilege = " SELECT " +
+                "        r.ID,m.ID as mid,m.MENUPID,m.MENUNAME,m.MENUTYPE,m.TYPE " +
+                "      FROM RZTMENUPRIVILEGE r LEFT JOIN RZTSYSMENU m ON r.MENUID = m.ID " +
+                "      WHERE ROLEID = ?1 ";
+        List<Map<String, Object>> maps = this.execSql(rztmenuprivilege, jsonObject.get("ROLEID"));
+        if (!StringUtils.isEmpty(maps)) {
+            for (int i = 0; i < maps.size(); i++) {
+                if (Integer.parseInt(maps.get(i).get("MENUTYPE").toString()) == 2) {
+                    set.add(maps.get(i).get("MENUPID"));
+                }
+                s += "'" + maps.get(i).get("ID") + "',";
+            }
+            String rztsysbutton = " SELECT b.ID,m.ID as mid,m.MENUPID,m.MENUNAME,m.MENUTYPE,m.TYPE " +
+                    "FROM RZTSYSBUTTON b LEFT JOIN RZTSYSMENU m ON b.MENUID = m.ID " +
+                    "WHERE PRIVILEGEID IN (" + s.substring(0, s.length() - 1) + ") ";
+            List<Map<String, Object>> maps1 = this.execSql(rztsysbutton);
+            maps.addAll(maps1);
+            Iterator it = set.iterator();
+            while (it.hasNext()) {
+                try {
+                    List<Map<String, Object>> maps2 = this.execSql("SELECT m.ID as mid,m.MENUPID,m.MENUNAME,m.MENUTYPE,m.TYPE FROM RZTSYSMENU m WHERE ID = ?1", it.next());
+                    maps.addAll(maps2);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return maps;
+    }
 }
