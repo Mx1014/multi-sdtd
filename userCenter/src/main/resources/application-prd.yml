@@ -40,18 +40,15 @@ spring:
         host: 39.106.206.129
         port: 6379
         password: Rzt82890758-Rzt82890758
-        timeout: 0
+        timeout: 5000
         pool:
           max-active: 100
           max-idle: 8
           min-idle: 0
           max-wait: -1
-eureka:
-  client:
-    service-url:
-      defaultZone: http://168.130.6.29:7002/eureka/
-      #标记为服务注册中心 不发现服务 别提交
-      register-with-eureka: false
-      fetch-registry: false
+#eureka:
+#  client:
+#    service-url:
+#      defaultZone: http://127.0.0.1:7002/eureka/
 logging:
   config: classpath:logback-spring.xml

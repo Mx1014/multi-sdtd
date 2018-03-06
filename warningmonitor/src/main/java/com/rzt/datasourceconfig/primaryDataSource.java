@@ -1,4 +1,4 @@
-package com.rzt.datasourceconfig;
+package com.rzt.config;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import org.slf4j.Logger;
