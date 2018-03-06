@@ -71,7 +71,7 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
         //巡视如果任务已经完成则不计
         if(Integer.parseInt(messages[3])==2){
             String sql=" SELECT STAUTS FROM XS_ZC_TASK WHERE ID=?1 ";
-            String sql2 = "SELECT LOGINSTATUS FROM RZTSYSUSER WHERE ID=?1";
+            String sql2 = "SELECT LOGINSTATUS FROM RZTSYSUSER WHERE ID=?1 AND USERDELETE=1";
             try {
                 Map<String, Object> map = execSqlSingleResult(sql, Long.valueOf(messages[1]));
                 Map<String, Object> map2 = execSqlSingleResult(sql2, messages[4]);
@@ -83,7 +83,7 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
             } catch (Exception e) {
             }
         }else if(Integer.parseInt(messages[3])==8){
-            String sql = "SELECT LOGINSTATUS FROM RZTSYSUSER WHERE ID=?1";
+            String sql = "SELECT LOGINSTATUS FROM RZTSYSUSER WHERE ID=?1 AND USERDELETE=1";
             Map<String, Object> maps = null;
             try {
                 maps = execSqlSingleResult(sql, messages[4]);
