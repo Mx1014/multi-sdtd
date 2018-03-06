@@ -10,6 +10,7 @@ import org.springframework.cloud.netflix.hystrix.EnableHystrix;
 import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -18,7 +19,11 @@ import redis.clients.jedis.JedisPool;
 @SpringBootApplication
 @EnableEurekaClient
 @EnableFeignClients
+@EnableHystrix
+@RestController
 public class ZullApplication {
+    @Autowired
+    private JedisPool redisTemplate;
     public static void main(String[] args) {
         SpringApplication.run(ZullApplication.class, args);
     }
@@ -27,6 +32,9 @@ public class ZullApplication {
     public AccessTokenFilter accessFilter() {
         return new AccessTokenFilter();
     }
-
+    @RequestMapping("/test")
+    public String test(){
+        return "success";
+    }
 
 }

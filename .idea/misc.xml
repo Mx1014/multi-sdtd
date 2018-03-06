@@ -17,6 +17,11 @@
         <option value="$PROJECT_DIR$/census-server/pom.xml" />
       </list>
     </option>
+    <option name="ignoredFiles">
+      <set>
+        <option value="$PROJECT_DIR$/admin-server/pom.xml" />
+      </set>
+    </option>
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
