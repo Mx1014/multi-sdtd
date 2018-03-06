@@ -76,7 +76,7 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
                 Map<String, Object> map = execSqlSingleResult(sql, Long.valueOf(messages[1]));
                 Map<String, Object> map2 = execSqlSingleResult(sql2, messages[4]);
                 //如果任务状态不为2，才将数据插入进去
-                if(Integer.parseInt(map.get("STAUTS").toString())!=2 && Integer.parseInt(map2.get("LOGINSTATUS").toString())==0){
+                if(Integer.parseInt(map.get("STAUTS").toString())==0 && Integer.parseInt(map2.get("LOGINSTATUS").toString())==0){
                     resp.saveCheckEjWdw(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(messages[1]),Integer.valueOf(messages[2]),Integer.valueOf(messages[3]),messages[4],messages[5],messages[6],messages[7]);
                     flag = true;
                 }
