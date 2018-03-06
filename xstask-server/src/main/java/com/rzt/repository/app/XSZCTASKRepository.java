@@ -56,4 +56,9 @@ public interface XSZCTASKRepository extends JpaRepository<XSZCTASK, String> {
     @Transactional
     @Query(value = "update PICTURE_QX set QX_ID = ?2 where id in (?1)", nativeQuery = true)
     void updateQxId(List<Long> picIdList, long qxId);
+
+    @Modifying
+    @Transactional
+    @Query(value = "update xs_zc_task set STAUTS = 2,REAL_END_TIME=sysdate where id = ?1", nativeQuery = true)
+    void updateTasks(Long id);
 }

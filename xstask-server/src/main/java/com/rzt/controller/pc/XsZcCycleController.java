@@ -315,6 +315,7 @@ public class XsZcCycleController extends
 		}
 	}
 
+
 	@GetMapping("autoInsertTourTask")
 	public void autoInsertTourTask(String sql,Long xsZcCycleId) {
 		scheduledTaskService.autoInsertTourTask();
