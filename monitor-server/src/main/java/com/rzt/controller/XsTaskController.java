@@ -5,20 +5,11 @@ import com.rzt.service.CheckDetailService;
 import com.rzt.service.TimedService;
 import com.rzt.service.XSZCTASKService;
 import com.rzt.util.WebApiResponse;
-
-import org.apache.poi.ss.usermodel.Workbook;
-import org.jeecgframework.poi.excel.ExcelExportUtil;
-import org.jeecgframework.poi.excel.entity.ExportParams;
-import org.jeecgframework.poi.excel.entity.params.ExcelExportEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletResponse;
-import java.net.URLEncoder;
-import java.text.SimpleDateFormat;
-import java.util.*;
 
 
 @RestController
