@@ -45,12 +45,13 @@ spring:
           max-idle: 8
           min-idle: 0
         timeout: 0
-eureka:
-  instance:
-    prefer-ip-address: true
-  client:
-        service-url:
-          defaultZone: http://localhost:7002/eureka/
+
+#eureka:
+#  instance:
+#    prefer-ip-address: true
+#  client:
+#        service-url:
+#          defaultZone: http://localhost:7002/eureka/
           #防止心跳启动报错
 #        register-with-eureka: false
 #        fetch-registry: false

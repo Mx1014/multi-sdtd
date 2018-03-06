@@ -487,6 +487,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
             throw new Exception();
         } else {
             this.reposiotry.deleteSiteById(id);
+            this.reposiotry.deleteCycleByYhId(maps.get(0).get("YH_ID").toString());
         }
     }
 

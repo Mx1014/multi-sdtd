@@ -34,6 +34,7 @@ public class ProListener implements TaskListener {
         String khid = (String) proServiceImpl.checkTask(delegateTask.getId(), "khid");
         //取消看护任务
         if(null != khid && !"".equals(khid)){
+            //不需要取消
             System.out.println("取消看护任务"+khid);
         }
         System.out.println("进入取消看护节点监听"+delegateTask);

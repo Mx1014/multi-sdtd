@@ -1,4 +1,4 @@
-package com.rzt.datasourceconfig;
+package com.rzt.config;
 
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;

@@ -23,6 +23,8 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.io.InputStream;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -212,7 +214,7 @@ public class XSCycleServiceImpl  extends CurdService<CheckResult, CheckResultRep
                     "            FROM ACT_HI_ACTINST t" +
                     "            LEFT JOIN ACT_HI_VARINST h ON t.PROC_INST_ID_ = h.PROC_INST_ID_ AND h.NAME_ = 'XSID'" +
                     "            LEFT JOIN XS_ZC_CYCLE_RECORD x ON x.XS_ZC_CYCLE_ID = h.TEXT_" +
-                    "            WHERE  t.PROC_DEF_ID_ LIKE 'xssh%' AND t.ASSIGNEE_ = '"+userId+"'  AND t.END_TIME_ IS NOT NULL  ORDER BY t.END_TIME_ DESC  ) tt WHERE 1=1 ";
+                    "            WHERE  t.PROC_DEF_ID_ LIKE 'xssh%' AND t.ASSIGNEE_ = '"+userId+"'  AND t.END_TIME_ IS NOT NULL  ORDER BY t.END_TIME_ DESC  ) tt WHERE  ID IS NOT NULL ";
 
 
             if(null != lineName && !"".equals(lineName) ){
@@ -328,6 +330,51 @@ public class XSCycleServiceImpl  extends CurdService<CheckResult, CheckResultRep
                 .processDefinitionId(processDefinitionId).singleResult();
         return repositoryService.getResourceAsStream(
                 processDefinition.getDeploymentId(), "diagrams/CycleActiviti.png");
+    }
+
+    /**
+     * 巡视周期变更   在巡视周期审核最后通过的监听器中调用
+     * @param xsid
+     */
+    @Transactional
+    public void updateXSCycle(String xsid,String actId){
+        //查询变更信息
+        String sql = "SELECT XS_ZC_CYCLE_ID,XS_ZC_CYCLE,PLAN_START_TIME,PLAN_END_TIME,PLAN_XS_NUM,CM_USER_ID,ID" +
+                "       FROM XS_ZC_CYCLE_RECORD WHERE XS_ZC_CYCLE_ID = '"+xsid+"' AND PROPOSER_STATUS = 0 ";
+        List<Map<String, Object>> maps = this.execSql(sql);
+        try {
+            if(null != maps && maps.size()>0){
+                SimpleDateFormat sim = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
+                Map<String, Object> map = maps.get(0);
+                //原周期id
+                String xscycleId = map.get("XS_ZC_CYCLE_ID") == null ? "":map.get("XS_ZC_CYCLE_ID").toString();
+                //巡视周期
+                String XSCycle = map.get("XS_ZC_CYCLE") == null ? "":map.get("XS_ZC_CYCLE").toString();
+                //计划开始时间
+                String planStartTime = map.get("PLAN_START_TIME") == null ? "" : map.get("PLAN_START_TIME").toString();
+                //计划结束时间
+                String planEndTime = map.get("PLAN_END_TIME") == null ? "" : map.get("PLAN_END_TIME").toString();
+                //巡视频率
+                String xsNum = map.get("PLAN_XS_NUM") == null ? "" : map.get("PLAN_XS_NUM").toString();
+                //执行人
+                String userId = map.get("CM_USER_ID") == null ? "":map.get("CM_USER_ID").toString();
+                //变更记录id   更改过原周期后需要改变记录状态
+                String id = map.get("ID") == null ? "":map.get("ID").toString();
+                //  按照原周期id查询
+                if(null == xscycleId || "".equals(xscycleId)){//原id为空   证明新增
+
+                }else {//修改
+                    yHrepository.updateCycle(xscycleId,XSCycle,planStartTime,planEndTime,xsNum,userId);
+                }
+                //变更记录中审批状态和审批时间
+                yHrepository.updateCycleRecord(id,new Date());
+                //结束流程
+                taskService.complete(actId,null);
+            }
+        } catch (Exception e) {
+           LOGGER.error(e.getMessage());
+        }
+
     }
 
 

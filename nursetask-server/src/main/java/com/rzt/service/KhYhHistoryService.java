@@ -523,7 +523,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 this.reposiotry.updateKhSite(yh.getId(), section, taskName);
                 this.reposiotry.updateKhTask(yh.getId(), taskName);
             } else {
-                this.reposiotry.updateYhHistory2(yh.getId(), yh.getYhms(), yh.getYhzrdw(), yh.getYhzrdwlxr(), yh.getYhzrdwdh());
+                this.reposiotry.updateYhHistory2(yh.getId(), yh.getYhms(), yh.getYhzrdw(), yh.getYhzrdwlxr(), yh.getYhzrdwdh(),yh.getYhjb1(),yh.getYhlb(),yh.getGkcs());
             }
             return WebApiResponse.success("");
         } catch (Exception e) {

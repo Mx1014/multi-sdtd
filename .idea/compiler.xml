@@ -1,18 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <wildcardResourcePatterns />
     <annotationProcessing>
       <profile name="Maven default annotation processors profile" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="census-server" />
+        <module name="adminserver" />
         <module name="eureka-server" />
         <module name="exam-server" />
         <module name="examserver" />
         <module name="file-server" />
-        <module name="fileserver" />
         <module name="linedata-server" />
         <module name="monitor-server" />
         <module name="nursetask-server" />
@@ -23,6 +21,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="adminserver" target="1.8" />
       <module name="census-server" target="1.8" />
       <module name="census-server (1)" target="1.8" />
       <module name="config-server" target="1.8" />
