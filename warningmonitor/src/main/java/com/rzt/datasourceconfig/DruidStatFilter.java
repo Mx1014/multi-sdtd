@@ -1,4 +1,4 @@
-package com.rzt.config;
+package com.rzt.datasourceconfig;
 
 import com.alibaba.druid.support.http.WebStatFilter;
 
