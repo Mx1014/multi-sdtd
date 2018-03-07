@@ -236,31 +236,26 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
     //导入隐患生成看护点的方法
     public void addKhCycle(KhYhHistory yh, KhCycle cycle) {
         try {
-            String sql = "select * from kh_cycle where yh_id=?";
-            List<Map<String, Object>> maps = this.execSql(sql, yh.getId());
-            if (maps.size() > 0) {
-                this.reposiotry.updateCycleByYhId(yh.getId());
-            } else {
-                String kv = yh.getVtype();
-                if (kv.contains("kV")) {
-                    kv = kv.substring(0, kv.indexOf("k"));
-                }
-                cycle.setId(0L);
-                cycle.setTdywOrg(yh.getTdywOrg());
-                cycle.setTdywOrgId(yh.getTdorgId());
-                cycle.setWxOrg(yh.getTdwxOrg());
-                cycle.setWxOrgId(yh.getWxorgId());
-                cycle.setLineId(yh.getLineId());
-                cycle.setYhId(yh.getId());
-                cycle.setSection(yh.getSection());
-                String taskName = kv + "-" + yh.getLineName() + yh.getSection() + "号杆塔看护任务";
-                cycle.setTaskName(taskName);
-                cycle.setCreateTime(DateUtil.dateNow());
-                cycle.setVtype(yh.getVtype());
-                cycle.setStatus(0);
-                cycle.setLineName(yh.getLineName());
-                cycleService.add(cycle);
+
+            String kv = yh.getVtype();
+            if (kv.contains("kV")) {
+                kv = kv.substring(0, kv.indexOf("k"));
             }
+            cycle.setId(0L);
+            cycle.setTdywOrg(yh.getTdywOrg());
+            cycle.setTdywOrgId(yh.getTdorgId());
+            cycle.setWxOrg(yh.getTdwxOrg());
+            cycle.setWxOrgId(yh.getWxorgId());
+            cycle.setLineId(yh.getLineId());
+            cycle.setYhId(yh.getId());
+            cycle.setSection(yh.getSection());
+            String taskName = kv + "-" + yh.getLineName() + yh.getSection() + "号杆塔看护任务";
+            cycle.setTaskName(taskName);
+            cycle.setCreateTime(DateUtil.dateNow());
+            cycle.setVtype(yh.getVtype());
+            cycle.setStatus(0);
+            cycle.setLineName(yh.getLineName());
+            cycleService.add(cycle);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1215,28 +1210,34 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
     //生成看护点
     @Transactional(rollbackFor = Exception.class)
     public void saveCycle(long yhId) {
-        KhYhHistory yh = this.reposiotry.finds(yhId);
-        String kv = yh.getVtype();
-        if (yh.getVtype().contains("kV")) {
-            kv = kv.substring(0, kv.indexOf("k"));
+        String sql = "select * from kh_cycle where yh_id=?";
+        List<Map<String, Object>> maps = this.execSql(sql, yhId);
+        if (maps.size() > 0) {
+            this.reposiotry.updateCycleByYhId(yhId);
+        } else {
+            KhYhHistory yh = this.reposiotry.finds(yhId);
+            String kv = yh.getVtype();
+            if (yh.getVtype().contains("kV")) {
+                kv = kv.substring(0, kv.indexOf("k"));
+            }
+            KhCycle task = new KhCycle();
+            String taskName = kv + "-" + yh.getLineName() + " " + yh.getSection() + " 号杆塔看护任务";
+            task.setId(0L);
+            task.setVtype(yh.getVtype());
+            task.setLineName(yh.getLineName());
+            task.setTdywOrg(yh.getTdywOrg());
+            task.setSection(yh.getSection());
+            task.setLineId(yh.getLineId());
+            task.setTaskName(taskName);
+            task.setWxOrgId(yh.getWxorgId());
+            task.setTdywOrgId(yh.getTdorgId());
+            task.setWxOrg(yh.getTdwxOrg());
+            task.setStatus(0);    // 未派发
+            task.setYhId(yh.getId());
+            task.setCreateTime(DateUtil.dateNow());
+            this.cycleService.add(task);
+            long id = new SnowflakeIdWorker(8, 24).nextId();
+            this.reposiotry.addCheckSite(id, task.getId(), 2, task.getTaskName(), 0, task.getLineId(), task.getTdywOrgId(), task.getWxOrgId(), task.getYhId());
         }
-        KhCycle task = new KhCycle();
-        String taskName = kv + "-" + yh.getLineName() + " " + yh.getSection() + " 号杆塔看护任务";
-        task.setId(0L);
-        task.setVtype(yh.getVtype());
-        task.setLineName(yh.getLineName());
-        task.setTdywOrg(yh.getTdywOrg());
-        task.setSection(yh.getSection());
-        task.setLineId(yh.getLineId());
-        task.setTaskName(taskName);
-        task.setWxOrgId(yh.getWxorgId());
-        task.setTdywOrgId(yh.getTdorgId());
-        task.setWxOrg(yh.getTdwxOrg());
-        task.setStatus(0);    // 未派发
-        task.setYhId(yh.getId());
-        task.setCreateTime(DateUtil.dateNow());
-        this.cycleService.add(task);
-        long id = new SnowflakeIdWorker(8, 24).nextId();
-        this.reposiotry.addCheckSite(id, task.getId(), 2, task.getTaskName(), 0, task.getLineId(), task.getTdywOrgId(), task.getWxOrgId(), task.getYhId());
     }
 }
