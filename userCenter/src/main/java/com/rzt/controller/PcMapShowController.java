@@ -385,7 +385,7 @@ public class PcMapShowController {
         List<Object> list1 = new ArrayList<>();
         for (Map map : list) {
             if (map != null && map.size() > 0 && map.get("JD") != null) {
-                sql = "select u.realname from kh_site s left join rztsysuser u on u.id =s.user_id where yh_id=?";
+                sql = "select u.realname from kh_site s left join rztsysuser u on u.id =s.user_id where yh_id=? and s.status=1";
                 List<Map<String, Object>> nameList = cmcoordinateService.execSql(sql, Long.parseLong(map.get("ID").toString()));
                 String realname = "";
                 map.put("USERNAME", "无");
