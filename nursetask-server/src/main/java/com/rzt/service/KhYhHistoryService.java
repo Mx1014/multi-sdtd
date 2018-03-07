@@ -143,7 +143,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         }
     }
 
-    public WebApiResponse listCoordinate(String yhjb, String yhlb, JSONObject josn, String queryAll,String deptId) {
+    public WebApiResponse listCoordinate(String yhjb, String yhlb, JSONObject josn, String queryAll, String deptId) {
         try {
             List params = new ArrayList<>();
             StringBuffer buffer = new StringBuffer();
@@ -152,21 +152,21 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             Object tdId = jsonObject.get("DEPTID");
             Object companyid = jsonObject.get("COMPANYID");
             buffer.append(" where yhzt=0 ");
-            if (roleType==0){
-                if (!StringUtils.isEmpty(deptId)){
+            if (roleType == 0) {
+                if (!StringUtils.isEmpty(deptId)) {
                     if (!org.apache.commons.lang.StringUtils.isEmpty(deptId)) {
                         String[] split = deptId.split(",");
-                        for (int i=0;i<split.length;i++){
-                            if (i>0){
+                        for (int i = 0; i < split.length; i++) {
+                            if (i > 0) {
                                 buffer.append(" or YWORG_ID='" + split[i] + "' ");
-                            }else {
-                                buffer.append( " and ( YWORG_ID='" + split[i] + "' ");
+                            } else {
+                                buffer.append(" and ( YWORG_ID='" + split[i] + "' ");
                             }
                         }
                         buffer.append(") ");
                     }
                 }
-            }else if (roleType == 1 || roleType == 2) {
+            } else if (roleType == 1 || roleType == 2) {
                 buffer.append(" and y.YWORG_ID = '" + tdId + "'");
             }
             if (roleType == 3) {
@@ -188,17 +188,17 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
 //            buffer.append(" and yhzt = 0 ");
             String sql = "";
             if (queryAll != null) {
-                sql = "select id as yhid,y.* from KH_YH_HISTORY y "+buffer.toString();
+                sql = "select id as yhid,y.* from KH_YH_HISTORY y " + buffer.toString();
                 List<Map<String, Object>> maps = this.execSql(sql, params.toArray());
-                return WebApiResponse.success(this.execSql(sql,params.toArray()));
+                return WebApiResponse.success(this.execSql(sql, params.toArray()));
             } else {
-               sql = "SELECT DISTINCT(y.id) as yhid, y.* FROM ( SELECT  y.id as yh_id, y.* FROM KH_YH_HISTORY y WHERE YHLB LIKE '在施类' AND YHZT = 0 UNION ALL SELECT DISTINCT  (s.YH_ID), y.* FROM KH_YH_HISTORY y, KH_SITE s  WHERE s.YH_ID = y.ID AND s.STATUS = 1 AND y.yhzt = 0) y " + buffer.toString();
+                sql = "SELECT DISTINCT(y.id) as yhid, y.* FROM ( SELECT  y.id as yh_id, y.* FROM KH_YH_HISTORY y WHERE YHLB LIKE '在施类' AND YHZT = 0 UNION ALL SELECT DISTINCT  (s.YH_ID), y.* FROM KH_YH_HISTORY y, KH_SITE s  WHERE s.YH_ID = y.ID AND s.STATUS = 1 AND y.yhzt = 0) y " + buffer.toString();
 //               sql = "SELECT DISTINCT(y.id) as yhid, y.* FROM KH_YH_HISTORY y, KH_SITE s  WHERE s.YH_ID = y.ID AND s.STATUS = 1 AND y.yhzt = 0 " + buffer.toString();
                 List<Map<String, Object>> list = this.execSql(sql, params.toArray());
                 List<Object> list1 = new ArrayList<>();
                 for (Map map : list) {
                     if (map != null && map.size() > 0 && map.get("JD") != null) {
-                        sql = "select u.realname from kh_site s left join rztsysuser u on u.id =s.user_id where yh_id=?";
+                        sql = "select u.realname from kh_site s left join rztsysuser u on u.id =s.user_id where yh_id=? and s.status=1";
                         List<Map<String, Object>> nameList = this.execSql(sql, Long.parseLong(map.get("ID").toString()));
                         String realname = "";
                         map.put("USERNAME", "无");
@@ -236,25 +236,31 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
     //导入隐患生成看护点的方法
     public void addKhCycle(KhYhHistory yh, KhCycle cycle) {
         try {
-            String kv = yh.getVtype();
-            if (kv.contains("kV")) {
-                kv = kv.substring(0, kv.indexOf("k"));
+            String sql = "select * from kh_cycle where yh_id=?";
+            List<Map<String, Object>> maps = this.execSql(sql, yh.getId());
+            if (maps.size() > 0) {
+
+            } else {
+                String kv = yh.getVtype();
+                if (kv.contains("kV")) {
+                    kv = kv.substring(0, kv.indexOf("k"));
+                }
+                cycle.setId(0L);
+                cycle.setTdywOrg(yh.getTdywOrg());
+                cycle.setTdywOrgId(yh.getTdorgId());
+                cycle.setWxOrg(yh.getTdwxOrg());
+                cycle.setWxOrgId(yh.getWxorgId());
+                cycle.setLineId(yh.getLineId());
+                cycle.setYhId(yh.getId());
+                cycle.setSection(yh.getSection());
+                String taskName = kv + "-" + yh.getLineName() + yh.getSection() + "号杆塔看护任务";
+                cycle.setTaskName(taskName);
+                cycle.setCreateTime(DateUtil.dateNow());
+                cycle.setVtype(yh.getVtype());
+                cycle.setStatus(0);
+                cycle.setLineName(yh.getLineName());
+                cycleService.add(cycle);
             }
-            cycle.setId(0L);
-            cycle.setTdywOrg(yh.getTdywOrg());
-            cycle.setTdywOrgId(yh.getTdorgId());
-            cycle.setWxOrg(yh.getTdwxOrg());
-            cycle.setWxOrgId(yh.getWxorgId());
-            cycle.setLineId(yh.getLineId());
-            cycle.setYhId(yh.getId());
-            cycle.setSection(yh.getSection());
-            String taskName = kv + "-" + yh.getLineName() + yh.getSection() + "号杆塔看护任务";
-            cycle.setTaskName(taskName);
-            cycle.setCreateTime(DateUtil.dateNow());
-            cycle.setVtype(yh.getVtype());
-            cycle.setStatus(0);
-            cycle.setLineName(yh.getLineName());
-            cycleService.add(cycle);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -523,7 +529,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 this.reposiotry.updateKhSite(yh.getId(), section, taskName);
                 this.reposiotry.updateKhTask(yh.getId(), taskName);
             } else {
-                this.reposiotry.updateYhHistory2(yh.getId(), yh.getYhms(), yh.getYhzrdw(), yh.getYhzrdwlxr(), yh.getYhzrdwdh(),yh.getYhjb1(),yh.getYhlb(),yh.getGkcs());
+                this.reposiotry.updateYhHistory2(yh.getId(), yh.getYhms(), yh.getYhzrdw(), yh.getYhzrdwlxr(), yh.getYhzrdwdh(), yh.getYhjb1(), yh.getYhlb(), yh.getGkcs());
             }
             return WebApiResponse.success("");
         } catch (Exception e) {
@@ -1204,6 +1210,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             }
         }
     }
+
     //生成看护点
     @Transactional(rollbackFor = Exception.class)
     public void saveCycle(long yhId) {
