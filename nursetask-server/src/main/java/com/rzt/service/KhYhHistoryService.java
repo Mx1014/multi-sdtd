@@ -239,7 +239,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             String sql = "select * from kh_cycle where yh_id=?";
             List<Map<String, Object>> maps = this.execSql(sql, yh.getId());
             if (maps.size() > 0) {
-
+                this.reposiotry.updateCycleByYhId(yh.getId());
             } else {
                 String kv = yh.getVtype();
                 if (kv.contains("kV")) {
@@ -265,6 +265,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             e.printStackTrace();
         }
     }
+
 
     public WebApiResponse exportYhHistory(HttpServletResponse response, Object josn, String currentUserId) {
         String sql1 = "select DISTINCT(c.YH_ID),y.* from kh_yh_history y left join kh_site c on y.id=c.yh_id where y.yhzt=0 ";
