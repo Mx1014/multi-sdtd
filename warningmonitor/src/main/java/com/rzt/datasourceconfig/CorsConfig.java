@@ -1,4 +1,4 @@
-package com.rzt.config;
+package com.rzt.datasourceconfig;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
