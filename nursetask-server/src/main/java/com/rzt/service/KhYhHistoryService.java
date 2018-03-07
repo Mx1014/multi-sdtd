@@ -72,7 +72,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                     //double jd = (Double.parseDouble(map.get("LONGITUDE").toString()) + Double.parseDouble(map1.get("LONGITUDE").toString())) / 2;
                     // double wd = (Double.parseDouble(map.get("LATITUDE").toString()) + Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
                     // double radius = MapUtil.GetDistance(Double.parseDouble(map.get("LONGITUDE").toString()), Double.parseDouble(map.get("LATITUDE").toString()), Double.parseDouble(map1.get("LONGITUDE").toString()), Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
-                    yh.setRadius("200.0");
+                    yh.setRadius("500.0");
                     yh.setJd(map.get("LONGITUDE").toString());
                     yh.setWd(map.get("LATITUDE").toString());
                 }
@@ -637,7 +637,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             yh.setXdxyhjkjl(sbYh.getXdxyhjkjl());
             yh.setJd(sbYh.getJd());
             yh.setWd(sbYh.getWd());
-            yh.setRadius("200.0");
+            yh.setRadius("500.0");
 //            yh.setClassName(sbYh.getLineName());
 //            yh.setClassId(sbYh.getclass);
             String[] split = sbYh.getSection().split("-");
