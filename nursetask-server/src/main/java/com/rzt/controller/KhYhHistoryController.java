@@ -111,11 +111,6 @@ public class KhYhHistoryController extends
         return service.updateYhHistory(yh, startTowerName, endTowerName);
     }
 
-    @ApiOperation(value = "隐患重新定级", notes = "隐患重新定级")
-    @PatchMapping("updateYhjb")
-    public WebApiResponse updateYhjb(String yhjb) {
-        return service.updateYhjb(yhjb);
-    }
 
     @ApiOperation(value = "区镇村三级联动", notes = "区镇村三级联动")
     @GetMapping("lineArea")
@@ -181,44 +176,6 @@ public class KhYhHistoryController extends
         }
     }
 
-    @ApiOperation(value = "隐患台账图片展示", notes = "隐患台账图片展示")
-    @GetMapping("addadd")
-    public Object addadd() {
-        int a = 0;
-        int b = 0;
-        String user = "SELECT * FROM WORKING_TIMED ";
-        List<Map<String, Object>> maps = this.service.execSql(user);
-        for (Map map : maps) {
-            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-            String format = formatter.format(new Date());
-            String s = format + " 00:00:00";
-            String userId = "";
-            String start = map.get("START_TIME").toString();
-            String end = map.get("END_TIME").toString();
-            Date nowDate = DateUtil.getNowDate();
-            if (nowDate.getTime() >= DateUtil.addDate(DateUtil.parseDate(s), Double.parseDouble(start)).getTime() && nowDate.getTime() <= DateUtil.addDate(DateUtil.parseDate(s), Double.parseDouble(end)).getTime()) {
-                userId = map.get("DAY_USER").toString();
-            } else {
-                userId = map.get("NIGHT_USER").toString();
-            }
-            String[] split = userId.split(",");
-            for (int i = 0; i < split.length; i++) {
-                try {
-                    String sql = "SELECT LOGINSTATUS status FROM RZTSYSUSER where id=?";
-                    Map<String, Object> status = this.service.execSqlSingleResult(sql, split[i]);
-                    if (status.get("STATUS").toString().equals("0")) {
-                        a++;
-                    } else {
-                        b++;
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        System.out.println(a+"     "+b);
-        return WebApiResponse.success(a+" "+b);
-    }
 
     //隐患采集记录
     @Transactional

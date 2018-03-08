@@ -141,4 +141,9 @@ public interface KhYhHistoryRepository extends JpaRepository<KhYhHistory, String
     @Query(value = "insert into CHECK_LIVE_SITE(id,TASK_ID,TASK_TYPE,CREATE_TIME,TASK_NAME,STATUS,line_id,TDYW_ORGID,TDWX_ORGID,yh_id)" +
             "values(?1,?2,?3,sysdate,?4,?5,?6,?7,?8,?9)", nativeQuery = true)
     void addCheckSite(long l, Long taskId, int i1, String taskName, int i, Long lineId, String tdywOrgId, String wxOrgId, Long id);
+
+    @Modifying
+    @Transactional
+    @Query(value = "update KH_CYCLE SET STATUS=0,CREATE_TIME=sysdate,XQ_TIME=NULL,PF_TIME=NULL WHERE YH_ID=?1", nativeQuery = true)
+    void updateCycleByYhId(Long id);
 }

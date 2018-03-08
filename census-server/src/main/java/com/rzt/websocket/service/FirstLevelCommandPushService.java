@@ -160,12 +160,14 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
                     }
                     String[] split = userId.split(",");
                     for (int i = 0; i < split.length; i++) {
-                        String sql = "SELECT LOGINSTATUS status FROM RZTSYSUSER where id=?";
-                        Map<String, Object> status = this.execSqlSingleResult(sql, split[i]);
-                        if (status.get("STATUS").toString().equals("0")) {
-                            a++;
-                        } else {
-                            b++;
+                        String sql = "SELECT LOGINSTATUS status FROM RZTSYSUSER where id=? and USERDELETE=1";
+                        List<Map<String, Object>> status = this.execSql(sql, split[i]);
+                        if (status.size() > 0) {
+                            if (status.get(0).get("STATUS").toString().equals("0")) {
+                                a++;
+                            } else {
+                                b++;
+                            }
                         }
                     }
                 }
