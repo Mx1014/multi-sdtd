@@ -132,6 +132,7 @@ public class CheckLiveTasksbController extends
 	@ApiOperation(value = "app隐患稽查任务完成按钮",notes = "app隐患稽查任务完成按钮")
 	@PostMapping("checkLiveTasksbComplete")
 	public WebApiResponse checkLiveTasksbComplete(XsSbYh yh){
+		//taskId是check_live_tasksb的id
 		try{
 			service.checkLiveTasksbComplete(yh);
 			return WebApiResponse.success("");
