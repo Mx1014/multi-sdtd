@@ -135,7 +135,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             } catch (NumberFormatException e) {
                 e.printStackTrace();
             }
-            // this.reposiotry.updateYh(Long.parseLong(yhId), lat, lon, radius);
+             this.reposiotry.updateYh(Long.parseLong(yhId), lat, lon, radius);
             this.reposiotry.updateCycle(Long.parseLong(yhId), lat, lon, radius);
             return WebApiResponse.success("保存成功");
         } catch (Exception e) {
@@ -534,15 +534,6 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         }
     }
 
-    public WebApiResponse updateYhjb(String yhjb) {
-        try {
-//            if (yhjb)
-            return WebApiResponse.success("");
-        } catch (Exception e) {
-            e.printStackTrace();
-            return WebApiResponse.erro("修改失败" + e.getMessage());
-        }
-    }
 
     public WebApiResponse lineArea(Integer id) {
         try {
