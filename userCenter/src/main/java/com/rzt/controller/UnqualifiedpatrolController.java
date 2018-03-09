@@ -131,7 +131,6 @@ public class UnqualifiedpatrolController extends CurdController<RztSysUser, Comm
                 "             FROM XS_ZC_TASK_EXEC_DETAIL d\n" +
                 "               LEFT JOIN XS_ZC_TASK_EXEC e ON d.XS_ZC_TASK_EXEC_ID = e.ID\n" +
                 "             WHERE IS_DW = 1 AND e.XS_ZC_TASK_ID IN (\n" +
-                "\n" +
                 "               SELECT\n" +
                 "         x.ID\n" +
                 "       FROM MONITOR_CHECK_EJ e LEFT JOIN XS_ZC_TASK x ON e.TASK_ID = x.ID\n" +
