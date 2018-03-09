@@ -164,18 +164,18 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
             String sql ="";
             //巡视的sql
             if(type==1){
-                sql = "SELECT   j.TASK_ID, j.CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,xs.PLAN_START_TIME,u.REALNAME FROM MONITOR_CHECK_YJ j " +
+                sql = "SELECT  j.ID,j.APP_RETURN_INFO,  j.TASK_ID, j.CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,xs.PLAN_START_TIME,u.REALNAME FROM MONITOR_CHECK_YJ j " +
                         " LEFT JOIN RZTSYSUSER u ON j.USER_ID=u.ID " +
                         "  LEFT JOIN XS_ZC_TASK xs ON j.TASK_ID=xs.ID where j.STATUS=0 AND j.USER_ID is NOT NULL AND u.USERDELETE=1  AND xs.IS_DELETE=0  and j.TASK_TYPE=" + type;
             }else if(type==2){
                 //看护的sql
-                sql = "SELECT   j.TASK_ID, j.CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,kh.PLAN_START_TIME,u.REALNAME FROM MONITOR_CHECK_YJ j " +
+                sql = "SELECT  j.ID,j.APP_RETURN_INFO,  j.TASK_ID, j.CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,kh.PLAN_START_TIME,u.REALNAME FROM MONITOR_CHECK_YJ j " +
                         "  LEFT JOIN RZTSYSUSER u ON j.USER_ID=u.ID " +
                         "  LEFT JOIN KH_TASK kh ON j.TASK_ID=kh.ID where j.STATUS=0 AND j.USER_ID is NOT NULL AND u.USERDELETE=1 and j.TASK_TYPE=" + type;
 
             }else if(type==3){
                 //现场稽查
-                sql = "SELECT   j.TASK_ID, j.CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,cl.PLAN_START_TIME,u.REALNAME FROM MONITOR_CHECK_YJ j " +
+                sql = "SELECT  j.ID,j.APP_RETURN_INFO,  j.TASK_ID, j.CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,cl.PLAN_START_TIME,u.REALNAME FROM MONITOR_CHECK_YJ j " +
                         " LEFT JOIN RZTSYSUSER u ON j.USER_ID=u.ID " +
                         "  LEFT JOIN CHECK_LIVE_TASK cl ON j.TASK_ID=cl.ID where j.STATUS=0 AND j.USER_ID is NOT NULL AND u.USERDELETE=1 and j.TASK_TYPE=" + type;
             }
@@ -187,18 +187,18 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
             //巡视的sql
             String sql="";
             if(type==1){
-                sql = "SELECT   j.TASK_ID, j.CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,xs.PLAN_START_TIME,u.REALNAME FROM MONITOR_CHECK_EJ j " +
+                sql = "SELECT  j.ID,j.APP_RETURN_INFO,  j.TASK_ID, j.CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,xs.PLAN_START_TIME,u.REALNAME FROM MONITOR_CHECK_EJ j " +
                         " LEFT JOIN RZTSYSUSER u ON j.USER_ID=u.ID " +
                         "  LEFT JOIN XS_ZC_TASK xs ON j.TASK_ID=xs.ID where j.STATUS=0 AND j.USER_ID is NOT NULL AND u.USERDELETE=1 AND xs.IS_DELETE=0  and j.TASK_TYPE=" + type;
             }else if(type==2){
                 //看护的sql
-                sql = "SELECT   j.TASK_ID, j.CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,kh.PLAN_START_TIME,u.REALNAME FROM MONITOR_CHECK_EJ j " +
+                sql = "SELECT   j.ID,j.APP_RETURN_INFO, j.TASK_ID, j.CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,kh.PLAN_START_TIME,u.REALNAME FROM MONITOR_CHECK_EJ j " +
                         " LEFT JOIN RZTSYSUSER u ON j.USER_ID=u.ID " +
                         "  LEFT JOIN KH_TASK kh ON j.TASK_ID=kh.ID where j.STATUS=0  AND j.USER_ID is NOT NULL AND u.USERDELETE=1 and j.TASK_TYPE=" + type;
 
             }else if(type==3){
                 //现场稽查
-                sql = "SELECT   j.TASK_ID, j.CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,cl.PLAN_START_TIME,u.REALNAME FROM MONITOR_CHECK_EJ j " +
+                sql = "SELECT   j.ID,j.APP_RETURN_INFO, j.TASK_ID, j.CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,cl.PLAN_START_TIME,u.REALNAME FROM MONITOR_CHECK_EJ j " +
                         " LEFT JOIN RZTSYSUSER u ON j.USER_ID=u.ID " +
                         "  LEFT JOIN CHECK_LIVE_TASK cl ON j.TASK_ID=cl.ID where j.STATUS=0  AND j.USER_ID is NOT NULL AND u.USERDELETE=1 and j.TASK_TYPE=" + type;
             }
@@ -288,16 +288,16 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
             String sql="";
             //巡视的sql
             if(type==1){
-                sql = "SELECT   j.TASK_ID, j.CREATE_TIME_Z AS CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,xs.PLAN_START_TIME FROM MONITOR_CHECK_YJ j " +
+                sql = "SELECT  j.ID,j.APP_RETURN_INFO,  j.TASK_ID, j.CREATE_TIME_Z AS CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,xs.PLAN_START_TIME FROM MONITOR_CHECK_YJ j " +
                         "  LEFT JOIN XS_ZC_TASK xs ON j.TASK_ID=xs.ID where j.STATUS=1 and j.TASK_TYPE=" + type;
             }else if(type==2){
                 //看护的sql
-                sql = "SELECT   j.TASK_ID, j.CREATE_TIME_Z AS CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,kh.PLAN_START_TIME FROM MONITOR_CHECK_YJ j " +
+                sql = "SELECT  j.ID,j.APP_RETURN_INFO,  j.TASK_ID, j.CREATE_TIME_Z AS CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,kh.PLAN_START_TIME FROM MONITOR_CHECK_YJ j " +
                         "  LEFT JOIN KH_TASK kh ON j.TASK_ID=kh.ID where j.STATUS=1 and j.TASK_TYPE=" + type;
 
             }else if(type==3){
                 //现场稽查
-                sql = "SELECT   j.TASK_ID, j.CREATE_TIME_Z AS CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,cl.PLAN_START_TIME FROM MONITOR_CHECK_YJ j " +
+                sql = "SELECT  j.ID,j.APP_RETURN_INFO,  j.TASK_ID, j.CREATE_TIME_Z AS CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,cl.PLAN_START_TIME FROM MONITOR_CHECK_YJ j " +
                         "  LEFT JOIN CHECK_LIVE_TASK cl ON j.TASK_ID=cl.ID where j.STATUS=1 and j.TASK_TYPE=" + type;
             }
             //查询所有
@@ -311,16 +311,16 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
             String sql="";
             //巡视的sql
             if(type==1){
-                sql = "SELECT   j.TASK_ID, j.CREATE_TIME_Z AS CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,xs.PLAN_START_TIME FROM MONITOR_CHECK_EJ j " +
+                sql = "SELECT  j.ID,j.APP_RETURN_INFO,  j.TASK_ID, j.CREATE_TIME_Z AS CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,xs.PLAN_START_TIME FROM MONITOR_CHECK_EJ j " +
                         "  LEFT JOIN XS_ZC_TASK xs ON j.TASK_ID=xs.ID where j.STATUS=1 and j.TASK_TYPE=" + type;
             }else if(type==2){
                 //看护的sql
-                sql = "SELECT   j.TASK_ID, j.CREATE_TIME_Z AS CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,kh.PLAN_START_TIME FROM MONITOR_CHECK_EJ j " +
+                sql = "SELECT  j.ID,j.APP_RETURN_INFO,  j.TASK_ID, j.CREATE_TIME_Z AS CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,kh.PLAN_START_TIME FROM MONITOR_CHECK_EJ j " +
                         "  LEFT JOIN KH_TASK kh ON j.TASK_ID=kh.ID where j.STATUS=1 and j.TASK_TYPE=" + type;
 
             }else if(type==3){
                 //现场稽查
-                sql = "SELECT   j.TASK_ID, j.CREATE_TIME_Z AS CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,cl.PLAN_START_TIME FROM MONITOR_CHECK_EJ j " +
+                sql = "SELECT  j.ID,j.APP_RETURN_INFO,  j.TASK_ID, j.CREATE_TIME_Z AS CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,cl.PLAN_START_TIME FROM MONITOR_CHECK_EJ j " +
                         "  LEFT JOIN CHECK_LIVE_TASK cl ON j.TASK_ID=cl.ID where j.STATUS=1 and j.TASK_TYPE=" + type;
             }
             //查询该deptId下的
@@ -401,16 +401,16 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
             String sql="";
             //巡视的sql
             if(type==1){
-                sql = "SELECT  j.TASK_ID, j.CREATE_TIME_C AS CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,xs.PLAN_START_TIME,j.CHECK_USER_ID,j.CHECK_DEPTID FROM MONITOR_CHECK_YJ j " +
+                sql = "SELECT j.ID,j.APP_RETURN_INFO,  j.TASK_ID, j.CREATE_TIME_C AS CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,xs.PLAN_START_TIME,j.CHECK_USER_ID,j.CHECK_DEPTID FROM MONITOR_CHECK_YJ j " +
                         "  LEFT JOIN XS_ZC_TASK xs ON j.TASK_ID=xs.ID where j.STATUS=2 and j.TASK_TYPE=" + type;
             }else if(type==2){
                 //看护的sql
-                sql = "SELECT  j.TASK_ID, j.CREATE_TIME_C AS CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,kh.PLAN_START_TIME,j.CHECK_USER_ID,j.CHECK_DEPTID FROM MONITOR_CHECK_YJ j " +
+                sql = "SELECT j.ID,j.APP_RETURN_INFO,  j.TASK_ID, j.CREATE_TIME_C AS CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,kh.PLAN_START_TIME,j.CHECK_USER_ID,j.CHECK_DEPTID FROM MONITOR_CHECK_YJ j " +
                         "  LEFT JOIN KH_TASK kh ON j.TASK_ID=kh.ID where j.STATUS=2 and j.TASK_TYPE=" + type;
 
             }else if(type==3){
                 //现场稽查
-                sql = "SELECT   j.TASK_ID, j.CREATE_TIME_C AS CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,cl.PLAN_START_TIME,j.CHECK_USER_ID,j.CHECK_DEPTID FROM MONITOR_CHECK_YJ j " +
+                sql = "SELECT j.ID,j.APP_RETURN_INFO,   j.TASK_ID, j.CREATE_TIME_C AS CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,cl.PLAN_START_TIME,j.CHECK_USER_ID,j.CHECK_DEPTID FROM MONITOR_CHECK_YJ j " +
                         "  LEFT JOIN CHECK_LIVE_TASK cl ON j.TASK_ID=cl.ID where j.STATUS=2 and j.TASK_TYPE=" + type;
             }
             //查询所有
@@ -421,16 +421,16 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
             String sql="";
             //巡视的sql
             if(type==1){
-                sql = "SELECT  j.TASK_ID, j.CREATE_TIME_C AS CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,xs.PLAN_START_TIME,j.CHECK_USER_ID,j.CHECK_DEPTID FROM MONITOR_CHECK_EJ j " +
+                sql = "SELECT j.ID,j.APP_RETURN_INFO,  j.TASK_ID, j.CREATE_TIME_C AS CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,xs.PLAN_START_TIME,j.CHECK_USER_ID,j.CHECK_DEPTID FROM MONITOR_CHECK_EJ j " +
                         "  LEFT JOIN XS_ZC_TASK xs ON j.TASK_ID=xs.ID where j.STATUS=2 and j.TASK_TYPE=" + type;
             }else if(type==2){
                 //看护的sql
-                sql = "SELECT  j.TASK_ID, j.CREATE_TIME_C AS CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,kh.PLAN_START_TIME,j.CHECK_USER_ID,j.CHECK_DEPTID FROM MONITOR_CHECK_EJ j " +
+                sql = "SELECT j.ID,j.APP_RETURN_INFO,  j.TASK_ID, j.CREATE_TIME_C AS CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,kh.PLAN_START_TIME,j.CHECK_USER_ID,j.CHECK_DEPTID FROM MONITOR_CHECK_EJ j " +
                         "  LEFT JOIN KH_TASK kh ON j.TASK_ID=kh.ID where j.STATUS=2 and j.TASK_TYPE=" + type;
 
             }else if(type==3){
                 //现场稽查
-                sql = "SELECT   j.TASK_ID, j.CREATE_TIME_C AS CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,cl.PLAN_START_TIME,j.CHECK_USER_ID,j.CHECK_DEPTID FROM MONITOR_CHECK_EJ j " +
+                sql = "SELECT j.ID,j.APP_RETURN_INFO,   j.TASK_ID, j.CREATE_TIME_C AS CREATE_TIME,j.TASK_NAME,j.TASK_TYPE,j.USER_ID,j.DEPTID,j.WARNING_TYPE,j.REASON,cl.PLAN_START_TIME,j.CHECK_USER_ID,j.CHECK_DEPTID FROM MONITOR_CHECK_EJ j " +
                         "  LEFT JOIN CHECK_LIVE_TASK cl ON j.TASK_ID=cl.ID where j.STATUS=2 and j.TASK_TYPE=" + type;
             }
             //查询该deptId下的
