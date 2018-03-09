@@ -164,8 +164,8 @@ public class CheckLiveTasksbService extends CurdService<CheckLiveTasksb,CheckLiv
 
     @Transactional
     public void checkLiveTasksbComplete(XsSbYh yh) {
-
-        //reposiotry.updateCheckLiveTasksbStatus(4,id);
+        reposiotry.updateXsSbYh(yh.getYhjb(),yh.getYhjb1(),yh.getYhlb(),yh.getYhms(),yh.getYhtdqx(),yh.getYhtdxzjd(),yh.getYhtdc(),yh.getGkcs(),yh.getJsp(),yh.getYhxcyy(),yh.getYhzrdw(),yh.getYhzrdwlxr(),yh.getYhzrdwdh(),yh.getId());
+        reposiotry.updateCheckLiveTasksbStatus(3,yh.getTaskId());
     }
 
 

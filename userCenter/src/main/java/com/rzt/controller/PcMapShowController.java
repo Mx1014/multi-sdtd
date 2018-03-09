@@ -204,7 +204,9 @@ public class PcMapShowController {
 
             if (!allMen.containsKey(userid)) {
                 //注意这个地方
-                iterator.remove();
+                //iterator.remove();
+                //现在没有任务的也要展示了 龚轩看这里
+                men.put("gzlx",-1);
             } else {
                 men.put("statuts", allMen.get(userid));
             }
