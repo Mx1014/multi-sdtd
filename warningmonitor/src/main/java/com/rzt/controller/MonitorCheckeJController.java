@@ -120,13 +120,13 @@ public class MonitorCheckeJController extends
 	 * @return
 	 */
 	@PostMapping("GJCL")
-	public WebApiResponse GJCL(String currentUserId, Long taskId, Integer type, Integer warningType, String checkInfo, String checkAppInfo, String createTime){
-		return ejService.GJCL(currentUserId,taskId,type,warningType,checkInfo,checkAppInfo,createTime);
+	public WebApiResponse GJCL(String currentUserId, Long taskId, Integer type, Integer warningType, String checkInfo, String checkAppInfo, String createTime,String checkMode){
+		return ejService.GJCL(currentUserId,taskId,type,warningType,checkInfo,checkAppInfo,createTime,checkMode);
 	}
 
 	@PostMapping("GJCLC")
-	public WebApiResponse GJCLC(String currentUserId,Long taskId,Integer type,Integer warningType,String checkInfo, String createTime){
-		return ejService.GJCLC(currentUserId,taskId,type,warningType,checkInfo,createTime);
+	public WebApiResponse GJCLC(String currentUserId,Long taskId,Integer type,Integer warningType,String checkInfo, String createTime,String checkMode){
+		return ejService.GJCLC(currentUserId,taskId,type,warningType,checkInfo,createTime,checkMode);
 	}
 
 	/**

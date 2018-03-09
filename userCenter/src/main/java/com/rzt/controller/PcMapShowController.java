@@ -204,7 +204,9 @@ public class PcMapShowController {
 
             if (!allMen.containsKey(userid)) {
                 //注意这个地方
-                iterator.remove();
+                //iterator.remove();
+                //现在没有任务的也要展示了 龚轩看这里
+                men.put("gzlx",-1);
             } else {
                 men.put("statuts", allMen.get(userid));
             }
@@ -385,7 +387,7 @@ public class PcMapShowController {
         List<Object> list1 = new ArrayList<>();
         for (Map map : list) {
             if (map != null && map.size() > 0 && map.get("JD") != null) {
-                sql = "select u.realname from kh_site s left join rztsysuser u on u.id =s.user_id where yh_id=?";
+                sql = "select u.realname from kh_site s left join rztsysuser u on u.id =s.user_id where yh_id=? and s.status=1";
                 List<Map<String, Object>> nameList = cmcoordinateService.execSql(sql, Long.parseLong(map.get("ID").toString()));
                 String realname = "";
                 map.put("USERNAME", "无");
