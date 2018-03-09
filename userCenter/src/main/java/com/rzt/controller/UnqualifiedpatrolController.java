@@ -25,7 +25,7 @@ public class UnqualifiedpatrolController extends CurdController<RztSysUser, Comm
     private RedisTemplate<String, Object> redisTemplate;
 
     @RequestMapping("unqualifiedpatrolList")
-    public WebApiResponse unqualifiedpatrolList(String loginstatus, String taskname, String companyid, Integer page, Integer size, String currentUserId, String startTime, String endTime, String deptId, String userName) {
+    public WebApiResponse unqualifiedpatrolList(Integer status, String loginstatus, String taskname, String companyid, Integer page, Integer size, String currentUserId, String startTime, String endTime, String deptId, String userName) {
         JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", currentUserId).toString());
         int roletype = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
         Object deptid = jsonObject.get("DEPTID");
@@ -67,6 +67,13 @@ public class UnqualifiedpatrolController extends CurdController<RztSysUser, Comm
             s += " AND x.TASK_NAME LIKE ?" + listLike.size();
 //            s += " AND TASK_NAME LIKE ?" + listLike.size();
         }
+        if (!StringUtils.isEmpty(status)) {
+            listLike.add(status);
+            s += "  AND STATUS = ?" + listLike.size();
+        } else {
+            listLike.add(0);
+            s += "  AND STATUS = ?" + listLike.size();
+        }
         if (!StringUtils.isEmpty(loginstatus)) {
             listLike.add(loginstatus);
             s += " AND u.LOGINSTATUS  = ?" + listLike.size();
@@ -76,33 +83,61 @@ public class UnqualifiedpatrolController extends CurdController<RztSysUser, Comm
 //        String sql = "SELECT e.CREATE_TIME,x.TASK_NAME,u.DEPT,u.COMPANYNAME,u.CLASSNAME,u.REALNAME,u.PHONE, '巡视超速' as  type,e.REASON,e.TASK_ID,e.USER_ID,e.TASK_TYPE,u.LOGINSTATUS " +
 //                "      FROM MONITOR_CHECK_EJ e LEFT JOIN XS_ZC_TASK x ON e.TASK_ID=x.ID LEFT JOIN USERINFO u ON x.CM_USER_ID = u.ID" +
 //                "      WHERE (WARNING_TYPE = 5 OR WARNING_TYPE = 3)  " + s + "";
-        String sql = " SELECT a.*,w.WARNING_NAME AS type  FROM (\n" +
-                "SELECT\n" +
-                "  e.CREATE_TIME,\n" +
-                "  x.TASK_NAME,\n" +
-                "  u.DEPT,\n" +
-                "  u.COMPANYNAME,\n" +
-                "  u.CLASSNAME,\n" +
-                "  u.REALNAME,\n" +
-                "  u.PHONE,\n" +
-                "  WARNING_TYPE,\n" +
-                "  e.REASON,\n" +
-                "  e.TASK_ID,\n" +
-                "  e.USER_ID,\n" +
-                "  e.TASK_TYPE,\n" +
-                "  u.LOGINSTATUS\n" +
-                "FROM MONITOR_CHECK_EJ e LEFT JOIN XS_ZC_TASK x ON e.TASK_ID = x.ID\n" +
-                "  LEFT JOIN USERINFO u ON x.CM_USER_ID = u.ID\n" +
-                "WHERE (WARNING_TYPE = 5 OR WARNING_TYPE = 3)  AND STATUS = 0 AND TASK_STATUS = 0  " + s + " ) a LEFT JOIN WARNING_TYPE w ON a.WARNING_TYPE = w.WARNING_TYPE\n ";
-        /* String sql = " SELECT *" +
-                "         FROM (SELECT e.CREATE_TIME,x.TASK_NAME,u.DEPT,u.COMPANYNAME,u.CLASSNAME,u.REALNAME,u.PHONE, '巡视超速' as  type,e.REASON" +
-                "      FROM MONITOR_CHECK_EJ e LEFT JOIN XS_ZC_TASK x ON e.TASK_ID=x.ID LEFT JOIN USERINFO u ON x.CM_USER_ID = u.ID" +
-                "      WHERE WARNING_TYPE = 5 "+s+" )" +
-                "        UNION ALL" +
-                "    SELECT * FROM (SELECT e.CREATE_TIME,x.TASK_NAME,u.DEPT,u.COMPANYNAME,u.CLASSNAME,u.REALNAME,u.PHONE, '未到位' as  type,e.REASON" +
-                "                   FROM MONITOR_CHECK_EJ e LEFT JOIN XS_ZC_TASK x ON e.TASK_ID=x.ID LEFT JOIN USERINFO u ON x.CM_USER_ID = u.ID" +
-                "                   WHERE WARNING_TYPE = 3  "+s+"  )";*/
-//        String sql = " SELECT * FROM UNQUALIFIEDPATROLTABLE where 1 = 1  " + s;
+//        String sql = " SELECT a.*,w.WARNING_NAME AS type  FROM (\n" +
+//                "SELECT\n" +
+//                "  e.CREATE_TIME,\n" +
+//                "  x.TASK_NAME,\n" +
+//                "  u.DEPT,\n" +
+//                "  u.COMPANYNAME,\n" +
+//                "  u.CLASSNAME,\n" +
+//                "  u.REALNAME,\n" +
+//                "  u.PHONE,\n" +
+//                "  WARNING_TYPE,\n" +
+//                "  e.REASON,\n" +
+//                "  e.TASK_ID,\n" +
+//                "  e.USER_ID,\n" +
+//                "  e.TASK_TYPE,\n" +
+//                "  u.LOGINSTATUS\n" +
+//                "FROM MONITOR_CHECK_EJ e LEFT JOIN XS_ZC_TASK x ON e.TASK_ID = x.ID\n" +
+//                "  LEFT JOIN USERINFO u ON x.CM_USER_ID = u.ID\n" +
+//                "WHERE (WARNING_TYPE = 5 OR WARNING_TYPE = 3)  AND TASK_STATUS = 0  " + s + " ) a LEFT JOIN WARNING_TYPE w ON a.WARNING_TYPE = w.WARNING_TYPE  ";
+        String sql = " SELECT\n" +
+                "  a.*,\n" +
+                "  w.WARNING_NAME AS type,\n" +
+                "  de.count\n" +
+                "FROM (\n" +
+                "       SELECT\n" +
+                "         e.CREATE_TIME,\n" +
+                "         x.TASK_NAME,\n" +
+                "         u.DEPT,\n" +
+                "         u.COMPANYNAME,\n" +
+                "         u.CLASSNAME,\n" +
+                "         u.REALNAME,\n" +
+                "         u.PHONE,\n" +
+                "         WARNING_TYPE,\n" +
+                "         e.REASON,\n" +
+                "         e.TASK_ID,\n" +
+                "         e.USER_ID,\n" +
+                "         e.TASK_TYPE,\n" +
+                "         u.LOGINSTATUS\n" +
+                "       FROM MONITOR_CHECK_EJ e LEFT JOIN XS_ZC_TASK x ON e.TASK_ID = x.ID\n" +
+                "         LEFT JOIN USERINFO u ON x.CM_USER_ID = u.ID\n" +
+                "       WHERE (WARNING_TYPE = 5 OR WARNING_TYPE = 3)  AND TASK_STATUS = 0  " + s +
+                "             ) a LEFT JOIN WARNING_TYPE w\n" +
+                "    ON a.WARNING_TYPE = w.WARNING_TYPE\n" +
+                "  LEFT JOIN (SELECT\n" +
+                "               count(1) AS count,\n" +
+                "               e.XS_ZC_TASK_ID\n" +
+                "             FROM XS_ZC_TASK_EXEC_DETAIL d\n" +
+                "               LEFT JOIN XS_ZC_TASK_EXEC e ON d.XS_ZC_TASK_EXEC_ID = e.ID\n" +
+                "             WHERE IS_DW = 1 AND e.XS_ZC_TASK_ID IN (\n" +
+                "               SELECT\n" +
+                "         x.ID\n" +
+                "       FROM MONITOR_CHECK_EJ e LEFT JOIN XS_ZC_TASK x ON e.TASK_ID = x.ID\n" +
+                "         LEFT JOIN USERINFO u ON x.CM_USER_ID = u.ID\n" +
+                "       WHERE (WARNING_TYPE = 5 OR WARNING_TYPE = 3)  AND TASK_STATUS = 0  " + s +
+                "             )\n" +
+                "             GROUP BY e.XS_ZC_TASK_ID) de ON a.TASK_ID = de.XS_ZC_TASK_ID  ";
         try {
             return WebApiResponse.success(this.service.execSqlPage(pageable, sql, listLike.toArray()));
         } catch (Exception e) {
