@@ -492,7 +492,7 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
 
     //未处理到处理中处理
     @Transactional
-    public WebApiResponse GJCL(String userId, Long taskId, Integer type, Integer warningType, String checkInfo, String checkAppInfo, String createTime) {
+    public WebApiResponse GJCL(String userId, Long taskId, Integer type, Integer warningType, String checkInfo, String checkAppInfo, String createTime,String checkMode) {
         String deptId = getDeptID(userId);
         if (deptId == null) {
             return WebApiResponse.erro("该用户状态为null");
@@ -505,9 +505,9 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
         //0表示是一级单位
         try {
             if ("0".equals(deptId)) {
-                return WebApiResponse.success(resp.updateYJ(taskId, type, warningType, checkInfo, checkAppInfo,createTime));
+                return WebApiResponse.success(resp.updateYJ(taskId, type, warningType, checkInfo, checkAppInfo,createTime,checkMode));
             } else {
-                return WebApiResponse.success(resp.updateEJ(taskId, type, warningType, checkInfo, checkAppInfo,createTime));
+                return WebApiResponse.success(resp.updateEJ(taskId, type, warningType, checkInfo, checkAppInfo,createTime,checkMode));
             }
         } catch (Exception e) {
             return WebApiResponse.erro("添加失败" + e.getMessage());
@@ -516,7 +516,7 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
 
     //处理中到已处理处理
     @Transactional
-    public WebApiResponse GJCLC(String userId, Long taskId, Integer type, Integer warningType, String checkInfo, String createTime) {
+    public WebApiResponse GJCLC(String userId, Long taskId, Integer type, Integer warningType, String checkInfo, String createTime,String checkMode) {
         String deptId = getDeptID(userId);
         if (deptId == null) {
             return WebApiResponse.erro("该用户状态为null");
@@ -525,9 +525,9 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
         //0表示是一级单位
         try {
             if ("0".equals(deptId)) {
-                return WebApiResponse.success(resp.updateYJC(taskId, type, warningType, checkInfo, userId,createTime));
+                return WebApiResponse.success(resp.updateYJC(taskId, type, warningType, checkInfo, userId,createTime,checkMode));
             } else {
-                return WebApiResponse.success(resp.updateEJC(taskId, type, warningType, checkInfo, userId,createTime));
+                return WebApiResponse.success(resp.updateEJC(taskId, type, warningType, checkInfo, userId,createTime,checkMode));
             }
         } catch (Exception e) {
             return WebApiResponse.erro("添加失败" + e.getMessage());
