@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-@ServerEndpoint("/serverendpoint/firstlevelcommand/{currentUserId}/{mapType}/{type}")
+@ServerEndpoint("/serverendpoint/firstlevelcommand/{currentUserId}/{mapType}/{type}/{tableType}")
 public class FirstLevelCommandServerEndpoint {
     static RedisTemplate<String, Object> redisTemplate;
     private static FirstLevelCommandPushService firstLevelCommandPushService;
@@ -40,7 +40,7 @@ public class FirstLevelCommandServerEndpoint {
      * @param session
      */
     @OnOpen
-    public void openSession(@PathParam("currentUserId") String currentUserId, @PathParam("mapType") String mapType, @PathParam("type") String type, Session session) {
+    public void openSession(@PathParam("currentUserId") String currentUserId, @PathParam("mapType") String mapType, @PathParam("type") String type, @PathParam("tableType") String tableType, Session session) {
         JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", currentUserId).toString());
         HashMap h = new HashMap();
         String sessionId = session.getId();
@@ -48,6 +48,7 @@ public class FirstLevelCommandServerEndpoint {
         h.put("jsonObject", jsonObject);
         h.put("mapType", mapType);
         h.put("type", type);
+        h.put("tableType", tableType);
         h.put("DEPTID", jsonObject.get("DEPTID"));
         livingSessions.put(sessionId, h);
         firstLevelCommandPushService.adminModule1();
@@ -59,6 +60,7 @@ public class FirstLevelCommandServerEndpoint {
         firstLevelCommandPushService.adminModule6_1();
         firstLevelCommandPushService.adminModule7();
         firstLevelCommandPushService.adminModule8();
+        firstLevelCommandPushService.adminModule20();
     }
 
     public Map<String, HashMap> sendMsg() {
