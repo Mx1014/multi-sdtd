@@ -531,7 +531,7 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
 //                    "  AND ej.TASK_ID=t.FK_TASK_ID\n" +
 //                    " WHERE ej.WARNING_TYPE = 7 AND trunc(t.START_TIME) = trunc(sysdate)  AND OVER_STATUS = 1 ";
             String temporarily = " SELECT\n" +
-                    "     count(1) as TEMPORARILY\n" +
+                    "     count(DISTINCT t.FK_USER_ID) as TEMPORARILY\n" +
                     "   FROM WARNING_OFF_POST_USER u\n" +
                     "     LEFT JOIN WARNING_OFF_POST_USER_TIME t ON u.USER_ID = t.FK_USER_ID AND u.TASK_ID = t.FK_TASK_ID\n" +
                     "   WHERE 1 = 1 AND trunc(t.START_TIME) = trunc(sysdate) AND t.OVER_STATUS = 1 ";
