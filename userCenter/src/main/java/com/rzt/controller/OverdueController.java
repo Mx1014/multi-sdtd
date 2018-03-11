@@ -157,7 +157,7 @@ public class OverdueController extends CurdController<RztSysUser, CommonService>
         //当前 0 当天 1
         if (!StringUtils.isEmpty(tableType)) {
             if (tableType == 0) {
-                s += " AND STATUS = 0  AND USER_ID !='null' AND TASK_STATUS=0 AND USER_LOGIN_TYPE = 0 ";
+                s += " AND STATUS = 0  AND TASK_STATUS = 0 ";
             }
             if (!StringUtils.isEmpty(startTime) && !StringUtils.isEmpty(endTime)) {
                 listLike.add(startTime);
