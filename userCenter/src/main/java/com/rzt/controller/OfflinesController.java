@@ -132,11 +132,13 @@ public class OfflinesController extends CurdController<RztSysUser, CommonService
                 "         u.WORKTYPE AS WORKTYPEs, " +
                 "        e.a               AS MORE, " +
                 "        u.DEPTID, " +
-                "        e.CREATE_TIME  -90/(60*24) AS CREATE_TIME" +
+                "        e.CREATE_TIME  -90/(60*24) AS CREATE_TIME," +
+                "      e.timeLong  " +
                 "      FROM (SELECT " +
                 "              count(1)                                                            AS a, " +
                 "              ej.USER_ID, " +
-                "              MAX(ej.CREATE_TIME)                                                 AS CREATE_TIME " +
+                "              MAX(ej.CREATE_TIME)                                                 AS CREATE_TIME, " +
+                "           sum(ROUND(TO_NUMBER(nvl(ONLINE_TIME,sysdate) - (CREATE_TIME-90/(60*24))) * 24 * 60 * 60)) timeLong  " +
 
                 "            FROM MONITOR_CHECK_EJ ej " +
                 "            WHERE (ej.WARNING_TYPE = 8 OR ej.WARNING_TYPE = 2 OR WARNING_TYPE = 13 )  AND STATUS = 0  AND USER_ID !='null' AND TASK_STATUS=0 AND USER_LOGIN_TYPE = 0  " + s +
@@ -211,11 +213,13 @@ public class OfflinesController extends CurdController<RztSysUser, CommonService
                 "         u.WORKTYPE AS WORKTYPEs, " +
                 "        e.a               AS MORE, " +
                 "        u.DEPTID, " +
-                "        e.CREATE_TIME  -90/(60*24) AS CREATE_TIME" +
+                "        e.CREATE_TIME  -90/(60*24) AS CREATE_TIME," +
+                "      e.timeLong  " +
                 "      FROM (SELECT " +
                 "              count(1)                                                            AS a, " +
                 "              ej.USER_ID, " +
-                "              MAX(ej.CREATE_TIME)                                                 AS CREATE_TIME " +
+                "              MAX(ej.CREATE_TIME)                                                 AS CREATE_TIME, " +
+                "           sum(ROUND(TO_NUMBER(nvl(ONLINE_TIME,sysdate) - (CREATE_TIME-90/(60*24))) * 24 * 60 * 60)) timeLong  " +
 
                 "            FROM MONITOR_CHECK_EJ ej " +
                 "            WHERE (ej.WARNING_TYPE = 8 OR ej.WARNING_TYPE = 2 OR WARNING_TYPE = 13 )  " + s +
