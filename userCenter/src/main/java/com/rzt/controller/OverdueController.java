@@ -181,18 +181,14 @@ public class OverdueController extends CurdController<RztSysUser, CommonService>
         if (!StringUtils.isEmpty(deptId)) {
             roletype = 1;
             listLike.add(deptId);
-            s1 = " u.DEPTID =  ?" + listLike.size();
-            listLike.add(deptId);
-            s3 = " ID =  ?" + listLike.size();
-            listLike.add("%" + deptId + "%");
-            s4 = " ORGID LIKE ?" + listLike.size();
+            s1 = "  AND u.DEPTID =  ?" + listLike.size();
+            s3 = "  ID =  '" + deptId + "'";
+            s4 = "  AND ORGID LIKE '%" + deptId + "%'";
         } else if (roletype == 1 || roletype == 2) {
             listLike.add(deptid);
-            s1 = " u.DEPTID =  ?" + listLike.size();
-            listLike.add(deptid);
-            s3 = " ID =  ?" + listLike.size();
-            listLike.add("%" + deptid + "%");
-            s4 = " ORGID LIKE ?" + listLike.size();
+            s1 = "  AND u.DEPTID =  ?" + listLike.size();
+            s3 = " ID =  '" + deptid + "'";
+            s4 = "  AND ORGID LIKE '%" + deptid + "%'";
         }
         if (!StringUtils.isEmpty(companyid)) {
             listLike.add(companyid);
@@ -207,7 +203,7 @@ public class OverdueController extends CurdController<RztSysUser, CommonService>
             s1 += " AND u.LOGINSTATUS = ?" + listLike.size();
         }
         if (roletype == 0) {
-            String overdue = " SELECT nvl(a.OVERDUEDEPT,0) AS OVERDUEDEPT,r.DEPTNAME,r.ID\n" +
+            String overdue = " SELECT nvl(a.OVERDUEDEPT,0) AS VALUE,r.DEPTNAME as NAME,r.ID\n" +
                     "FROM (\n" +
                     "       SELECT\n" +
                     "         count(1) AS OVERDUEDEPT,\n" +
@@ -224,7 +220,7 @@ public class OverdueController extends CurdController<RztSysUser, CommonService>
                     "       GROUP BY u.DEPTID) A RIGHT JOIN (SELECT ID,DEPTNAME " +
                     "                                        FROM RZTSYSDEPARTMENT\n" +
                     "                                        WHERE DEPTSORT IS NOT NULL ORDER BY DEPTSORT) R ON a.DEPTID = r.ID ";
-            String OVERDUECOMPANY = " SELECT b.ID,b.COMPANYNAME,nvl(a.OVERDUECOMPANY,0) as OVERDUECOMPANY\n" +
+            String OVERDUECOMPANY = " SELECT b.ID,b.COMPANYNAME as NAME,nvl(a.OVERDUECOMPANY,0) as VALUE\n" +
                     "FROM (SELECT\n" +
                     "        count(1) AS OVERDUECOMPANY,\n" +
                     "        u.COMPANYID\n" +
@@ -255,8 +251,8 @@ public class OverdueController extends CurdController<RztSysUser, CommonService>
         }
         if (roletype == 1 || roletype == 2) {
             String overdue = " SELECT\n" +
-                    "  nvl(a.OVERDUEDEPT, 0) AS OVERDUEDEPT,\n" +
-                    "  r.DEPTNAME,\n" +
+                    "  nvl(a.OVERDUEDEPT, 0) AS VALUE,\n" +
+                    "  r.DEPTNAME AS NAME,\n" +
                     "  r.ID\n" +
                     "FROM (\n" +
                     "       SELECT\n" +
@@ -284,8 +280,8 @@ public class OverdueController extends CurdController<RztSysUser, CommonService>
                     "                                        WHERE LASTNODE = 0) R ON a.CLASSNAME = r.ID\n ";
             String OVERDUECOMPANY = " SELECT\n" +
                     "  b.ID,\n" +
-                    "  b.COMPANYNAME,\n" +
-                    "  nvl(a.OVERDUECOMPANY, 0) AS OVERDUECOMPANY\n" +
+                    "  b.COMPANYNAME AS NAME,\n" +
+                    "  nvl(a.OVERDUECOMPANY, 0) AS VALUE\n" +
                     "FROM (SELECT\n" +
                     "        count(1) AS OVERDUECOMPANY,\n" +
                     "        u.COMPANYID\n" +
