@@ -189,8 +189,8 @@ public class OverdueController extends CurdController<RztSysUser, CommonService>
             s1 = " u.DEPTID =  ?" + listLike.size();
             listLike.add(deptid);
             s3 = " ID =  ?" + listLike.size();
-            listLike.add(deptid);
-            s4 = " ORGID = ?" + listLike.size();
+            listLike.add("%" + deptid + "%");
+            s4 = " ORGID LIKE ?" + listLike.size();
         }
         if (!StringUtils.isEmpty(companyid)) {
             listLike.add(companyid);
