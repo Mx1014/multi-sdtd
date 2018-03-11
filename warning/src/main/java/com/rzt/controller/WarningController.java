@@ -96,7 +96,7 @@ public class WarningController extends CurdController<OffPostUser,WarningOffPost
 		for (Map<String, Object> map :maps){
 			Long fk_task_id = Long.parseLong(map.get("FK_TASK_ID").toString());
 			//判断该任务是不是在进行中，只有进行中才进行报警
-			String sql1 = "SELECT * FROM KH_TASK WHERE ID=1? AND STATUS=1";
+			String sql1 = "SELECT * FROM KH_TASK WHERE ID=?1 AND STATUS=1";
 
             List<Map<String, Object>> maps1 = service.execSql(sql1, fk_task_id);
             if(maps1.size()>0){

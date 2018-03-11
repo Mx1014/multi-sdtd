@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-@ServerEndpoint("/serverendpoint/twolevelcommand/{currentUserId}/{mapType}/{type}")
+@ServerEndpoint("/serverendpoint/twolevelcommand/{currentUserId}/{mapType}/{type}/{tableType}")
 public class TwoLevelCommandServerEndpoint {
     static RedisTemplate<String, Object> redisTemplate;
     private static TwoLevelCommandPushService twoLevelCommandPushService;
@@ -41,7 +41,7 @@ public class TwoLevelCommandServerEndpoint {
      * @param session
      */
     @OnOpen
-    public void openSession(@PathParam("currentUserId") String currentUserId, @PathParam("mapType") String mapType, @PathParam("type") String type, Session session) {
+    public void openSession(@PathParam("currentUserId") String currentUserId, @PathParam("mapType") String mapType, @PathParam("type") String type, @PathParam("tableType") String tableType, Session session) {
         JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", currentUserId).toString());
         HashMap<String, Object> h = new HashMap();
         String sessionId = session.getId();
@@ -50,6 +50,7 @@ public class TwoLevelCommandServerEndpoint {
         h.put("DEPT", jsonObject.get("DEPT"));
         h.put("mapType", mapType);
         h.put("type", type);
+        h.put("tableType", tableType);
         livingSessions.put(sessionId, h);
         twoLevelCommandPushService.adminModule1();
         twoLevelCommandPushService.adminModule2();
@@ -59,6 +60,7 @@ public class TwoLevelCommandServerEndpoint {
         twoLevelCommandPushService.adminModule6();
         twoLevelCommandPushService.adminModule7();
         twoLevelCommandPushService.adminModule8();
+        twoLevelCommandPushService.adminModule20();
     }
 
     public Map<String, HashMap> sendMsg() {
