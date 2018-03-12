@@ -190,7 +190,7 @@ public class CheckLiveTasksbService extends CurdService<CheckLiveTasksb,CheckLiv
 
 
     public Map<String,Object> checkLiveTasksbDetail(Long id) {
-        String sql1 = "select t.task_name,h.yhfxsj,t.plan_start_time,t.plan_end_time,t.td_org_name,h.id yhid,t.status from check_live_tasksb t,XS_SB_YH h where t.yhsb_id=h.id and t.id =? ";
+        String sql1 = "select t.task_id activity_id,t.task_name,h.yhfxsj,t.plan_start_time,t.plan_end_time,t.td_org_name,h.id yhid,t.status from check_live_tasksb t,XS_SB_YH h where t.yhsb_id=h.id and t.id =? ";
         String sql2 = "select create_time,file_path from picture_yh where yh_id = ? ";
 
         Map<String, Object> map = new HashMap<>();
