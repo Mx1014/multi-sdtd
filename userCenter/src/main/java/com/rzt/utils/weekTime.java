@@ -11,7 +11,8 @@ public class weekTime {
         Map map = new HashMap();
         try {
             Calendar cal = Calendar.getInstance();
-            cal.setTime(new SimpleDateFormat("yyyy-MM-dd").parse("2018-03-11"));
+            String data = cal.get(Calendar.YEAR) + "-" + (cal.get(Calendar.MONTH) + 1) + "-" + cal.get(Calendar.DAY_OF_MONTH);
+            cal.setTime(new SimpleDateFormat("yyyy-MM-dd").parse(data));
             int d = 0;
             if (cal.get(Calendar.DAY_OF_WEEK) == 1) {
                 d = -6;

@@ -93,18 +93,9 @@ public class DefectServiceImpl   extends CurdService<CheckResult, CheckResultRep
             for (Task task : list) {
                 HashMap<String, Object> map = new HashMap<>();
                 String realname = "";
-                System.out.println("当前任务  "+task);
-                System.out.println(task.getId());
 
                 Object qxId =  taskService.getVariable(task.getId(), "qxId");
                 Object info =  taskService.getVariable(task.getId(), "info");
-                System.out.println("########################################################");
-                System.out.println("任务ID:"+task.getId());
-                System.out.println("任务名称:"+task.getName());
-                System.out.println("任务的创建时间:"+task.getCreateTime());
-                System.out.println("任务的办理人:"+task.getAssignee());
-                System.out.println("流程实例ID："+task.getProcessInstanceId());
-                System.out.println("########################################################");
                 map.put("qxId",qxId);
                 map.put("info",info);
                 map.put("acTaskId",task.getId());
@@ -191,9 +182,6 @@ public class DefectServiceImpl   extends CurdService<CheckResult, CheckResultRep
      */
     @Override
     public void complete(String taskId, Map<String, Object> map) {
-        System.out.println(taskId);
-        System.out.println(map);
-
         taskService.complete(taskId,map);
 
     }

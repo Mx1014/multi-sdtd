@@ -49,7 +49,6 @@ public class XSCycleController {
     public WebApiResponse complete(String taskId,String XSID,String flag,String info,String currentUserId){
         if(null != flag && "0".equals(flag)){
         //说明不同意变更计划取消任务
-            System.out.println("取消了变更计划");
         }
         Map<String, Object> map = new HashMap<>();
         map.put("taskId",taskId);
@@ -112,6 +111,12 @@ public class XSCycleController {
         return WebApiResponse.success("");
 
     }
+
+
+
+
+
+
 
 
 
