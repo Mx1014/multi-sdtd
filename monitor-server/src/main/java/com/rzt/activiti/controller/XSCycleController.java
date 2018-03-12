@@ -112,21 +112,7 @@ public class XSCycleController {
 
     }
 
-    /**
-     * 测试
-     * @param deptId
-     * @param startTime
-     * @param endTime
-     * @param wx
-     * @param taskType
-     * @param interval
-     * @return
-     */
-    @GetMapping("/test")
-    public WebApiResponse test(String deptId,String startTime,String endTime,
-                               String wx,String taskType,String interval){
-        return xsCycleService.findOverdue(deptId,startTime,endTime,wx,taskType,interval);
-    }
+
 
 
 
