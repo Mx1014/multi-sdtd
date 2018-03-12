@@ -100,7 +100,9 @@ public class TwoLevelCommandServerEndpoint {
         RemoteEndpoint.Basic basic = session.getBasicRemote();
         try {
             String s = JSONObject.toJSONString(message);
-            basic.sendText(s);
+            synchronized (basic) {
+                basic.sendText(s);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
