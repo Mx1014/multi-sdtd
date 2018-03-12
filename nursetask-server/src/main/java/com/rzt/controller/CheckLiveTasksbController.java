@@ -6,6 +6,7 @@
  */
 package com.rzt.controller;
 
+import com.rzt.config.MonitorFeign;
 import com.rzt.entity.CheckLiveTasksb;
 import com.rzt.entity.XsSbYh;
 import com.rzt.service.CheckLiveTasksbService;
@@ -13,6 +14,7 @@ import com.rzt.util.WebApiResponse;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -35,6 +37,9 @@ import java.util.Map;
 @RequestMapping("CheckLiveTasksb")
 public class CheckLiveTasksbController extends
 		CurdController<CheckLiveTasksb,CheckLiveTasksbService> {
+
+	@Autowired
+	private MonitorFeign monitorFeign;
 
 	protected static Logger LOGGER = LoggerFactory.getLogger(CheckLiveTasksbController.class);
 
@@ -131,10 +136,11 @@ public class CheckLiveTasksbController extends
 
 	@ApiOperation(value = "app隐患稽查任务完成按钮",notes = "app隐患稽查任务完成按钮")
 	@PostMapping("checkLiveTasksbComplete")
-	public WebApiResponse checkLiveTasksbComplete(XsSbYh yh){
+	public WebApiResponse checkLiveTasksbComplete(XsSbYh yh,String activityId,String flag){
 		//taskId是check_live_tasksb的id
 		try{
 			service.checkLiveTasksbComplete(yh);
+			monitorFeign.jicha(activityId,yh.getId().toString(),flag);
 			return WebApiResponse.success("");
 		}catch (Exception e){
 			LOGGER.error("app任务列表获取失败",e);
