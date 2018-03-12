@@ -96,6 +96,10 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                     Map<String, Object> map = this.execSqlSingleResult(sql, yh.getTdywOrg() + "%");
                     yh.setTdorgId(map.get("ID").toString());
                 }
+                if (yh.getTdwxOrg()!=null && ("null").equals(yh.getTdwxOrg())){
+                    yh.setTdwxOrg("");
+                    yh.setWxorgId("");
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
