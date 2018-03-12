@@ -9,6 +9,7 @@ package com.rzt.service;
 import com.alibaba.druid.util.StringUtils;
 import com.alibaba.fastjson.JSON;
 import com.rzt.entity.CheckLiveTasksb;
+import com.rzt.entity.XsSbYh;
 import com.rzt.repository.CheckLiveTasksbRepository;
 import com.rzt.utils.DateTool;
 import org.slf4j.Logger;
@@ -21,10 +22,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**      
  * 类名称：CheckLiveTasksbService    
@@ -155,9 +153,9 @@ public class CheckLiveTasksbService extends CurdService<CheckLiveTasksb,CheckLiv
         String sql = "";
         //0待办 1已办
         if("0".equals(taskType)){
-            sql = "select task_name,plan_start_time,td_org_name from check_live_tasksb where status!=2 ";
+            sql = "select id,task_name,plan_start_time,td_org_name from check_live_tasksb where status!=3 ";
         }else if("1".equals(taskType)){
-            sql = "select task_name,plan_start_time,td_org_name from check_live_tasksb where status=2 ";
+            sql = "select id,task_name,plan_start_time,td_org_name from check_live_tasksb where status=3 ";
         }
         sql += " and user_id=? ";
         sql += "  order by plan_start_time ";
@@ -165,9 +163,9 @@ public class CheckLiveTasksbService extends CurdService<CheckLiveTasksb,CheckLiv
     }
 
     @Transactional
-    public void checkLiveTasksbComplete(Long id) {
-
-
+    public void checkLiveTasksbComplete(XsSbYh yh) {
+        reposiotry.updateXsSbYh(yh.getYhjb(),yh.getYhjb1(),yh.getYhlb(),yh.getYhms(),yh.getYhtdqx(),yh.getYhtdxzjd(),yh.getYhtdc(),yh.getGkcs(),yh.getJsp(),yh.getYhxcyy(),yh.getYhzrdw(),yh.getYhzrdwlxr(),yh.getYhzrdwdh(),yh.getId());
+        reposiotry.updateCheckLiveTasksbStatus(3,yh.getTaskId());
     }
 
 
@@ -191,4 +189,49 @@ public class CheckLiveTasksbService extends CurdService<CheckLiveTasksb,CheckLiv
     }
 
 
+    public Map<String,Object> checkLiveTasksbDetail(Long id) {
+        String sql1 = "select t.task_name,h.yhfxsj,t.plan_start_time,t.plan_end_time,t.td_org_name,h.id yhid,t.status from check_live_tasksb t,XS_SB_YH h where t.yhsb_id=h.id and t.id =? ";
+        String sql2 = "select create_time,file_path from picture_yh where yh_id = ? ";
+
+        Map<String, Object> map = new HashMap<>();
+        try {
+            map = execSqlSingleResult(sql1, id);
+            String yhid = map.get("YHID").toString();
+            List<Map<String, Object>> list = execSql(sql2, yhid);
+            map.put("imgs",list);
+        } catch (Exception e) {
+            LOGGER.error("",e);
+        }
+
+        return map;
+    }
+
+    @Transactional
+    public void checkLiveTasksbStart(Long id) {
+        reposiotry.updateCheckLiveTasksbStatus(2,id);
+    }
+
+    public List<Map<String, Object>> areas() {
+        String sql = "select id \"value\",name \"text\",pid \"pid\" from line_area start with pid=0 connect by prior id=pid";
+        List<Map<String, Object>> list = execSql(sql);
+        return treeList(list,"0");
+    }
+
+    //写个递归
+    public List treeList(List<Map<String, Object>> orgList, String parentId) {
+        List childOrg = new ArrayList<>();
+        for (Map<String, Object> map : orgList) {
+            String menuId = String.valueOf(map.get("value"));
+            String pid = String.valueOf(map.get("pid"));
+            if (parentId.equals(pid)) {
+                List c_node = treeList(orgList, menuId);
+                if(!c_node.isEmpty()){
+                    map.put("children", c_node);
+                }
+                map.remove("pid");
+                childOrg.add(map);
+            }
+        }
+        return childOrg;
+    }
 }

@@ -7,6 +7,7 @@
 package com.rzt.controller;
 
 import com.rzt.entity.CheckLiveTasksb;
+import com.rzt.entity.XsSbYh;
 import com.rzt.service.CheckLiveTasksbService;
 import com.rzt.util.WebApiResponse;
 import io.swagger.annotations.ApiOperation;
@@ -17,6 +18,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -103,17 +105,57 @@ public class CheckLiveTasksbController extends
 		}
 	}
 
-	@ApiOperation(value = "app隐患稽查任务完成按钮",notes = "app隐患稽查任务完成按钮")
-	@GetMapping("checkLiveTasksbComplete")
-	public WebApiResponse checkLiveTasksbComplete(String id){
+	@ApiOperation(value = "app隐患稽查详情",notes = "app隐患稽查详情")
+	@GetMapping("checkLiveTasksbDetail")
+	public WebApiResponse checkLiveTasksbDetail(String id){
 		try{
-			service.checkLiveTasksbComplete(Long.valueOf(id));
+			Map<String, Object> map = this.service.checkLiveTasksbDetail(Long.valueOf(id));
+			return WebApiResponse.success(map);
+		}catch (Exception e){
+			LOGGER.error("app任务详情获取失败",e);
+			return WebApiResponse.erro("app任务详情获取失败"+e.getMessage());
+		}
+	}
+
+	@ApiOperation(value = "app隐患稽查接单",notes = "app隐患稽查接单")
+	@GetMapping("checkLiveTasksbStart")
+	public WebApiResponse checkLiveTasksbStart(String id){
+		try{
+			this.service.checkLiveTasksbStart(Long.valueOf(id));
+			return WebApiResponse.success("app任务接单成功");
+		}catch (Exception e){
+			LOGGER.error("app任务接单失败",e);
+			return WebApiResponse.erro("app任务接单失败"+e.getMessage());
+		}
+	}
+
+	@ApiOperation(value = "app隐患稽查任务完成按钮",notes = "app隐患稽查任务完成按钮")
+	@PostMapping("checkLiveTasksbComplete")
+	public WebApiResponse checkLiveTasksbComplete(XsSbYh yh){
+		//taskId是check_live_tasksb的id
+		try{
+			service.checkLiveTasksbComplete(yh);
 			return WebApiResponse.success("");
 		}catch (Exception e){
 			LOGGER.error("app任务列表获取失败",e);
 			return WebApiResponse.erro("数据获取失败"+e.getMessage());
 		}
 	}
+
+	@ApiOperation(value = "三级联动,区县镇",notes = "三级联动,区县镇")
+	@GetMapping("areas")
+	public WebApiResponse areas(){
+		try{
+			List<Map<String, Object>> list = service.areas();
+			return WebApiResponse.success(list);
+		}catch (Exception e){
+			LOGGER.error("三级联动,区县镇数据获取失败",e);
+			return WebApiResponse.erro("三级联动,区县镇数据获取失败"+e.getMessage());
+		}
+	}
+
+
+
 
 
 }

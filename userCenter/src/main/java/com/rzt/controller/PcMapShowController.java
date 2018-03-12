@@ -51,7 +51,7 @@ public class PcMapShowController {
      * @author nwz
      */
     @GetMapping("menInMap")
-    public Object menInMap(String tdOrg, String workType, String userId, Date startDate, String currentUserId, Integer loginStatus, String lineId) {
+    public Object menInMap(String tdOrg, String workType, String userId, Date startDate, String currentUserId, Integer loginStatus, String lineId, String hasTask) {
         try {
             Date date = new Date();
             if (startDate == null) {
@@ -109,9 +109,7 @@ public class PcMapShowController {
                 }
             }
             //2.根据工作类型来分
-            chouYiXia(workType, loginStatus, needDateString, timeSecond, menInMap, valueOperations);
-
-
+                chouYiXia(workType, loginStatus, needDateString, hasTask, menInMap, valueOperations);
             return WebApiResponse.success(menInMap);
         } catch (Exception e) {
             e.printStackTrace();
@@ -119,7 +117,7 @@ public class PcMapShowController {
         }
     }
 
-    private void chouYiXia(String workTypes, Integer loginStatus, String needDateString, long timeSecond, List<Map> menInMap, ValueOperations<String, Object> valueOperations) {
+    private void chouYiXia(String workTypes, Integer loginStatus, String needDateString, String hasTask, List<Map> menInMap, ValueOperations<String, Object> valueOperations) {
         JSONObject allMen = new JSONObject();
         if (workTypes == null || workTypes.contains("1")) {
             JSONObject khMenAll = JSONObject.parseObject(valueOperations.get("khMenAll:" + needDateString).toString());
@@ -201,18 +199,23 @@ public class PcMapShowController {
                 iterator.remove();
                 continue;
             }
-
-            if (!allMen.containsKey(userid)) {
-                //注意这个地方
-                iterator.remove();
-            } else {
-                men.put("statuts", allMen.get(userid));
+            if (!StringUtils.isEmpty(hasTask) && hasTask.equals("0")) {
+                if (!allMen.containsKey(userid)) {
+//                    iterator.remove();
+                    men.put("statuts", -1);
+                } else {
+                    iterator.remove();
+                }
+            }else {
+                if (!allMen.containsKey(userid)) {
+                    //注意这个地方
+                    iterator.remove();
+                } else {
+                    men.put("statuts", allMen.get(userid));
+                }
             }
         }
-
-
     }
-
 
     /***
      * @Method menAboutLine
@@ -233,7 +236,8 @@ public class PcMapShowController {
                 startDate = date;
             }
             String needDateString = DateUtil.dateFormatToDay(startDate);
-            long timeSecond = date.getTime();
+//            long timeSecond = date.getTime();
+            String timeSecond = "";
             ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
             //准备要返回的list
             List<Map> menInMap = new ArrayList<>();
@@ -262,7 +266,7 @@ public class PcMapShowController {
 
 
     @GetMapping("menAbooutMultiLine")
-    public Object et4r1fdvmenAbooutMultiLine(String lineIds, String currentUserId, Date startDate, String yhTypes, String gzTypes, String deptId, String workType, String userId,String loginType) {
+    public Object et4r1fdvmenAbooutMultiLine(String lineIds, String currentUserId, Date startDate, String yhTypes, String gzTypes, String deptId, String workType, String userId, String loginType) {
         if (StringUtils.isEmpty(lineIds)) {
             return WebApiResponse.erro("你都不传线路id,你想上天啊?");
         } else {
@@ -273,7 +277,7 @@ public class PcMapShowController {
                     Object o = menAboutLinesSon(Long.parseLong(lineId), currentUserId, startDate, yhTypes, gzTypes);
                     resList.add(o);
                 }*/
-                Object o = menAboutLinesAllSon(lineIdArr, currentUserId, startDate, yhTypes, gzTypes, deptId, workType, userId,loginType);
+                Object o = menAboutLinesAllSon(lineIdArr, currentUserId, startDate, yhTypes, gzTypes, deptId, workType, userId, loginType);
                 resList.add(o);
                 return WebApiResponse.success(resList);
             } catch (Exception e) {
@@ -284,7 +288,7 @@ public class PcMapShowController {
     }
 
     //地图上根据线路查询隐患、故障、人员、杆塔
-    private Object menAboutLinesAllSon(String[] lineIdArr, String currentUserId, Date startDate, String yhTypes, String gzTypes, String deptId,String workType,String userId,String loginType) throws Exception {
+    private Object menAboutLinesAllSon(String[] lineIdArr, String currentUserId, Date startDate, String yhTypes, String gzTypes, String deptId, String workType, String userId, String loginType) throws Exception {
         String s = "";
         String s1 = "";
         if (!StringUtils.isEmpty(deptId)) {
@@ -316,7 +320,7 @@ public class PcMapShowController {
         HashOperations<String, String, Map> hashOperations = redisTemplate.opsForHash();
 //        String deptId = pcMapShowService.dataAccessByUserId(currentUserId).toString();
         //显示改线路当天 关联的人
-        List<Map<String, Object>> menAboutLine = cmcoordinateService.getMenAboutLineMain(lineIdArr, s1,loginType,workType,userId);
+        List<Map<String, Object>> menAboutLine = cmcoordinateService.getMenAboutLineMain(lineIdArr, s1, loginType, workType, userId);
         Set<String> keys = new HashSet();
         //单位 外协 组织 班组 都走这里
         for (Map<String, Object> user : menAboutLine) {
@@ -326,7 +330,7 @@ public class PcMapShowController {
         menInMap = hashOperations.multiGet("menInMap", keys);
         //-->去除list中为null的元素
         menInMap.removeAll(Collections.singleton(null));
-        chouYiXia(null, 2, needDateString, timeSecond, menInMap, valueOperations);
+        chouYiXia(null, 2, needDateString, null, menInMap, valueOperations);
         res.put("menInMap", menInMap);
         res.put("coordinateList", coordinateList);
         List<Map<String, Object>> guzhang = getGuzhang(gzTypes, lineIdArr, null);
@@ -385,7 +389,7 @@ public class PcMapShowController {
         List<Object> list1 = new ArrayList<>();
         for (Map map : list) {
             if (map != null && map.size() > 0 && map.get("JD") != null) {
-                sql = "select u.realname from kh_site s left join rztsysuser u on u.id =s.user_id where yh_id=?";
+                sql = "select u.realname from kh_site s left join rztsysuser u on u.id =s.user_id where yh_id=? and s.status=1";
                 List<Map<String, Object>> nameList = cmcoordinateService.execSql(sql, Long.parseLong(map.get("ID").toString()));
                 String realname = "";
                 map.put("USERNAME", "无");
@@ -462,7 +466,7 @@ public class PcMapShowController {
         menInMap = hashOperations.multiGet("menInMap", keys);
         //-->去除list中为null的元素
         menInMap.removeAll(Collections.singleton(null));
-        chouYiXia(null, 2, needDateString, timeSecond, menInMap, valueOperations);
+        chouYiXia(null, 2, needDateString, null, menInMap, valueOperations);
         res.put("menInMap", menInMap);
         res.put("coordinateList", coordinateList);
         List<Map<String, Object>> guzhang = getGuzhang(gzTypes, currentUserId, lineId);
@@ -851,7 +855,7 @@ public class PcMapShowController {
             if (day == null) {
                 day = new Date();
             }
-            String sql = "SELECT USER_ID,max(status) status from KH_TASK where PLAN_END_TIME >= trunc(?1) and user_id is not null and PLAN_START_TIME <= trunc(?1+1) group by USER_ID";
+            String sql = "SELECT USER_ID,max(status) status from KH_TASK where PLAN_END_TIME >= trunc(?1) and user_id is not null AND STATUS!=3 and PLAN_START_TIME <= trunc(?1+1) group by USER_ID";
             List<Map<String, Object>> userList = cmcoordinateService.execSql(sql, day);
             Map<String, Object> map = new HashMap<String, Object>();
             for (Map<String, Object> user : userList) {
@@ -947,14 +951,16 @@ public class PcMapShowController {
         menCurrentDayKh(day);
         menCurrentDayxs(day);
         menCurrentDayJC(day);
+        flushMenInDept();
     }
 
     //两个定时计划
-    @Scheduled(fixedRate = 900000)
+    @Scheduled(fixedRate = 1800 * 1000)
     public void Scheduled2() {
         Date day = new Date();
         menCurrentDayKh(day);
         menCurrentDayxs(day);
         menCurrentDayJC(day);
+        flushMenInDept();
     }
 }

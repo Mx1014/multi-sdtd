@@ -367,15 +367,17 @@ public class UserDisplaySynthesisController extends CurdController<RztSysUser, C
                     }
                     String[] split = userId.split(",");
                     for (int i = 0; i < split.length; i++) {
-                        String sql = "SELECT d.deptname,u.*  FROM RZTSYSUSER u left join rztsysdepartment d on d.id = u.deptid where u.id=? order by d.deptname ";
-                        Map<String, Object> users = this.service.execSqlSingleResult(sql, split[i]);
-                        if (loginType != null && !loginType.equals("")) {
-                            if (users.get("LOGINSTATUS").toString().equals(loginType)) {
+                        String sql = "SELECT d.deptname,u.*  FROM RZTSYSUSER u left join rztsysdepartment d on d.id = u.deptid where u.id=? and USERDELETE=1 order by d.deptname ";
+                        List<Map<String, Object>> users = this.service.execSql(sql, split[i]);
+                        if (users.size() > 0) {
+                            if (loginType != null && !loginType.equals("")) {
+                                if (users.get(0).get("LOGINSTATUS").toString().equals(loginType)) {
+                                    list.add(users);
+                                }
+                            } else {
+//                            this.service.execSqlPage()
                                 list.add(users);
                             }
-                        } else {
-//                            this.service.execSqlPage()
-                            list.add(users);
                         }
                     }
                 }

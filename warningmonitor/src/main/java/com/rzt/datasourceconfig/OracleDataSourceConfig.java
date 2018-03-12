@@ -1,4 +1,4 @@
-package com.rzt.config;
+package com.rzt.datasourceconfig;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

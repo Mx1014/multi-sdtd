@@ -108,7 +108,7 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
      */
     public void KHWKH() {
         String sql = " SELECT kh.ID,d.ID AS TDYW_ORG,kh.PLAN_START_TIME,kh.TASK_NAME,kh.USER_ID FROM  KH_TASK kh LEFT JOIN RZTSYSDEPARTMENT  d" +
-                "    ON kh.TDYW_ORG = d.DEPTNAME WHERE trunc(kh.PLAN_START_TIME) = trunc(sysdate) AND (kh.REAL_START_TIME IS NULL OR kh.PLAN_START_TIME<kh.REAL_START_TIME)";
+                "    ON kh.TDYW_ORG = d.DEPTNAME WHERE trunc(kh.PLAN_START_TIME) = trunc(sysdate) AND (kh.REAL_START_TIME IS NULL OR kh.PLAN_START_TIME<kh.REAL_START_TIME) AND kh.STATUS=0";
         //List<Object> list = new ArrayList<>();
         List<Map<String, Object>> maps = execSql(sql);
         for (Map<String, Object> map : maps) {
