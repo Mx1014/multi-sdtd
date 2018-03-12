@@ -27,11 +27,9 @@ public class ProTZListener  implements TaskListener {
         String YHID = (String) proService.checkTask(delegateTask.getId(), "YHID");
         //添加隐患台账
         if(null != YHID && !"".equals(YHID)){
-
             //变更看护任务和生成看护任务为一个接口  添加隐患台账
             nurseTaskService.reviewYh(new Long(YHID));
         }
-        System.out.println("进入节点监听  隐患台账节点"+YHID);
         //结束流程
         proService.complete(delegateTask.getId(),null);
     }

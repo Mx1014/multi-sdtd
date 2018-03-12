@@ -2,6 +2,7 @@ package com.rzt.activiti.controller;
 
 import com.rzt.activiti.service.impl.XSCycleServiceImpl;
 import com.rzt.util.WebApiResponse;
+import io.swagger.annotations.ApiOperation;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -49,7 +50,6 @@ public class XSCycleController {
     public WebApiResponse complete(String taskId,String XSID,String flag,String info,String currentUserId){
         if(null != flag && "0".equals(flag)){
         //说明不同意变更计划取消任务
-            System.out.println("取消了变更计划");
         }
         Map<String, Object> map = new HashMap<>();
         map.put("taskId",taskId);
@@ -112,6 +112,12 @@ public class XSCycleController {
         return WebApiResponse.success("");
 
     }
+
+
+
+
+
+
 
 
 

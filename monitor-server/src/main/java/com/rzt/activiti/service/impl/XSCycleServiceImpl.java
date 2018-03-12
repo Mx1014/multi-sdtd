@@ -23,11 +23,8 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.io.InputStream;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 李成阳
@@ -137,15 +134,8 @@ public class XSCycleServiceImpl  extends CurdService<CheckResult, CheckResultRep
             if(null != startTime && !"".equals(startTime) ){
                 sql += "  AND   APPROVER_TIME <=  to_date('"+endTime+"','YYYY-MM-dd HH24:mi') ";
             }
-            //判断当前用户所属节点    书否显示所有信息
-           /* if("sdid".equals(userId) || "sdyjid".equals(userId)){
-                sql += "  AND  tt.DID =   '"+td+"'";
-            }else{
-                if(null != tdId && !"".equals(tdId)){
-                    sql += "  AND  tt.DID =   '"+tdId+"'";
-                }
-            }*/
-            //判断当前用户所属节点    书否显示所有信息
+
+            //判断当前用户所属节点    是否显示所有信息
             if("sdid".equals(userId) || "sdyjid".equals(userId)){
                 sql += "  AND tt.DEPT = '"+td+"'  ";
             }else{
@@ -229,15 +219,8 @@ public class XSCycleServiceImpl  extends CurdService<CheckResult, CheckResultRep
             if(null != startTime && !"".equals(startTime) ){
                 sql += "  AND   APPROVER_TIME <=  to_date('"+endTime+"','YYYY-MM-dd HH24:mi') ";
             }
-            //判断当前用户所属节点    书否显示所有信息
-           /* if("sdid".equals(userId) || "sdyjid".equals(userId)){
-                sql += "  AND  tt.DID =   '"+td+"'";
-            }else{
-                if(null != tdId && !"".equals(tdId)){
-                    sql += "  AND  tt.DID =   '"+tdId+"'";
-                }
-            }*/
-            //判断当前用户所属节点    书否显示所有信息
+
+            //判断当前用户所属节点    是否显示所有信息
             if("sdid".equals(userId) || "sdyjid".equals(userId)){
                 sql += "  AND tt.DEPT = '"+td+"'  ";
             }else{
@@ -361,10 +344,10 @@ public class XSCycleServiceImpl  extends CurdService<CheckResult, CheckResultRep
                 //变更记录id   更改过原周期后需要改变记录状态
                 String id = map.get("ID") == null ? "":map.get("ID").toString();
                 //  按照原周期id查询
-                if(null == xscycleId || "".equals(xscycleId)){//原id为空   证明新增
-
-                }else {//修改
+                if(null != xscycleId && !"".equals(xscycleId)){//原id不为空   证明修改
                     yHrepository.updateCycle(xscycleId,XSCycle,planStartTime,planEndTime,xsNum,userId);
+                }else {//新增周期
+
                 }
                 //变更记录中审批状态和审批时间
                 yHrepository.updateCycleRecord(id,new Date());
@@ -376,6 +359,7 @@ public class XSCycleServiceImpl  extends CurdService<CheckResult, CheckResultRep
         }
 
     }
+
 
 
 

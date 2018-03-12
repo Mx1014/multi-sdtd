@@ -64,7 +64,7 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
             return WebApiResponse.erro("数据获取失败");
         }
     }
-
+    @Transactional
     public WebApiResponse appListWp(String userId, String taskId) {
         try {
             String sql = "select wp_zt from kh_task_wpqr where taskId=?";
@@ -73,6 +73,10 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
                 Map map1 = new HashMap<>();
                 map1.put("WP_ZT", "0,0,0,0,0");
                 map.add(map1);
+                KhTaskWpqr wpqr = new KhTaskWpqr();
+                wpqr.setTaskId(Long.parseLong(taskId));
+                wpqr.setWpzt("0,0,0,0,0,0");
+                wpqrService.add(wpqr);
             }
             return WebApiResponse.success(map);
         } catch (Exception e) {
@@ -84,7 +88,7 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
     public WebApiResponse appListCl(String taskId) {
         try {
             String sql = "select cl_zt from kh_task_wpqr where taskId=?";
-            Map<String, Object> map = this.execSqlSingleResult(sql, taskId);
+            Map<String, Object> map = this.execSqlSingleResult(sql, Long.parseLong(taskId));
             if (map.get("CL_ZT") == null) {
                 map.put("CL_ZT", "0,0,0,0,0,0");
             }

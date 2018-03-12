@@ -109,7 +109,11 @@ public class PcMapShowController {
                 }
             }
             //2.根据工作类型来分
+            if (!StringUtils.isEmpty(hasTask) && hasTask.equals("0")) {
+                chouYiXia2(workType, loginStatus, needDateString, hasTask, menInMap, valueOperations);
+            } else {
                 chouYiXia(workType, loginStatus, needDateString, hasTask, menInMap, valueOperations);
+            }
             return WebApiResponse.success(menInMap);
         } catch (Exception e) {
             e.printStackTrace();
@@ -144,14 +148,13 @@ public class PcMapShowController {
             userIds.add(userid);
         }
 
-        List<Map<String, Object>> userLoginStatusList = cmcoordinateService.execSql("select id,LOGINSTATUS from RZTSYSUSER");
+        List<Map<String, Object>> userLoginStatusList = cmcoordinateService.execSql("select id,LOGINSTATUS from RZTSYSUSER where USERDELETE=1");
         HashMap<String, String> userLoginStatusMap = new HashMap<>();
         for (Map<String, Object> map : userLoginStatusList) {
             String id = map.get("ID").toString();
             String loginstatus = map.get("LOGINSTATUS").toString();
             userLoginStatusMap.put(id, loginstatus);
         }
-
         Iterator<Map> iterator = menInMap.iterator();
         while (iterator.hasNext()) {
             Map men = iterator.next();
@@ -199,22 +202,95 @@ public class PcMapShowController {
                 iterator.remove();
                 continue;
             }
-            if (!StringUtils.isEmpty(hasTask) && hasTask.equals("0")) {
-                if (!allMen.containsKey(userid)) {
-//                    iterator.remove();
-                    men.put("statuts", -1);
-                } else {
-                    iterator.remove();
-                }
-            }else {
-                if (!allMen.containsKey(userid)) {
-                    //注意这个地方
-                    iterator.remove();
-                } else {
-                    men.put("statuts", allMen.get(userid));
+            if (!allMen.containsKey(userid)) {
+                //注意这个地方
+                iterator.remove();
+            } else {
+                men.put("statuts", allMen.get(userid));
+            }
+        }
+    }
+
+
+    private void chouYiXia2(String workTypes, Integer loginStatus, String needDateString, String hasTask, List<Map> menInMap, ValueOperations<String, Object> valueOperations) {
+        JSONObject allMen = new JSONObject();
+        List<Map> menInMap2 = new ArrayList<>();
+        if (workTypes == null || workTypes.contains("1")) {
+            JSONObject khMenAll = JSONObject.parseObject(valueOperations.get("khMenAll:" + needDateString).toString());
+            allMen.putAll(khMenAll);
+            for (Map map:menInMap){
+                if (map.get("gzlx").toString().equals("1")) {
+                    menInMap2.add(map);
                 }
             }
         }
+        if (workTypes == null || workTypes.contains("2")) {
+            JSONObject xsMenAll = JSONObject.parseObject(valueOperations.get("xsMenAll:" + needDateString).toString());
+            allMen.putAll(xsMenAll);
+            for (Map map:menInMap){
+                if (map.get("gzlx").toString().equals("2")) {
+                    menInMap2.add(map);
+                }
+            }
+        }
+        if (workTypes == null || workTypes.contains("3")) {
+            JSONObject jcMenAll = JSONObject.parseObject(valueOperations.get("jcMenAll:" + needDateString).toString());
+            allMen.putAll(jcMenAll);
+            for (Map map:menInMap){
+                if (map.get("gzlx").toString().equals("3")) {
+                    menInMap2.add(map);
+                }
+            }
+        }
+        ArrayList<String> userIds = new ArrayList<>();
+        for (Map<String, Object> map : menInMap) {
+            String userid = map.get("userid").toString();
+            userIds.add(userid);
+        }
+
+        List<Map<String, Object>> userLoginStatusList = cmcoordinateService.execSql("select id,LOGINSTATUS from RZTSYSUSER where USERDELETE=1");
+        HashMap<String, String> userLoginStatusMap = new HashMap<>();
+        for (Map<String, Object> map : userLoginStatusList) {
+            String id = map.get("ID").toString();
+            String loginstatus = map.get("LOGINSTATUS").toString();
+            userLoginStatusMap.put(id, loginstatus);
+        }
+        Iterator<Map> iterator = menInMap2.iterator();
+        while (iterator.hasNext()) {
+            Map men = iterator.next();
+            String userid = men.get("userid").toString();
+            String loginStatus1 = userLoginStatusMap.get(userid);
+            if (loginStatus1 != null) {
+                if (loginStatus1.equals("0")) {
+                    //大于九十分钟 离线
+                    //显示在线
+                    if (loginStatus == 1) {
+                        iterator.remove();
+                        continue;
+                    }
+                    men.put("loginStatus", 0);
+                } else if (loginStatus1.equals("1")) {
+                    //小于十分钟 在线
+                    //显示离线
+                    if (loginStatus == 0) {
+                        iterator.remove();
+                        continue;
+                    }
+                    men.put("loginStatus", 1);
+                }
+            } else {
+                //注意这个地方
+                iterator.remove();
+                continue;
+            }
+            if (allMen.containsKey(userid)) {
+                iterator.remove();
+            }else {
+                men.put("statuts", -1);
+            }
+        }
+        menInMap.clear();
+        menInMap.addAll(menInMap2);
     }
 
     /***
