@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -361,10 +362,10 @@ public class XSCycleServiceImpl  extends CurdService<CheckResult, CheckResultRep
                 //变更记录id   更改过原周期后需要改变记录状态
                 String id = map.get("ID") == null ? "":map.get("ID").toString();
                 //  按照原周期id查询
-                if(null == xscycleId || "".equals(xscycleId)){//原id为空   证明新增
-
-                }else {//修改
+                if(null != xscycleId && !"".equals(xscycleId)){//原id不为空   证明修改
                     yHrepository.updateCycle(xscycleId,XSCycle,planStartTime,planEndTime,xsNum,userId);
+                }else {//新增周期
+
                 }
                 //变更记录中审批状态和审批时间
                 yHrepository.updateCycleRecord(id,new Date());
@@ -376,8 +377,6 @@ public class XSCycleServiceImpl  extends CurdService<CheckResult, CheckResultRep
         }
 
     }
-
-
 
 
 }
