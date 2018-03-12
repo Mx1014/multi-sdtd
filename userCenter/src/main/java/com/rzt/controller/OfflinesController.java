@@ -39,7 +39,7 @@ public class OfflinesController extends CurdController<RztSysUser, CommonService
         if (tableType == 0) {
             return current(workType, page, size, currentUserId, startTime, endTime, deptId, taskType, loginType);
         }
-        return sameDay(workType, page, size, currentUserId, startTime, endTime, deptId, taskType, loginType);
+        return sameDay(tableType, workType, page, size, currentUserId, startTime, endTime, deptId, taskType, loginType);
     }
 
     private WebApiResponse current(Integer workType, Integer page, Integer size, String currentUserId, String startTime, String endTime, String deptId, String taskType, String loginType) {
@@ -155,7 +155,7 @@ public class OfflinesController extends CurdController<RztSysUser, CommonService
         }
     }
 
-    private WebApiResponse sameDay(Integer workType, Integer page, Integer size, String currentUserId, String startTime, String endTime, String deptId, String taskType, String loginType) {
+    private WebApiResponse sameDay(Integer tableType, Integer workType, Integer page, Integer size, String currentUserId, String startTime, String endTime, String deptId, String taskType, String loginType) {
         org.springframework.data.domain.Pageable pageable = new PageRequest(page, size);
         List listLike = new ArrayList();
         String s = "";
@@ -185,8 +185,18 @@ public class OfflinesController extends CurdController<RztSysUser, CommonService
             s += " AND CREATE_TIME-90/(60*24)  >= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
             listLike.add(endTime);
             s += " AND CREATE_TIME-90/(60*24)  <= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
-        } else {
+        } else if (tableType == 0 || tableType == 1) {
             s += " AND trunc(CREATE_TIME) = trunc(sysdate) ";
+        } else if (tableType == 2) {
+            Map map = weekTime.weekTime();
+            Object mon = map.get("Mon");
+            Object sun = map.get("Sun");
+            listLike.add(mon);
+            s += " AND CREATE_TIME-90/(60*24)  >= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
+            listLike.add(sun);
+            s += " AND CREATE_TIME-90/(60*24)  <= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
+        } else if (tableType == 3) {
+            s += " AND to_char(CREATE_TIME,'yyyy-mm') = to_char(sysdate,'yyyy-mm') ";
         }
         if (!StringUtils.isEmpty(taskType)) {
             listLike.add(taskType);
