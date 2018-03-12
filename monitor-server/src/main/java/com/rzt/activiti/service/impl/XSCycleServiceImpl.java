@@ -23,12 +23,8 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.io.InputStream;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 李成阳
@@ -138,15 +134,8 @@ public class XSCycleServiceImpl  extends CurdService<CheckResult, CheckResultRep
             if(null != startTime && !"".equals(startTime) ){
                 sql += "  AND   APPROVER_TIME <=  to_date('"+endTime+"','YYYY-MM-dd HH24:mi') ";
             }
-            //判断当前用户所属节点    书否显示所有信息
-           /* if("sdid".equals(userId) || "sdyjid".equals(userId)){
-                sql += "  AND  tt.DID =   '"+td+"'";
-            }else{
-                if(null != tdId && !"".equals(tdId)){
-                    sql += "  AND  tt.DID =   '"+tdId+"'";
-                }
-            }*/
-            //判断当前用户所属节点    书否显示所有信息
+
+            //判断当前用户所属节点    是否显示所有信息
             if("sdid".equals(userId) || "sdyjid".equals(userId)){
                 sql += "  AND tt.DEPT = '"+td+"'  ";
             }else{
@@ -230,15 +219,8 @@ public class XSCycleServiceImpl  extends CurdService<CheckResult, CheckResultRep
             if(null != startTime && !"".equals(startTime) ){
                 sql += "  AND   APPROVER_TIME <=  to_date('"+endTime+"','YYYY-MM-dd HH24:mi') ";
             }
-            //判断当前用户所属节点    书否显示所有信息
-           /* if("sdid".equals(userId) || "sdyjid".equals(userId)){
-                sql += "  AND  tt.DID =   '"+td+"'";
-            }else{
-                if(null != tdId && !"".equals(tdId)){
-                    sql += "  AND  tt.DID =   '"+tdId+"'";
-                }
-            }*/
-            //判断当前用户所属节点    书否显示所有信息
+
+            //判断当前用户所属节点    是否显示所有信息
             if("sdid".equals(userId) || "sdyjid".equals(userId)){
                 sql += "  AND tt.DEPT = '"+td+"'  ";
             }else{
@@ -377,6 +359,9 @@ public class XSCycleServiceImpl  extends CurdService<CheckResult, CheckResultRep
         }
 
     }
+
+
+
 
 
 }
