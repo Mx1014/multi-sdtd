@@ -30,7 +30,6 @@ public class Subscriber extends JedisPubSub {
         try {
 
             //   拿到当前流程id   此时当前流程id 以放置超过24小时   直接取消该流程
-            //System.out.println("message       "+ message);
             String[] split = message.split(",");
             if("defect".equals(split[2])){
                 Map<String, Object> map = new HashMap<>();

@@ -21,7 +21,6 @@ import java.util.Date;
  * 修改人：张虎成
  * 修改时间：2017/11/30 18:31:34
  * 修改备注：
- * @version
  */
 @Entity
 @Table(name = "XS_SB_YH")
@@ -506,7 +505,11 @@ public class XsSbYh implements Serializable {
     }
 
     public void setTdwxOrg(String tdwxOrg) {
-        this.tdwxOrg = tdwxOrg;
+        if (wxorgId.equals("")) {
+
+        } else {
+            this.tdwxOrg = tdwxOrg;
+        }
     }
 
     @ExcelResources(title = "维护单位id（orgid）", order = 50)
@@ -514,11 +517,11 @@ public class XsSbYh implements Serializable {
         return this.tdwxOrg;
     }
 
-    public void setId(Long id){
-        if(id==null||id==0){
+    public void setId(Long id) {
+        if (id == null || id == 0) {
             SnowflakeIdWorker instance = SnowflakeIdWorker.getInstance(8, 21);
             this.id = instance.nextId();
-        }else{
+        } else {
             this.id = id;
         }
     }
@@ -590,7 +593,11 @@ public class XsSbYh implements Serializable {
     }
 
     public void setWxorgId(String wxorgId) {
-        this.wxorgId = wxorgId;
+        if (wxorgId.equals("")) {
+
+        } else {
+            this.wxorgId = wxorgId;
+        }
     }
 
     public void setRadius(String radius) {
