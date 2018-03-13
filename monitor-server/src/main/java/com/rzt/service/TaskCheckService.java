@@ -239,7 +239,7 @@ public class TaskCheckService extends CurdService<TimedTask,XSZCTASKRepository>{
                                         "         AND d.ID IS NOT  NULL) AS jcproblem," +
                                         "  '"+deptid+"' AS deptid," +
                                         "  (SELECT DEPTNAME FROM RZTSYSDEPARTMENT WHERE ID = '"+deptid+"') AS deptname," +
-                                        "  to_date('"+check_time+"','YYYY-MM-dd HH24:mi:ss') as checktime" +
+                                        "  to_date('"+check_time+"','YYYY-MM-dd HH24:mi:ss') as TASKTIME" +
                                         "   FROM dual";
                                 Map<String, Object> map2 = this.execSqlSingleResult(sqlByDept);
                                 list.add(map2);
@@ -316,7 +316,7 @@ public class TaskCheckService extends CurdService<TimedTask,XSZCTASKRepository>{
                                         "         AND d.ID IS NOT  NULL) AS jcproblem," +
                                         "  '"+deptid+"' AS deptid," +
                                         "  (SELECT DEPTNAME FROM RZTSYSDEPARTMENT WHERE ID = '"+deptid+"') AS deptname," +
-                                        "  to_date('"+check_time+"','YYYY-MM-dd HH24:mi:ss') as checktime" +
+                                        "  to_date('"+check_time+"','YYYY-MM-dd HH24:mi:ss') as TASKTIME" +
                                         "   FROM dual";
                                 Map<String, Object> map1 = this.execSqlSingleResult(sqlByDept);
                                 list.add(map1);
