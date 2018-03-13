@@ -34,10 +34,10 @@ public class TaskCheckService extends CurdService<TimedTask,XSZCTASKRepository>{
      */
     public WebApiResponse taskCheckConduct(String currentUserId) {
         /**
-         *   所有权限	    0
-         公司本部权限	1
-         属地单位权限	2
-         外协队伍权限	3
+         *   所有权限	0
+         公司本部权限	    1
+         属地单位权限	    2
+         外协队伍权限	    3
          组织权限	    4
          个人权限	    5
 
