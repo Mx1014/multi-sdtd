@@ -272,11 +272,11 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
             }
             //按时间查询 startDate,String endDate
             if((null != startDate  &&  !"".equals(startDate)) && (null != endDate && !"".equals(endDate))){
-                sql += "  AND  CREATE_TIME >= to_date('"+startDate+"','YYYY-MM-dd HH24:mi:ss')  AND" +
-                        "    CREATE_TIME <= to_date('"+endDate+"','YYYY-MM-dd HH24:mi:ss')      ";
+                sql += "  AND  CREATETIME >= to_date('"+startDate+"','YYYY-MM-dd HH24:mi:ss')  AND" +
+                        "    CREATETIME <= to_date('"+endDate+"','YYYY-MM-dd HH24:mi:ss')      ";
             }
             if(null != sql && !"".equals(sql)){
-                sql +="   ORDER BY CREATE_TIME DESC     ";
+                sql +="   ORDER BY CREATETIME DESC     ";
             }
 
             pageResult = this.execSqlPage(pageable, sql, list.toArray());
