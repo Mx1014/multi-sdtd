@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.RztSysUser;
 import com.rzt.service.CommonService;
 import com.rzt.util.WebApiResponse;
+import com.rzt.utils.weekTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -25,7 +26,7 @@ public class UnqualifiedpatrolController extends CurdController<RztSysUser, Comm
     private RedisTemplate<String, Object> redisTemplate;
 
     @RequestMapping("unqualifiedpatrolList")
-    public WebApiResponse unqualifiedpatrolList(Integer status, String loginstatus, String taskname, String companyid, Integer page, Integer size, String currentUserId, String startTime, String endTime, String deptId, String userName) {
+    public WebApiResponse unqualifiedpatrolList(Integer tableType, Integer status, String loginstatus, String taskname, String companyid, Integer page, Integer size, String currentUserId, String startTime, String endTime, String deptId, String userName) {
         JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", currentUserId).toString());
         int roletype = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
         Object deptid = jsonObject.get("DEPTID");
@@ -35,72 +36,59 @@ public class UnqualifiedpatrolController extends CurdController<RztSysUser, Comm
         if (!StringUtils.isEmpty(startTime) && !StringUtils.isEmpty(endTime)) {
             listLike.add(startTime);
             s += " AND e.CREATE_TIME >= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
-//            s += " AND CREATE_TIME >= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
             listLike.add(endTime);
             s += " AND e.CREATE_TIME <= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
-//            s += " AND CREATE_TIME <= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
-        } else {
+        } else if (tableType == 0 || tableType == 1) {
             s += " AND trunc(e.CREATE_TIME) = trunc(sysdate) ";
+        } else if (tableType == 2) {
+            Map map = weekTime.weekTime();
+            Object mon = map.get("Mon");
+            Object sun = map.get("Sun");
+            listLike.add(mon);
+            s += " AND e.CREATE_TIME >= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
+            listLike.add(sun);
+            s += " AND e.CREATE_TIME <= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
+        } else if (tableType == 3) {
+            s += " AND to_char(e.CREATE_TIME,'yyyy-mm') = to_char(sysdate,'yyyy-mm') ";
         }
         if (roletype == 1 || roletype == 2) {
             listLike.add(deptid);
             s += " AND e.DEPTID = ?" + listLike.size();
-//            s += " AND DEPTID = ?" + listLike.size();
         }
         if (!StringUtils.isEmpty(deptId)) {
             listLike.add(deptId);
             s += " AND e.DEPTID = ?" + listLike.size();
-//            s += " AND DEPTID = ?" + listLike.size();
         }
         if (!StringUtils.isEmpty(userName)) {
             listLike.add(userName.trim() + "%");
             s += " AND u.REALNAME LIKE ?" + listLike.size();
-//            s += " AND REALNAME LIKE ?" + listLike.size();
         }
         if (!StringUtils.isEmpty(companyid)) {
             listLike.add(companyid);
             s += " AND u.COMPANYID = ?" + listLike.size();
-//            s += " AND COMPANYID = ?" + listLike.size();
         }
         if (!StringUtils.isEmpty(taskname)) {
             listLike.add("%" + taskname.trim() + "%");
             s += " AND x.TASK_NAME LIKE ?" + listLike.size();
-//            s += " AND TASK_NAME LIKE ?" + listLike.size();
         }
-        if (!StringUtils.isEmpty(status)) {
-            listLike.add(status);
-            s += "  AND STATUS = ?" + listLike.size();
+        if (tableType == 0) {
+            if (!StringUtils.isEmpty(status)) {
+                listLike.add(status);
+                s += " AND TASK_STATUS = 0 AND STATUS = ?" + listLike.size();
+            } else {
+                listLike.add(0);
+                s += " AND TASK_STATUS = 0  AND STATUS = ?" + listLike.size();
+            }
         } else {
-            listLike.add(0);
-            s += "  AND STATUS = ?" + listLike.size();
+            if (!StringUtils.isEmpty(status)) {
+                listLike.add(status);
+                s += "  AND STATUS = ?" + listLike.size();
+            }
         }
         if (!StringUtils.isEmpty(loginstatus)) {
             listLike.add(loginstatus);
             s += " AND u.LOGINSTATUS  = ?" + listLike.size();
-//            s += " AND LOGINSTATUS  = ?" + listLike.size();
         }
-        //  修改增加未到位类别   增加未到位原因字段      ---> 李成阳
-//        String sql = "SELECT e.CREATE_TIME,x.TASK_NAME,u.DEPT,u.COMPANYNAME,u.CLASSNAME,u.REALNAME,u.PHONE, '巡视超速' as  type,e.REASON,e.TASK_ID,e.USER_ID,e.TASK_TYPE,u.LOGINSTATUS " +
-//                "      FROM MONITOR_CHECK_EJ e LEFT JOIN XS_ZC_TASK x ON e.TASK_ID=x.ID LEFT JOIN USERINFO u ON x.CM_USER_ID = u.ID" +
-//                "      WHERE (WARNING_TYPE = 5 OR WARNING_TYPE = 3)  " + s + "";
-//        String sql = " SELECT a.*,w.WARNING_NAME AS type  FROM (\n" +
-//                "SELECT\n" +
-//                "  e.CREATE_TIME,\n" +
-//                "  x.TASK_NAME,\n" +
-//                "  u.DEPT,\n" +
-//                "  u.COMPANYNAME,\n" +
-//                "  u.CLASSNAME,\n" +
-//                "  u.REALNAME,\n" +
-//                "  u.PHONE,\n" +
-//                "  WARNING_TYPE,\n" +
-//                "  e.REASON,\n" +
-//                "  e.TASK_ID,\n" +
-//                "  e.USER_ID,\n" +
-//                "  e.TASK_TYPE,\n" +
-//                "  u.LOGINSTATUS\n" +
-//                "FROM MONITOR_CHECK_EJ e LEFT JOIN XS_ZC_TASK x ON e.TASK_ID = x.ID\n" +
-//                "  LEFT JOIN USERINFO u ON x.CM_USER_ID = u.ID\n" +
-//                "WHERE (WARNING_TYPE = 5 OR WARNING_TYPE = 3)  AND TASK_STATUS = 0  " + s + " ) a LEFT JOIN WARNING_TYPE w ON a.WARNING_TYPE = w.WARNING_TYPE  ";
         String sql = " SELECT\n" +
                 "  a.*,\n" +
                 "  w.WARNING_NAME AS type,\n" +
@@ -122,7 +110,7 @@ public class UnqualifiedpatrolController extends CurdController<RztSysUser, Comm
                 "         u.LOGINSTATUS\n" +
                 "       FROM MONITOR_CHECK_EJ e LEFT JOIN XS_ZC_TASK x ON e.TASK_ID = x.ID\n" +
                 "         LEFT JOIN USERINFO u ON x.CM_USER_ID = u.ID\n" +
-                "       WHERE (WARNING_TYPE = 5 OR WARNING_TYPE = 3)  AND TASK_STATUS = 0  " + s +
+                "       WHERE (WARNING_TYPE = 5 OR WARNING_TYPE = 3)    " + s +
                 "             ) a LEFT JOIN WARNING_TYPE w\n" +
                 "    ON a.WARNING_TYPE = w.WARNING_TYPE\n" +
                 "  LEFT JOIN (SELECT\n" +
@@ -135,7 +123,7 @@ public class UnqualifiedpatrolController extends CurdController<RztSysUser, Comm
                 "         x.ID\n" +
                 "       FROM MONITOR_CHECK_EJ e LEFT JOIN XS_ZC_TASK x ON e.TASK_ID = x.ID\n" +
                 "         LEFT JOIN USERINFO u ON x.CM_USER_ID = u.ID\n" +
-                "       WHERE (WARNING_TYPE = 5 OR WARNING_TYPE = 3)  AND TASK_STATUS = 0  " + s +
+                "       WHERE (WARNING_TYPE = 5 OR WARNING_TYPE = 3)   " + s +
                 "             )\n" +
                 "             GROUP BY e.XS_ZC_TASK_ID) de ON a.TASK_ID = de.XS_ZC_TASK_ID  ";
         try {
