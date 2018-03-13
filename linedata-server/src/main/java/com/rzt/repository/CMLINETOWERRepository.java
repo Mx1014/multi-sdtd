@@ -24,6 +24,6 @@ import com.rzt.entity.CMLINETOWER;
 public interface CMLINETOWERRepository extends JpaRepository<CMLINETOWER,String> {
 
      @Modifying
-     @Query(value = "update cm_tower set lon=?2 , lat = ?3 where id=?1",nativeQuery = true)
-    void updatetowerPosition(Long aLong, String lon, String lat);
+     @Query(value = "update cm_tower set LONGITUDE=?2 , LATITUDE = ?3 where id=?1",nativeQuery = true)
+    void updatetowerPosition(Long id, String lon, String lat);
 }

@@ -65,10 +65,10 @@ public class CMTOWERTTBJ implements Serializable{
     	//字段描述: 段落4
    	 @Column(name = "SECTION4")
      private String section4;
-    
+
 	public void setId(Long id){
 		if(id==null||id==0){
-			this.id = new SnowflakeIdWorker(1,5).nextId();
+			this.id = SnowflakeIdWorker.getInstance(9,7).nextId();
 		}else{
 			this.id = id;
 		}

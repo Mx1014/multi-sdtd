@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-/**      
+/**
  * 类名称：CMLINESECTIONRepository    
  * 类描述：    
  * 创建人：张虎成   
@@ -36,4 +36,5 @@ public interface CMLINESECTIONRepository extends JpaRepository<CMLINESECTION,Str
     void updateTowerSort(Long lineId);
 
     void deleteById(Long id);
+
 }

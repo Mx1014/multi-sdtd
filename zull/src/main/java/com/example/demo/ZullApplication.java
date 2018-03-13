@@ -1,5 +1,6 @@
 package com.example.demo;
 
+import com.rzt.filter.AccessTokenFilter;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
@@ -78,8 +79,8 @@ public class ZullApplication {
 
 	}
 	@Bean
-	public com.example.demo.AccessFilter accessFilter(){
-		return  new com.example.demo.AccessFilter();
+	public AccessTokenFilter accessFilter(){
+		return  new AccessTokenFilter();
 	}
 	public static void main(String[] args) {
 		SpringApplication.run(ZullApplication.class, args);

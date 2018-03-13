@@ -11,10 +11,13 @@ import com.netflix.discovery.converters.Auto;
 import com.rzt.entity.KhTask;
 import com.rzt.entity.KhYhHistory;
 import com.rzt.entity.XsSbYh;
+import com.rzt.repository.KhYhHistoryRepository;
 import com.rzt.service.KhYhHistoryService;
 import com.rzt.util.WebApiResponse;
+import com.rzt.utils.DateUtil;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,8 +27,9 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletResponse;
-import java.util.List;
-import java.util.Map;
+import javax.websocket.Session;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * 类名称：KHYHHISTORYController
@@ -42,6 +46,8 @@ public class KhYhHistoryController extends
         CurdController<KhYhHistory, KhYhHistoryService> {
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+    @Autowired
+    private KhYhHistoryRepository repository;
 
     @ApiOperation(notes = "施工情况", value = "施工情况")
     @PostMapping("/saveYh")
@@ -60,8 +66,11 @@ public class KhYhHistoryController extends
     @ApiOperation(notes = "地图撒坐标点", value = "地图撒坐标点")
     @GetMapping("/listCoordinate")
     @ResponseBody
-    public WebApiResponse listCoordinate(String yhjb, String yhlb) {
-        return this.service.listCoordinate(yhjb, yhlb);
+    public WebApiResponse listCoordinate(String yhjb, String yhlb, String currentUserId,String queryAll,String deptId) {
+        HashOperations<String, Object, Object> hash = redisTemplate.opsForHash();
+        Object userInformation = hash.get("UserInformation", currentUserId);
+        JSONObject jsonObject = JSONObject.parseObject(userInformation.toString());
+        return this.service.listCoordinate(yhjb, yhlb, jsonObject,queryAll,deptId);
     }
 
     @ApiOperation(notes = "地图查看隐患信息", value = "地图查看隐患信息")
@@ -102,11 +111,6 @@ public class KhYhHistoryController extends
         return service.updateYhHistory(yh, startTowerName, endTowerName);
     }
 
-    @ApiOperation(value = "隐患重新定级", notes = "隐患重新定级")
-    @PatchMapping("updateYhjb")
-    public WebApiResponse updateYhjb(String yhjb) {
-        return service.updateYhjb(yhjb);
-    }
 
     @ApiOperation(value = "区镇村三级联动", notes = "区镇村三级联动")
     @GetMapping("lineArea")
@@ -135,8 +139,8 @@ public class KhYhHistoryController extends
 
     @ApiOperation(value = "杆塔坐标采集", notes = "杆塔坐标采集")
     @GetMapping("updateTowerById")
-    public WebApiResponse updateTowerById(long id, String lon, String lat) {
-        return this.service.updateTowerById(id, lon, lat);
+    public WebApiResponse updateTowerById(long id, String lon, String lat, String userId, String lineName, String detailId) {
+        return this.service.updateTowerById(id, lon, lat, userId, lineName, detailId);
     }
 
     @ApiOperation(value = "判断线路是否属于通州公司、门头沟公司", notes = "隐患台账删除")
@@ -147,8 +151,8 @@ public class KhYhHistoryController extends
 
     @ApiOperation(value = "隐患台账图片展示", notes = "隐患台账图片展示")
     @GetMapping("findYhPicture")
-    public WebApiResponse findYhPicture(long yhId) {
-        return this.service.findYhPicture(yhId);
+    public WebApiResponse findYhPicture(String yhId) {
+        return this.service.findYhPicture(Long.parseLong(yhId));
     }
 
     @ApiOperation(value = "隐患台账图片展示", notes = "隐患台账图片展示")
@@ -160,7 +164,7 @@ public class KhYhHistoryController extends
             for (Map map : maps) {
                 long id = Long.parseLong(map.get("ID").toString());
                 String td = map.get("TD").toString();
-                this.service.addTdOrgId(Long.parseLong(map.get("ID").toString()), map.get("TD").toString(),map.get("WX"));
+                this.service.addTdOrgId(Long.parseLong(map.get("ID").toString()), map.get("TD").toString(), map.get("WX"));
 //                try {
 //                    this.service.addTdOrgId2(Long.parseLong(map.get("ID").toString()), );
 //                } catch (NumberFormatException e) {
@@ -171,9 +175,86 @@ public class KhYhHistoryController extends
             e.printStackTrace();
         }
     }
-    @ApiOperation(value = "隐患台账图片展示", notes = "隐患台账图片展示")
-    @GetMapping("addadd")
-    public void addadd() {
-        this.service.list();
+
+
+    //隐患采集记录
+    @Transactional
+    @GetMapping("listUpdateRecord")
+    public WebApiResponse listUpdateRecord(Pageable pageable, String deptId) {
+        try {
+            String s = "";
+            if (deptId != null && !deptId.equals("")) {
+                s = " and u.DEPTID='" + deptId + "' ";
+            }
+            String sql = "SELECT\n" +
+                    "  zt.TASK_NAME,\n" +
+                    "  D.DEPTNAME,\n" +
+                    "  U.REALNAME,\n" +
+                    "  L.V_LEVEL,\n" +
+                    "  t.NAME,\n" +
+                    "  R.*\n" +
+                    " FROM CM_TOWER_UPDATE_RECORD R LEFT JOIN RZTSYSUSER U ON U.ID = R.USER_ID\n" +
+                    "  LEFT JOIN CM_TOWER T ON T.ID = R.TOWER_ID\n" +
+                    "  LEFT JOIN CM_LINE L ON L.ID = T.LINE_ID LEFT JOIN RZTSYSDEPARTMENT D ON D.ID =U.DEPTID \n" +
+                    "  LEFT JOIN XS_ZC_TASK_EXEC_DETAIL ED on ed.id = r.DETAIL_ID LEFT JOIN XS_ZC_TASK_EXEC TE ON ED.XS_ZC_TASK_EXEC_ID = TE.ID\n" +
+                    "  LEFT JOIN XS_ZC_TASK ZT ON ZT.ID = TE.XS_ZC_TASK_ID\n" +
+                    " WHERE r.status = 0\n" + s +
+                    " ORDER BY r.create_time DESC";
+            return WebApiResponse.success(this.service.execSqlPage(pageable, sql));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("失败");
+        }
+    }
+
+    @GetMapping("updateTower")
+    public WebApiResponse updateTower(String towerId, String lon, String lat, String id) {
+        try {
+            repository.updateTowerById(Long.parseLong(towerId), lon, lat);
+            repository.deleteRecord2(Long.parseLong(id));
+            return WebApiResponse.success("成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("失败");
+        }
+    }
+
+    //生成看护点
+    @Transactional
+    @GetMapping("saveCycle")
+    public WebApiResponse saveCycle(String yhId) {
+        try {
+            this.service.saveCycle(Long.parseLong(yhId));
+            return WebApiResponse.success("成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("失败");
+        }
+    }
+
+    @Transactional
+    @GetMapping("listTowerPicture")
+    public WebApiResponse listTowerPicture(String detailId) {
+        try {
+            /* String sql = "SELECT OPERATE_NAME FROM XS_ZC_TASK_EXEC_DETAIL where id = ?";
+            Map<String, Object> map = this.service.execSqlSingleResult(sql, Long.parseLong(detailId));*/
+            String sql = "SELECT * FROM PICTURE_TOUR WHERE PROCESS_id =?";
+            List<Map<String, Object>> list = this.service.execSql(sql, detailId);
+            return WebApiResponse.success(list);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("失败");
+        }
+    }
+
+    @GetMapping("/deleteRecord")
+    public WebApiResponse deleteRecord(String id) {
+        try {
+            repository.deleteRecord(Long.parseLong(id));
+            return WebApiResponse.success("成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("失败");
+        }
     }
 }

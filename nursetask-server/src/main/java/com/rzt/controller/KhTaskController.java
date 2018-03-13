@@ -46,13 +46,13 @@ public class KhTaskController extends
      */
     @GetMapping("/listAllKhTask.do")
     @ResponseBody
-    public WebApiResponse listAllKhTask(KhTaskModel task, String status, Integer page,Integer size, String yworg, String currentUserId,String home) {
+    public WebApiResponse listAllKhTask(KhTaskModel task, String status, Integer page,Integer size, String yworg, String currentUserId,String home,String tdOrg) {
         Pageable pageable = new PageRequest(page, size);
         try {
             //分页参数 page size
             HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
             JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", currentUserId).toString());
-            Object o = this.service.listAllKhTask(task, status, pageable, Integer.valueOf(jsonObject.get("ROLETYPE").toString()), yworg, currentUserId,home);
+            Object o = this.service.listAllKhTask(task, status, pageable, jsonObject, yworg, currentUserId,home,tdOrg);
             return WebApiResponse.success(o);
         } catch (Exception e) {
             e.printStackTrace();
@@ -155,7 +155,7 @@ public class KhTaskController extends
     //定时任务
     @GetMapping("/createTask")
     @ResponseBody
-    public void createTask(String taskId) {
+    public void createTask() {
         this.service.createTask();
     }
 

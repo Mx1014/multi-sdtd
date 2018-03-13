@@ -1,8 +1,8 @@
-/**    
+/**
  * 文件名：CHECKLIVETASKController
- * 版本信息：    
- * 日期：2017/12/04 15:13:15    
- * Copyright 融智通科技(北京)股份有限公司 版权所有    
+ * 版本信息：
+ * 日期：2017/12/04 15:13:15
+ * Copyright 融智通科技(北京)股份有限公司 版权所有
  */
 package com.rzt.controller;
 

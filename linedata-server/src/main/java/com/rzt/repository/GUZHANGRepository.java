@@ -6,6 +6,8 @@
  */
 package com.rzt.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import com.rzt.entity.GUZHANG;
 /**      
@@ -20,4 +22,7 @@ import com.rzt.entity.GUZHANG;
  */
  @Repository
 public interface GUZHANGRepository extends JpaRepository<GUZHANG,String> {
+     @Modifying
+     @Query(value ="update index_pm set score=? where td_org_name like '%'||?||'%'" ,nativeQuery = true)
+    void updatePm(String s, String s1);
 }

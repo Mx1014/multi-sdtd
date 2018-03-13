@@ -13,6 +13,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import javax.transaction.Transactional;
+import java.util.Date;
+import java.util.List;
 
 /**
  * 类名称：XSZCTASKRepository
@@ -44,4 +46,19 @@ public interface XSZCTASKRepository extends JpaRepository<XSZCTASK, String> {
     @Transactional
     @Query(value = "update xs_zc_task set td_org = ?2,wx_org = ?3,group_id = ?4,class_id = ?5 where id = ?1", nativeQuery = true)
     void updateTask(Object id, Object deptid, Object companyid, Object groupid, Object classname);
+
+    @Modifying
+    @Transactional
+    @Query(value = "insert into QUEXIAN (id,USER_ID,DEPT_ID,TOWER_ID,LINE_ID,TASK_ID, PROCESS_ID,CREATE_TIME,QX_MS,QX_POSITION,QX_TYPE) VALUES (?,?,?,?,?,?,?,?,?,?,?)", nativeQuery = true)
+    void insertGuZhang(long qxId, String cm_user_id, String td_org,Long towerID,Long lineId,Long taskId, Long processId, Date date, String qxMs, Integer qxPosition, Integer qxType);
+
+    @Modifying
+    @Transactional
+    @Query(value = "update PICTURE_QX set QX_ID = ?2 where id in (?1)", nativeQuery = true)
+    void updateQxId(List<Long> picIdList, long qxId);
+
+    @Modifying
+    @Transactional
+    @Query(value = "update xs_zc_task set STAUTS = 2,REAL_END_TIME=sysdate where id = ?1", nativeQuery = true)
+    void updateTasks(Long id);
 }

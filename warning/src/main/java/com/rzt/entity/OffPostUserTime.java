@@ -39,6 +39,17 @@ public class OffPostUserTime implements Serializable{
 	@Column(name = "FK_TASK_ID")
 	private Long FkTaskId; //任务id
 
+	@Column(name = "TIME_STATUS")
+	private Integer timeStatus;
+
+	public Integer getTimeStatus() {
+		return timeStatus;
+	}
+
+	public void setTimeStatus(Integer timeStatus) {
+		this.timeStatus = timeStatus;
+	}
+
 	public Long getFkTaskId() {
 		return FkTaskId;
 	}

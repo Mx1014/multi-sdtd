@@ -65,11 +65,12 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 
 	@ApiOperation(value = "看护稽查任务派发",notes = "看护稽查任务派发")
 	@GetMapping("/paifaKhCheckTask")
-	public WebApiResponse paifaKhCheckTask(CheckLiveTask task , String username){
+	public WebApiResponse paifaKhCheckTask(CheckLiveTask task , String username,String currentUserId,String ids){
 		try {
-			this.service.paifaKhCheckTask(task,username);
+			this.service.paifaKhCheckTask(task,username,currentUserId,ids);
 			return WebApiResponse.success("任务派发成功");
 		}catch (Exception e){
+			LOGGER.error("任务派发失败",e);
 			return WebApiResponse.erro("任务派发失败");
 		}
 
@@ -79,10 +80,10 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 	@GetMapping("/listKhCheckTaskPage")
 	public WebApiResponse listKhCheckTaskPage(@RequestParam(value = "page",defaultValue = "0") Integer page,
 											  @RequestParam(value = "size",defaultValue = "8") Integer size,
-											  String userId,String tddwId,String currentUserId,String startTime, String endTime,String status){
+											  String userId,String tddwId,String currentUserId,String startTime, String endTime,String status,String queryAll){
 		try{
 			Pageable pageable = new PageRequest(page, size);
-			Page<Map<String, Object>> list = this.service.listKhCheckTaskPage(pageable, userId, tddwId,currentUserId,startTime,endTime,status);
+			Page<Map<String, Object>> list = this.service.listKhCheckTaskPage(pageable, userId, tddwId,currentUserId,startTime,endTime,status,queryAll);
 			return WebApiResponse.success(list);
 		}catch (Exception e){
 			return WebApiResponse.erro("数据获取失败"+e.getMessage());
@@ -103,6 +104,16 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 	public WebApiResponse listKhCheckTaskDetailPicture(String id,String detailId){
 		try{
 			List<Map<String, Object>> list = this.service.listKhCheckTaskDetailPicture(id,detailId);
+			return WebApiResponse.success(list);
+		}catch (Exception e){
+			return WebApiResponse.erro("数据获取失败"+e.getMessage());
+		}
+	}
+	@ApiOperation(value = "地图上稽查任务的图片位置信息",notes = "地图上稽查任务的图片位置信息")
+	@GetMapping("/mapKhCheckTaskDetailPicture")
+	public WebApiResponse mapKhCheckTaskDetailPicture(String ids){
+		try{
+			List<Map<String, Object>> list = this.service.mapKhCheckTaskDetailPicture(ids);
 			return WebApiResponse.success(list);
 		}catch (Exception e){
 			return WebApiResponse.erro("数据获取失败"+e.getMessage());
@@ -165,6 +176,7 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 		}
 	}
 
+
 	@ApiOperation(value = "app根据id获取稽查母任务",notes = "根据id获取稽查母任务")
 	@GetMapping("/getById")
 	public WebApiResponse getById(Long id,String taskType){
@@ -203,6 +215,17 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 		}
 
 	}
+	@ApiOperation(value = "app子任务到达现场",notes = "app子任务到达现场")
+	@GetMapping("/updateArriveTime")
+	public WebApiResponse updateArriveTime(Long id){
+		try{
+			this.service.updateArriveTime(id);
+			return WebApiResponse.success("");
+		}catch (Exception e){
+			LOGGER.error("app子任务到达现场",e);
+			return WebApiResponse.erro("app子任务到达现场");
+		}
+	}
 
 	@ApiOperation(value = "app稽查完成按钮",notes = "稽查完成按钮")
 	@GetMapping("/taskComplete")
@@ -238,6 +261,12 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 			LOGGER.error("稽查任务更新失败",e);
 			return WebApiResponse.erro("稽查任务更新失败");
 		}
+	}
+
+	@ApiOperation(value = "生成稽查看护待派发",notes = "生成稽查看护待派发")
+	@GetMapping("/generalKhSite")
+	public void generalKhSite(){
+		service.generalKhSite();
 	}
 
 

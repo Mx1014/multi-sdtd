@@ -37,6 +37,7 @@ public class AppKhUpdateService extends CurdService<KhTask, AppKhUpdateRepositor
     public WebApiResponse updateRealTime(long taskId, String userId) {
         try {
             int num = this.reposiotry.findNum(taskId);
+            this.reposiotry.updateMonitorCheckEjXsJxz(taskId);
             if (num < 1) {
                 //if (isdw != null && reason != null) {
                 this.reposiotry.updateRealStartTime(taskId, DateUtil.dateNow());
@@ -67,7 +68,6 @@ public class AppKhUpdateService extends CurdService<KhTask, AppKhUpdateRepositor
             }
             return WebApiResponse.success("修改成功");
         } catch (Exception e) {
-            e.printStackTrace();
             return WebApiResponse.erro("修改失败");
         }
     }
@@ -111,8 +111,8 @@ public class AppKhUpdateService extends CurdService<KhTask, AppKhUpdateRepositor
                 this.reposiotry.updateIsDz(taskId, Integer.parseInt(isdw), reason);
             }
             try {
-                if (isdw.equals("1") && userId != null) {
-                    warningServer.khWFDW(taskId, userId);
+                if (isdw.equals("0") && userId != null) {
+//                    warningServer.khWFDW(taskId, userId);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -143,6 +143,7 @@ public class AppKhUpdateService extends CurdService<KhTask, AppKhUpdateRepositor
     public WebApiResponse updateEndTime(long taskId, String userId) {
         try {
             this.reposiotry.updateEndTime(DateUtil.dateNow(), taskId);
+            this.reposiotry.updateGj(taskId);
             try {
                 if (userId != null) {
                     userService.updateKhInfoStatusInredis(userId);

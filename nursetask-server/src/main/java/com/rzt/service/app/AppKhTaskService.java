@@ -3,15 +3,23 @@ package com.rzt.service.app;
 import com.rzt.entity.KhTask;
 import com.rzt.entity.KhTaskWpqr;
 import com.rzt.repository.AppKhTaskRepository;
+import com.rzt.repository.KhTaskWpqrRepository;
 import com.rzt.service.CurdService;
 import com.rzt.service.KhTaskWpqrService;
 import com.rzt.util.WebApiResponse;
+import com.rzt.utils.Constances;
 import com.rzt.utils.DateUtil;
+import com.sun.org.apache.bcel.internal.generic.IF_ACMPEQ;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.geo.Point;
+import org.springframework.data.redis.core.GeoOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -37,7 +45,7 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
 
     public WebApiResponse appListkhTaskById(String taskId) {
         try {
-            String result = "K.TASK_NAME AS TASKNAME,H.YHMS AS MS,H.YHJB AS JB,K.PLAN_START_TIME AS STARTTIME,K.PLAN_END_TIME AS ENDTIME,K.STATUS AS STATUS ";
+            String result = "K.TASK_NAME AS TASKNAME,H.YHMS AS MS,H.YHJB1 AS JB,K.PLAN_START_TIME AS STARTTIME,K.PLAN_END_TIME AS ENDTIME,K.STATUS AS STATUS ";
             String sql = "SELECT " + result + " FROM KH_TASK k LEFT JOIN KH_YH_HISTORY H on k.yh_id = h.id WHERE K.ID=?";
             List<Map<String, Object>> list = this.execSql(sql, Long.parseLong(taskId));
             return WebApiResponse.success(list);
@@ -56,7 +64,7 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
             return WebApiResponse.erro("数据获取失败");
         }
     }
-
+    @Transactional
     public WebApiResponse appListWp(String userId, String taskId) {
         try {
             String sql = "select wp_zt from kh_task_wpqr where taskId=?";
@@ -65,6 +73,10 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
                 Map map1 = new HashMap<>();
                 map1.put("WP_ZT", "0,0,0,0,0");
                 map.add(map1);
+                KhTaskWpqr wpqr = new KhTaskWpqr();
+                wpqr.setTaskId(Long.parseLong(taskId));
+                wpqr.setWpzt("0,0,0,0,0,0");
+                wpqrService.add(wpqr);
             }
             return WebApiResponse.success(map);
         } catch (Exception e) {
@@ -76,7 +88,7 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
     public WebApiResponse appListCl(String taskId) {
         try {
             String sql = "select cl_zt from kh_task_wpqr where taskId=?";
-            Map<String, Object> map = this.execSqlSingleResult(sql, taskId);
+            Map<String, Object> map = this.execSqlSingleResult(sql, Long.parseLong(taskId));
             if (map.get("CL_ZT") == null) {
                 map.put("CL_ZT", "0,0,0,0,0,0");
             }
@@ -146,7 +158,7 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
     }
 
     //获取中心点坐标  现获取看护点的坐标  如果不存在，就用隐患的坐标
-    public List<Map<String, Object>> getPoint(long taskId) {
+    public List<Map<String, Object>> listYhPoint(long taskId) {
         String sql = "select c.radius as ROUND,c.longitude as jd,c.latitude as wd from kh_cycle c left join kh_site s on s.yh_id = c.yh_id left join kh_task k on k.site_id = s.id where k.id = ?";
         List<Map<String, Object>> list = this.execSql(sql, taskId);
         if (!list.isEmpty()) {
@@ -169,13 +181,14 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
                     }
                     map.put("ROUND", round + ".0");
                 }
-            }else {
-                map.put("ROUND","300.0");
+            } else {
+                map.put("ROUND", "300.0");
             }
             map.put("URL", "http://39.106.206.129:8097/warningServer/warning/KHOffPost");
         }
         return list;
     }
+
 
     public WebApiResponse listPhone(long taskId) {
         try {
@@ -216,7 +229,7 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
 
     public WebApiResponse appListTaskDone(String userId, long taskId) {
         try {
-            String sql = "SELECT k.status status,k.TASK_NAME taskname,y.YHMS ms,y.YHJB jb,k.PLAN_START_TIME starttime,k.PLAN_END_TIME endtime,u.REALNAME name,u.PHONE phone,d.DEPTNAME\n" +
+            String sql = "SELECT k.status status,k.TASK_NAME taskname,y.YHMS ms,y.YHJB1 jb,k.PLAN_START_TIME starttime,k.PLAN_END_TIME endtime,u.REALNAME name,u.PHONE phone,d.DEPTNAME\n" +
                     "from KH_TASK k,KH_YH_HISTORY y,RZTSYSUSER u,RZTSYSDEPARTMENT d\n" +
                     "where k.YH_ID=y.id and k.USER_ID = u.id and d.ID = u.CLASSNAME\n" +
                     "and k.id = ?";
@@ -259,6 +272,28 @@ public class AppKhTaskService extends CurdService<KhTask, AppKhTaskRepository> {
             return -1;
         } else {//相等
             return 0;
+        }
+    }
+
+    public WebApiResponse appComparePz(long taskId) {
+        try {
+            String sql = "select plan_end_time end as time from kh_task where id=" + taskId;
+            Map<String, Object> map = this.execSqlSingleResult(sql);
+            Date end = DateUtil.parseDate(map.get("END").toString());
+            if (end.getTime() <= System.currentTimeMillis()) {
+                try {
+                    sql = "SELECT max(CREATE_TIME) time FROM PICTURE_KH where task_id ="+taskId;
+                    Map<String, Object> map1 = this.execSqlSingleResult(sql);
+                    if (DateUtil.getDatePoor(new Date(),DateUtil.parseDate(map1.get("TIME").toString()))>=1){
+                        return WebApiResponse.erro("超过一小时");
+                    }
+                } catch (Exception e) {
+                    return WebApiResponse.success("没有开始拍照");
+                }
+            }
+            return WebApiResponse.success("没有超过1小时");
+        } catch (Exception e) {
+            return WebApiResponse.erro("报错了"+e.getMessage());
         }
     }
 }

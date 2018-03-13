@@ -14,6 +14,15 @@ public class XsTaskSCh implements Serializable {
     private String tdOrg;
     private String userId;
     private String taskName;
+    private String loginType;
+
+    public void setLoginType(String loginType) {
+        this.loginType = loginType;
+    }
+
+    public String getLoginType() {
+        return loginType;
+    }
 
     public String getTaskName() {
         return taskName;

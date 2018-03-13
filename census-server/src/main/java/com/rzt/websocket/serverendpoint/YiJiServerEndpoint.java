@@ -27,17 +27,19 @@ import java.util.concurrent.ConcurrentHashMap;
 @ServerEndpoint("/serverendpoint/wuDServerEndpoint/{userId}")
 public class YiJiServerEndpoint {
 
-    static RedisTemplate<String,Object> redisTemplate;
+    static RedisTemplate<String, Object> redisTemplate;
     private static YiJiPushService yiJiPushService;
 
     @Autowired
-    public void setRedisTemplate(RedisTemplate<String,Object> redisTemplate) {
+    public void setRedisTemplate(RedisTemplate<String, Object> redisTemplate) {
         YiJiServerEndpoint.redisTemplate = redisTemplate;
     }
+
     @Resource
     public void setWuDPushService(YiJiPushService wuDPushService) {
         YiJiServerEndpoint.yiJiPushService = wuDPushService;
     }
+
     /**
      * WebSocket服务器端通过一个线程安全的队列来保持所有客户端的Session
      */
@@ -55,21 +57,22 @@ public class YiJiServerEndpoint {
         //放人员
         HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
         Object userInformation = hashOperations.get("UserInformation", userId);
-        HashMap jsonObject = JSONObject.parseObject(userInformation.toString(),HashMap.class);
-        jsonObject.put("session",session);
+        HashMap jsonObject = JSONObject.parseObject(userInformation.toString(), HashMap.class);
+        jsonObject.put("session", session);
         String sessionId = session.getId();
         livingSessions.put(sessionId, jsonObject);
         //tui - tui - tui
-        yiJiPushService.module1Method(new HashMap<>(),jsonObject);
-        yiJiPushService.module2Method(new HashMap<>(),jsonObject);
-        yiJiPushService.module3Method(new HashMap<>(),jsonObject);
-        yiJiPushService.module4Method(new HashMap<>(),jsonObject);
+        yiJiPushService.module1Method(new HashMap<>(), jsonObject);
+        yiJiPushService.module2Method(new HashMap<>(), jsonObject);
+        yiJiPushService.module3Method(new HashMap<>(), jsonObject);
+        yiJiPushService.module4Method(new HashMap<>(), jsonObject);
         yiJiPushService.module5(sessionId);
         yiJiPushService.module6(sessionId);
         yiJiPushService.module7(sessionId);
         yiJiPushService.module8(sessionId);
         yiJiPushService.module9(sessionId);
         yiJiPushService.module10(sessionId);
+
 
     }
 
@@ -112,7 +115,7 @@ public class YiJiServerEndpoint {
         try {
             String s = JSONObject.toJSONString(message);
             //解决这个异常 java.lang.IllegalStateException: The remote endpoint was in state [TEXT_PARTIAL_WRITING] which is an invalid state for called method
-            synchronized(basic) {
+            synchronized (basic) {
                 basic.sendText(s);
             }
         } catch (IOException e) {

@@ -7,18 +7,17 @@
 package com.rzt.service;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.netflix.ribbon.proxy.annotation.Http;
-import com.rzt.entity.KhCycle;
-import com.rzt.entity.KhSite;
-import com.rzt.entity.XsSbYh;
+import com.rzt.entity.*;
 import com.rzt.eureka.MonitorService;
 import com.rzt.repository.KhYhHistoryRepository;
-import com.rzt.entity.KhYhHistory;
 import com.rzt.repository.XsSbYhRepository;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DateUtil;
 import com.rzt.utils.ExcelUtil;
 import com.rzt.utils.HanyuPinyinHelper;
+import com.rzt.utils.SnowflakeIdWorker;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -27,6 +26,7 @@ import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
@@ -72,7 +72,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                     //double jd = (Double.parseDouble(map.get("LONGITUDE").toString()) + Double.parseDouble(map1.get("LONGITUDE").toString())) / 2;
                     // double wd = (Double.parseDouble(map.get("LATITUDE").toString()) + Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
                     // double radius = MapUtil.GetDistance(Double.parseDouble(map.get("LONGITUDE").toString()), Double.parseDouble(map.get("LATITUDE").toString()), Double.parseDouble(map1.get("LONGITUDE").toString()), Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
-                    yh.setRadius("200.0");
+                    yh.setRadius("500.0");
                     yh.setJd(map.get("LONGITUDE").toString());
                     yh.setWd(map.get("LATITUDE").toString());
                 }
@@ -96,10 +96,13 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                     Map<String, Object> map = this.execSqlSingleResult(sql, yh.getTdywOrg() + "%");
                     yh.setTdorgId(map.get("ID").toString());
                 }
+                if (yh.getTdwxOrg()!=null && ("null").equals(yh.getTdwxOrg())){
+                    yh.setTdwxOrg("");
+                    yh.setWxorgId("");
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            yh.setYhjb("一般");
             yh.setSdgs(1);//手机导入
             yh.setSfdj(0);  //未定级
             yh.setYhzt(0);//隐患未消除
@@ -136,7 +139,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             } catch (NumberFormatException e) {
                 e.printStackTrace();
             }
-            // this.reposiotry.updateYh(Long.parseLong(yhId), lat, lon, radius);
+             this.reposiotry.updateYh(Long.parseLong(yhId), lat, lon, radius);
             this.reposiotry.updateCycle(Long.parseLong(yhId), lat, lon, radius);
             return WebApiResponse.success("保存成功");
         } catch (Exception e) {
@@ -144,31 +147,81 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         }
     }
 
-    public WebApiResponse listCoordinate(String yhjb, String yhlb) {
+    public WebApiResponse listCoordinate(String yhjb, String yhlb, JSONObject josn, String queryAll, String deptId) {
         try {
+            List params = new ArrayList<>();
             StringBuffer buffer = new StringBuffer();
-            List<Object> params = new ArrayList<>();
-            buffer.append(" where s.YH_ID=y.ID ");
+            Map jsonObject = JSON.parseObject(josn.toString(), Map.class);
+            Integer roleType = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
+            Object tdId = jsonObject.get("DEPTID");
+            Object companyid = jsonObject.get("COMPANYID");
+            buffer.append(" where yhzt=0 ");
+            if (roleType == 0) {
+                if (!StringUtils.isEmpty(deptId)) {
+                    if (!org.apache.commons.lang.StringUtils.isEmpty(deptId)) {
+                        String[] split = deptId.split(",");
+                        for (int i = 0; i < split.length; i++) {
+                            if (i > 0) {
+                                buffer.append(" or YWORG_ID='" + split[i] + "' ");
+                            } else {
+                                buffer.append(" and ( YWORG_ID='" + split[i] + "' ");
+                            }
+                        }
+                        buffer.append(") ");
+                    }
+                }
+            } else if (roleType == 1 || roleType == 2) {
+                buffer.append(" and y.YWORG_ID = '" + tdId + "'");
+            }
+            if (roleType == 3) {
+                buffer.append(" and y.WXORG_ID ='" + companyid + "'");
+            }
             if (yhjb != null && !yhjb.equals("")) {
-                buffer.append(" and yhjb1 like");
-                params.add("%" + yhjb + "%");
+                String[] split = yhjb.split(",");
+                String result = "";
+                for (int i = 0; i < split.length; i++) {
+                    String s = "'" + split[i] + "'";
+                    result += s + ",";
+                }
+                buffer.append(" and yhjb1 in (" + result.substring(0, result.lastIndexOf(",")) + ")");
             }
             if (yhlb != null && !yhlb.equals("")) {
-                buffer.append(" and yhlb like");
+                buffer.append(" and yhlb like ?");
                 params.add("%" + yhlb + "%");
             }
-            buffer.append(" and yhzt = 0 ");
-            String sql = "SELECT DISTINCT(s.yh_id),y.* " +
-                    "FROM KH_YH_HISTORY y ,KH_SITE s " + buffer.toString();
-            List<Map<String, Object>> list = this.execSql(sql, params.toArray());
-            List<Object> list1 = new ArrayList<>();
-            for (Map map : list) {
-                // System.out.println(map.get("JD").toString());
-                if (map != null && map.size() > 0 && map.get("JD") != null) {
-                    list1.add(map);
+//            buffer.append(" and yhzt = 0 ");
+            String sql = "";
+            if (queryAll != null) {
+                sql = "select id as yhid,y.* from KH_YH_HISTORY y " + buffer.toString();
+                List<Map<String, Object>> maps = this.execSql(sql, params.toArray());
+                return WebApiResponse.success(this.execSql(sql, params.toArray()));
+            } else {
+                sql = "SELECT DISTINCT(y.id) as yhid, y.* FROM ( SELECT  y.id as yh_id, y.* FROM KH_YH_HISTORY y WHERE YHLB LIKE '在施类' AND YHZT = 0 UNION ALL SELECT DISTINCT  (s.YH_ID), y.* FROM KH_YH_HISTORY y, KH_SITE s  WHERE s.YH_ID = y.ID AND s.STATUS = 1 AND y.yhzt = 0) y " + buffer.toString();
+//               sql = "SELECT DISTINCT(y.id) as yhid, y.* FROM KH_YH_HISTORY y, KH_SITE s  WHERE s.YH_ID = y.ID AND s.STATUS = 1 AND y.yhzt = 0 " + buffer.toString();
+                List<Map<String, Object>> list = this.execSql(sql, params.toArray());
+                List<Object> list1 = new ArrayList<>();
+                for (Map map : list) {
+                    if (map != null && map.size() > 0 && map.get("JD") != null) {
+                        sql = "select u.realname from kh_site s left join rztsysuser u on u.id =s.user_id where yh_id=? and s.status=1";
+                        List<Map<String, Object>> nameList = this.execSql(sql, Long.parseLong(map.get("ID").toString()));
+                        String realname = "";
+                        map.put("USERNAME", "无");
+                        try {
+                            if (nameList.size() > 0) {
+                                for (int i = 0; i < nameList.size(); i++) {
+                                    if (!realname.contains((nameList.get(i).get("REALNAME")).toString())) {
+                                        realname += nameList.get(i).get("REALNAME") + " ";
+                                    }
+                                }
+                                map.put("USERNAME", realname);
+                            }
+                        } catch (Exception e) {
+                        }
+                        list1.add(map);
+                    }
                 }
+                return WebApiResponse.success(list1);
             }
-            return WebApiResponse.success(list1);
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("获取失败" + e.getMessage());
@@ -187,6 +240,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
     //导入隐患生成看护点的方法
     public void addKhCycle(KhYhHistory yh, KhCycle cycle) {
         try {
+
             String kv = yh.getVtype();
             if (kv.contains("kV")) {
                 kv = kv.substring(0, kv.indexOf("k"));
@@ -211,8 +265,9 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         }
     }
 
+
     public WebApiResponse exportYhHistory(HttpServletResponse response, Object josn, String currentUserId) {
-        String sql1 = "select y.* from kh_yh_history y left join kh_site c on y.id=c.yh_id where y.yhzt=0 ";
+        String sql1 = "select DISTINCT(c.YH_ID),y.* from kh_yh_history y left join kh_site c on y.id=c.yh_id where y.yhzt=0 ";
         Map jsonObject = JSON.parseObject(josn.toString(), Map.class);
         Integer roleType = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
         Object tdId = jsonObject.get("DEPTID");
@@ -352,9 +407,6 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             cell.setCellValue("是否栽装警示牌");
             cell.setCellStyle(headerStyle);
             cell = row.createCell((short) 25);
-            cell.setCellValue("危急程度");
-            cell.setCellStyle(headerStyle);
-            cell = row.createCell((short) 26);
             cell.setCellValue("管控措施");
             cell.setCellStyle(headerStyle);
             //Sheet sheet = wb.getSheetAt(0);
@@ -382,8 +434,10 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 }
                 if (task.get("SECTION") != null) {
                     String[] sections = task.get("SECTION").toString().split("-");
-                    row.createCell(6).setCellValue(sections[0]);//起始杆塔
-                    row.createCell(7).setCellValue(sections[1]);//终止杆塔
+                    if (sections.length > 1) {
+                        row.createCell(6).setCellValue(sections[0]);//起始杆塔
+                        row.createCell(7).setCellValue(sections[1]);//终止杆塔
+                    }
                 }
                 if (task.get("SJXL") != null) {
                     row.createCell(8).setCellValue(task.get("SJXL").toString());
@@ -436,11 +490,11 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 if (task.get("JSP") != null) {
                     row.createCell(24).setCellValue(task.get("JSP").toString());
                 }
-                if (task.get("YHJB") != null) {
+               /* if (task.get("YHJB") != null) {
                     row.createCell(25).setCellValue(task.get("YHJB").toString());
-                }
+                }*/
                 if (task.get("GKCS") != null) {
-                    row.createCell(26).setCellValue(task.get("GKCS").toString());
+                    row.createCell(25).setCellValue(task.get("GKCS").toString());
                 }
             }
             OutputStream output = response.getOutputStream();
@@ -458,13 +512,24 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         return WebApiResponse.success("");
     }
 
+    //修改隐患信息
     public WebApiResponse updateYhHistory(KhYhHistory yh, String startTowerName, String endTowerName) {
         try {
             if (startTowerName != null && !startTowerName.equals("")) {
                 String section = startTowerName + "-" + endTowerName;
+                String sql = "select * from kh_yh_history where id=?";
+                Map<String, Object> map = this.execSqlSingleResult(sql, yh.getId());
                 this.reposiotry.updateYhHistory(yh.getId(), yh.getYhms(), yh.getStartTower(), yh.getEndTower(), yh.getYhzrdw(), yh.getYhzrdwlxr(), yh.getYhzrdwdh(), section);
+                String kv = map.get("VTYPE").toString();
+                if (kv.contains("kV")) {
+                    kv = kv.substring(0, kv.indexOf("k"));
+                }
+                String taskName = kv + "-" + map.get("LINE_NAME") + " " + section + " 号杆塔看护任务";
+                this.reposiotry.updateKhCycle2(yh.getId(), section, taskName);
+                this.reposiotry.updateKhSite(yh.getId(), section, taskName);
+                this.reposiotry.updateKhTask(yh.getId(), taskName);
             } else {
-                this.reposiotry.updateYhHistory2(yh.getId(), yh.getYhms(), yh.getYhzrdw(), yh.getYhzrdwlxr(), yh.getYhzrdwdh());
+                this.reposiotry.updateYhHistory2(yh.getId(), yh.getYhms(), yh.getYhzrdw(), yh.getYhzrdwlxr(), yh.getYhzrdwdh(), yh.getYhjb1(), yh.getYhlb(), yh.getGkcs());
             }
             return WebApiResponse.success("");
         } catch (Exception e) {
@@ -473,15 +538,6 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         }
     }
 
-    public WebApiResponse updateYhjb(String yhjb) {
-        try {
-//            if (yhjb)
-            return WebApiResponse.success("");
-        } catch (Exception e) {
-            e.printStackTrace();
-            return WebApiResponse.erro("修改失败" + e.getMessage());
-        }
-    }
 
     public WebApiResponse lineArea(Integer id) {
         try {
@@ -576,7 +632,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             yh.setXdxyhjkjl(sbYh.getXdxyhjkjl());
             yh.setJd(sbYh.getJd());
             yh.setWd(sbYh.getWd());
-            yh.setRadius("200.0");
+            yh.setRadius("500.0");
 //            yh.setClassName(sbYh.getLineName());
 //            yh.setClassId(sbYh.getclass);
             String[] split = sbYh.getSection().split("-");
@@ -759,7 +815,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
 
     @Transactional
     public WebApiResponse ImportYh(MultipartFile file) {
-        int i = 2;
+        int i = 1;
         try {
             // FileInputStream file = new FileInputStream("E:\\win10\\新建文件夹\\WeChat Files\\yawang-\\Files\\检分安云云台看护任务.xls ");
 //            FileInputStream file = new FileInputStream("E:\\826708743\\FileRecv\\隐患列表_20180111-程焕竹.xls");
@@ -823,7 +879,11 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 yh.setYhjb1(ExcelUtil.getCellValue(row.getCell(9)));//隐患级别
                 yh.setYhlb(ExcelUtil.getCellValue(row.getCell(10)));//隐患类别
                 yh.setYhms(ExcelUtil.getCellValue(row.getCell(11)));//隐患描述
-                yh.setYhfxsj(DateUtil.parseDate(ExcelUtil.getCellValue(row.getCell(12))));//隐患发现时间
+                try {
+                    yh.setYhfxsj(DateUtil.parseDate2(ExcelUtil.getCellValue(row.getCell(12))));//隐患发现时间
+                } catch (Exception e) {
+                    yh.setYhfxsj(new Date());
+                }
                 yh.setYhtdqx(ExcelUtil.getCellValue(row.getCell(13)));//字段描述: 隐患地点(区县)
                 yh.setYhtdxzjd(ExcelUtil.getCellValue(row.getCell(14)));//字段描述: 隐患地点(乡镇街道)
                 yh.setYhtdc(ExcelUtil.getCellValue(row.getCell(15)));//字段描述: 隐患地点(村)
@@ -836,19 +896,19 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 yh.setXdxyhjkjl(ExcelUtil.getCellValue(row.getCell(22)));//导线对隐患净空距离
                 yh.setYhxcyy(ExcelUtil.getCellValue(row.getCell(23)));//隐患形成原因
                 yh.setJsp(ExcelUtil.getCellValue(row.getCell(24)));//是否栽装警示牌
-                String wjcd = ExcelUtil.getCellValue(row.getCell(25));//危急程度
-                if (wjcd != null && !wjcd.equals("")) {
+                //  String wjcd = ExcelUtil.getCellValue(row.getCell(25));//危急程度
+                /*if (wjcd != null && !wjcd.equals("")) {
                     yh.setYhjb(wjcd);
                 } else {
                     yh.setYhjb("一般");
-                }
-                yh.setGkcs(ExcelUtil.getCellValue(row.getCell(26)));//管控措施
+                }*/
+                yh.setGkcs(ExcelUtil.getCellValue(row.getCell(25)));//管控措施
                 //yh.setZpxgsj(DateUtil.parse(ExcelUtil.getCellValue(row.getCell(27))));//照片修改时间
                 yh.setYhzt(0);//隐患状态
-                yh.setRadius("100.0");
+                yh.setRadius("500.0");
                 yh.setSdgs(2);//execl导入
                 yh.setSfdj(1);//已定级
-                yh.setCreateTime(DateUtil.parseDate(ExcelUtil.getCellValue(row.getCell(12))));
+                yh.setCreateTime(new Date());//DateUtil.parseDate(ExcelUtil.getCellValue(row.getCell(12)))
 
                 String sql = "select t.tower_Id id from cm_line_tower t where t.line_name like ? and t.tower_name like ?";
                 try {
@@ -868,17 +928,18 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                     e.printStackTrace();
                 }
                 String cellValue = ExcelUtil.getCellValue(row.getCell(9));
-                //if (ExcelUtil.getCellValue(row.getCell(9)).equals("施工隐患")){
-                KhCycle cycle = new KhCycle();
-                cycle.setId(0l);
-                yh.setTaskId(cycle.getId());
-                addKhCycle(yh, cycle);
-                //}
-                this.add(yh);
-                row = sheet.getRow(++i);
+                if (ExcelUtil.getCellValue(row.getCell(9)).equals("在施类")) {
+                    KhCycle cycle = new KhCycle();
+                    cycle.setId(0L);
+                    yh.setTaskId(cycle.getId());
+                    addKhCycle(yh, cycle);
+                    //}
                 /*
                 yh.setStartTower();
                 yh.setEndTower();*/
+                }
+                this.add(yh);
+                row = sheet.getRow(++i);
             }
             return WebApiResponse.success("导入成功");
         } catch (Exception e) {
@@ -889,7 +950,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
 
     @Transactional
     public WebApiResponse ImportYh2(MultipartFile file) {
-        int i = 2;
+        int i = 1;
         try {
             // FileInputStream file = new FileInputStream("E:\\win10\\新建文件夹\\WeChat Files\\yawang-\\Files\\检分安云云台看护任务.xls ");
 //            FileInputStream file = new FileInputStream("E:\\826708743\\FileRecv\\隐患列表_20180111-程焕竹.xls");
@@ -898,7 +959,6 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             XSSFSheet sheet = wb.getSheetAt(0);
             XSSFRow row = sheet.getRow(i);
             while (row != null && !"".equals(row.toString().trim())) {
-
                 KhYhHistory yh = new KhYhHistory();
                 XSSFCell cell = row.getCell(1);
                 if (cell == null || "".equals(ExcelUtil.getCellValue2(cell))) {
@@ -953,7 +1013,11 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 yh.setYhjb1(ExcelUtil.getCellValue2(row.getCell(9)));//隐患级别
                 yh.setYhlb(ExcelUtil.getCellValue2(row.getCell(10)));//隐患类别
                 yh.setYhms(ExcelUtil.getCellValue2(row.getCell(11)));//隐患描述
-                yh.setYhfxsj(DateUtil.parseDate(ExcelUtil.getCellValue2(row.getCell(12))));//隐患发现时间
+                try {
+                    yh.setYhfxsj(DateUtil.parseDate2(ExcelUtil.getCellValue2(row.getCell(12))));//隐患发现时间
+                } catch (Exception e) {
+                    yh.setYhfxsj(new Date());
+                }
                 yh.setYhtdqx(ExcelUtil.getCellValue2(row.getCell(13)));//字段描述: 隐患地点(区县)
                 yh.setYhtdxzjd(ExcelUtil.getCellValue2(row.getCell(14)));//字段描述: 隐患地点(乡镇街道)
                 yh.setYhtdc(ExcelUtil.getCellValue2(row.getCell(15)));//字段描述: 隐患地点(村)
@@ -966,19 +1030,19 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 yh.setXdxyhjkjl(ExcelUtil.getCellValue2(row.getCell(22)));//导线对隐患净空距离
                 yh.setYhxcyy(ExcelUtil.getCellValue2(row.getCell(23)));//隐患形成原因
                 yh.setJsp(ExcelUtil.getCellValue2(row.getCell(24)));//是否栽装警示牌
-                String wjcd = ExcelUtil.getCellValue2(row.getCell(25));//危急程度
+               /* String wjcd = ExcelUtil.getCellValue2(row.getCell(25));//危急程度
                 if (wjcd != null && !wjcd.equals("")) {
                     yh.setYhjb(wjcd);
                 } else {
                     yh.setYhjb("一般");
-                }
-                yh.setGkcs(ExcelUtil.getCellValue2(row.getCell(26)));//管控措施
+                }*/
+                yh.setGkcs(ExcelUtil.getCellValue2(row.getCell(25)));//管控措施
                 //yh.setZpxgsj(DateUtil.parse(ExcelUtil.getCellValue(row.getCell(27))));//照片修改时间
                 yh.setYhzt(0);//隐患状态
                 yh.setRadius("100.0");
                 yh.setSdgs(2);//execl导入
                 yh.setSfdj(1);//已定级
-                yh.setCreateTime(DateUtil.parseDate(ExcelUtil.getCellValue2(row.getCell(12))));
+                yh.setCreateTime(new Date());//DateUtil.parseDate(ExcelUtil.getCellValue2(row.getCell(12)))
 
                 String sql = "select t.tower_Id id from cm_line_tower t where t.line_name like ? and t.tower_name like ?";
                 try {
@@ -998,17 +1062,17 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                     e.printStackTrace();
                 }
                 String cellValue = ExcelUtil.getCellValue2(row.getCell(9));
-                //if (ExcelUtil.getCellValue(row.getCell(9)).equals("施工隐患")){
-                KhCycle cycle = new KhCycle();
-                cycle.setId(0l);
-                yh.setTaskId(cycle.getId());
-                addKhCycle(yh, cycle);
-                //}
-                this.add(yh);
-                row = sheet.getRow(++i);
+                if (ExcelUtil.getCellValue2(row.getCell(10)).equals("在施类")) {
+                    KhCycle cycle = new KhCycle();
+                    cycle.setId(0l);
+                    yh.setTaskId(cycle.getId());
+                    addKhCycle(yh, cycle);
                 /*
                 yh.setStartTower();
                 yh.setEndTower();*/
+                }
+                this.add(yh);
+                row = sheet.getRow(++i);
             }
             return WebApiResponse.success("导入成功");
         } catch (Exception e) {
@@ -1042,10 +1106,36 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         return linename1;
     }
 
+    @Autowired
+    private CmTowerUpdateRecordService recordService;
 
-    public WebApiResponse updateTowerById(long id, String lon, String lat) {
+    @Transactional
+    public WebApiResponse updateTowerById(long id, String lon, String lat, String userId, String lineName, String detailId) {
         try {
-            this.reposiotry.updateTowerById(id, lon, lat);
+//            this.reposiotry.updateTowerById(id, lon, lat);
+            Map<String, Object> map = new HashMap<>();
+            try {
+                String sql = "select status from cm_tower where id =?";
+                map = this.execSqlSingleResult(sql, id);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            if (map.get("STATUS") != null && map.get("STATUS").toString().equals("0")) {
+                CmTowerUpdateRecord record = new CmTowerUpdateRecord();
+                record.setId(0L);
+                record.setLat(lat);
+                record.setLon(lon);
+                record.setLineName(lineName);
+                record.setTowerId(id);
+                record.setUserId(userId);
+                try {
+                    record.setDetailId(Long.parseLong(detailId));
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                }
+                record.setCreateTime(DateUtil.dateNow());
+                recordService.add(record);
+            }
             return WebApiResponse.success("修改成功");
         } catch (Exception e) {
             e.printStackTrace();
@@ -1055,24 +1145,25 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
 
     public WebApiResponse findLineOrg(long towerId) {
         try {
-            String sql = "SELECT S.TD_ORG_NAME,S.LINE_NAME,S.LINE_ID\n" +
+            /*String sql = "SELECT S.TD_ORG_NAME,S.LINE_NAME,S.LINE_ID\n" +
                     "FROM CM_LINE_SECTION S LEFT JOIN CM_TOWER T ON T.LINE_ID = S.LINE_ID where T.ID = ? ";// and S.TD_ORG_NAME not in ('通州公司')
             List<Map<String, Object>> maps = this.execSql(sql, towerId);
             if (maps.size() > 0) {
                 return WebApiResponse.success("可以采集");
             } else {
                 return WebApiResponse.erro("不可以采集");
-            }
+            }*/
+            throw new Exception();
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
             return WebApiResponse.erro("不可以采集");
         }
     }
 
     public WebApiResponse findYhPicture(long yhId) {
         try {
-            String sql = "SELECT * FROM PICTURE_YH where yh_id=? and  trunc(CREATE_TIME)>=TRUNC(sysdate-7) ";
-            return WebApiResponse.erro("获取成功");
+            String sql = "SELECT * FROM PICTURE_YH where yh_id=? and  trunc(CREATE_TIME)>=TRUNC(sysdate-5) order by CREATE_TIME desc";
+            return WebApiResponse.success(this.execSql(sql, yhId));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("获取失败");
@@ -1111,4 +1202,37 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
         }
     }
 
+    //生成看护点
+    @Transactional(rollbackFor = Exception.class)
+    public void saveCycle(long yhId) {
+        String sql = "select * from kh_cycle where yh_id=?";
+        List<Map<String, Object>> maps = this.execSql(sql, yhId);
+        if (maps.size() > 0) {
+            this.reposiotry.updateCycleByYhId(yhId);
+        } else {
+            KhYhHistory yh = this.reposiotry.finds(yhId);
+            String kv = yh.getVtype();
+            if (yh.getVtype().contains("kV")) {
+                kv = kv.substring(0, kv.indexOf("k"));
+            }
+            KhCycle task = new KhCycle();
+            String taskName = kv + "-" + yh.getLineName() + " " + yh.getSection() + " 号杆塔看护任务";
+            task.setId(0L);
+            task.setVtype(yh.getVtype());
+            task.setLineName(yh.getLineName());
+            task.setTdywOrg(yh.getTdywOrg());
+            task.setSection(yh.getSection());
+            task.setLineId(yh.getLineId());
+            task.setTaskName(taskName);
+            task.setWxOrgId(yh.getWxorgId());
+            task.setTdywOrgId(yh.getTdorgId());
+            task.setWxOrg(yh.getTdwxOrg());
+            task.setStatus(0);    // 未派发
+            task.setYhId(yh.getId());
+            task.setCreateTime(DateUtil.dateNow());
+            this.cycleService.add(task);
+            long id = new SnowflakeIdWorker(8, 24).nextId();
+            this.reposiotry.addCheckSite(id, task.getId(), 2, task.getTaskName(), 0, task.getLineId(), task.getTdywOrgId(), task.getWxOrgId(), task.getYhId());
+        }
+    }
 }

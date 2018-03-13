@@ -1,0 +1,55 @@
+server:
+    port: 7987
+    context-path: /censusServer/
+token:
+  expiretime: 300000000
+spring:
+    datasource:
+      type: com.alibaba.druid.pool.DruidDataSource
+      url: jdbc:oracle:thin:@47.94.131.120:1521:orcl
+#      url: jdbc:oracle:thin:@192.168.1.111:1521:LIUZE
+      username: sdtd27
+      password: sdtd27
+      driver-class-name: oracle.jdbc.driver.OracleDriver
+      minIdle: 10
+      maxActive: 50
+      initialSize: 5
+      maxWait: 60000
+      timeBetweenEvictionRunsMillis: 3000
+      minEvictableIdleTimeMillis: 300000
+      validationQuery: SELECT 1 FROM DUAL
+      testWhileIdle: true
+      testOnBorrow: false
+      testOnReturn: false
+      poolPreparedStatements: true
+      maxPoolPreparedStatementPerConnectionSize: 20
+      filters: stat,wall,log4j
+      connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMill
+    jpa:
+      hibernate:
+        ddl-auto: none
+      show-sql: true
+    application:
+      name: censusServer
+    redis:
+        database: 0
+        host: 39.106.206.129
+        port: 6379
+        password: Rzt82890758-Rzt82890758
+        timeout: 0
+        pool:
+          max-active: 300
+          max-idle: 100
+          min-idle: 10
+          max-wait: -1
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+        service-url:
+          defaultZone: http://localhost:7002/eureka/
+        #标记为服务注册中心 不发现服务 别提交
+        register-with-eureka: false
+        fetch-registry: false
+logging:
+  config: classpath:logback-spring.xml

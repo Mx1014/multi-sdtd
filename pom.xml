@@ -21,6 +21,7 @@
 		<module>exam-server</module>
 		<module>linedata-server</module>
         <module>monitor-server</module>
+        <module>admin-server</module>
     </modules>
 
 	<parent>

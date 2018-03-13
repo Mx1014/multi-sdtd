@@ -31,12 +31,8 @@ public class ProListener implements TaskListener {
         ProServiceImpl proServiceImpl = (ProServiceImpl) SpringUtil.getObject("proServiceImpl");
         //查询当前流程是否由看护任务
         //通过当前节点id获取到这条流程中存储的看护id
-        String khid = (String) proServiceImpl.checkTask(delegateTask.getId(), "khid");
-        //取消看护任务
-        if(null != khid && !"".equals(khid)){
-            System.out.println("取消看护任务"+khid);
-        }
-        System.out.println("进入取消看护节点监听"+delegateTask);
+        //不需要取消看护任务  到期自动取消
+        //String khid = (String) proServiceImpl.checkTask(delegateTask.getId(), "khid");
         //结束流程
         proServiceImpl.complete(delegateTask.getId(),null);
     }

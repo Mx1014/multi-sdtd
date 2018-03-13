@@ -8,6 +8,8 @@ import com.rzt.activiti.service.impl.ProServiceImpl;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.RedisUtil;
 import org.activiti.engine.runtime.ProcessInstance;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,7 +39,7 @@ public class ProController {
     private YHrepository yHrepository;
     @Autowired
     private RedisUtil redisUtil;
-
+    protected static Logger LOGGER = LoggerFactory.getLogger(ProController.class);
 
     /**
      * 开启流程
@@ -124,11 +126,11 @@ public class ProController {
           //测试稽查  sdid 代表属地监控中心   jkid 代表公司监控中心
           if("sdid".equals(currentUserId) || "jkid".equals(currentUserId)){
             // 当dept.equals(TDYW_ORG)?"2":"1"   等于时代表是第二次派出稽查   不等于是派出第一次稽查
-              /*nurseTaskService.addCheckLiveTasksb(id,
+              nurseTaskService.addCheckLiveTasksb(id,
                       "0",LINE_NAME+"隐患点",YHID,YWORG_ID,
-                      TDYW_ORG,dept.equals(TDYW_ORG)?"2":"1",dept);*/
+                      TDYW_ORG,dept.equals(TDYW_ORG)?"2":"1",dept);
               //  测试模拟稽查   默认为true
-              proService.complete(id,map);
+              //proService.complete(id,map);
           }
 
           if(null == id || "".equals(id)){
@@ -163,8 +165,12 @@ public class ProController {
             map.put("YHID",YHID);
             map.put("flag",flag);
             proService.complete(taskId,map);
+            LOGGER.info("稽查回调成功");
             return WebApiResponse.success("稽查回调成功");
         }catch (Exception e){
+            LOGGER.error("taskId      " + taskId);
+            LOGGER.error("YHID      " + YHID);
+            LOGGER.error("flag      " + flag);
             return WebApiResponse.erro("稽查任务回调失败"+e.getMessage());
         }
     }

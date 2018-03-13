@@ -54,4 +54,33 @@ public interface RztSysUserRepository extends JpaRepository<RztSysUser, String> 
     @Modifying
     @Query(value = " UPDATE RZTSYSUSER SET LOGINSTATUS = 0 WHERE id=?1 ", nativeQuery = true)
     int quitUserLOGINSTATUS(String id);
+
+    /**
+     * 更新上线时间
+     *
+     * @param userId
+     * @param id
+     * @return
+     */
+    @Transactional
+    @Modifying
+    @Query(value = "UPDATE MONITOR_CHECK_EJ SET ONLINE_TIME = sysdate" +
+            "  WHERE TASK_ID=?2 AND USER_ID=?1 AND ONLINE_TIME is null", nativeQuery = true)
+    int updateOnlineTime(String userId, long id);
+
+    /**
+     * 修改人员登陆时间
+     *
+     * @param userId
+     * @param type
+     */
+    @Transactional
+    @Modifying
+    @Query(value = " INSERT INTO RZTUSERLOGINTYPETIME (ID, USERID, TYPE, CREAT_TIME) VALUES (sys_guid(),?,?,sysdate) ", nativeQuery = true)
+    void insRztuserLoginTypeTime(String userId, Integer type);
+
+    @Transactional
+    @Modifying
+    @Query(value = " UPDATE MONITOR_CHECK_EJ SET USER_LOGIN_TYPE = ?1 WHERE USER_ID = ?2 ", nativeQuery = true)
+    void updateMonitorCheckEjUserLoginType(Integer loginType, String userId);
 }

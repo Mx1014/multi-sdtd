@@ -246,4 +246,20 @@ public class RztSysMenuController extends
     public WebApiResponse dataByDAndi(String type, String roleid) {
         return this.service.dataByDAndi(type, roleid);
     }
+
+    /**
+     * 菜单权限
+     *
+     * @param currentUserId 人员的ID
+     * @return
+     */
+    @GetMapping("roleMenu")
+    public WebApiResponse roleMenu(String currentUserId) {
+        try {
+            return WebApiResponse.success(this.service.roleMenu(currentUserId));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("Data query failure");
+        }
+    }
 }

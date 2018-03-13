@@ -1,9 +1,12 @@
 package com.rzt.websocket.serverendpoint;
 
 import com.alibaba.fastjson.JSONObject;
+import com.rzt.websocket.service.FirstLevelCommandPushService;
+import com.rzt.websocket.service.TwoLevelCommandPushService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 
+import javax.annotation.Resource;
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
@@ -12,13 +15,19 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-@ServerEndpoint("/serverendpoint/twolevelcommand/{currentUserId}/{mapType}/{type}")
+@ServerEndpoint("/serverendpoint/twolevelcommand/{currentUserId}/{mapType}/{type}/{tableType}")
 public class TwoLevelCommandServerEndpoint {
     static RedisTemplate<String, Object> redisTemplate;
+    private static TwoLevelCommandPushService twoLevelCommandPushService;
 
     @Autowired
     public void setRedisTemplate(RedisTemplate<String, Object> redisTemplate) {
         TwoLevelCommandServerEndpoint.redisTemplate = redisTemplate;
+    }
+
+    @Resource
+    public void setWuDPushService(TwoLevelCommandPushService wuDPushService) {
+        TwoLevelCommandServerEndpoint.twoLevelCommandPushService = wuDPushService;
     }
 
     /**
@@ -32,7 +41,7 @@ public class TwoLevelCommandServerEndpoint {
      * @param session
      */
     @OnOpen
-    public void openSession(@PathParam("currentUserId") String currentUserId, @PathParam("mapType") String mapType, @PathParam("type") String type, Session session) {
+    public void openSession(@PathParam("currentUserId") String currentUserId, @PathParam("mapType") String mapType, @PathParam("type") String type, @PathParam("tableType") String tableType, Session session) {
         JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", currentUserId).toString());
         HashMap<String, Object> h = new HashMap();
         String sessionId = session.getId();
@@ -41,7 +50,17 @@ public class TwoLevelCommandServerEndpoint {
         h.put("DEPT", jsonObject.get("DEPT"));
         h.put("mapType", mapType);
         h.put("type", type);
+        h.put("tableType", tableType);
         livingSessions.put(sessionId, h);
+        twoLevelCommandPushService.adminModule1();
+        twoLevelCommandPushService.adminModule2();
+        twoLevelCommandPushService.adminModule3();
+        twoLevelCommandPushService.adminModule4();
+        twoLevelCommandPushService.adminModule5();
+        twoLevelCommandPushService.adminModule6();
+        twoLevelCommandPushService.adminModule7();
+        twoLevelCommandPushService.adminModule8();
+        twoLevelCommandPushService.adminModule20();
     }
 
     public Map<String, HashMap> sendMsg() {
@@ -81,7 +100,9 @@ public class TwoLevelCommandServerEndpoint {
         RemoteEndpoint.Basic basic = session.getBasicRemote();
         try {
             String s = JSONObject.toJSONString(message);
-            basic.sendText(s);
+            synchronized (basic) {
+                basic.sendText(s);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

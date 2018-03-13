@@ -14,7 +14,12 @@ import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -37,6 +42,9 @@ public class DefectServiceImpl   extends CurdService<CheckResult, CheckResultRep
     private RuntimeService runtimeService;
     @Autowired
     private RepositoryService repositoryService;
+    @Autowired
+    private JedisPool jedisPool;
+
 
     /**
      * 展开任务
@@ -71,13 +79,7 @@ public class DefectServiceImpl   extends CurdService<CheckResult, CheckResultRep
 
     public WebApiResponse checkTasks(String userName,Integer page,Integer size) {
 
-        //分页数据容错
-        if(null == page || 0 == page){
-            page = 1;
-        }
-        if(null == size || 0 == size){
-            size = 10;
-        }
+
         List<Object> result = new ArrayList<>();
 
         TaskQuery taskQuery = taskService.createTaskQuery();
@@ -91,18 +93,9 @@ public class DefectServiceImpl   extends CurdService<CheckResult, CheckResultRep
             for (Task task : list) {
                 HashMap<String, Object> map = new HashMap<>();
                 String realname = "";
-                System.out.println("当前任务  "+task);
-                System.out.println(task.getId());
 
                 Object qxId =  taskService.getVariable(task.getId(), "qxId");
                 Object info =  taskService.getVariable(task.getId(), "info");
-                System.out.println("########################################################");
-                System.out.println("任务ID:"+task.getId());
-                System.out.println("任务名称:"+task.getName());
-                System.out.println("任务的创建时间:"+task.getCreateTime());
-                System.out.println("任务的办理人:"+task.getAssignee());
-                System.out.println("流程实例ID："+task.getProcessInstanceId());
-                System.out.println("########################################################");
                 map.put("qxId",qxId);
                 map.put("info",info);
                 map.put("acTaskId",task.getId());
@@ -140,12 +133,32 @@ public class DefectServiceImpl   extends CurdService<CheckResult, CheckResultRep
 
     /**
      * 开始流程
+     * 在开始流程时 需要将当前节点流程存入redis   当redis定时失效回调时 使此流程继续  失效时间为24小时
+     * 或当用户手动点击继续时在redis中删除这个键
      * @param key
      * @param map
      */
     @Override
     public ProcessInstance start(String key, Map map) {
         ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(key, map);
+        String defectId = processInstance.getProcessInstanceId();
+        String taskId = "";
+        //查询出流程id
+        String sql = "SELECT ID_" +
+                "      FROM ACT_RU_TASK WHERE PROC_INST_ID_ = '"+defectId+"'";
+        List<Map<String, Object>> maps = this.execSql(sql);
+        if(null != maps && maps.size()>0){
+            taskId = maps.get(0).get("ID_").toString();
+        }
+        //将键 defectId 存入redis   失效时间24小时 需要回调
+        Jedis jedis = jedisPool.getResource();
+        //选择数据库
+        jedis.select(5);
+        String qxId = map.get("qxId").toString();
+        String redisKey = taskId+","+qxId+","+key;
+        jedis.set(redisKey, "缺陷审核超时使用");
+        //设置超时  时间为24小时
+        jedis.expire(redisKey, 24*60*60);
         return processInstance;
 
     }
@@ -169,9 +182,6 @@ public class DefectServiceImpl   extends CurdService<CheckResult, CheckResultRep
      */
     @Override
     public void complete(String taskId, Map<String, Object> map) {
-        System.out.println(taskId);
-        System.out.println(map);
-
         taskService.complete(taskId,map);
 
     }

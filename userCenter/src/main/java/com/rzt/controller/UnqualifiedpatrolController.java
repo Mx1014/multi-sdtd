@@ -1,19 +1,23 @@
 package com.rzt.controller;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.RztSysUser;
 import com.rzt.service.CommonService;
 import com.rzt.util.WebApiResponse;
+import com.rzt.utils.weekTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("UNQUALIFIEDPATROL")
@@ -22,7 +26,7 @@ public class UnqualifiedpatrolController extends CurdController<RztSysUser, Comm
     private RedisTemplate<String, Object> redisTemplate;
 
     @RequestMapping("unqualifiedpatrolList")
-    public WebApiResponse unqualifiedpatrolList(Integer page, Integer size, String currentUserId, String startTime, String endTime, String deptId, String userName) {
+    public WebApiResponse unqualifiedpatrolList(Integer tableType, Integer status, String loginstatus, String taskname, String companyid, Integer page, Integer size, String currentUserId, String startTime, String endTime, String deptId, String userName) {
         JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", currentUserId).toString());
         int roletype = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
         Object deptid = jsonObject.get("DEPTID");
@@ -34,8 +38,18 @@ public class UnqualifiedpatrolController extends CurdController<RztSysUser, Comm
             s += " AND e.CREATE_TIME >= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
             listLike.add(endTime);
             s += " AND e.CREATE_TIME <= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
-        } else {
+        } else if (tableType == 0 || tableType == 1) {
             s += " AND trunc(e.CREATE_TIME) = trunc(sysdate) ";
+        } else if (tableType == 2) {
+            Map map = weekTime.weekTime();
+            Object mon = map.get("Mon");
+            Object sun = map.get("Sun");
+            listLike.add(mon);
+            s += " AND e.CREATE_TIME >= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
+            listLike.add(sun);
+            s += " AND e.CREATE_TIME <= to_date(?" + listLike.size() + ",'yyyy-mm-dd hh24:mi:ss') ";
+        } else if (tableType == 3) {
+            s += " AND to_char(e.CREATE_TIME,'yyyy-mm') = to_char(sysdate,'yyyy-mm') ";
         }
         if (roletype == 1 || roletype == 2) {
             listLike.add(deptid);
@@ -46,17 +60,131 @@ public class UnqualifiedpatrolController extends CurdController<RztSysUser, Comm
             s += " AND e.DEPTID = ?" + listLike.size();
         }
         if (!StringUtils.isEmpty(userName)) {
-            listLike.add(userName + "%");
+            listLike.add(userName.trim() + "%");
             s += " AND u.REALNAME LIKE ?" + listLike.size();
         }
-        String sql = " SELECT x.TASK_NAME,u.DEPT,u.COMPANYNAME,u.CLASSNAME,u.REALNAME,u.PHONE, '巡视超速' as  type " +
-                " FROM MONITOR_CHECK_EJ e LEFT JOIN XS_ZC_TASK x ON e.TASK_ID=x.ID LEFT JOIN USERINFO u ON x.CM_USER_ID = u.ID " +
-                " WHERE WARNING_TYPE = 5  " + s;
+        if (!StringUtils.isEmpty(companyid)) {
+            listLike.add(companyid);
+            s += " AND u.COMPANYID = ?" + listLike.size();
+        }
+        if (!StringUtils.isEmpty(taskname)) {
+            listLike.add("%" + taskname.trim() + "%");
+            s += " AND x.TASK_NAME LIKE ?" + listLike.size();
+        }
+        if (tableType == 0) {
+            if (!StringUtils.isEmpty(status)) {
+                listLike.add(status);
+                s += " AND TASK_STATUS = 0 AND STATUS = ?" + listLike.size();
+            } else {
+                listLike.add(0);
+                s += " AND TASK_STATUS = 0  AND STATUS = ?" + listLike.size();
+            }
+        } else {
+            if (!StringUtils.isEmpty(status)) {
+                listLike.add(status);
+                s += "  AND STATUS = ?" + listLike.size();
+            }
+        }
+        if (!StringUtils.isEmpty(loginstatus)) {
+            listLike.add(loginstatus);
+            s += " AND u.LOGINSTATUS  = ?" + listLike.size();
+        }
+        String sql = " SELECT\n" +
+                "  a.*,\n" +
+                "  w.WARNING_NAME AS type,\n" +
+                "  de.count\n" +
+                "FROM (\n" +
+                "       SELECT\n" +
+                "         e.CREATE_TIME,\n" +
+                "         x.TASK_NAME,\n" +
+                "         u.DEPT,\n" +
+                "         u.COMPANYNAME,\n" +
+                "         u.CLASSNAME,\n" +
+                "         u.REALNAME,\n" +
+                "         u.PHONE,\n" +
+                "         WARNING_TYPE,\n" +
+                "         e.REASON,\n" +
+                "         e.TASK_ID,\n" +
+                "         e.USER_ID,\n" +
+                "         e.TASK_TYPE,\n" +
+                "         u.LOGINSTATUS\n" +
+                "       FROM MONITOR_CHECK_EJ e LEFT JOIN XS_ZC_TASK x ON e.TASK_ID = x.ID\n" +
+                "         LEFT JOIN USERINFO u ON x.CM_USER_ID = u.ID\n" +
+                "       WHERE (WARNING_TYPE = 5 OR WARNING_TYPE = 3)    " + s +
+                "             ) a LEFT JOIN WARNING_TYPE w\n" +
+                "    ON a.WARNING_TYPE = w.WARNING_TYPE\n" +
+                "  LEFT JOIN (SELECT\n" +
+                "               count(1) AS count,\n" +
+                "               e.XS_ZC_TASK_ID\n" +
+                "             FROM XS_ZC_TASK_EXEC_DETAIL d\n" +
+                "               LEFT JOIN XS_ZC_TASK_EXEC e ON d.XS_ZC_TASK_EXEC_ID = e.ID\n" +
+                "             WHERE IS_DW = 1 AND e.XS_ZC_TASK_ID IN (\n" +
+                "               SELECT\n" +
+                "         x.ID\n" +
+                "       FROM MONITOR_CHECK_EJ e LEFT JOIN XS_ZC_TASK x ON e.TASK_ID = x.ID\n" +
+                "         LEFT JOIN USERINFO u ON x.CM_USER_ID = u.ID\n" +
+                "       WHERE (WARNING_TYPE = 5 OR WARNING_TYPE = 3)   " + s +
+                "             )\n" +
+                "             GROUP BY e.XS_ZC_TASK_ID) de ON a.TASK_ID = de.XS_ZC_TASK_ID  ";
         try {
             return WebApiResponse.success(this.service.execSqlPage(pageable, sql, listLike.toArray()));
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("");
+        }
+    }
+
+    @GetMapping("/csInfo")
+    public WebApiResponse csInfo(Long taskId) {
+        try {
+            List<Map<String, Object>> result = new ArrayList<>();
+            String sql = "select YCDATA,CREATE_TIME from XS_ZC_EXCEPTION WHERE TASK_ID=?1";
+            List<Map<String, Object>> maps = this.service.execSql(sql, taskId);
+            maps.forEach(map -> {
+                Object ycdata = map.get("YCDATA");
+                JSONArray objects = JSONObject.parseArray(ycdata.toString());
+                for (int i = 0; i < objects.size(); i++) {
+                    Map<String, Object> m = (Map<String, Object>) objects.get(i);
+                    result.add(m);
+                }
+            });
+            return WebApiResponse.success(result);
+        } catch (Exception e) {
+            return WebApiResponse.erro("erro" + e.getMessage());
+        }
+    }
+
+    @GetMapping("/csPicture")
+    public WebApiResponse csPicture(Long taskId) {
+        List<Map<String, Object>> result = new ArrayList<>();
+        try {
+
+            String sql = "select YCDATA from XS_ZC_EXCEPTION WHERE TASK_ID=?1";
+            List<Map<String, Object>> maps = this.service.execSql(sql, taskId);
+            StringBuffer ids = new StringBuffer();
+            for (int j = 0; j < maps.size(); j++) {
+                Map<String, Object> map = maps.get(j);
+                Object ycdata = map.get("YCDATA");
+                JSONArray objects = JSONObject.parseArray(ycdata.toString());
+                for (int i = 0; i < objects.size(); i++) {
+                    Map<String, Object> m = (Map<String, Object>) objects.get(i);
+                    String id = (String) m.get("ID");
+                    if (i != objects.size() - 1) {
+                        ids.append(id + ", ");
+                    } else {
+                        ids.append(id);
+                    }
+                }
+                if (j != maps.size() - 1) {
+                    ids.append(",");
+                }
+            }
+            String sql1 = "select FILE_PATH,PROCESS_NAME AS OPERATE_NAME ,CREATE_TIME from PICTURE_TOUR where PROCESS_ID in (" + ids.toString() + ")";
+            List<Map<String, Object>> maps1 = this.service.execSql(sql1);
+            result.addAll(maps1);
+            return WebApiResponse.success(result);
+        } catch (Exception e) {
+            return WebApiResponse.erro("erro" + e.getMessage());
         }
     }
 }

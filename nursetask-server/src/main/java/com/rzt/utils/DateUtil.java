@@ -7,11 +7,13 @@ import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 
 /***
  * @Class DateUtil
@@ -26,6 +28,7 @@ public class DateUtil {
     private static Logger log = Logger.getLogger(DateUtil.class);
     private static final FastDateFormat SDF = FastDateFormat.getInstance("yyyy-MM-dd HH:mm:ss");
     private static final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static final SimpleDateFormat formatter2 = new SimpleDateFormat("yyyy-MM-dd");
     private static String partterns[] = new String[5];
 
     static {
@@ -59,7 +62,14 @@ public class DateUtil {
         }
         return new Date();
     }
-
+    public static Date parseDate2(String dateTime) {
+        try {
+            return formatter2.parse(dateTime);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return new Date();
+    }
     public static String stringNow() {
         return SDF.format(new Date());
     }
@@ -136,8 +146,18 @@ public class DateUtil {
         return DateUtil.parseDate(s).getTime();
     }
 
-    public static void main(String[] args) {
+    public static Date getNextDate(){
+        Date date = new Date();
+        Calendar calendar = new GregorianCalendar();
+        calendar.setTime(date);
+        calendar.add(Calendar.DATE, 1);
+        date = calendar.getTime();
+        System.out.println(date);
+        return date;
+    }
 
+    public static void main(String[] args) {
+        getNextDate();
     }
 
     /**
@@ -156,5 +176,37 @@ public class DateUtil {
         // 计算差多少小时
         double hour = diff / nh;
         return  hour;
+    }
+    public static Long getScheduleTime(String i) {
+        SimpleDateFormat format = new SimpleDateFormat(FORTER_DATE);
+        String format1 = format.format(new Date());
+        if (Integer.parseInt(i) > 9) {
+            format1 = format1 + " " + i + ":00:00";
+        } else {
+            format1 = format1 + " 0" + i + ":00:00";
+        }
+        return DateUtil.parseDate(format1).getTime();
+    }
+
+    public static final Date getNowDate() {
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String cdate = sdf.format(cal.getTime());
+        return cal.getTime();
+    }
+    public static String timeUtil(int i) {
+        String date = "";
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+        Calendar c = Calendar.getInstance();
+        c.setTime(new Date());
+        Date m = c.getTime();
+        String mon = df.format(m);
+        if (i == 1) {
+            date = mon + " 00:00";
+        } else {
+            date = mon + " 23:59";
+        }
+        //  task.setPlanEndTime(df.format(new Date()) + " 23:59");
+        return date;
     }
 }

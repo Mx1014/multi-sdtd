@@ -383,12 +383,12 @@ public class GUZHANG implements Serializable{
     public String getMonth(){
 		return this.month;
 	}
-	
-	
+
+
 
 	public void setId(Long id){
 		if(id==null||id==0){
-			this.id = new SnowflakeIdWorker(5,1).nextId();
+			this.id = SnowflakeIdWorker.getInstance(9,8).nextId();
 		}else{
 			this.id = id;
 		}

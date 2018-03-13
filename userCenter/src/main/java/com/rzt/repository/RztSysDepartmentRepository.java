@@ -88,4 +88,8 @@ public interface RztSysDepartmentRepository extends JpaRepository<RztSysDepartme
     @Modifying
     @Query(value = "insert into rztsysdepartment (createtime, deptdesc, depticon, deptname, deptpid, lastnode, lft, rgt, roleid, id) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", nativeQuery = true)
     int insRztsysdepartment(Date createtime, String deptdesc, String depticon, String deptname, String deptpid, Integer lastnode, Integer lft, Integer rgt, String roleid, String id);
+
+    @Modifying
+    @Query(value = "DELETE  FROM RZTSYSDEPARTMENT WHERE ID=?1", nativeQuery = true)
+    void deleteDeptId(String id);
 }

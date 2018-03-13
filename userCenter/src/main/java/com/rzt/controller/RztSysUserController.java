@@ -346,7 +346,10 @@ public class RztSysUserController extends
     @ApiOperation(value = "人员退出", notes = "人员退出")
     @PostMapping("userQuit")
     public WebApiResponse userQuit(String id) {
-        return this.service.userQuit(id);
+        if (!StringUtils.isEmpty(id)) {
+            return this.service.userQuit(id);
+        }
+        return WebApiResponse.erro("erro");
     }
 
     @GetMapping("flushUserInformationRedis")

@@ -25,21 +25,11 @@ public class ProTZListener  implements TaskListener {
         nurseTaskService nurseTaskService = (com.rzt.activiti.Eureka.nurseTaskService) SpringUtil.getObject("nurseTaskService");
         //查询当前流程是否由看护任务
         String YHID = (String) proService.checkTask(delegateTask.getId(), "YHID");
-        String khid = (String) proService.checkTask(delegateTask.getId(), "khid");
-        //变更看护任务
-      /*  if(null != khid && !"".equals(khid)){
-
-            //System.out.println("变更看护任务"+khid);
-        }*/
         //添加隐患台账
         if(null != YHID && !"".equals(YHID)){
-
-            //变更看护任务和生成看护任务为一个接口
-            //nurseTaskService.saveLsCycle(YHID);
-            //添加隐患台账
-            System.out.println("添加隐患台账"+YHID);
+            //变更看护任务和生成看护任务为一个接口  添加隐患台账
+            nurseTaskService.reviewYh(new Long(YHID));
         }
-        System.out.println("进入节点监听  隐患台账节点"+YHID);
         //结束流程
         proService.complete(delegateTask.getId(),null);
     }

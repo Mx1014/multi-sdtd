@@ -10,6 +10,7 @@ import com.rzt.controller.CurdController;
 import com.rzt.entity.app.XSZCTASK;
 import com.rzt.entity.pc.XsZcCycle;
 import com.rzt.entity.sch.XsTaskSCh;
+import com.rzt.service.ScheduledTaskService;
 import com.rzt.service.app.XSZCTASKService;
 import com.rzt.service.pc.XsZcCycleService;
 import com.rzt.util.WebApiResponse;
@@ -40,6 +41,9 @@ import java.util.Date;
 @RequestMapping("XsZcCycle")
 public class XsZcCycleController extends
 		CurdController<XsZcCycle, XsZcCycleService> {
+
+	@Autowired
+	private ScheduledTaskService scheduledTaskService;
 
 	@Autowired
 	private XSZCTASKService xszctaskService;
@@ -119,6 +123,7 @@ public class XsZcCycleController extends
     public Object deletePlan(@RequestParam(value = "ids[]") Long[] ids) {
         try {
 			this.service.logicalDeletePlan(ids);
+			this.service.deleteMonitor(ids);//删除告警中的记录
             return WebApiResponse.success("数据删除成功");
         } catch (Exception var3) {
             return WebApiResponse.erro("数据删除失败" + var3.getStackTrace());
@@ -162,9 +167,9 @@ public class XsZcCycleController extends
 	 */
 	@ApiOperation(value = "pc端任务派发列表",notes = "pc端任务派发列表")
 	@GetMapping("listPlan")
-	public Object listPlan(Pageable pageable, XsTaskSCh xsTaskSch,String currentUserId) {
+	public Object listPlan(Pageable pageable, XsTaskSCh xsTaskSch,String currentUserId,String home) {
 		try {
-			return this.service.listPlan(pageable,xsTaskSch,currentUserId);
+			return this.service.listPlan(pageable,xsTaskSch,currentUserId,home);
 		} catch (Exception var7) {
 			return WebApiResponse.erro("数据查询失败" + var7.getMessage());
 		}
@@ -181,9 +186,9 @@ public class XsZcCycleController extends
 	 */
 	@ApiOperation(value = "pc端人员位置展示的巡视任务列表接口",notes = "pc端人员位置展示的巡视任务列表接口")
 	@GetMapping("listPlanForMap")
-	public Object listPlanForMap( Pageable pageable,XsTaskSCh xsTaskSch,String currentUserId) {
+	public Object listPlanForMap( Pageable pageable,XsTaskSCh xsTaskSch,String currentUserId,String home) {
 		try {
-			return this.service.listPlanForMap(pageable,xsTaskSch,currentUserId);
+			return this.service.listPlanForMap(pageable,xsTaskSch,currentUserId,home);
 		} catch (Exception var7) {
 			return WebApiResponse.erro("数据查询失败" + var7.getMessage());
 		}
@@ -311,6 +316,10 @@ public class XsZcCycleController extends
 	}
 
 
+	@GetMapping("autoInsertTourTask")
+	public void autoInsertTourTask(String sql,Long xsZcCycleId) {
+		scheduledTaskService.autoInsertTourTask();
+	}
 
 	@InitBinder
 	public void initBinder(ServletRequestDataBinder binder) {

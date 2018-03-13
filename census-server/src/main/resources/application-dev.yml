@@ -32,19 +32,16 @@ spring:
     application:
       name: censusServer
     redis:
-        database: 0
-        host: 168.130.1.31
-        port: 31662
-#        host: localhost
-#        port: 65535
-#        password: 123456
-        password:
-        pool:
-          max-active: 8
-          max-wait: -1
-          max-idle: 8
-          min-idle: 0
-        timeout: 0
+         database: 0
+         host: 39.106.206.129
+         port: 6379
+         password: Rzt82890758-Rzt82890758
+         timeout: 0
+         pool:
+           max-active: 100
+           max-idle: 8
+           min-idle: 0
+           max-wait: -1
 eureka:
   instance:
     prefer-ip-address: true

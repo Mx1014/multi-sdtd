@@ -120,13 +120,37 @@ public class MonitorCheckeJController extends
 	 * @return
 	 */
 	@PostMapping("GJCL")
-	public WebApiResponse GJCL(String currentUserId, Long taskId, Integer type, Integer warningType, String checkInfo, String checkAppInfo, String createTime){
-		return ejService.GJCL(currentUserId,taskId,type,warningType,checkInfo,checkAppInfo,createTime);
+	public WebApiResponse GJCL(String currentUserId, Long taskId, Integer type, Integer warningType, String checkInfo, String checkAppInfo, String createTime,String checkMode){
+		return ejService.GJCL(currentUserId,taskId,type,warningType,checkInfo,checkAppInfo,createTime,checkMode);
 	}
 
 	@PostMapping("GJCLC")
-	public WebApiResponse GJCLC(String currentUserId,Long taskId,Integer type,Integer warningType,String checkInfo, String createTime){
-		return ejService.GJCLC(currentUserId,taskId,type,warningType,checkInfo,createTime);
+	public WebApiResponse GJCLC(String currentUserId,Long taskId,Integer type,Integer warningType,String checkInfo, String createTime,String checkMode){
+		return ejService.GJCLC(currentUserId,taskId,type,warningType,checkInfo,createTime,checkMode);
+	}
+
+	/**
+	 * 异常监视 告警总览
+	 */
+	@GetMapping("GJZL")
+	public WebApiResponse GJZL( String currentUserId){
+		try {
+			return WebApiResponse.success(ejService.GJZL(currentUserId));
+		}catch (Exception e){
+			return WebApiResponse.erro("巡视告警已处理查询失败"+e.getMessage());
+		}
+	}
+
+	/**
+	 * 查看检查记录
+	 */
+	@GetMapping("jkjl")
+	public WebApiResponse jkjl(String currentUserId,Long taskId){
+		try {
+			return WebApiResponse.success(ejService.jkjl(currentUserId,taskId));
+		}catch (Exception e){
+			return WebApiResponse.erro("监控记录查询失败："+e.getMessage());
+		}
 	}
 
 }

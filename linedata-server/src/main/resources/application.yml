@@ -6,8 +6,8 @@ server:
   context-path: /linedata/
 #expireTime: 30000000
 #
-#logging:
-#  config: classpath:logback.xml
+logging:
+  config: classpath:logback.xml
 
 spring:
   application:
@@ -68,8 +68,8 @@ spring:
       max-file-size: 50Mb
       max-request-size: 50Mb
 
-eureka:
-  client:
-    serviceUrl:
-      defaultZone: http://39.106.206.129:7002/eureka/
-#      defaultZone: http://dubby:dubby@192.168.22.56:7002/eureka/
+#eureka:
+#  client:
+#    serviceUrl:
+##      defaultZone: http://39.106.206.129:7002/eureka/
+#      defaultZone: http://localhost:7002/eureka/

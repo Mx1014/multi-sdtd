@@ -23,9 +23,8 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.io.InputStream;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * 李成阳
@@ -93,10 +92,10 @@ public class XSCycleServiceImpl  extends CurdService<CheckResult, CheckResultRep
             String td = redisUtil.findTDByUserId(userId);
             userId = redisUtil.findRoleIdByUserId(userId);
             if(null == userId || "".equals(userId)){
-                return WebApiResponse.erro("巡视审核历史查询失败  登录人节点 = "+userId);
+                return WebApiResponse.success("巡视审核历史查询失败  登录人节点 = "+userId);
             }
             if(null == td || "".equals(td)){
-                return WebApiResponse.erro("巡视审核历史查询失败 通道公司="+td);
+                return WebApiResponse.success("巡视审核历史查询失败 通道公司="+td);
             }
             Pageable pageable = new PageRequest(page, size, null);
             String sql = "SELECT *" +
@@ -120,7 +119,9 @@ public class XSCycleServiceImpl  extends CurdService<CheckResult, CheckResultRep
                     "        LEFT JOIN XS_ZC_CYCLE_RECORD x ON x.XS_ZC_CYCLE_ID = h.TEXT_" +
                     "      WHERE h.NAME_ = 'XSID' AND t.PROC_DEF_ID_ LIKE 'xssh%'  AND t.ASSIGNEE_ = '"+userId+"') tt WHERE 1=1 ";
 
+            if(!"公司本部".equals(td)){//各属地单位登录账号
 
+            }
             if(null != lineName && !"".equals(lineName) ){
                 sql += "  AND  tt.LINE_NAME LIKE '%"+lineName+"%' ";
             }
@@ -133,23 +134,23 @@ public class XSCycleServiceImpl  extends CurdService<CheckResult, CheckResultRep
             if(null != startTime && !"".equals(startTime) ){
                 sql += "  AND   APPROVER_TIME <=  to_date('"+endTime+"','YYYY-MM-dd HH24:mi') ";
             }
-            //判断当前用户所属节点    书否显示所有信息
-           /* if("sdid".equals(userId) || "sdyjid".equals(userId)){
-                sql += "  AND  tt.DID =   '"+td+"'";
+
+            //判断当前用户所属节点    是否显示所有信息
+            if("sdid".equals(userId) || "sdyjid".equals(userId)){
+                sql += "  AND tt.DEPT = '"+td+"'  ";
             }else{
                 if(null != tdId && !"".equals(tdId)){
                     sql += "  AND  tt.DID =   '"+tdId+"'";
                 }
-            }*/
-            if(null != tdId && !"".equals(tdId)){
-                sql += "  AND  tt.DID =   '"+tdId+"'";
             }
+
+
             maps = this.execSqlPage(pageable, sql, null);
             LOGGER.info("当前节点待办任务查询成功"+userId);
 
         }catch (Exception e){
             LOGGER.error(userId+"当前节点待办信息查询失败"+e.getMessage());
-            return WebApiResponse.erro(userId+"当前节点待办信息查询失败"+e.getMessage());
+            return WebApiResponse.success(userId+"当前节点待办信息查询失败"+e.getMessage());
         }
 
         return WebApiResponse.success(maps);
@@ -177,10 +178,10 @@ public class XSCycleServiceImpl  extends CurdService<CheckResult, CheckResultRep
             String td = redisUtil.findTDByUserId(userId);
             userId = redisUtil.findRoleIdByUserId(userId);
             if(null == userId || "".equals(userId)){
-                return WebApiResponse.erro("巡视审核历史查询失败  登录人节点 = "+userId);
+                return WebApiResponse.success("巡视审核历史查询失败  登录人节点 = "+userId);
             }
             if(null == td || "".equals(td)){
-                return WebApiResponse.erro("巡视审核历史查询失败 通道公司="+td);
+                return WebApiResponse.success("巡视审核历史查询失败 通道公司="+td);
             }
             Pageable pageable = new PageRequest(page, size, null);
             String sql = "SELECT *" +
@@ -203,7 +204,7 @@ public class XSCycleServiceImpl  extends CurdService<CheckResult, CheckResultRep
                     "            FROM ACT_HI_ACTINST t" +
                     "            LEFT JOIN ACT_HI_VARINST h ON t.PROC_INST_ID_ = h.PROC_INST_ID_ AND h.NAME_ = 'XSID'" +
                     "            LEFT JOIN XS_ZC_CYCLE_RECORD x ON x.XS_ZC_CYCLE_ID = h.TEXT_" +
-                    "            WHERE  t.PROC_DEF_ID_ LIKE 'xssh%' AND t.ASSIGNEE_ = '"+userId+"'  AND t.END_TIME_ IS NOT NULL  ORDER BY t.END_TIME_ DESC  ) tt WHERE 1=1 ";
+                    "            WHERE  t.PROC_DEF_ID_ LIKE 'xssh%' AND t.ASSIGNEE_ = '"+userId+"'  AND t.END_TIME_ IS NOT NULL  ORDER BY t.END_TIME_ DESC  ) tt WHERE  ID IS NOT NULL ";
 
 
             if(null != lineName && !"".equals(lineName) ){
@@ -218,23 +219,21 @@ public class XSCycleServiceImpl  extends CurdService<CheckResult, CheckResultRep
             if(null != startTime && !"".equals(startTime) ){
                 sql += "  AND   APPROVER_TIME <=  to_date('"+endTime+"','YYYY-MM-dd HH24:mi') ";
             }
-            //判断当前用户所属节点    书否显示所有信息
-           /* if("sdid".equals(userId) || "sdyjid".equals(userId)){
-                sql += "  AND  tt.DID =   '"+td+"'";
+
+            //判断当前用户所属节点    是否显示所有信息
+            if("sdid".equals(userId) || "sdyjid".equals(userId)){
+                sql += "  AND tt.DEPT = '"+td+"'  ";
             }else{
                 if(null != tdId && !"".equals(tdId)){
                     sql += "  AND  tt.DID =   '"+tdId+"'";
                 }
-            }*/
-            if(null != tdId && !"".equals(tdId)){
-                sql += "  AND  tt.DID =   '"+tdId+"'";
             }
             maps = this.execSqlPage(pageable, sql, null);
             LOGGER.info("当前节点历史任务查询成功"+userId);
 
         }catch (Exception e){
             LOGGER.error(userId+"当前节点历史信息查询失败"+e.getMessage());
-            return WebApiResponse.erro(userId+"当前节点历史信息查询失败"+e.getMessage());
+            return WebApiResponse.success(userId+"当前节点历史信息查询失败"+e.getMessage());
         }
 
         return WebApiResponse.success(maps);
@@ -315,6 +314,52 @@ public class XSCycleServiceImpl  extends CurdService<CheckResult, CheckResultRep
         return repositoryService.getResourceAsStream(
                 processDefinition.getDeploymentId(), "diagrams/CycleActiviti.png");
     }
+
+    /**
+     * 巡视周期变更   在巡视周期审核最后通过的监听器中调用
+     * @param xsid
+     */
+    @Transactional
+    public void updateXSCycle(String xsid,String actId){
+        //查询变更信息
+        String sql = "SELECT XS_ZC_CYCLE_ID,XS_ZC_CYCLE,PLAN_START_TIME,PLAN_END_TIME,PLAN_XS_NUM,CM_USER_ID,ID" +
+                "       FROM XS_ZC_CYCLE_RECORD WHERE XS_ZC_CYCLE_ID = '"+xsid+"' AND PROPOSER_STATUS = 0 ";
+        List<Map<String, Object>> maps = this.execSql(sql);
+        try {
+            if(null != maps && maps.size()>0){
+                SimpleDateFormat sim = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
+                Map<String, Object> map = maps.get(0);
+                //原周期id
+                String xscycleId = map.get("XS_ZC_CYCLE_ID") == null ? "":map.get("XS_ZC_CYCLE_ID").toString();
+                //巡视周期
+                String XSCycle = map.get("XS_ZC_CYCLE") == null ? "":map.get("XS_ZC_CYCLE").toString();
+                //计划开始时间
+                String planStartTime = map.get("PLAN_START_TIME") == null ? "" : map.get("PLAN_START_TIME").toString();
+                //计划结束时间
+                String planEndTime = map.get("PLAN_END_TIME") == null ? "" : map.get("PLAN_END_TIME").toString();
+                //巡视频率
+                String xsNum = map.get("PLAN_XS_NUM") == null ? "" : map.get("PLAN_XS_NUM").toString();
+                //执行人
+                String userId = map.get("CM_USER_ID") == null ? "":map.get("CM_USER_ID").toString();
+                //变更记录id   更改过原周期后需要改变记录状态
+                String id = map.get("ID") == null ? "":map.get("ID").toString();
+                //  按照原周期id查询
+                if(null != xscycleId && !"".equals(xscycleId)){//原id不为空   证明修改
+                    yHrepository.updateCycle(xscycleId,XSCycle,planStartTime,planEndTime,xsNum,userId);
+                }else {//新增周期
+
+                }
+                //变更记录中审批状态和审批时间
+                yHrepository.updateCycleRecord(id,new Date());
+                //结束流程
+                taskService.complete(actId,null);
+            }
+        } catch (Exception e) {
+           LOGGER.error(e.getMessage());
+        }
+
+    }
+
 
 
 

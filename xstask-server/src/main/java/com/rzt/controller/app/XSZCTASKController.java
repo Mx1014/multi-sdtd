@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
+import java.util.Map;
+
 /**
  * 类名称：XSZCTASKController
  * 类描述：
@@ -174,9 +176,20 @@ public class XSZCTASKController extends
         }
     }
 
+    @GetMapping("getImgsByExecId")
+    @ApiOperation(value = "巡视已办", notes = "execId")
+//    @DataEncode(includes = {"ID","TOWER_NAME"})
+    public Object getImgsByExecId(String execId) {
+        try {
+            return this.service.getImgsByExecId(execId);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("数据库请求失败" + e.getMessage());
+        }
+    }
 
     @GetMapping("shangbaoYh")
-    @ApiOperation(value = "上报隐患", notes = "上报隐患")
+    @ApiOperation(value = "上报隐患所需要的参数", notes = "上报隐患所需要的参数")
     public WebApiResponse shangbaoYh(Integer xslx, Long taskId,String userId) {
         try {
             return WebApiResponse.success(this.service.shangbaoYh(xslx, taskId,userId));
@@ -186,5 +199,25 @@ public class XSZCTASKController extends
         }
     }
 
-
+    @PostMapping("shangBaoQueXian")
+    @ApiOperation(value = "上报缺陷", notes = "上报缺陷")
+    public WebApiResponse shangBaoQueXian(Long taskId,String userId,Long towerId,Long processId,String qxMs,Integer qxType,Integer qxPosition,String pictureIds) {
+        try {
+            this.service.shangBaoQueXian(taskId, userId,towerId,processId,qxMs,qxType,qxPosition,pictureIds);
+            return WebApiResponse.success("成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("数据库请求失败" + e.getMessage());
+        }
+    }
+    // 修改不间断巡视的结束
+    @GetMapping("updateBjd")
+    public Object insertCycleTower(Long id) {
+        try {
+            Map<String, Object> map = this.service.updateBjd(id);
+            return WebApiResponse.success(map);
+        } catch (Exception var) {
+            return WebApiResponse.erro("图片查找失败" + var.getStackTrace());
+        }
+    }
 }

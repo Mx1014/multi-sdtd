@@ -8,10 +8,7 @@ import org.joda.time.*;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TimeZone;
+import java.util.*;
 
 /**
  * joda日期工具类
@@ -35,6 +32,7 @@ public class DateUtil {
 	public static final String                FORMAT_TIME_MINUTE = "yyyy-MM-dd HH:mm";            //默认时间格式
 
 	public static final String                FORTER_DATE        = "yyyy-MM-dd";                  //默认日期格式
+	private static final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	private static final Map<Integer, String> WEEK_DAY           = new HashMap<Integer, String>();
 	static {
@@ -509,31 +507,49 @@ public class DateUtil {
 		return "刚刚";
 	}
 
-	public static void main(String[] args) throws Throwable {
-		//        System.out.println(format(day00(1,null)));
-		//        System.out.println(format(day59(1,null)));
-		//        System.out.println(lastDay(new Date(),2));
-		//        System.out.println(firstDay(null,0));
-		//          TimeZone zone1=TimeZone.getTimeZone("GMT+8");
-		//          TimeZone zone2=TimeZone.getTimeZone("GMT-5");
-		//          System.out.println(format(new Date(),zone1,FORMAT_TIME));
-		//          System.out.println(format(new Date(),zone2,FORMAT_TIME));
-		//
-		//        System.out.println(format(day00(0,"2017-5-11","GMT+0")));
-		//        System.out.println(format(day00(0,"2017-5-11","GMT+8")));
-		//        System.out.println(format(day00(0,"2017-5-11","GMT-8")));
-		//        Date date1 =parse("2017-05-11 17:53:52");
-		//
-		//        System.out.println(diffDay(date1,new Date()));
 
-//        DateTime dateTime = new DateTime().withDayOfWeek(1);
-//
-//        DateTime dateTime1 = new DateTime().withDayOfWeek(7).withTime(0, 0, 0, 0);
-//        System.out.println(format(dateTime.toDate()));
-//
-//        System.out.println(format(dateTime1.toDate()));
-		System.out.println(Integer.valueOf("0"));
-		System.out.println(format(new Date(),"MM/dd"));
+	public static String timeUtil(int i) {
+		String date = "";
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+		Calendar c = Calendar.getInstance();
+		c.setTime(new Date());
+		Date m = c.getTime();
+		String mon = df.format(m);
+		if (i == 1) {
+			date = mon + " 00:00";
+		} else {
+			date = mon + " 23:59";
+		}
+		//  task.setPlanEndTime(df.format(new Date()) + " 23:59");
+		return date;
 	}
 
+
+	public static Date parseDate(String dateTime) {
+		try {
+			return formatter.parse(dateTime);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return new Date();
+	}
+
+
+	public static final Date getNowDate() {
+		Calendar cal = Calendar.getInstance();
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String cdate = sdf.format(cal.getTime());
+		return cal.getTime();
+	}
+
+	public static Date addDate(Date date, double hour){
+		Calendar cal = Calendar.getInstance();
+		long hour1 =(long) (hour * 3600000);
+		long l = date.getTime() + hour1;
+		cal.setTimeInMillis(l);
+		date = cal.getTime();
+		// return format.format(date);
+		return date;
+	}
 }

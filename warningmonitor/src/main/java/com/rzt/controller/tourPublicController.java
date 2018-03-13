@@ -3,6 +3,8 @@ package com.rzt.controller;
 import com.rzt.entity.Monitorcheckej;
 import com.rzt.service.tourPublicService;
 import com.rzt.util.WebApiResponse;
+import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -10,7 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Set;
+import java.util.*;
 
 @RestController
 @RequestMapping("GJKH")
@@ -64,12 +66,17 @@ public class tourPublicController extends CurdController<Monitorcheckej, tourPub
     }
 
 
-
-    //巡视下线
-    @GetMapping("KHXX")
-    public WebApiResponse KHXX(String userId,Integer taskType){
+    /**
+     * 下线调接口
+     * @param currentUserId  人员id
+     * @param taskType 任务类型
+     * @param typeReason 下线类型 0 手动退出   1 90分钟无操作退出
+     * @return
+     */
+    @GetMapping("KHXXx")
+    public WebApiResponse KHXX(String currentUserId,Integer taskType,Integer typeReason){
         try {
-            this.service.KHXX(userId,taskType);
+            //this.service.KHXX(currentUserId,taskType,typeReason);
             return WebApiResponse.success("success");
         }catch (Exception e){
             return WebApiResponse.erro("fail"+e.getMessage());
@@ -103,7 +110,7 @@ public class tourPublicController extends CurdController<Monitorcheckej, tourPub
     //Long id
     @GetMapping("remoceKey12")
     public void removeKey(){
-        String s = "TWO+*+2+8+*";
+        String s = "ONE+*+未上线";
         RedisConnection connection = null;
         try {
             connection = redisTemplate.getConnectionFactory().getConnection();
@@ -119,5 +126,19 @@ public class tourPublicController extends CurdController<Monitorcheckej, tourPub
             connection.close();
         }
     }
+
+    /**
+     * 综合展示中的公告
+     */
+    @ApiOperation(
+            value = "获取日报通报",
+            notes = "根据taskId获取所有日报通报"
+    )
+    @GetMapping("getDocBytaskId")
+    public Map<String, Object> getDocBytaskId(Integer page,Integer size, String startDate,String endDate,Integer fileType) {
+        return service.getDocBytaskId(page,size, startDate,endDate,fileType);
+    }
+
+
 
 }

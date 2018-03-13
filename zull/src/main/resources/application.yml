@@ -3,6 +3,23 @@ server:
 spring:
   application:
     name: api-gateway
+
+  redis:
+    database: 0
+    host: 39.106.206.129
+    port: 6379
+    password: Rzt82890758-Rzt82890758
+    timeout: 5000
+    pool:
+      max-active: 100
+      max-idle: 8
+      min-idle: 0
+      max-wait: -1
+  http:
+    multipart:
+      max-file-size: 50Mb
+      max-request-size: 50Mb
+
 eureka:
   client:
     serviceUrl:
@@ -12,7 +29,6 @@ eureka:
     fetch-registry: true
     #服务消费者 刷新服务清单的缓存时间 默认为30秒
     registry-fetch-interval-seconds: 10
-
 
 
 hystrix:

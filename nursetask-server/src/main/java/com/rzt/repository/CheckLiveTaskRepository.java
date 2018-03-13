@@ -35,22 +35,22 @@ public interface CheckLiveTaskRepository extends JpaRepository<CheckLiveTask,Str
  void deleteById(long id);
 
  @Modifying
- @Query(value = "update check_live_task set WPTS=?2,status=1 where id =?1",nativeQuery = true)
+ @Query(value = "update check_live_task set WPTS=?2,status=1,real_start_time=sysdate where id =?1 and real_start_time is not null ",nativeQuery = true)
  void updateWptsById(Long id, String str);
 
     CheckLiveTask findById(Long id);
 
     @Modifying
     @Query(value = "insert into CHECK_LIVE_SITE (id,TASK_ID,TASK_TYPE,CREATE_TIME,TASK_NAME,STATUS,line_id,TDYW_ORGID,TDWX_ORGID,yh_id) " +
-            " select seq.nextval,id as taskid,0,sysdate,TASK_NAME,0,LINE_ID,TDYW_ORGID,WX_ORGID,YH_ID from KH_CYCLE",nativeQuery = true)
-    void generalKhSite();
+            " select seq.nextval,id as taskid,?,sysdate,TASK_NAME,0,LINE_ID,TDYW_ORGID,WX_ORGID,YH_ID from KH_CYCLE WHERE KH_CYCLE.STATUS!=2",nativeQuery = true)
+    void generalKhSite(Integer taskType);
 
     @Modifying
-    @Query(value = "update check_live_task set status=2 where id = ?1 ",nativeQuery = true)
+    @Query(value = "update check_live_task set status=2,real_end_time=sysdate where id = ?1 ",nativeQuery = true)
     void taskComplete(Long id);
 
     @Modifying
-    @Query(value = "update check_live_site set status=?1 where trunc(CREATE_TIME)=trunc(sysdate) and YH_ID= ?2 ",nativeQuery = true)
+    @Query(value = "update check_live_site set status=?1 where ID= ?2 ",nativeQuery = true)
     void updateLiveSiteStatus(int status, Long id);
 
     @Modifying
@@ -58,6 +58,11 @@ public interface CheckLiveTaskRepository extends JpaRepository<CheckLiveTask,Str
     void updateLiveTaskYesterday(int status);
 
     @Modifying
-    @Query(value = "update check_live_task set USER_ID=?2,task_name = concat(?3,substr(task_name,instr(task_name,extract(year from sysdate)))) where id=?1",nativeQuery = true)
+    //@Query(value = "update check_live_task set USER_ID=?2,task_name = concat(?3,substr(task_name,instr(task_name,extract(year from sysdate)))) where id=?1",nativeQuery = true)
+    @Query(value = "update check_live_task set USER_ID=?2 where id=?1",nativeQuery = true)
     void updateKhCheckUser(Long id, String userId, String userName);
+
+    @Modifying
+    @Query(value = "UPDATE MONITOR_CHECK_EJ SET TASK_STATUS=1 WHERE TASK_ID=? AND WARNING_TYPE=13",nativeQuery = true)
+    void updateMonitorEj(Long id);
 }

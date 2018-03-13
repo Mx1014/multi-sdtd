@@ -45,9 +45,11 @@ public class CMLINETOWERService extends CurdService<CMLINETOWER,CMLINETOWERRepos
     public WebApiResponse getLineTowerPosition(Pageable pageable, String tdOrg, String kv, String lineId,String currentUserId) {
         List<String> list = new ArrayList<>();
         Object[] objects = list.toArray();
-        String sql = "select t.id,l.v_level,l.line_name,l.section,LT.tower_name,t.longitude,t.latitude from  cm_line_tower lt " +
-                " left join cm_tower t on LT.tower_id=t.id " +
-         " left join cm_line l on l.id=LT.line_id where 1=1 ";
+        String sql = "select t.id,s.v_level,s.line_name,s.section,t.name tower_name,t.longitude,t.latitude from cm_line_section s " +
+                " left join cm_line l on s.line_id=l.id " +
+                " left join cm_line_tower lt on lt.line_id=l.id " +
+                " left join cm_tower t on lt.tower_id=t.id  " +
+                " where to_number(regexp_substr(name,'[0-9]*[0-9]',1)) between to_number(regexp_substr(s.start_sort,'[0-9]*[0-9]',1)) and to_number(regexp_substr(s.end_sort,'[0-9]*[0-9]',1)) " ;
         if(StringUtils.isNotEmpty(currentUserId)){
             Map<String, Object> map = userInfoFromRedis(currentUserId);
             Integer roletype = Integer.parseInt(map.get("ROLETYPE").toString());
@@ -76,18 +78,18 @@ public class CMLINETOWERService extends CurdService<CMLINETOWER,CMLINETOWERRepos
 
         if(tdOrg!=null&&!"".equals(tdOrg.trim())){
             list.add(tdOrg);
-            sql += " and lt.LINE_ID in (select DISTINCT LINE_ID from cm_line_section  where TD_ORG=?" + list.size()+") ";
+            sql += " and s.td_org=?" + list.size();
         }
 
         if(kv!=null&&!"".equals(kv.trim())){
             list.add(kv);
-            sql += " and l.v_level= ?" + list.size();
+            sql += " and s.v_level=?" + list.size();
         }
         if(lineId!=null&&!"".equals(lineId.trim())){
             list.add(lineId);
-            sql += " and l.id = ?" + list.size();
+            sql += " and s.line_id=?" + list.size();
         }
-        sql += " order by lt.sort";
+        sql += " order by lt.line_name,s.section,lt.sort ";
         Page<Map<String, Object>> maps = execSqlPage(pageable, sql,list.toArray());
         return WebApiResponse.success(maps);
     }

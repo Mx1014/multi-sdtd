@@ -20,9 +20,12 @@ import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.rzt.service.CurdService;
+import org.springframework.util.StringUtils;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -41,21 +44,29 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
     EntityManager entityManager;
     @Autowired
     private KhSiteRepository siteRepository;
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
-    public Object listAllKhTask(KhTaskModel task, String status, Pageable pageable, int roleType, String yworg, String currentUserId,String home) {
+    public Object listAllKhTask(KhTaskModel task, String status, Pageable pageable, JSONObject json, String yworg, String currentUserId, String home, String tdOrg) {
         task = timeUtil(task);
+        Map jsonObject = JSON.parseObject(json.toString(), Map.class);
+        Integer roleType = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
+        Object tdId = jsonObject.get("DEPTID");
+        Object classid = jsonObject.get("CLASSID");
+        Object companyid = jsonObject.get("COMPANYID");
         String result = "k.wx_org company,k.id as id, k.task_name as taskName,k.tdyw_org as yworg,k.CREATE_TIME as createTime,k.plan_start_time as startTime,k.plan_end_time as endTime,k.status as status,u.realname as userName,d.DEPTNAME as class,k.task_type as type,u.phone,u.loginstatus " +
                 " from kh_task k  left join rztsysuser u on u.id = k.user_id left join RZTSYSDEPARTMENT d on u.classname = d.id  ";
         List params = new ArrayList<>();
         StringBuffer buffer = new StringBuffer();
-        buffer.append(" where k.plan_start_time <= trunc(to_date(?,'YYYY-MM-DD hh24:mi')+1) and plan_end_time>= trunc(to_date(?,'YYYY-MM-DD hh24:mi')) ");
-        params.add(task.getPlanEndTime());
-        params.add(task.getPlanStartTime());
-        /*if (home!=null && home.equals("1")){
+        if (home != null && home.equals("1")) {
             buffer = new StringBuffer();
-            buffer.append(" where  trunc(k.plan_start_time) = trunc(sysdate)");
+            buffer.append(" where  PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)");
             params = new ArrayList<>();
-        }*/
+        } else {
+            buffer.append(" where k.plan_start_time <= trunc(to_date('" + task.getPlanEndTime() + "','YYYY-MM-DD hh24:mi')+1) and plan_end_time>= trunc(to_date('" + task.getPlanStartTime() + "','YYYY-MM-DD hh24:mi')) ");
+//            params.add(task.getPlanEndTime());
+//            params.add(task.getPlanStartTime());
+        }
         //查询框
         if (task.getTaskName() != null && !task.getTaskName().equals("")) {
             task.setTaskName("%" + task.getTaskName() + "%");
@@ -75,14 +86,10 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
             buffer.append(" and k.task_type =? ");
             params.add(Integer.parseInt(task.getTaskType()));
         }
-        if (yworg != null && !yworg.equals("")) {
+      /*  if (yworg != null && !yworg.equals("")) {
             buffer.append(" and k.tdyw_org like ? ");
             params.add("%" + yworg + "%");
-        }
-        if (task.getTdOrg() != null && !task.getTdOrg().equals("")) {
-            buffer.append(" and k.yworg_id = ?");
-            params.add((task.getTdOrg()));
-        }
+        }*/
         if (task.getLoginType() != null && !task.getLoginType().equals("")) {
             buffer.append(" and u.LOGINSTATUS = ? ");
             params.add(Integer.parseInt(task.getLoginType()));
@@ -90,18 +97,33 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         String sql = "";
 
         if (roleType == 1 || roleType == 2) {
-            sql = "select " + result +  buffer.toString() + " and k.tdyw_org = (select d.deptname from rztsysuser u, RZTSYSDEPARTMENT d where d.id = u.deptid and u.id = ?)";
-            params.add(currentUserId);
+            if (!StringUtils.isEmpty(tdOrg)) {
+                buffer.append(" and ( DEPTID=? or COMPANYID=? or CLASSNAME=? or GROUPID=? )");
+                params.add(tdOrg);
+                params.add(tdOrg);
+                params.add(tdOrg);
+                params.add(tdOrg);
+            } else {
+                buffer.append("  and k.YWORG_ID = '" + tdId + "'");
+            }
+            sql = "select " + result + buffer.toString();
         } else if (roleType == 3) {
-            sql = "select " + result  + buffer.toString() + " and k.wx_org = (select d.COMPANYNAME from rztsysuser u,RZTSYSCOMPANY d where u.companyid = d.id and u.id = ?)";
+            sql = "select " + result + buffer.toString() + " and k.wx_org = (select d.COMPANYNAME from rztsysuser u,RZTSYSCOMPANY d where u.companyid = d.id and u.id = ?)";
             params.add(currentUserId);
         } else if (roleType == 4) {
-            sql = "select " + result +  buffer.toString() + " and u.classname = (select u.classname from rztsysuser u, RZTSYSDEPARTMENT d where d.id = u.deptid and u.id = ?)";
+            sql = "select " + result + buffer.toString() + " and u.classname = (select u.classname from rztsysuser u, RZTSYSDEPARTMENT d where d.id = u.deptid and u.id = ?)";
             params.add(currentUserId);
         } else if (roleType == 5) {
-            sql = "select " + result +  buffer.toString() + " and k.user_id = ?";
+            sql = "select " + result + buffer.toString() + " and k.user_id = ?";
             params.add(currentUserId);
         } else {
+            if (yworg != null && !yworg.equals("")) {
+                buffer.append(" and k.tdyw_org like ? ");
+                params.add("%" + yworg + "%");
+            } else if (task.getTdOrg() != null && !task.getTdOrg().equals("")) {
+                buffer.append(" and k.yworg_id = ?");
+                params.add((task.getTdOrg()));
+            }
             sql = "select " + result + buffer.toString();
         }
         sql += " order by k.id desc";
@@ -129,7 +151,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
     }
 
     public List<Map<String, Object>> getKhTaskById(long id) {
-        String result = " k.task_name as taskName,y.yhms as yhms,y.yhjb as yhjb,u.realname as userName,u.phone as phone ";
+        String result = " k.task_name as taskName,y.yhms as yhms,y.yhjb1 as yhjb,u.realname as userName,u.phone as phone ";
         String sql = "select " + result + " from kh_task k left join kh_yh_history y on k.yh_id=y.id left join rztsysuser u on u.id=k.user_id  where k.id=?";
         return this.execSql(sql, id);
     }
@@ -140,15 +162,17 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
 
     //可能需要修改外协单位
     public void updateTaskById(String userId, String id) {
-        Map<String, Object> map = new HashMap<>();
-        try {
-            String sql = "select c.id as id,c.companyname as name from rztsyscompany c left join rztsysuser u on u.companyid = c.id where u.id=?";
-            map = this.execSqlSingleResult(sql, userId);
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (!StringUtils.isEmpty(userId)) {
+            Map<String, Object> map = new HashMap<>();
+            try {
+                String sql = "select c.id as id,c.companyname as name from rztsyscompany c left join rztsysuser u on u.companyid = c.id where u.id=?";
+                this.execSqlSingleResult(sql, userId);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            this.reposiotry.updateSiteById(userId, id);
+            this.reposiotry.updateTaskBySiteId(userId, id);
         }
-        this.reposiotry.updateSiteById(userId, id);
-        this.reposiotry.updateTaskBySiteId(userId, id);
     }
 
 
@@ -156,10 +180,10 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         try {
             String sql = "";
             if (startDate == null) {
-                sql = "select k.id as id,k.status as status,k.task_name as task_name,k.plan_end_time as endTime from kh_task k where k.user_id = ? and trunc(k.plan_start_time)>=trunc(sysdate)"; //";
+                sql = "select k.id as id,k.status as status,k.task_name as task_name,k.plan_end_time as endTime from kh_task k where k.user_id = ? and k.PLAN_END_TIME >= trunc(sysdate) and user_id is not null and k.PLAN_START_TIME <= trunc(sysdate+1) ";
                 return WebApiResponse.success(this.execSql(sql, userId));
             } else {
-                sql = "select k.id as id,k.status as status,k.task_name as task_name,k.plan_end_time as endTime from kh_task k where k.user_id = ? and k.plan_start_time <=to_date(?,'yyyy-mm-dd hh24:mi:ss') and k.plan_end_time>=to_date(?,'yyyy-mm-dd hh24:mi:ss')";
+                sql = "select k.id as id,k.status as status,k.task_name as task_name,k.plan_end_time as endTime from kh_task k where k.user_id = ? and k.PLAN_END_TIME >=trunc(to_date(?,'yyyy-mm-dd hh24:mi:ss')) and k.plan_start_time<=trunc(to_date(?,'yyyy-mm-dd hh24:mi:ss')+1)";
                 return WebApiResponse.success(this.execSql(sql, userId, startDate, startDate));
             }
         } catch (Exception e) {
@@ -170,7 +194,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
 
     public WebApiResponse listTaskInfoById(String taskId) {
         try {
-            String sql = "SELECT IS_DW AS ISDW,REASON,TASK_NAME TASKNAME,DDXC_TIME AS DDXCTIME,CREATE_TIME PDTIME,TDYW_ORG YWORG,WX_ORG WXORG,PLAN_START_TIME STARTTIME,PLAN_END_TIME ENDTIME,STATUS,TASK_TYPE TYPE from KH_TASK WHERE ID=?";
+            String sql = "SELECT REAL_START_TIME,REAL_END_TIME,DDXC_TIME,SFQR_TIME,WPQR_TIME,IS_DW AS ISDW,REASON,TASK_NAME TASKNAME,DDXC_TIME AS DDXCTIME,CREATE_TIME PDTIME,TDYW_ORG YWORG,WX_ORG WXORG,PLAN_START_TIME STARTTIME,PLAN_END_TIME ENDTIME,STATUS,TASK_TYPE TYPE from KH_TASK WHERE ID=?";
             return WebApiResponse.success(this.execSql(sql, taskId));
         } catch (Exception e) {
             e.printStackTrace();
@@ -393,6 +417,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
 
     //生成任务的逻辑
     public void createTask() {
+        siteRepository.deleteSite();
         List<KhSite> list = siteRepository.findSites();
         for (KhSite site : list) {
             double cycle = site.getCycle();  //一轮任务时长
@@ -462,11 +487,26 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
             throw new Exception();
         } else {
             this.reposiotry.deleteSiteById(id);
+            this.reposiotry.deleteCycleByYhId(maps.get(0).get("YH_ID").toString());
         }
     }
 
     public void deleteTaskById(long id) {
-        this.reposiotry.deleteTaskById(id);
+        try {
+            this.reposiotry.deleteTaskById(id);
+            this.reposiotry.deleteYjById(id);
+            this.reposiotry.deleteEjById(id);
+            try {
+                String s = "TWO+" + id + "+2+*";
+                removeSomeKey(s);
+                String s1 = "ONE+" + id + "+2+*";
+                removeSomeKey(s1);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public WebApiResponse listTowerPoint(long id) {
@@ -508,6 +548,24 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("");
+        }
+    }
+
+    public void removeSomeKey(String s) {
+        //String s = "TWO+" + id + "+2+*";
+        RedisConnection connection = null;
+        try {
+            connection = redisTemplate.getConnectionFactory().getConnection();
+            connection.select(1);
+            Set<byte[]> keys = connection.keys(s.getBytes());
+            byte[][] ts = keys.toArray(new byte[][]{});
+            if (ts.length > 0) {
+                connection.del(ts);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            connection.close();
         }
     }
 }

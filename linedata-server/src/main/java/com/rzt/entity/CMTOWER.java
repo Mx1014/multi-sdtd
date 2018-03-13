@@ -47,10 +47,10 @@ public class CMTOWER implements Serializable{
     	//字段描述: 导数据临时使用，其他人务动
    	 @Column(name = "LINE_ID")
      private String lineId;
-    
+
 	public void setId(Long id){
 		if(id==null||id==0){
-			this.id = new SnowflakeIdWorker(1,4).nextId();
+			this.id = SnowflakeIdWorker.getInstance(9,6).nextId();
 		}else{
 			this.id = id;
 		}
