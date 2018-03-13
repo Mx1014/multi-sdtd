@@ -73,9 +73,15 @@ public interface KhTaskRepository extends JpaRepository<KhTask, String> {
             " VALUES(?1,?2,?3,?4,?5,sysdate,0,?6,?7,?8,?9,?10,0,?11,?12,?13 )", nativeQuery = true)
     void addTask(Long id, Long siteId, String userId, String taskName, Long yhId, Date planStartTime, Date planEndTime, String wxOrg, int count, String tdywOrg, int taskType, String ywOrgId, String wxOrgId);
 
-    @Modifying
+    /*@Modifying
     @Transactional
     @Query(value = "DELETE FROM KH_SITE where id=?1", nativeQuery = true)
+    void deleteSiteById(long id);
+*/
+
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE KH_SITE SET STATUS=2,KHXQ_TIME=sysdate where id=?1", nativeQuery = true)
     void deleteSiteById(long id);
 
     @Modifying
@@ -90,16 +96,26 @@ public interface KhTaskRepository extends JpaRepository<KhTask, String> {
 
     @Modifying
     @Transactional
-    @Query(value = "DELETE FROM MONITOR_CHECK_EJ WHERE TASK_ID=?1 AND TASK_TYPE=2 AND trunc(CREATE_TIME)=trunc(sysdate)", nativeQuery = true)
+    @Query(value = "DELETE FROM MONITOR_CHECK_EJ WHERE TASK_ID=?1 AND TASK_TYPE=2 ", nativeQuery = true)
     void deleteYjById(long id);
 
     @Modifying
     @Transactional
-    @Query(value = "DELETE FROM MONITOR_CHECK_YJ WHERE TASK_ID=?1 AND TASK_TYPE=2 AND trunc(CREATE_TIME)=trunc(sysdate)", nativeQuery = true)
+    @Query(value = "DELETE FROM MONITOR_CHECK_YJ WHERE TASK_ID=?1 AND TASK_TYPE=2 ", nativeQuery = true)
     void deleteEjById(long id);
 
     @Modifying
     @Transactional
-    @Query(value = "DELETE FROM KH_CYCLE WHERE YH_ID=?1", nativeQuery = true)
-    void deleteCycleByYhId(String yh_id);
+    @Query(value = "UPDATE KH_CYCLE SET STATUS=2,XQ_TIME=sysdate WHERE YH_ID=?1", nativeQuery = true)
+    void deleteCycleByYhId(Long yh_id);
+
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE KH_SITE SET PLAN_START_TIME=?2,PLAN_END_TIME=?3 WHERE id=?1", nativeQuery = true)
+    void updateSiteTimeById(long id, Date startTime, Date endTime);
+
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE KH_TASK SET PLAN_START_TIME=?2,PLAN_END_TIME=?3 WHERE SITE_ID=?1 and trunc(CREATE_TIME)=trunc(sysdate)", nativeQuery = true)
+    void updateTaskTimeBySiteId(long id, Date startTime, Date endTime);
 }

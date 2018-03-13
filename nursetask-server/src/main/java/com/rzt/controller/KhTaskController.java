@@ -15,6 +15,7 @@ import com.rzt.service.KhYhHistoryService;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DateUtil;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -46,13 +47,13 @@ public class KhTaskController extends
      */
     @GetMapping("/listAllKhTask.do")
     @ResponseBody
-    public WebApiResponse listAllKhTask(KhTaskModel task, String status, Integer page,Integer size, String yworg, String currentUserId,String home,String tdOrg) {
+    public WebApiResponse listAllKhTask(KhTaskModel task, String status, Integer page, Integer size, String yworg, String currentUserId, String home, String tdOrg) {
         Pageable pageable = new PageRequest(page, size);
         try {
             //分页参数 page size
             HashOperations<String, Object, Object> hashOperations = redisTemplate.opsForHash();
             JSONObject jsonObject = JSONObject.parseObject(hashOperations.get("UserInformation", currentUserId).toString());
-            Object o = this.service.listAllKhTask(task, status, pageable, jsonObject, yworg, currentUserId,home,tdOrg);
+            Object o = this.service.listAllKhTask(task, status, pageable, jsonObject, yworg, currentUserId, home, tdOrg);
             return WebApiResponse.success(o);
         } catch (Exception e) {
             e.printStackTrace();
@@ -65,11 +66,17 @@ public class KhTaskController extends
      */
     @GetMapping("/updateTaskById.do")
     @ResponseBody
-    public WebApiResponse updateTaskById(String khfzrId1, String id) {
-        // 提交申请给 管理员  如何提交待定  还是说没有修改功能
+    public WebApiResponse updateTaskById(String khfzrId1, String id, String time) {
         try {
+            List<Map<Object, String>> list = (List<Map<Object, String>>) JSONObject.parse(time);
+            //修改看护人的时间
+            for (Map map : list) {
+                this.service.updateSiteTimeById(Long.parseLong(map.get("ID").toString()), DateUtil.parseDate(map.get("PLAN_START_TIME").toString()), DateUtil.parseDate(map.get("PLAN_END_TIME").toString()));
+            }
             //分页参数 page size
-            this.service.updateTaskById(khfzrId1, id);
+            if (!StringUtils.isEmpty(khfzrId1)) {
+                this.service.updateTaskById(khfzrId1, id);
+            }
             return WebApiResponse.success("修改成功");
         } catch (Exception e) {
             e.printStackTrace();
@@ -214,6 +221,17 @@ public class KhTaskController extends
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("");
+        }
+    }
+
+    @GetMapping("/listTime")
+    @ResponseBody
+    public WebApiResponse listTime(String id) {
+        try {
+            return WebApiResponse.success(this.service.listTime(Long.parseLong(id)));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("获取失败");
         }
     }
 }
