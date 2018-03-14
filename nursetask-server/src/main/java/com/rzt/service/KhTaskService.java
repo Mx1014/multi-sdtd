@@ -441,7 +441,6 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
 
     }
 
-
     public void saveTask(KhSite site, Date startTime, Date endTime) {
         int count = this.getCount(site.getId(), site.getUserid());
         this.reposiotry.updateSite(startTime, endTime, site.getId(), count);
@@ -480,7 +479,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
     }
 
     public void deleteSiteById(long id) throws Exception {
-        //将对应的周期消缺
+        //将对应的周期停用
         this.reposiotry.deleteSiteById(id);
         String sql = "select count(1) num FROM KH_SITE where YH_ID =(select YH_ID from KH_SITE WHERE id=" + id+") and status = 1";
         Map<String, Object> map = this.execSqlSingleResult(sql);
