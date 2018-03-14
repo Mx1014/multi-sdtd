@@ -107,8 +107,8 @@ public class KhYhHistoryController extends
 
     @ApiOperation(value = "修改隐患信息", notes = "修改隐患信息")
     @PatchMapping("updateYhHistory")
-    public WebApiResponse updateYhHistory(KhYhHistory yh, String startTowerName, String endTowerName) {
-        return service.updateYhHistory(yh, startTowerName, endTowerName);
+    public WebApiResponse updateYhHistory(KhYhHistory yh, String startTowerName, String endTowerName,String ids) {
+        return service.updateYhHistory(yh, startTowerName, endTowerName,ids);
     }
 
 
