@@ -50,8 +50,8 @@ public class TaskCheckController extends
      * @return
      */
     @GetMapping("/findCompleteTaskByFlag")
-    public WebApiResponse findCompleteTaskByFlag(String flag,String taskType,String deptid,String taskTime){
-        return taskCheckService.findCompleteTaskByFlag(flag,taskType,deptid,taskTime);
+    public WebApiResponse findCompleteTaskByFlag(String flag,String taskType,String deptid,String taskTime,Integer page,Integer size){
+        return taskCheckService.findCompleteTaskByFlag(flag,taskType,deptid,taskTime,page,size);
     }
 
 

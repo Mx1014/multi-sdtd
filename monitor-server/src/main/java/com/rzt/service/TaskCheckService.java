@@ -568,7 +568,7 @@ public class TaskCheckService extends CurdService<TimedTask,XSZCTASKRepository>{
      * @param taskTime  任务时间
      * @return
      */
-    public WebApiResponse findCompleteTaskByFlag( String flag, String taskType, String deptid, String taskTime) {
+    public WebApiResponse findCompleteTaskByFlag( String flag, String taskType, String deptid, String taskTime,Integer page,Integer size) {
 
         if(null == flag || "".equals(flag)){
             LOGGER.error("查询任务稽查详情失败 flag  = "+flag);
@@ -578,7 +578,8 @@ public class TaskCheckService extends CurdService<TimedTask,XSZCTASKRepository>{
             LOGGER.error("查询任务稽查详情失败 taskType  = "+taskType);
             return WebApiResponse.erro("查询任务稽查详情失败 taskType  = "+taskType);
         }
-        List<Map<String, Object>> maps = null;
+        PageRequest pageRequest = new PageRequest(page,size);
+        Page<Map<String, Object>> maps1 = null;
         String sql = "";
         String dept = "";
         try {
@@ -614,7 +615,7 @@ public class TaskCheckService extends CurdService<TimedTask,XSZCTASKRepository>{
                 sql += "  AND STATUS = 0 ";
             }
 
-            maps = this.execSql(sql, null);
+            maps1 = this.execSqlPage(pageRequest, sql, null);
         }catch (Exception e){
         LOGGER.error(e.getMessage());
         return WebApiResponse.erro(e.getMessage());
@@ -622,6 +623,6 @@ public class TaskCheckService extends CurdService<TimedTask,XSZCTASKRepository>{
 
 
 
-        return WebApiResponse.success(maps);
+        return WebApiResponse.success(maps1);
     }
 }
