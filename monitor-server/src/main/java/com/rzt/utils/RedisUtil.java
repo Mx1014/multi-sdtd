@@ -28,7 +28,9 @@ public class RedisUtil  extends CurdService<CheckResult, CheckResultRepository> 
      * @return
      */
     @Autowired
-    private JedisPool redisTemplate;
+    private JedisPool jedisPool;
+    @Autowired
+    private RedisTemplate<String,Object> redisTemplate;
 
     public  String findRoleIdByUserId(String userId) {
         /**
@@ -37,15 +39,14 @@ public class RedisUtil  extends CurdService<CheckResult, CheckResultRepository> 
          --  管理员角色(通道运维单位)      sdyjid          属地运检部
          -- 后台稽查角色(通道运维单位)     sdid          属地反外力监控中心
          */
-        Jedis resource = null;
         try {
-            resource = redisTemplate.getResource();
-            String userInformation = resource.hget("UserInformation", userId);
+            Object userInformation1 = redisTemplate.opsForHash().get("UserInformation", userId);
+
 //            Object userInformation1 = redisTemplate.opsForHash().get("UserInformation", userId);
-            if (null != userInformation) {
-                JSONObject jsonObject1 = JSONObject.parseObject(userInformation);
-                if (null != jsonObject1) {
-                    String roleId = (String) jsonObject1.get("ROLEID");
+            if (null != userInformation1) {
+                JSONObject jsonObject2 = JSONObject.parseObject(userInformation1.toString());
+                if (null != jsonObject2) {
+                    String roleId = (String) jsonObject2.get("ROLEID");
 
                     if (null != roleId && !"".equals(roleId)) {
                         if ("606DE762BD183D21E0501AAC38EF5184".equals(roleId)) {
@@ -67,14 +68,13 @@ public class RedisUtil  extends CurdService<CheckResult, CheckResultRepository> 
         } catch (Exception e) {
 
             return null;
-        }finally {
-            if(null != resource){
-                resource.close();
-            }
         }
 
         return null;
     }
+
+
+
 
     /**
      * 根据用户id  获取当前通道公司汉字名
@@ -82,22 +82,22 @@ public class RedisUtil  extends CurdService<CheckResult, CheckResultRepository> 
      * @return
      */
    public  String findTDByUserId(String userId) {
-       Jedis resource = null;
         try {
-            resource = redisTemplate.getResource();
+
+            Object userInformation1 = redisTemplate.opsForHash().get("UserInformation", userId);
+            JSONObject jsonObject2 = JSONObject.parseObject(userInformation1.toString());
+
+            /*resource = jedisPool.getResource();
             String userInformation = resource.hget("UserInformation", userId);
-            JSONObject jsonObject1 = JSONObject.parseObject(userInformation);
-            String DEPT = (String) jsonObject1.get("DEPT");
+            JSONObject jsonObject1 = JSONObject.parseObject(userInformation);*/
+            String DEPT = (String) jsonObject2.get("DEPT");
             if (null != DEPT && !"".equals(DEPT)) {
                 return DEPT;
             }
 
         } catch (Exception e) {
             return null;
-        }finally {
-            if(null != resource){
-                resource.close();
-        }
+
         }
         return null;
 
@@ -110,22 +110,17 @@ public class RedisUtil  extends CurdService<CheckResult, CheckResultRepository> 
      * @return
      */
     public  String findTDIDByUserId(String userId) {
-        Jedis resource = null;
+        //Jedis resource = null;
         try {
-            resource = redisTemplate.getResource();
-            String userInformation = resource.hget("UserInformation", userId);
-            JSONObject jsonObject1 = JSONObject.parseObject(userInformation);
-            String DEPT = (String) jsonObject1.get("DEPTID");
+            Object userInformation1 = redisTemplate.opsForHash().get("UserInformation", userId);
+            JSONObject jsonObject2 = JSONObject.parseObject(userInformation1.toString());
+            String DEPT = (String) jsonObject2.get("DEPTID");
             if (null != DEPT && !"".equals(DEPT)) {
                 return DEPT;
             }
 
         } catch (Exception e) {
             return null;
-        }finally {
-            if(null != resource){
-                resource.close();
-            }
         }
         return null;
 

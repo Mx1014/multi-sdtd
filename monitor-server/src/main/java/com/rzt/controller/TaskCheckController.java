@@ -45,13 +45,24 @@ public class TaskCheckController extends
     /**
      *
      * 按照任务类型和 查询结果类型查询
-     * @param flag     标识 0有问题  1以审核  2全部
+     * @param flag     标识 0有问题  1以审核  2全部  3 未审核
      * @param taskType  任务类型
      * @return
      */
     @GetMapping("/findCompleteTaskByFlag")
     public WebApiResponse findCompleteTaskByFlag(String flag,String taskType,String deptid,String taskTime,Integer page,Integer size){
         return taskCheckService.findCompleteTaskByFlag(flag,taskType,deptid,taskTime,page,size);
+    }
+
+    /**
+     * 根据任务id和任务类型查询任务的详细信息
+     * @param taskId
+     * @param taskType
+     * @return
+     */
+    @GetMapping("/")
+    public WebApiResponse findTaskInfoByTaskId(String taskId,String taskType){
+        return taskCheckService.findTaskInfoByTaskId(taskId,taskType);
     }
 
 
