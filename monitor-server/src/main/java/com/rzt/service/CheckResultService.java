@@ -119,7 +119,7 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
                                     "   t.ID," +
                                     "   t.USER_ID,t.THREEDAY," +
                                     "   t.TASKNAME,cd.CHECK_USER,d.ID AS TDYW_ORGID," +
-                                    "    t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,dd.ID as did,cd.CREATE_TIME," +
+                                    "    t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,dd.ID as did,t.CREATETIME," +
                                     "  dd.DEPTNAME as DEPT,d.DEPTNAME,u.REALNAME as REALNAME,u.PHONE,(SELECT COMPANYNAME FROM RZTSYSCOMPANY WHERE ID = xs.WX_ORG) AS COMPANYNAME" +
                                     "    FROM TIMED_TASK t  LEFT JOIN CHECK_DETAIL cd ON t.TASKID = cd.QUESTION_TASK_ID" +
                                     "        LEFT JOIN RZTSYSUSER u ON u.ID = cd.CHECK_USER    LEFT JOIN RZTSYSUSER uu ON uu.ID = t.USER_ID" +
@@ -131,7 +131,7 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
                                     "     t.ID," +
                                     "     t.USER_ID,t.THREEDAY," +
                                     "     t.TASKNAME,cd.CHECK_USER,d.ID AS TDYW_ORGID," +
-                                    "     t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,dd.ID as did,cd.CREATE_TIME," +
+                                    "     t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,dd.ID as did,t.CREATETIME," +
                                     "     dd.DEPTNAME as DEPT,d.DEPTNAME,u.REALNAME as REALNAME,u.PHONE" +
                                     "  ,kh.WX_ORG  AS COMPANYNAME" +
                                     "   FROM TIMED_TASK t  LEFT JOIN CHECK_DETAIL cd ON t.TASKID = cd.QUESTION_TASK_ID" +
@@ -144,7 +144,7 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
                                     "                   t.ID," +
                                     "                   t.USER_ID,t.THREEDAY," +
                                     "                   t.TASKNAME,cd.CHECK_USER,d.ID AS TDYW_ORGID," +
-                                    "                   t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,dd.ID as did,cd.CREATE_TIME," +
+                                    "                   t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,dd.ID as did,t.CREATETIME," +
                                     "                  dd.DEPTNAME as DEPT,d.DEPTNAME,u.REALNAME as REALNAME,u.PHONE,com.COMPANYNAME AS COMPANYNAME" +
                                     "                 FROM TIMED_TASK t LEFT JOIN CHECK_LIVE_TASK c ON  t.TASKID = c.ID" +
                                     "                   LEFT JOIN CHECK_DETAIL cd ON t.TASKID = cd.CHECK_USER" +
@@ -161,7 +161,7 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
                                     "   t.ID," +
                                     "   t.USER_ID,t.THREEDAY," +
                                     "   t.TASKNAME,cd.CHECK_USER,d.ID AS TDYW_ORGID," +
-                                    "    t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,dd.ID as did,cd.CREATE_TIME," +
+                                    "    t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,dd.ID as did,t.CREATETIME," +
                                     "  dd.DEPTNAME as DEPT,d.DEPTNAME,u.REALNAME as REALNAME,u.PHONE,(SELECT COMPANYNAME FROM RZTSYSCOMPANY WHERE ID = xs.WX_ORG) AS COMPANYNAME" +
                                     "    FROM TIMED_TASK t  LEFT JOIN CHECK_DETAIL cd ON t.TASKID = cd.QUESTION_TASK_ID" +
                                     "        LEFT JOIN RZTSYSUSER u ON u.ID = cd.CHECK_USER    LEFT JOIN RZTSYSUSER uu ON uu.ID = t.USER_ID" +
@@ -173,7 +173,7 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
                                     "     t.ID," +
                                     "     t.USER_ID,t.THREEDAY," +
                                     "     t.TASKNAME,cd.CHECK_USER,d.ID AS TDYW_ORGID," +
-                                    "     t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,dd.ID as did,cd.CREATE_TIME," +
+                                    "     t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,dd.ID as did,t.CREATETIME," +
                                     "     dd.DEPTNAME as DEPT,d.DEPTNAME,u.REALNAME as REALNAME,u.PHONE" +
                                     "  ,kh.WX_ORG  AS COMPANYNAME" +
                                     "   FROM TIMED_TASK t  LEFT JOIN CHECK_DETAIL cd ON t.TASKID = cd.QUESTION_TASK_ID" +
@@ -186,7 +186,7 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
                                     "                   t.ID," +
                                     "                   t.USER_ID,t.THREEDAY," +
                                     "                   t.TASKNAME,cd.CHECK_USER,d.ID AS TDYW_ORGID," +
-                                    "                   t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,dd.ID as did,cd.CREATE_TIME," +
+                                    "                   t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,dd.ID as did,t.CREATETIME," +
                                     "                  dd.DEPTNAME as DEPT,d.DEPTNAME,u.REALNAME as REALNAME,u.PHONE,com.COMPANYNAME AS COMPANYNAME" +
                                     "                 FROM TIMED_TASK t LEFT JOIN CHECK_LIVE_TASK c ON  t.TASKID = c.ID" +
                                     "                   LEFT JOIN CHECK_DETAIL cd ON t.TASKID = cd.CHECK_USER" +
@@ -206,7 +206,7 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
                                         "         t.ID," +
                                         "         t.USER_ID,t.THREEDAY," +
                                         "         t.TASKNAME,cd.CHECK_USER,d.ID AS TDYW_ORGID," +
-                                        "          t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did,cd.CREATE_TIME," +
+                                        "          t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did,t.CREATETIME," +
                                         "        d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE,(SELECT COMPANYNAME FROM RZTSYSCOMPANY WHERE ID = xs.WX_ORG) AS COMPANYNAME" +
                                         "          FROM TIMED_TASK t  LEFT JOIN CHECK_DETAIL cd ON t.TASKID = cd.QUESTION_TASK_ID" +
                                         "              LEFT JOIN RZTSYSUSER u ON u.ID = cd.CHECK_USER" +
@@ -217,7 +217,7 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
                                         "           t.ID," +
                                         "           t.USER_ID,t.THREEDAY," +
                                         "           t.TASKNAME,cd.CHECK_USER,d.ID AS TDYW_ORGID," +
-                                        "           t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did,cd.CREATE_TIME," +
+                                        "           t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did,t.CREATETIME," +
                                         "           d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE" +
                                         "        ,kh.WX_ORG  AS COMPANYNAME" +
                                         "         FROM TIMED_TASK t  LEFT JOIN CHECK_DETAIL cd ON t.TASKID = cd.QUESTION_TASK_ID" +
@@ -229,7 +229,7 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
                                         "                         t.ID," +
                                         "                         t.USER_ID,t.THREEDAY," +
                                         "                         t.TASKNAME,cd.CHECK_USER,d.ID AS TDYW_ORGID," +
-                                        "                         t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did,cd.CREATE_TIME," +
+                                        "                         t.TASKTYPE,t.CHECKSTATUS ,t.TARGETSTATUS,d.ID as did,t.CREATETIME," +
                                         "                        d.DEPTNAME as DEPT,u.REALNAME as REALNAME,u.PHONE,com.COMPANYNAME AS COMPANYNAME" +
                                         "                       FROM TIMED_TASK t LEFT JOIN CHECK_LIVE_TASK c ON  t.TASKID = c.ID" +
                                         "                         LEFT JOIN CHECK_DETAIL cd ON t.TASKID = cd.CHECK_USER" +
@@ -272,11 +272,11 @@ public class CheckResultService extends CurdService<CheckResult, CheckResultRepo
             }
             //按时间查询 startDate,String endDate
             if((null != startDate  &&  !"".equals(startDate)) && (null != endDate && !"".equals(endDate))){
-                sql += "  AND  CREATE_TIME >= to_date('"+startDate+"','YYYY-MM-dd HH24:mi:ss')  AND" +
-                        "    CREATE_TIME <= to_date('"+endDate+"','YYYY-MM-dd HH24:mi:ss')      ";
+                sql += "  AND  CREATETIME >= to_date('"+startDate+"','YYYY-MM-dd HH24:mi:ss')  AND" +
+                        "    CREATETIME <= to_date('"+endDate+"','YYYY-MM-dd HH24:mi:ss')      ";
             }
             if(null != sql && !"".equals(sql)){
-                sql +="   ORDER BY CREATE_TIME DESC     ";
+                sql +="   ORDER BY CREATETIME DESC     ";
             }
 
             pageResult = this.execSqlPage(pageable, sql, list.toArray());

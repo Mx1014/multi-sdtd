@@ -480,14 +480,15 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
     }
 
     public void deleteSiteById(long id) throws Exception {
-        String sql = "SELECT *\n" +
-                "FROM KH_TASK where PLAN_START_TIME<=sysdate and PLAN_END_TIME>=sysdate and status = 1 and SITE_ID=?";
-        List<Map<String, Object>> maps = this.execSql(sql, id);
-        if (maps.size() > 0) {
-            throw new Exception();
-        } else {
-            this.reposiotry.deleteSiteById(id);
-            this.reposiotry.deleteCycleByYhId(maps.get(0).get("YH_ID").toString());
+        //将对应的周期消缺
+        this.reposiotry.deleteSiteById(id);
+        String sql = "select count(1) num FROM KH_SITE where YH_ID =(select YH_ID from KH_SITE WHERE id=" + id+") and status = 1";
+        Map<String, Object> map = this.execSqlSingleResult(sql);
+        //如果该隐患的周期全部停用  停用稽查
+        if (Integer.parseInt(map.get("NUM").toString()) == 0) {
+            sql = "select YH_ID from KH_SITE WHERE id=" + id;
+            List<Map<String, Object>> maps = this.execSql(sql);
+            this.reposiotry.deleteCycleByYhId(Long.parseLong(maps.get(0).get("YH_ID").toString()));
         }
     }
 
@@ -567,6 +568,20 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         } finally {
             connection.close();
         }
+    }
+
+    public List listTime(long id) {
+        String sql = "SELECT u.REALNAME,s.PLAN_START_TIME,s.PLAN_END_TIME,s.id " +
+                "FROM KH_SITE s LEFT JOIN RZTSYSUSER u on u.id = s.USER_ID WHERE YH_ID =( " +
+                "SELECT YH_ID " +
+                "FROM KH_SITE WHERE id=" + id + ") and status=1 order by plan_start_time ";
+        List<Map<String, Object>> maps = this.execSql(sql);
+        return maps;
+    }
+
+    public void updateSiteTimeById(long id, Date startTime, Date endTime) {
+        this.reposiotry.updateSiteTimeById(id, startTime, endTime);
+        this.reposiotry.updateTaskTimeBySiteId(id, startTime, endTime);
     }
 }
 

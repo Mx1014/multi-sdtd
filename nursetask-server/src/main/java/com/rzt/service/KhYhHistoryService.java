@@ -1207,9 +1207,11 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
     public void saveCycle(long yhId) {
         String sql = "select * from kh_cycle where yh_id=?";
         List<Map<String, Object>> maps = this.execSql(sql, yhId);
+        //如果派发中存在该隐患的任务  重置
         if (maps.size() > 0) {
             this.reposiotry.updateCycleByYhId(yhId);
         } else {
+            //不存在  新建
             KhYhHistory yh = this.reposiotry.finds(yhId);
             String kv = yh.getVtype();
             if (yh.getVtype().contains("kV")) {
