@@ -65,8 +65,8 @@ public class KhSiteController extends
 
     @PostMapping("/saveYh.do")
     @ResponseBody
-    public WebApiResponse saveYh(KhYhHistory yh, String fxtime, String startTowerName, String endTowerName, String pictureId) {
-        return this.service.saveYh(yh, fxtime, startTowerName, endTowerName, pictureId);
+    public WebApiResponse saveYh(KhYhHistory yh, String fxtime, String startTowerName, String endTowerName, String pictureId,String ids) {
+        return this.service.saveYh(yh, fxtime, startTowerName, endTowerName, pictureId,ids);
     }
 
 

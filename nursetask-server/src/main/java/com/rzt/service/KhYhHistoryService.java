@@ -12,6 +12,7 @@ import com.netflix.ribbon.proxy.annotation.Http;
 import com.rzt.entity.*;
 import com.rzt.eureka.MonitorService;
 import com.rzt.repository.KhYhHistoryRepository;
+import com.rzt.repository.KhYhTowerRepository;
 import com.rzt.repository.XsSbYhRepository;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DateUtil;
@@ -57,6 +58,8 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
     private KhSiteService siteService;
     @Autowired
     private MonitorService monitorService;
+    @Autowired
+    private KhYhTowerRepository towerRepository;
 
     @Transactional
     public WebApiResponse saveYh(XsSbYh yh, String startTowerName, String endTowerName, String pictureId) {
@@ -72,7 +75,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                     //double jd = (Double.parseDouble(map.get("LONGITUDE").toString()) + Double.parseDouble(map1.get("LONGITUDE").toString())) / 2;
                     // double wd = (Double.parseDouble(map.get("LATITUDE").toString()) + Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
                     // double radius = MapUtil.GetDistance(Double.parseDouble(map.get("LONGITUDE").toString()), Double.parseDouble(map.get("LATITUDE").toString()), Double.parseDouble(map1.get("LONGITUDE").toString()), Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
-                    yh.setRadius("500.0");
+                    yh.setRadius("1000.0");
                     yh.setJd(map.get("LONGITUDE").toString());
                     yh.setWd(map.get("LATITUDE").toString());
                 }
@@ -96,7 +99,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                     Map<String, Object> map = this.execSqlSingleResult(sql, yh.getTdywOrg() + "%");
                     yh.setTdorgId(map.get("ID").toString());
                 }
-                if (yh.getTdwxOrg()!=null && ("null").equals(yh.getTdwxOrg())){
+                if (yh.getTdwxOrg() != null && ("null").equals(yh.getTdwxOrg())) {
                     yh.setTdwxOrg("");
                     yh.setWxorgId("");
                 }
@@ -108,6 +111,23 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             yh.setYhzt(0);//隐患未消除
             yh.setCreateTime(DateUtil.dateNow());
             yh.setSection(startTowerName + "-" + endTowerName);
+
+            //保存隐患涉及的塔id
+            try {
+                KhYhTower tower = new KhYhTower();
+                tower.setId(0L);
+                tower.setYhId(yh.getId());
+                tower.setTowerId(Long.parseLong(yh.getStartTower()));
+                KhYhTower tower1 = new KhYhTower();
+                tower1.setId(0L);
+                tower1.setYhId(yh.getId());
+                tower1.setTowerId(Long.parseLong(yh.getEndTower()));
+                towerRepository.save(tower);
+                towerRepository.save(tower1);
+            } catch (NumberFormatException e) {
+            }
+
+            //为图片关联隐患id
             if (null != pictureId && !pictureId.equals("")) {
                 String[] split = pictureId.split(",");
                 for (int i = 0; i < split.length; i++) {
@@ -133,13 +153,13 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 radius = radius + ".0";
             }
             try {
-                if (Double.parseDouble(radius) > 500) {
-                    radius = 500.0 + "";
+                if (Double.parseDouble(radius) > 1000) {
+                    radius = 1000.0 + "";
                 }
             } catch (NumberFormatException e) {
                 e.printStackTrace();
             }
-             this.reposiotry.updateYh(Long.parseLong(yhId), lat, lon, radius);
+            this.reposiotry.updateYh(Long.parseLong(yhId), lat, lon, radius);
             this.reposiotry.updateCycle(Long.parseLong(yhId), lat, lon, radius);
             return WebApiResponse.success("保存成功");
         } catch (Exception e) {
@@ -513,7 +533,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
     }
 
     //修改隐患信息
-    public WebApiResponse updateYhHistory(KhYhHistory yh, String startTowerName, String endTowerName) {
+    public WebApiResponse updateYhHistory(KhYhHistory yh, String startTowerName, String endTowerName, String ids) {
         try {
             if (startTowerName != null && !startTowerName.equals("")) {
                 String section = startTowerName + "-" + endTowerName;
@@ -528,6 +548,15 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 this.reposiotry.updateKhCycle2(yh.getId(), section, taskName);
                 this.reposiotry.updateKhSite(yh.getId(), section, taskName);
                 this.reposiotry.updateKhTask(yh.getId(), taskName);
+                towerRepository.deleteByYhId(yh.getId());
+                if (!StringUtils.isEmpty(ids)) {
+                    String[] split = ids.split(",");
+                    for (int i = 0; i < split.length; i++) {
+                        KhYhTower tower = new KhYhTower();
+                        tower.setId(0L);
+                        towerRepository.insertKhTower(tower.getId(),yh.getId(),Long.parseLong(split[i]),200);
+                    }
+                }
             } else {
                 this.reposiotry.updateYhHistory2(yh.getId(), yh.getYhms(), yh.getYhzrdw(), yh.getYhzrdwlxr(), yh.getYhzrdwdh(), yh.getYhjb1(), yh.getYhlb(), yh.getGkcs());
             }
@@ -632,11 +661,11 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             yh.setXdxyhjkjl(sbYh.getXdxyhjkjl());
             yh.setJd(sbYh.getJd());
             yh.setWd(sbYh.getWd());
-            yh.setRadius("500.0");
+            yh.setRadius("1000.0");
 //            yh.setClassName(sbYh.getLineName());
 //            yh.setClassId(sbYh.getclass);
             String[] split = sbYh.getSection().split("-");
-            siteService.saveYh(yh, DateUtil.getStringDate(), split[0].toString(), split[1].toString(), "");
+            siteService.saveYh(yh, DateUtil.getStringDate(), split[0].toString(), split[1].toString(), "", "");
             //将原上报隐患的图片关联
 //            String sql = "";
             //
@@ -905,7 +934,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 yh.setGkcs(ExcelUtil.getCellValue(row.getCell(25)));//管控措施
                 //yh.setZpxgsj(DateUtil.parse(ExcelUtil.getCellValue(row.getCell(27))));//照片修改时间
                 yh.setYhzt(0);//隐患状态
-                yh.setRadius("500.0");
+                yh.setRadius("1000.0");
                 yh.setSdgs(2);//execl导入
                 yh.setSfdj(1);//已定级
                 yh.setCreateTime(new Date());//DateUtil.parseDate(ExcelUtil.getCellValue(row.getCell(12)))

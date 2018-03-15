@@ -10,14 +10,12 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.*;
 import com.rzt.entity.model.KhTaskModel;
-import com.rzt.repository.KhCycleRepository;
-import com.rzt.repository.KhSiteRepository;
-import com.rzt.repository.KhTaskRepository;
-import com.rzt.repository.KhYhHistoryRepository;
+import com.rzt.repository.*;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.DateUtil;
 import com.rzt.utils.MapUtil;
 import com.rzt.utils.SnowflakeIdWorker;
+import org.apache.commons.lang.StringUtils;
 import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -60,6 +58,8 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
     private KhCycleRepository cycleRepository;
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+    @Autowired
+    private KhYhTowerRepository towerRepository;
 
     public Object listAllTaskNotDo(KhTaskModel task, Pageable pageable, String userName, String roleType, String yhjb, String yworg, String currentUserId) {
         List params = new ArrayList<>();
@@ -224,7 +224,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
     }
 
     @Transactional
-    public WebApiResponse saveYh(KhYhHistory yh, String fxtime, String startTowerName, String endTowerName, String pictureId) {
+    public WebApiResponse saveYh(KhYhHistory yh, String fxtime, String startTowerName, String endTowerName, String pictureId, String ids) {
         try {
             KhCycle task = new KhCycle();
             String kv = "";
@@ -240,7 +240,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                     double jd = (Double.parseDouble(map.get("LONGITUDE").toString()) + Double.parseDouble(map1.get("LONGITUDE").toString())) / 2;
                     double wd = (Double.parseDouble(map.get("LATITUDE").toString()) + Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
                     double radius = MapUtil.GetDistance(Double.parseDouble(map.get("LONGITUDE").toString()), Double.parseDouble(map.get("LATITUDE").toString()), Double.parseDouble(map1.get("LONGITUDE").toString()), Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
-                    yh.setRadius("150.0");
+                    yh.setRadius("1000.0");
                     yh.setJd(map.get("LONGITUDE").toString());
                     yh.setWd(map.get("LATITUDE").toString());
                 }
@@ -256,6 +256,17 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             yh.setYhzt(0);//隐患未消除
             if (yh.getId() == null) {
                 yh.setId(0L);
+            }
+            if (!StringUtils.isEmpty(ids)) {
+                String[] split = ids.split(",");
+                for (int i = 0; i < split.length; i++) {
+                    KhYhTower tower = new KhYhTower();
+                    tower.setTowerId(Long.parseLong(split[i]));
+                    tower.setId(0L);
+                    tower.setYhId(yh.getId());
+                    tower.setRadius(200);
+                    towerRepository.save(tower);
+                }
             }
             if (yh.getYhlb().equals("在施类")) {
                 String taskName = kv + "-" + yh.getLineName() + " " + yh.getSection() + " 号杆塔看护任务";
