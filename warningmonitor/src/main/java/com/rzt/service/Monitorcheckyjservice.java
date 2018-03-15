@@ -43,7 +43,11 @@ public class Monitorcheckyjservice extends CurdService<Monitorcheckyj, Monitorch
     }
     //一级单位天加未到位
     public void saveCheckYjWdw(String[] messages) {
-        repo.saveCheckYjWdw(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(messages[1]),Integer.valueOf(messages[2]),Integer.valueOf(messages[3]),messages[4],messages[5],messages[6],messages[7]);
+        if("3".equals(messages[3])){
+            repo.saveCheckYjWdwExec(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(messages[1]),Integer.valueOf(messages[2]),Integer.valueOf(messages[3]),messages[4],messages[5],messages[6],messages[7],Long.parseLong(messages[8]));
+        }else{
+            repo.saveCheckYjWdw(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(messages[1]),Integer.valueOf(messages[2]),Integer.valueOf(messages[3]),messages[4],messages[5],messages[6],messages[7]);
+        }
     }
 
     /**
