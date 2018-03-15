@@ -625,4 +625,61 @@ public class TaskCheckService extends CurdService<TimedTask,XSZCTASKRepository>{
 
         return WebApiResponse.success(maps1);
     }
+
+    public WebApiResponse findTaskInfoByTaskId(String taskId, String taskType)  {
+
+        if(null == taskType || "".equals(taskType)){
+            return WebApiResponse.erro("参数错误  taskType = "+taskType);
+        }
+        if(null == taskId || "".equals(taskId)){
+            return WebApiResponse.erro("参数错误  taskId = "+taskId);
+        }
+        String sql = "";
+        String picSql = "";
+        Map<String, Object> stringObjectHashMap = new HashMap<>();
+        Map<String, Object> map = new HashMap<>();
+        try {
+        if("1".equals(taskType)){//巡视
+            sql = "   SELECT x.TASK_NAME,d.DEPTNAME,c.COMPANYNAME,u.REALNAME,u.PHONE,x.PLAN_XS_NUM," +
+                    "  x.REAL_XS_NUM,x.REAL_START_TIME,x.REAL_END_TIME,x.PLAN_START_TIME,x.PLAN_END_TIME" +
+                    "   FROM XS_ZC_TASK x LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = x.TD_ORG" +
+                    "  LEFT JOIN RZTSYSCOMPANY c ON c.ID = x.WX_ORG" +
+                    "  LEFT JOIN RZTSYSUSER u ON u.ID = x.CM_USER_ID WHERE x.ID = '"+taskId+"'";
+            map = this.execSqlSingleResult(sql);
+            stringObjectHashMap.put("task",map);
+            picSql = "SELECT ID,FILE_PATH,FILE_SMALL_PATH,PROCESS_NAME" +
+                    "   FROM PICTURE_TOUR WHERE TASK_ID = '"+taskId+"' AND FILE_TYPE = 1";
+            List<Map<String, Object>> maps = this.execSql(picSql);
+            stringObjectHashMap.put("pic",maps);
+
+        }
+        if("2".equals(taskType)){//看护
+            sql = "  SELECT k.TASK_NAME,k.PLAN_START_TIME,k.PLAN_END_TIME,k.REAL_START_TIME,k.REAL_END_TIME,k.SFQR_TIME," +
+                    "  k.DDXC_TIME,k.WX_ORG,k.TDYW_ORG,k.WPQR_TIME,k.ZXYS_NUM,u.PHONE,u.REALNAME,k.ID AS taskid,u.ID as userid" +
+                    "    FROM KH_TASK k LEFT JOIN RZTSYSUSER u ON u.ID = k.USER_ID WHERE k.ID = '"+taskId+"'";
+            map = this.execSqlSingleResult(sql);
+            stringObjectHashMap.put("task",map);
+            picSql = "SELECT ID,FILE_PATH,FILE_SMALL_PATH,PROCESS_NAME" +
+                    "    FROM PICTURE_KH WHERE TASK_ID = '"+taskId+"' AND FILE_TYPE = 1";
+            List<Map<String, Object>> maps = this.execSql(picSql);
+            stringObjectHashMap.put("pic",maps);
+
+        }
+        if("3".equals(taskType)){//稽查
+            sql = "";
+            map = this.execSqlSingleResult(sql);
+            stringObjectHashMap.put("task",map);
+            picSql = "";
+            List<Map<String, Object>> maps = this.execSql(picSql);
+            stringObjectHashMap.put("pic",maps);
+        }
+
+
+        } catch (Exception e) {
+            LOGGER.error("查询任务详情失败"+e.getMessage());
+            return WebApiResponse.erro("查询任务详情失败"+e.getMessage());
+        }
+        LOGGER.info("查询任务详情成功");
+        return WebApiResponse.success(stringObjectHashMap);
+    }
 }
