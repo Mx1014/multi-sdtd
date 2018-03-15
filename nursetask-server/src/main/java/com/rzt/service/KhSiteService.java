@@ -347,7 +347,6 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                     task.setWxOrgId(map1.get("ID").toString());
                     task.setWxOrg(map1.get("NAME").toString());
                 } catch (Exception e) {
-                    e.printStackTrace();
                 }
                 site.setVtype(cycle.getVtype());
                 site.setLineName(cycle.getLineName());
@@ -390,7 +389,13 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                 task.setTaskType(0);
                 taskService.add(task);
             }
-            this.reposiotry.updateCycleById(id);  // 重新生成多个周期
+            String sql1 = "select SFDJ from kh_cycle C LEFT JOIN KH_YH_HISTORY Y on y.id = c.yh_id where C.id= " + cycle.getId();
+            Map<String, Object> map1 = this.execSqlSingleResult(sql1);
+            if (map1.get("SFDJ").toString().equals("1")) {
+                this.reposiotry.updateCycleById(id);  // 重新生成多个周期
+            }else {
+                this.reposiotry.updateCycleById2(id);
+            }
             try {
                 String userId = list.get(0).get("userId").toString();
                 String sql = "SELECT d.id DID,d.DEPTNAME DNAME,c.id CID,c.COMPANYNAME CNAME\n" +
@@ -597,6 +602,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             connection.close();
         }
     }
+
     @Transactional
     public WebApiResponse saveNoYh(KhYhHistory yh, String startTowerName, String endTowerName, String ids) {
         try {
