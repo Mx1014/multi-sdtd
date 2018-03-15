@@ -171,7 +171,7 @@ public class ProController {
             LOGGER.error("taskId      " + taskId);
             LOGGER.error("YHID      " + YHID);
             LOGGER.error("flag      " + flag);
-            return WebApiResponse.erro("稽查任务回调失败"+e.getMessage());
+            return WebApiResponse.success("稽查任务回调失败"+e.getMessage());
         }
     }
     /**
