@@ -68,7 +68,12 @@ public class KhSiteController extends
     public WebApiResponse saveYh(KhYhHistory yh, String fxtime, String startTowerName, String endTowerName, String pictureId,String ids) {
         return this.service.saveYh(yh, fxtime, startTowerName, endTowerName, pictureId,ids);
     }
-
+    //新建无隐患看护
+    @PostMapping("/saveNoYh")
+    @ResponseBody
+    public WebApiResponse saveNoYh(KhYhHistory yh, String startTowerName, String endTowerName,String ids) {
+        return this.service.saveNoYh(yh, startTowerName, endTowerName,ids);
+    }
 
     /***
      * 获取 待安排的看护任务

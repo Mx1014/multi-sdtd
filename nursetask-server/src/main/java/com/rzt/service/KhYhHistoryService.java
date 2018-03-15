@@ -75,7 +75,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                     //double jd = (Double.parseDouble(map.get("LONGITUDE").toString()) + Double.parseDouble(map1.get("LONGITUDE").toString())) / 2;
                     // double wd = (Double.parseDouble(map.get("LATITUDE").toString()) + Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
                     // double radius = MapUtil.GetDistance(Double.parseDouble(map.get("LONGITUDE").toString()), Double.parseDouble(map.get("LATITUDE").toString()), Double.parseDouble(map1.get("LONGITUDE").toString()), Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
-                    yh.setRadius("500.0");
+                    yh.setRadius("1000.0");
                     yh.setJd(map.get("LONGITUDE").toString());
                     yh.setWd(map.get("LATITUDE").toString());
                 }
@@ -153,8 +153,8 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 radius = radius + ".0";
             }
             try {
-                if (Double.parseDouble(radius) > 500) {
-                    radius = 500.0 + "";
+                if (Double.parseDouble(radius) > 1000) {
+                    radius = 1000.0 + "";
                 }
             } catch (NumberFormatException e) {
                 e.printStackTrace();
@@ -216,7 +216,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 List<Map<String, Object>> maps = this.execSql(sql, params.toArray());
                 return WebApiResponse.success(this.execSql(sql, params.toArray()));
             } else {
-                sql = "SELECT DISTINCT(y.id) as yhid, y.* FROM ( SELECT  y.id as yh_id, y.* FROM KH_YH_HISTORY y WHERE YHLB LIKE '在施类' AND YHZT = 0 UNION ALL SELECT DISTINCT  (s.YH_ID), y.* FROM KH_YH_HISTORY y, KH_SITE s  WHERE s.YH_ID = y.ID AND s.STATUS = 1 AND y.yhzt = 0) y " + buffer.toString();
+                sql = "SELECT DISTINCT(y.id) as yhid, y.* FROM ( SELECT  y.id as yh_id, y.* FROM KH_YH_HISTORY y WHERE YHLB LIKE '在施类' AND YHZT = 0 UNION ALL SELECT DISTINCT  (s.YH_ID), y.* FROM KH_YH_HISTORY y, KH_SITE s  WHERE s.YH_ID = y.ID AND s.STATUS = 1 AND y.yhzt = 0 and y.sfdj=1) y " + buffer.toString();
 //               sql = "SELECT DISTINCT(y.id) as yhid, y.* FROM KH_YH_HISTORY y, KH_SITE s  WHERE s.YH_ID = y.ID AND s.STATUS = 1 AND y.yhzt = 0 " + buffer.toString();
                 List<Map<String, Object>> list = this.execSql(sql, params.toArray());
                 List<Object> list1 = new ArrayList<>();
@@ -661,7 +661,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             yh.setXdxyhjkjl(sbYh.getXdxyhjkjl());
             yh.setJd(sbYh.getJd());
             yh.setWd(sbYh.getWd());
-            yh.setRadius("500.0");
+            yh.setRadius("1000.0");
 //            yh.setClassName(sbYh.getLineName());
 //            yh.setClassId(sbYh.getclass);
             String[] split = sbYh.getSection().split("-");
@@ -934,7 +934,7 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 yh.setGkcs(ExcelUtil.getCellValue(row.getCell(25)));//管控措施
                 //yh.setZpxgsj(DateUtil.parse(ExcelUtil.getCellValue(row.getCell(27))));//照片修改时间
                 yh.setYhzt(0);//隐患状态
-                yh.setRadius("500.0");
+                yh.setRadius("1000.0");
                 yh.setSdgs(2);//execl导入
                 yh.setSfdj(1);//已定级
                 yh.setCreateTime(new Date());//DateUtil.parseDate(ExcelUtil.getCellValue(row.getCell(12)))
