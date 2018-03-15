@@ -481,7 +481,7 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
     public void deleteSiteById(long id) throws Exception {
         //将对应的周期停用
         this.reposiotry.deleteSiteById(id);
-        String sql = "select count(1) num FROM KH_SITE where YH_ID =(select YH_ID from KH_SITE WHERE id=" + id+") and status = 1";
+        String sql = "select count(1) num FROM KH_SITE where YH_ID =(select YH_ID from KH_SITE WHERE id=" + id + ") and status = 1";
         Map<String, Object> map = this.execSqlSingleResult(sql);
         //如果该隐患的周期全部停用  停用稽查
         if (Integer.parseInt(map.get("NUM").toString()) == 0) {
@@ -584,8 +584,22 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
     }
 
     //脱岗操作
-    public void offPost(){
-        String sql = "select * from kh_task ";
+    public WebApiResponse offPost() {
+        String condition = " WHERE status=1 and PLAN_START_TIME<=sysdate and PLAN_END_TIME>=sysdate and IS_DW=1 and SFDJ=1 and ddxc_time is not null";
+        String userSql = "select distinct(user_id),k.id,YH_ID from KH_TASK k LEFT JOIN KH_YH_HISTORY y on y.id = k.YH_ID  " + condition;
+        String sql = "select DISTINCT YH_ID from KH_TASK k LEFT JOIN KH_YH_HISTORY y on y.id = k.YH_ID " + condition;
+        List<Map<String, Object>> maps = this.execSql(sql);
+        String towerSql = "SELECT YH_ID,TOWER_ID FROM KH_YH_TOWER WHERE yh_id in (?1)";
+        List<Long> list = new ArrayList<>();
+        for (Map map : maps) {
+            list.add(Long.parseLong(map.get("YH_ID").toString()));
+        }
+        List<Map<String, Object>> towerMaps = this.execSql(towerSql, list);
+        List<Map<String, Object>> userMaps = this.execSql(userSql);
+       for (Map userMap :userMaps){
+           String yh_id = userMap.get("YH_ID").toString();
+       }
+        return WebApiResponse.success(towerMaps);
     }
 }
 

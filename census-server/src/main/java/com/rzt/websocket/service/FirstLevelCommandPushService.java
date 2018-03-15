@@ -65,11 +65,11 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
             String sql = "SELECT " +
                     "  (SELECT count(h.id) " +
                     "   FROM KH_YH_HISTORY h " +
-                    "   WHERE trunc(CREATE_TIME) = trunc(sysdate)) xzyh, " +
+                    "   WHERE trunc(CREATE_TIME) = trunc(sysdate) and sfdj=1) xzyh, " +
                     "  (SELECT count(*) " +
                     "   FROM KH_YH_HISTORY h " +
                     "   WHERE (yhjb1 = '施工隐患' OR yhjb1 = '建筑隐患' OR yhjb1 = '异物隐患' OR " +
-                    "         yhjb1 = '树木隐患') AND UPDATE_TIME IS NOT NULL AND   YHXQ_TIME IS NULL AND trunc(UPDATE_TIME) = trunc(sysdate) " +
+                    "         yhjb1 = '树木隐患') AND UPDATE_TIME IS NOT NULL AND  YHXQ_TIME IS NULL AND trunc(UPDATE_TIME) = trunc(sysdate) " +
                     "  )                                           tzyh, " +
                     "  (SELECT count(*) " +
                     "   FROM KH_YH_HISTORY h " +

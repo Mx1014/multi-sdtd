@@ -576,7 +576,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
 
     public static void main(String[] args) {
         KhYhHistory yh = new KhYhHistory();
-        yh.setId(0l);
+        yh.setId(0L);
         System.out.println(yh.getId() != null);
     }
 
@@ -595,6 +595,82 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             e.printStackTrace();
         } finally {
             connection.close();
+        }
+    }
+    @Transactional
+    public WebApiResponse saveNoYh(KhYhHistory yh, String startTowerName, String endTowerName, String ids) {
+        try {
+            KhCycle task = new KhCycle();
+            String kv = "";
+            yh.setSfdj(0);
+            yh.setYhfxsj(new Date());
+            yh.setYhzrdw("无");
+            yh.setYhzrdwlxr("无");
+            yh.setYhzrdwdh("无");
+            yh.setYhjb1("无");
+            yh.setYhlb("日常看护");
+            try {
+                if (!yh.getStartTower().isEmpty()) {
+                    String startTower = "select longitude,latitude from cm_tower where id = ?";
+                    String endTower = "select longitude,latitude from cm_tower where id = ?";
+                    Map<String, Object> map = execSqlSingleResult(startTower, Long.parseLong(yh.getStartTower()));
+                    Map<String, Object> map1 = execSqlSingleResult(endTower, Long.parseLong(yh.getEndTower()));
+                    //经度
+                    double jd = (Double.parseDouble(map.get("LONGITUDE").toString()) + Double.parseDouble(map1.get("LONGITUDE").toString())) / 2;
+                    double wd = (Double.parseDouble(map.get("LATITUDE").toString()) + Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
+                    double radius = MapUtil.GetDistance(Double.parseDouble(map.get("LONGITUDE").toString()), Double.parseDouble(map.get("LATITUDE").toString()), Double.parseDouble(map1.get("LONGITUDE").toString()), Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
+                    yh.setRadius("1000.0");
+                    yh.setJd(map.get("LONGITUDE").toString());
+                    yh.setWd(map.get("LATITUDE").toString());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            kv = yh.getVtype();
+            if (yh.getVtype().contains("kV")) {
+                kv = kv.substring(0, kv.indexOf("k"));
+            }
+            yh.setYhxcyy("无");
+            yh.setCreateTime(DateUtil.dateNow());
+            yh.setSection(startTowerName + "-" + endTowerName);
+            yh.setYhzt(0);//隐患未消除
+            if (yh.getId() == null) {
+                yh.setId(0L);
+            }
+            if (!StringUtils.isEmpty(ids)) {
+                String[] split = ids.split(",");
+                for (int i = 0; i < split.length; i++) {
+                    KhYhTower tower = new KhYhTower();
+                    tower.setTowerId(Long.parseLong(split[i]));
+                    tower.setId(0L);
+                    tower.setYhId(yh.getId());
+                    tower.setRadius(200);
+                    towerRepository.save(tower);
+                }
+            }
+            String taskName = kv + "-" + yh.getLineName() + " " + yh.getSection() + " 号杆塔看护任务";
+            task.setId(0L);
+            yh.setTaskId(task.getId());
+            task.setVtype(yh.getVtype());
+            task.setLineName(yh.getLineName());
+            task.setTdywOrg(yh.getTdywOrg());
+            task.setSection(yh.getSection());
+            task.setLineId(yh.getLineId());
+            task.setTaskName(taskName);
+            task.setWxOrgId(yh.getWxorgId());
+            task.setTdywOrgId(yh.getTdorgId());
+            task.setWxOrg(yh.getTdwxOrg());
+            task.setStatus(0);// 未派发
+            task.setYhId(yh.getId());
+            task.setCreateTime(DateUtil.dateNow());
+            this.cycleService.add(task);
+            //  long id = new SnowflakeIdWorker(8, 24).nextId();
+            //this.reposiotry.addCheckSite(id, task.getId(), 2, task.getTaskName(), 0, task.getLineId(), task.getTdywOrgId(), task.getWxOrgId(), task.getYhId());
+            yhservice.add(yh);
+            return WebApiResponse.success("保存成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("数据查询失败" + e.getMessage());
         }
     }
 }
