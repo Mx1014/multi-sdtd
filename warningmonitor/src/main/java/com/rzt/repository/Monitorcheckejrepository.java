@@ -91,4 +91,17 @@ public interface Monitorcheckejrepository extends JpaRepository<Monitorcheckej,S
  @Modifying
  @Query(value = " UPDATE MONITOR_CHECK_EJ SET USER_LOGIN_TYPE = ?1 WHERE USER_ID = ?2 ", nativeQuery = true)
  void updateMonitorCheckEjUserLoginType(Integer loginType, String userId);
+
+ /***
+ * @Method saveAlarmUnqualifiedPatrol
+ * @Description         
+ * @param [id, taskid, userid, xsZcExceptionId]
+ * @return void
+ * @date 2018/3/15 11:35
+ * @author nwz
+ */
+ @Transactional
+ @Modifying
+ @Query(value = "insert into ALARM_UNQUALIFIEDPATROL (id,ALARM_TIME,CREATE_TIME,ALARM_TYPE,TASK_ID,USER_ID,EXEC_ID) VALUES (?1,sysdate,sysdate,1,?2,?3,?4)", nativeQuery = true)
+ void saveAlarmUnqualifiedPatrol(long id, Long taskid, String userid, Long xsZcExceptionId);
 }
