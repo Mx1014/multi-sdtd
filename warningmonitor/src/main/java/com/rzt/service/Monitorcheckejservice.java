@@ -20,11 +20,11 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * 类名称：MONITORCHECKEJService
@@ -46,6 +46,9 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
 
     @Autowired
     private RedisService redisService;
+
+    @Autowired
+    private JedisPool pool;
 
     //获取通道公司ID
     public Object getDeptId(String userId) {
@@ -78,6 +81,7 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
                 //如果任务状态不为2，才将数据插入进去
                 if(Integer.parseInt(map.get("STAUTS").toString())==0 && Integer.parseInt(map2.get("LOGINSTATUS").toString())==0){
                     resp.saveCheckEjWdw(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(messages[1]),Integer.valueOf(messages[2]),Integer.valueOf(messages[3]),messages[4],messages[5],messages[6],messages[7]);
+                    lixianRedis( messages[4]);//将离线的userId放入redis中
                     flag = true;
                 }
             } catch (Exception e) {
@@ -93,10 +97,17 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
             if(maps!=null && maps.size()>0 && Integer.parseInt(maps.get("LOGINSTATUS").toString())==0){
                 //看护没有提前完成的
                 resp.saveCheckEjWdw(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(messages[1]),Integer.valueOf(messages[2]),Integer.valueOf(messages[3]),messages[4],messages[5],messages[6],messages[7]);
+                lixianRedis( messages[4]);//将离线的userId放入redis中
                 flag = true;
             }
         }
         return flag;
+    }
+    private void lixianRedis(String userId){
+        Jedis jedis = pool.getResource();
+        jedis.select(5);
+        jedis.hset("lixian",userId,new Date().getTime()+"#0");
+        jedis.close();
     }
 
     //判断权限，获取当前登录用户的deptId，如果是全部查询则返回0
