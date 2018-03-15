@@ -240,7 +240,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                     double jd = (Double.parseDouble(map.get("LONGITUDE").toString()) + Double.parseDouble(map1.get("LONGITUDE").toString())) / 2;
                     double wd = (Double.parseDouble(map.get("LATITUDE").toString()) + Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
                     double radius = MapUtil.GetDistance(Double.parseDouble(map.get("LONGITUDE").toString()), Double.parseDouble(map.get("LATITUDE").toString()), Double.parseDouble(map1.get("LONGITUDE").toString()), Double.parseDouble(map1.get("LATITUDE").toString())) / 2;
-                    yh.setRadius("500.0");
+                    yh.setRadius("1000.0");
                     yh.setJd(map.get("LONGITUDE").toString());
                     yh.setWd(map.get("LATITUDE").toString());
                 }

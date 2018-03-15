@@ -582,5 +582,10 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
         this.reposiotry.updateSiteTimeById(id, startTime, endTime);
         this.reposiotry.updateTaskTimeBySiteId(id, startTime, endTime);
     }
+
+    //脱岗操作
+    public void offPost(){
+        String sql = "select * from kh_task ";
+    }
 }
 
