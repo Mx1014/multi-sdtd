@@ -19,6 +19,8 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.geo.Distance;
+import org.springframework.data.redis.core.GeoOperations;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
@@ -233,6 +235,15 @@ public class KhTaskController extends
             e.printStackTrace();
             return WebApiResponse.erro("获取失败");
         }
+    }
+
+    @GetMapping("ceshi")
+    public WebApiResponse ceshi() {
+        GeoOperations<String, Object> geoOperations = redisTemplate.opsForGeo();
+        Distance distance = geoOperations.geoDist("location", "e9ef297e10c542838bd0177dcfcdb233", "07786d9ccc934c2f957f61add96a6117");
+        double value = distance.getValue();
+        //return WebApiResponse.success(value + "   " + (value > 100));
+        return WebApiResponse.success(this.service.offPost());
     }
 }
 

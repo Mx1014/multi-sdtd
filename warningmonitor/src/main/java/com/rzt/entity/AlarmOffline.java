@@ -22,6 +22,8 @@ public class AlarmOffline implements Serializable {
     private Date createTime;
     @Column(name = "OFFLINE_END_TIME")
     private Date offLineEndTime;
+    @Column(name = "LAST_FLUSH_TIME")
+    private Date lastflushtime;
 
     public Long getId() {
         return id;
@@ -69,5 +71,13 @@ public class AlarmOffline implements Serializable {
 
     public void setOffLineEndTime(Date offLineEndTime) {
         this.offLineEndTime = offLineEndTime;
+    }
+
+    public Date getLastflushtime() {
+        return lastflushtime;
+    }
+
+    public void setLastflushtime(Date lastflushtime) {
+        this.lastflushtime = lastflushtime;
     }
 }
