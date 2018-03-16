@@ -72,11 +72,11 @@ public interface KhSiteRepository extends JpaRepository<KhSite, String> {
 
     @Modifying
     @Query(value = "update kh_cycle set status=1,pf_time = sysdate where id = ?1", nativeQuery = true)
-    void updateCycleById(String id);
+    void updateCycleById(Long id);
 
     @Modifying
     @Query(value = "update kh_cycle set status=3,pf_time = sysdate where id = ?1", nativeQuery = true)
-    void updateCycleById2(String id);
+    void updateCycleById2(Long id);
 
     @Modifying
     @Query(value = "update kh_cycle set JC_USER_ID=?1,JC_STATUS=?2 where id=?3", nativeQuery = true)
