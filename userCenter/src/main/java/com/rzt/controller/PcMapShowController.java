@@ -211,7 +211,7 @@ public class PcMapShowController {
         }
     }
 
-
+    //地图上显示没有任务的人
     private void chouYiXia2(String workTypes, Integer loginStatus, String needDateString, String hasTask, List<Map> menInMap, ValueOperations<String, Object> valueOperations) {
         JSONObject allMen = new JSONObject();
         List<Map> menInMap2 = new ArrayList<>();
@@ -417,19 +417,9 @@ public class PcMapShowController {
     }
 
     private Object getYinhuan2(String yhjb, String currentUserId, String yhlb, String[] lineIdArr, String deptId) throws Exception {
-//        Map<String, Object> jsonObject = pcMapShowService.userInfoFromRedis(currentUserId);
         List params = new ArrayList<>();
         StringBuffer buffer = new StringBuffer();
-//        Integer roleType = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
-//        Object tdId = jsonObject.get("DEPTID");
-//        Object companyid = jsonObject.get("COMPANYID");
         buffer.append(" where yhzt=0 ");
-//        if (roleType == 1 || roleType == 2) {
-//            buffer.append(" and y.YWORG_ID = '" + tdId+"'");
-//        }
-//        if (roleType == 3) {
-//            buffer.append(" and y.WXORG_ID ='" + companyid+"'");
-//        }
         if (yhjb != null && !yhjb.equals("")) {
             String[] split = yhjb.split(",");
             String result = "";
@@ -459,8 +449,8 @@ public class PcMapShowController {
         buffer.append(" ) ");
         buffer.append(deptId);
 //            buffer.append(" and yhzt = 0 ");
-        //String sql = "SELECT DISTINCT(y.id) as yhid, y.* FROM ( SELECT  y.id as yh_id, y.* FROM KH_YH_HISTORY y WHERE YHLB LIKE '在施类' AND YHZT = 0 UNION ALL SELECT DISTINCT  (s.YH_ID), y.* FROM KH_YH_HISTORY y, KH_SITE s  WHERE s.YH_ID = y.ID AND s.STATUS = 1 AND y.yhzt = 0) y " + buffer.toString();
-        String sql = "select * from KH_YH_HISTORY y " + buffer.toString();
+        String sql = "SELECT DISTINCT(y.id) as yhid, y.* FROM ( SELECT  y.id as yh_id, y.* FROM KH_YH_HISTORY y WHERE YHLB LIKE '在施类' AND YHZT = 0 UNION ALL SELECT DISTINCT  (s.YH_ID), y.* FROM KH_YH_HISTORY y, KH_SITE s  WHERE s.YH_ID = y.ID AND s.STATUS = 1 AND y.yhzt = 0 and y.sfdj=1) y " + buffer.toString();
+//        String sql = "select * from KH_YH_HISTORY y " + buffer.toString();
         List<Map<String, Object>> list = cmcoordinateService.execSql(sql, params.toArray());
         List<Object> list1 = new ArrayList<>();
         for (Map map : list) {

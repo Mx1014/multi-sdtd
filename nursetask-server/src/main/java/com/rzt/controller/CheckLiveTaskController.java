@@ -130,6 +130,8 @@ public class CheckLiveTaskController extends CurdController<CheckLiveTask, Check
 		}
 	}
 
+
+
 	/**
 	 * app任务列表
 	 * @param page

@@ -626,6 +626,12 @@ public class TaskCheckService extends CurdService<TimedTask,XSZCTASKRepository>{
         return WebApiResponse.success(maps1);
     }
 
+    /**
+     * 根据任务id和任务类型查询任务的详细信息
+     * @param taskId
+     * @param taskType
+     * @return
+     */
     public WebApiResponse findTaskInfoByTaskId(String taskId, String taskType)  {
 
         if(null == taskType || "".equals(taskType)){
@@ -666,10 +672,15 @@ public class TaskCheckService extends CurdService<TimedTask,XSZCTASKRepository>{
 
         }
         if("3".equals(taskType)){//稽查
-            sql = "";
+            sql = "   SELECT u.REALNAME,u.PHONE,d.DEPTNAME,c.COMPANYNAME,t.ID as taskid," +
+                    "  u.ID as userid,t.REAL_START_TIME,t.REAL_END_TIME,t.PLAN_START_TIME,t.PLAN_END_TIME," +
+                    "  t.TASK_NAME,t.CREATE_TIME,t.TASK_ID" +
+                    "    FROM CHECK_LIVE_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID" +
+                    "  LEFT JOIN RZTSYSCOMPANY c ON c.ID = u.COMPANYID WHERE t.ID = '"+taskId+"' ";
             map = this.execSqlSingleResult(sql);
             stringObjectHashMap.put("task",map);
-            picSql = "";
+            picSql = "SELECT ID,FILE_PATH,FILE_SMALL_PATH,PROCESS_NAME" +
+                    "   FROM PICTURE_JC WHERE TASK_ID = '"+taskId+"'  AND FILE_TYPE =1";
             List<Map<String, Object>> maps = this.execSql(picSql);
             stringObjectHashMap.put("pic",maps);
         }
