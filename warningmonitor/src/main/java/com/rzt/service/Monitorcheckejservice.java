@@ -530,7 +530,8 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
             if ("0".equals(deptId)) {
                 return WebApiResponse.success(resp.updateYJ(taskId, type, warningType, checkInfo, checkAppInfo,createTime,checkMode));
             } else {
-                checkAlarm(userId,taskId,warningType,1);
+                String userId1 = getUserId(2, taskId, type, warningType);//查找该任务负责人id
+                checkAlarm(userId1,taskId,warningType,1);
                 return WebApiResponse.success(resp.updateEJ(taskId, type, warningType, checkInfo, checkAppInfo,createTime,checkMode));
             }
         } catch (Exception e) {
@@ -551,7 +552,8 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
             if ("0".equals(deptId)) {
                 return WebApiResponse.success(resp.updateYJC(taskId, type, warningType, checkInfo, userId,createTime,checkMode));
             } else {
-                checkAlarm(userId,taskId,warningType,2);
+                String userId1 = getUserId(2, taskId, type, warningType);//查找该任务负责人id
+                checkAlarm(userId1,taskId,warningType,2);
                 return WebApiResponse.success(resp.updateEJC(taskId, type, warningType, checkInfo, userId,createTime,checkMode));
             }
         } catch (Exception e) {
@@ -577,6 +579,23 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
             //更改看护脱岗表中的状态
             offlineRepository.updateoffWorkStatus(userId,taskId,status);
         }
+    }
+
+    private String getUserId(Integer userType, Long taskId, Integer type, Integer warningType){
+        String sql="";
+        String userId = "";
+        if(userType==1){ //一级单位处理
+                sql = "SELECT USER_ID FROM MONITOR_CHECK_YJ WHERE \n" +
+                        "TASK_ID=?1 AND TASK_TYPE=?2 AND WARNING_TYPE=?3 ";
+        }else if (userType==2){ //二级单位处理
+                sql="SELECT USER_ID FROM MONITOR_CHECK_EJ WHERE \n" +
+                        "TASK_ID=?1 AND TASK_TYPE=?2 AND WARNING_TYPE=?3  ";
+        }
+        List<Map<String, Object>> maps = execSql(sql, taskId, type, warningType);
+        if(maps.size()>0){
+           userId = maps.get(0).get("USER_ID").toString();
+        }
+        return userId;
     }
 
     //未按时接任务添加
