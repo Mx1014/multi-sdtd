@@ -6,6 +6,7 @@ import com.rzt.service.CommonService;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.weekTime;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.StringUtils;
@@ -23,6 +24,389 @@ import java.util.Map;
 public class OfflinesController extends CurdController<RztSysUser, CommonService> {
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+
+    /**
+     * 人员告警 列表
+     *
+     * @param tableType     当日 当前 本周 本月
+     * @param workType      同下
+     * @param page
+     * @param size
+     * @param currentUserId 同下
+     * @param startTime     同下
+     * @param endTime       同下
+     * @param deptId        同下
+     * @param taskType      同下
+     * @return
+     */
+    @RequestMapping("NewOfflinesList")
+    public WebApiResponse NewOfflinesList(Integer tableType, Integer workType, Integer page, Integer size, String currentUserId, String startTime, String endTime, String deptId, String taskType) {
+        org.springframework.data.domain.Pageable pageable = new PageRequest(page, size);
+        JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", currentUserId).toString());
+        int roletype = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
+        Object deptid = jsonObject.get("DEPTID");
+        String s = "";
+        if (!StringUtils.isEmpty(startTime) && !StringUtils.isEmpty(endTime)) {
+            s += " AND r.CREATE_TIME>= to_date('" + startTime + "','yyyy-mm-dd hh24:mi:ss') ";
+            s += " AND r.CREATE_TIME<= to_date('" + endTime + "','yyyy-mm-dd hh24:mi:ss') ";
+        } else if (tableType == 0 || tableType == 1) {
+            s += " AND trunc(r.CREATE_TIME)=trunc(sysdate) ";
+        } else if (tableType == 2) {
+            Map map = weekTime.weekTime();
+            Object mon = map.get("Mon");
+            Object sun = map.get("Sun");
+            s += " AND r.CREATE_TIME>= to_date('" + mon + "','yyyy-mm-dd hh24:mi:ss') ";
+            s += " AND r.CREATE_TIME<= to_date('" + sun + "','yyyy-mm-dd hh24:mi:ss') ";
+        } else if (tableType == 3) {
+            s += " AND to_char(r.CREATE_TIME, 'yyyy-mm') = to_char(sysdate, 'yyyy-mm') ";
+        }
+        if (tableType == 0) {
+            s += " AND u.LOGINSTATUS = 0 ";
+        }
+        if (roletype == 1 || roletype == 2) {
+            s += " AND u.DEPTID ='" + deptid + "' ";
+        }
+        if (!StringUtils.isEmpty(deptId)) {
+            s += " AND u.DEPTID ='" + deptId + "' ";
+        }
+        if (!StringUtils.isEmpty(taskType)) {
+            s += " u.WORKTYPE = '" + taskType + "' ";
+        }
+        String sql = "   SELECT " +
+                "   OFFLINE_TIME_LONG, " +
+                "   u.REALNAME, " +
+                "   u.DEPT, " +
+                "   u.COMPANYNAME, " +
+                "   u.WORKTYPE, " +
+                "   r.OFFLINE_END_TIME, " +
+                "   r.OFFLINE_FREQUENCY " +
+                " FROM ALARM_OFFLINE r LEFT JOIN USERINFO u ON u.ID = r.USER_ID  where 1=1  " + s + " ORDER BY r.CREATE_TIME ";
+        Page<Map<String, Object>> maps = this.service.execSqlPage(pageable, sql);
+        try {
+            return WebApiResponse.success(maps);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("查询失败");
+        }
+    }
+
+    /**
+     * 人员离线告警 柱状图 展示
+     *
+     * @param tableType     当日 当前 本周 本月
+     * @param workType      不知道是啥
+     * @param page
+     * @param size
+     * @param currentUserId 人员id
+     * @param startTime     开始时间
+     * @param endTime       结束时间
+     * @param deptId        通道单位ID
+     * @param taskType      工作类型
+     * @return
+     */
+    @GetMapping("NewofflineAscTable")
+    public WebApiResponse NewofflineAscTable(Integer tableType, Integer workType, Integer page, Integer size, String currentUserId, String startTime, String endTime, String deptId, Integer taskType) {
+        JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", currentUserId).toString());
+        int roletype = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
+        Object deptid = jsonObject.get("DEPTID");
+        String s = "";
+        String userNumTime = "";
+        String className = "";
+        String companyname = "";
+        if (!StringUtils.isEmpty(startTime) && !StringUtils.isEmpty(endTime)) {
+            s += " AND a.CREATE_TIME>= to_date('" + startTime + "','yyyy-mm-dd hh24:mi:ss') ";
+            s += " AND a.CREATE_TIME<= to_date('" + endTime + "','yyyy-mm-dd hh24:mi:ss') ";
+            userNumTime = " AND PLAN_START_TIME >=  to_date('" + startTime + "','yyyy-mm-dd') AND PLAN_END_TIME <= to_date('" + endTime + "','yyyy-mm-dd') ";
+        } else if (tableType == 0 || tableType == 1) {
+            s += " AND trunc(a.CREATE_TIME)=trunc(sysdate) ";
+            userNumTime = " AND PLAN_START_TIME <= trunc(sysdate + 1) AND PLAN_END_TIME >= trunc(sysdate) ";
+        } else if (tableType == 2) {
+            Map map = weekTime.weekTime();
+            Object mon = map.get("Mon");
+            Object sun = map.get("Sun");
+            s += " AND a.CREATE_TIME>= to_date('" + mon + "','yyyy-mm-dd hh24:mi:ss') ";
+            s += " AND a.CREATE_TIME<= to_date('" + sun + "','yyyy-mm-dd hh24:mi:ss') ";
+            userNumTime = " AND PLAN_START_TIME >=  to_date('" + mon + "','yyyy-mm-dd hh24:mi:ss') AND PLAN_END_TIME <= to_date('" + sun + "','yyyy-mm-dd hh24:mi:ss') ";
+        } else if (tableType == 3) {
+            s += " AND to_char(A.CREATE_TIME, 'yyyy-mm') = to_char(sysdate, 'yyyy-mm')  ";
+            userNumTime = " AND PLAN_START_TIME >= to_date('" + weekTime.getFirstDayOfMonth() + " 00:00:00','yyyy-mm-dd hh24:mi:ss') AND PLAN_END_TIME <= to_date('"+weekTime.getLastDayOfMonth()+" 23:59:59','yyyy-mm-dd hh24:mi:ss') ";
+        }
+        if (tableType == 0) {
+            s += " AND r.LOGINSTATUS = 0 ";
+        }
+        if (roletype == 1 || roletype == 2) {
+            className += " id = '" + deptid + "' ";
+            s += " AND r.DEPTID ='" + deptid + "' ";
+            userNumTime += " AND U.DEPTID='" + deptid + "' ";
+            companyname = " AND ORGID LIKE '%" + deptid + "%' ";
+        } else if (!StringUtils.isEmpty(deptId)) {
+            roletype = 1;
+            s += " AND r.DEPTID ='" + deptId + "' ";
+            userNumTime += " AND U.DEPTID='" + deptId + "' ";
+            companyname = " AND ORGID LIKE '%" + deptId + "%' ";
+            className += " id = '" + deptId + "' ";
+        }
+        if (!StringUtils.isEmpty(taskType)) {
+            s += " r.WORKTYPE = '" + taskType + "' ";
+        }
+        if (roletype == 0) {
+            try {
+                return WebApiResponse.success(deptOne(taskType, s, userNumTime));
+            } catch (Exception e) {
+                e.printStackTrace();
+                return WebApiResponse.erro("查询失败");
+            }
+        } else if (roletype == 1 || roletype == 2) {
+            try {
+                return WebApiResponse.success(deptTwo(taskType, s, userNumTime, className, companyname));
+            } catch (Exception e) {
+                e.printStackTrace();
+                return WebApiResponse.erro("查询失败");
+            }
+        }
+        return null;
+    }
+
+    //二级通道单位查询
+    private Map deptTwo(Integer taskType, String s, String userNumTime, String className, String companyname) {
+        //查询班组
+        String sql = " SELECT nvl(b.aaaaa, 0) AS VALUE,DEPTNAME,a.ID FROM (SELECT ID, DEPTNAME FROM (SELECT ID, DEPTNAME, LASTNODE FROM RZTSYSDEPARTMENT START WITH " + className + " CONNECT BY PRIOR id = DEPTPID)WHERE LASTNODE = 0) a " +
+                " LEFT JOIN  " +
+                " (SELECT count(1) AS aaaaa, COMPANYID FROM ALARM_OFFLINE a LEFT JOIN USERINFO r ON a.USER_ID = r.ID WHERE 1 = 1 " + s + " GROUP BY r.COMPANYID) b ON a.ID = b.COMPANYID  ORDER BY nvl(b.aaaaa, 0) DESC";
+        List<Map<String, Object>> khUserNumClass = null;
+        List<Map<String, Object>> xsUserNumClass = null;
+        if (StringUtils.isEmpty(taskType)) {
+            String sqlKH = " SELECT count(DISTINCT USER_ID) as khusernum,u.CLASSNAME\n" +
+                    "      FROM KH_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID\n" +
+                    "      WHERE  1=1 " + userNumTime +
+                    "      GROUP BY u.CLASSNAME ";
+            khUserNumClass = this.service.execSql(sqlKH);
+            String sqlxs = " SELECT count(DISTINCT u.ID) as xsusernum,u.CLASSNAME\n" +
+                    "   FROM XS_ZC_TASK x LEFT JOIN RZTSYSUSER u ON x.CM_USER_ID = u.ID\n" +
+                    "   WHERE 1=1 " + userNumTime +
+                    "   GROUP BY u.CLASSNAME ";
+            xsUserNumClass = this.service.execSql(sqlxs);
+        } else if (taskType == 1) {
+            String sqlKH = " SELECT count(DISTINCT USER_ID) as khusernum,u.CLASSNAME\n" +
+                    "      FROM KH_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID\n" +
+                    "      WHERE  1=1 " + userNumTime +
+                    "      GROUP BY u.CLASSNAME ";
+            khUserNumClass = this.service.execSql(sqlKH);
+        } else if (taskType == 2) {
+            String sqlxs = " SELECT count(DISTINCT u.ID) as xsusernum,u.CLASSNAME\n" +
+                    "   FROM XS_ZC_TASK x LEFT JOIN RZTSYSUSER u ON x.CM_USER_ID = u.ID\n" +
+                    "   WHERE 1=1 " + userNumTime +
+                    "   GROUP BY u.CLASSNAME ";
+            xsUserNumClass = this.service.execSql(sqlxs);
+        }
+        Map KHNUMCLASS = new HashMap();
+        Map XSNUMCLASS = new HashMap();
+        if (khUserNumClass != null) {
+            for (Map khUser : khUserNumClass) {
+                KHNUMCLASS.put(khUser.get("CLASSNAME"), khUser.get("KHUSERNUM"));
+            }
+        }
+        if (xsUserNumClass != null) {
+            for (Map xsUser : xsUserNumClass) {
+                XSNUMCLASS.put(xsUser.get("CLASSNAME"), xsUser.get("XSUSERNUM"));
+            }
+        }
+        //返回集合
+        List<Map<String, Object>> maps = this.service.execSql(sql);
+        for (Map mappp : maps) {
+            Object id = mappp.get("ID");
+            mappp.put("KHNUM", KHNUMCLASS.get(id) == null ? 0 : KHNUMCLASS.get(id));
+            mappp.put("XSNUM", XSNUMCLASS.get(id) == null ? 0 : XSNUMCLASS.get(id));
+        }
+        //查询班组查询外协
+        String companynameSql = " SELECT  nvl(b.aaaaa, 0) AS  VALUE, a.COMPANYNAME, a.ID FROM ( " +
+                "  SELECT * FROM RZTSYSCOMPANY WHERE 1=1 " + companyname + " ) a LEFT JOIN (SELECT " +
+                "  count(1) AS aaaaa, r.COMPANYID FROM ALARM_OFFLINE a LEFT JOIN USERINFO r ON a.USER_ID = r.ID " +
+                "  WHERE 1 = 1 " + s +
+                "  GROUP BY r.COMPANYID) b ON a.ID = b.COMPANYID  ORDER BY nvl(b.aaaaa, 0) DESC";
+        List<Map<String, Object>> khUserNumCOMPANYID = null;
+        List<Map<String, Object>> xsUserNumCOMPANYID = null;
+        if (StringUtils.isEmpty(taskType)) {
+            String sqlKH = " SELECT count(DISTINCT USER_ID) as khusernum,u.COMPANYID\n" +
+                    "      FROM KH_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID\n" +
+                    "      WHERE  1=1 " + userNumTime +
+                    "      GROUP BY u.COMPANYID ";
+            khUserNumCOMPANYID = this.service.execSql(sqlKH);
+            String sqlxs = " SELECT count(DISTINCT u.ID) as xsusernum,u.COMPANYID\n" +
+                    "   FROM XS_ZC_TASK x LEFT JOIN RZTSYSUSER u ON x.CM_USER_ID = u.ID\n" +
+                    "   WHERE 1=1 " + userNumTime +
+                    "   GROUP BY u.COMPANYID ";
+            xsUserNumCOMPANYID = this.service.execSql(sqlxs);
+        } else if (taskType == 1) {
+            String sqlKH = " SELECT count(DISTINCT USER_ID) as khusernum,u.COMPANYID\n" +
+                    "      FROM KH_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID\n" +
+                    "      WHERE  1=1 " + userNumTime +
+                    "      GROUP BY u.COMPANYID ";
+            khUserNumCOMPANYID = this.service.execSql(sqlKH);
+        } else if (taskType == 2) {
+            String sqlxs = " SELECT count(DISTINCT u.ID) as xsusernum,u.COMPANYID\n" +
+                    "   FROM XS_ZC_TASK x LEFT JOIN RZTSYSUSER u ON x.CM_USER_ID = u.ID\n" +
+                    "   WHERE 1=1 " + userNumTime +
+                    "   GROUP BY u.COMPANYID ";
+            xsUserNumCOMPANYID = this.service.execSql(sqlxs);
+        }
+        Map KHNUMCOMPANYID = new HashMap();
+        Map XSNUMCOMPANYID = new HashMap();
+        if (khUserNumCOMPANYID != null) {
+            for (Map khUserNumcompanyid : khUserNumCOMPANYID) {
+                KHNUMCOMPANYID.put(khUserNumcompanyid.get("COMPANYID"), khUserNumcompanyid.get("KHUSERNUM"));
+            }
+        }
+        if (xsUserNumCOMPANYID != null) {
+            for (Map xsusernumcompanyid : xsUserNumCOMPANYID) {
+                XSNUMCOMPANYID.put(xsusernumcompanyid.get("COMPANYID"), xsusernumcompanyid.get("XSUSERNUM"));
+            }
+        }
+        List<Map<String, Object>> mapsRZTSYSCOMPANY = this.service.execSql(companynameSql);
+        for (Map mapRZTSYSCOMPANY : mapsRZTSYSCOMPANY) {
+            Object id = mapRZTSYSCOMPANY.get("ID");
+            mapRZTSYSCOMPANY.put("KHNUM", KHNUMCOMPANYID.get(id) == null ? 0 : KHNUMCOMPANYID.get(id));
+            mapRZTSYSCOMPANY.put("XSNUM", XSNUMCOMPANYID.get(id) == null ? 0 : XSNUMCOMPANYID.get(id));
+        }
+        //人员
+        String userNum = " SELECT " +
+                "  sum(a.OFFLINE_FREQUENCY) as userNum, " +
+                "  r.ID,r.REALNAME " +
+                "FROM ALARM_OFFLINE a LEFT JOIN USERINFO r ON a.USER_ID = r.ID " +
+                " WHERE 1 = 1 " + s +
+                " GROUP BY r.ID,r.REALNAME ORDER BY userNum DESC ";
+        List<Map<String, Object>> userNums = this.service.execSql(userNum);
+        Map map = new HashMap();
+        map.put("USERNUM", userNums);
+        map.put("DEPT", maps);
+        map.put("COMPANY", mapsRZTSYSCOMPANY);
+        return map;
+    }
+
+    //一级管理员权限
+    private Map deptOne(Integer taskType, String s, String userNumTime) {
+        //通道单位
+        String sql = " SELECT  nvl(b.aaaaa, 0) AS VALUE,  DEPTNAME,a.ID  FROM (SELECT * " +
+                "      FROM RZTSYSDEPARTMENT  WHERE DEPTSORT IS NOT NULL  ORDER BY DEPTSORT) a LEFT JOIN (SELECT " +
+                "      count(1) AS aaaaa, " +
+                "      DEPTID " +
+                "      FROM ALARM_OFFLINE a LEFT JOIN USERINFO r ON a.USER_ID = r.ID " +
+                "      WHERE 1=1 " + s +
+                "      GROUP BY r.DEPTID) b ON a.ID = b.DEPTID ORDER BY nvl(b.aaaaa, 0) DESC";
+        List<Map<String, Object>> khUserNum = null;
+        List<Map<String, Object>> xsUserNum = null;
+        if (StringUtils.isEmpty(taskType)) {
+            String sqlKH = " SELECT count(DISTINCT USER_ID) as khusernum,u.DEPTID\n" +
+                    "      FROM KH_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID\n" +
+                    "      WHERE  1=1 " + userNumTime +
+                    "      GROUP BY u.DEPTID ";
+            khUserNum = this.service.execSql(sqlKH);
+            String sqlxs = " SELECT count(DISTINCT u.ID) as xsusernum,u.DEPTID\n" +
+                    "   FROM XS_ZC_TASK x LEFT JOIN RZTSYSUSER u ON x.CM_USER_ID = u.ID\n" +
+                    "   WHERE 1=1 " + userNumTime +
+                    "   GROUP BY u.DEPTID ";
+            xsUserNum = this.service.execSql(sqlxs);
+        } else if (taskType == 1) {
+            String sqlKH = " SELECT count(DISTINCT USER_ID) as khusernum,u.DEPTID\n" +
+                    "      FROM KH_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID\n" +
+                    "      WHERE  1=1 " + userNumTime +
+                    "      GROUP BY u.DEPTID ";
+            khUserNum = this.service.execSql(sqlKH);
+        } else if (taskType == 2) {
+            String sqlxs = " SELECT count(DISTINCT u.ID) as xsusernum,u.DEPTID\n" +
+                    "   FROM XS_ZC_TASK x LEFT JOIN RZTSYSUSER u ON x.CM_USER_ID = u.ID\n" +
+                    "   WHERE 1=1 " + userNumTime +
+                    "   GROUP BY u.DEPTID ";
+            xsUserNum = this.service.execSql(sqlxs);
+        }
+        Map KHNUM = new HashMap();
+        Map XSNUM = new HashMap();
+        if (khUserNum != null) {
+            for (Map khUser : khUserNum) {
+                KHNUM.put(khUser.get("DEPTID"), khUser.get("KHUSERNUM"));
+            }
+        }
+        if (xsUserNum != null) {
+            for (Map xsUser : xsUserNum) {
+                XSNUM.put(xsUser.get("DEPTID"), xsUser.get("XSUSERNUM"));
+            }
+        }
+        List<Map<String, Object>> maps = this.service.execSql(sql);
+        for (Map mappp : maps) {
+            Object id = mappp.get("ID");
+            mappp.put("KHNUM", KHNUM.get(id) == null ? 0 : KHNUM.get(id));
+            mappp.put("XSNUM", XSNUM.get(id) == null ? 0 : XSNUM.get(id));
+        }
+        //外协单位
+        String RZTSYSCOMPANY = " SELECT " +
+                "  nvl(b.aaaaa, 0) AS VALUE," +
+                "  a.COMPANYNAME, " +
+                "  a.ID " +
+                "FROM (SELECT * " +
+                "      FROM RZTSYSCOMPANY) a LEFT JOIN (SELECT " +
+                "      count(1) AS aaaaa, " +
+                "      r.COMPANYID " +
+                "      FROM ALARM_OFFLINE a LEFT JOIN USERINFO r ON a.USER_ID = r.ID " +
+                "      WHERE 1 = 1  " + s +
+                "      GROUP BY r.COMPANYID) b ON a.ID = b.COMPANYID ORDER BY nvl(b.aaaaa, 0) DESC";
+        List<Map<String, Object>> khUserNumCOMPANYID = null;
+        List<Map<String, Object>> xsUserNumCOMPANYID = null;
+        if (StringUtils.isEmpty(taskType)) {
+            String sqlKH = " SELECT count(DISTINCT USER_ID) as khusernum,u.COMPANYID\n" +
+                    "      FROM KH_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID\n" +
+                    "      WHERE  1=1 " + userNumTime +
+                    "      GROUP BY u.COMPANYID ";
+            khUserNumCOMPANYID = this.service.execSql(sqlKH);
+            String sqlxs = " SELECT count(DISTINCT u.ID) as xsusernum,u.COMPANYID\n" +
+                    "   FROM XS_ZC_TASK x LEFT JOIN RZTSYSUSER u ON x.CM_USER_ID = u.ID\n" +
+                    "   WHERE 1=1 " + userNumTime +
+                    "   GROUP BY u.COMPANYID ";
+            xsUserNumCOMPANYID = this.service.execSql(sqlxs);
+        } else if (taskType == 1) {
+            String sqlKH = " SELECT count(DISTINCT USER_ID) as khusernum,u.COMPANYID\n" +
+                    "      FROM KH_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID\n" +
+                    "      WHERE  1=1 " + userNumTime +
+                    "      GROUP BY u.COMPANYID ";
+            khUserNumCOMPANYID = this.service.execSql(sqlKH);
+        } else if (taskType == 2) {
+            String sqlxs = " SELECT count(DISTINCT u.ID) as xsusernum,u.COMPANYID\n" +
+                    "   FROM XS_ZC_TASK x LEFT JOIN RZTSYSUSER u ON x.CM_USER_ID = u.ID\n" +
+                    "   WHERE 1=1 " + userNumTime +
+                    "   GROUP BY u.COMPANYID ";
+            xsUserNumCOMPANYID = this.service.execSql(sqlxs);
+        }
+        Map KHNUMCOMPANYID = new HashMap();
+        Map XSNUMCOMPANYID = new HashMap();
+        if (khUserNumCOMPANYID != null) {
+            for (Map khUserNumcompanyid : khUserNumCOMPANYID) {
+                KHNUMCOMPANYID.put(khUserNumcompanyid.get("COMPANYID"), khUserNumcompanyid.get("KHUSERNUM"));
+            }
+        }
+        if (xsUserNumCOMPANYID != null) {
+            for (Map xsusernumcompanyid : xsUserNumCOMPANYID) {
+                XSNUMCOMPANYID.put(xsusernumcompanyid.get("COMPANYID"), xsusernumcompanyid.get("XSUSERNUM"));
+            }
+        }
+        List<Map<String, Object>> mapsRZTSYSCOMPANY = this.service.execSql(RZTSYSCOMPANY);
+        for (Map mapRZTSYSCOMPANY : mapsRZTSYSCOMPANY) {
+            Object id = mapRZTSYSCOMPANY.get("ID");
+            mapRZTSYSCOMPANY.put("KHNUM", KHNUMCOMPANYID.get(id) == null ? 0 : KHNUMCOMPANYID.get(id));
+            mapRZTSYSCOMPANY.put("XSNUM", XSNUMCOMPANYID.get(id) == null ? 0 : XSNUMCOMPANYID.get(id));
+        }
+        //人员
+        String userNum = " SELECT " +
+                "  sum(a.OFFLINE_FREQUENCY) as userNum, " +
+                "  r.ID,r.REALNAME " +
+                "FROM ALARM_OFFLINE a LEFT JOIN USERINFO r ON a.USER_ID = r.ID " +
+                "   WHERE 1 = 1 " + s +
+                "  GROUP BY r.ID,r.REALNAME ORDER BY userNum DESC ";
+        List<Map<String, Object>> userNums = this.service.execSql(userNum);
+        Map map = new HashMap();
+        map.put("USERNUM", userNums);
+        map.put("DEPT", maps);
+        map.put("COMPANY", mapsRZTSYSCOMPANY);
+        return map;
+    }
 
     /**
      * 离线人员告警
@@ -79,38 +463,6 @@ public class OfflinesController extends CurdController<RztSysUser, CommonService
             listLike.add(taskType);
             s += " and TASK_TYPE = ?" + listLike.size();
         }
-//        String sql = "SELECT DISTINCT   " +
-//                "  ce.USER_ID AS userID,   " +
-//                "  ce.REASON, " +
-//                "  ce.TASK_TYPE, " +
-//                "  ce.TASK_ID, " +
-//                "  ch.*   " +
-//                "FROM (SELECT   " +
-//                "        e.USER_ID,   " +
-//                "        u.REALNAME,   " +
-//                "        u.CLASSNAME,   " +
-//                "        u.DEPT,   " +
-//                "        u.COMPANYNAME,   " +
-//                "        CASE u.WORKTYPE   " +
-//                "        WHEN 1   " +
-//                "          THEN '看护'   " +
-//                "        WHEN 2   " +
-//                "          THEN '巡视'   " +
-//                "        WHEN 3   " +
-//                "          THEN '现场稽查' END AS WORKTYPE,   " +
-//                "        e.a               AS MORE,   " +
-//                "        u.DEPTID,   " +
-//                "        e.CREATE_TIME,   " +
-//                "        e.ONLINE_TIME  " +
-//                "      FROM (SELECT   " +
-//                "              count(1)    AS a,   " +
-//                "              ej.USER_ID,   " +
-//                "              MAX(ej.CREATE_TIME)       AS CREATE_TIME,   " +
-//                "              nvl(to_char(MAX(ej.ONLINE_TIME), 'yyyy-MM-dd hh24:mi:ss'), '人员未上线') AS ONLINE_TIME   " +
-//                "            FROM MONITOR_CHECK_EJ ej   " +
-//                "            WHERE (ej.WARNING_TYPE = 8 OR ej.WARNING_TYPE = 2) " + s +
-//                "            GROUP BY USER_ID) e LEFT JOIN USERINFO u ON e.USER_ID = u.ID) ch LEFT JOIN MONITOR_CHECK_EJ ce   " +
-//                "    ON ch.USER_ID = ce.USER_ID AND ch.CREATE_TIME = ce.CREATE_TIME";
         String sql = " SELECT DISTINCT " +
                 "  ce.USER_ID AS userID, " +
                 "  ce.REASON, " +
