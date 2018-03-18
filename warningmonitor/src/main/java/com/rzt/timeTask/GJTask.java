@@ -225,10 +225,18 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
     }
 
     private void lixianRedis(String userId){
-        Jedis jedis = pool.getResource();
-        jedis.select(5);
-        jedis.hset("lixian",userId,new Date().getTime()+"#0");
-        jedis.close();
+        Jedis jedis = null;
+        try {
+            jedis = pool.getResource();
+            jedis.select(5);
+            jedis.hset("lixian",userId,new Date().getTime()+"#0");
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            if(jedis!=null){
+                jedis.close();
+            }
+        }
     }
 
 }

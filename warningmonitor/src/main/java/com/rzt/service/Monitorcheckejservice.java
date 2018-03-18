@@ -108,10 +108,18 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
         return flag;
     }
     private void lixianRedis(String userId){
-        Jedis jedis = pool.getResource();
-        jedis.select(5);
-        jedis.hset("lixian",userId,new Date().getTime()+"#0");
-        jedis.close();
+        Jedis jedis=null;
+        try {
+            jedis = pool.getResource();
+            jedis.select(5);
+            jedis.hset("lixian",userId,new Date().getTime()+"#0");
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            if(jedis!=null){
+                jedis.close();
+            }
+        }
     }
 
     //判断权限，获取当前登录用户的deptId，如果是全部查询则返回0
