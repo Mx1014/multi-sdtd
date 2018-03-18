@@ -129,7 +129,7 @@ public class OfflinesController extends CurdController<RztSysUser, CommonService
             userNumTime = " AND PLAN_START_TIME >=  to_date('" + mon + "','yyyy-mm-dd hh24:mi:ss') AND PLAN_END_TIME <= to_date('" + sun + "','yyyy-mm-dd hh24:mi:ss') ";
         } else if (tableType == 3) {
             s += " AND to_char(A.CREATE_TIME, 'yyyy-mm') = to_char(sysdate, 'yyyy-mm')  ";
-            userNumTime = " AND to_char(PLAN_START_TIME,'yyyy-mm-dd hh24:mi:ss') >= to_char(sysdate,'yyyy-mm') AND to_char(PLAN_END_TIME,'yyyy-mm-dd hh24:mi:ss') <= to_char(sysdate,'yyyy-mm') ";
+            userNumTime = " AND to_char(PLAN_START_TIME,'yyyy-mm-dd hh24:mi:ss') <= to_char(sysdate,'yyyy-mm') AND to_char(PLAN_END_TIME,'yyyy-mm-dd hh24:mi:ss') >= to_char(sysdate,'yyyy-mm') ";
         }
         if (tableType == 0) {
             s += " AND r.LOGINSTATUS = 0 ";
