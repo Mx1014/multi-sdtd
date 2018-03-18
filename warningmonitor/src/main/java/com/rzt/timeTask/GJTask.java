@@ -43,7 +43,7 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
     private RedisTemplate<String,Object> redisTemplate;
 
     @Autowired
-    private JedisPool pool;
+    JedisPool pool;
 
 
     //定时拉数据  1
@@ -56,7 +56,7 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
         khgj.KHWKH();  //未按时间接任务
 
         khgj.JCOutOfTime();  //稽查超期
-        khgj.JCWsx();  //稽查未上线
+        //khgj.JCWsx();  //稽查未上线
         khgj.JCWdxc();  //稽查未到达现场
 
     }

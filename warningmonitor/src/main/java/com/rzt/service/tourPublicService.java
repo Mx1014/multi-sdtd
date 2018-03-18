@@ -21,7 +21,7 @@ import java.util.*;
 @Service
 public class tourPublicService extends CurdService<Monitorcheckej, Monitorcheckejrepository> {
     @Autowired
-    private JedisPool jedisPool;
+    JedisPool jedisPool;
 
     @Autowired
     private Monitorcheckejrepository resp;
@@ -76,6 +76,7 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
                d = wdw/total;
             }
 
+            Long xsZcTaskExecId = Long.parseLong(maps1.get(0).get("XS_ZC_TASK_EXEC_ID").toString());
             //如果大于等于0.3则插入告警
             if(d>=0.3){
                 //查询是否已经插入告警
@@ -84,14 +85,13 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
                 if(maps.size()==0){
                     String sql = "   SELECT TASK_NAME AS TASKNAME,TD_ORG FROM XS_ZC_TASK WHERE ID=?1 ";
                     Map<String, Object> map = this.execSqlSingleResult(sql, taskid);
-
                     //往二级单位插数据
-                    resp.saveCheckEjWdwExec(SnowflakeIdWorker.getInstance(10, 12).nextId(),taskid,1,3,userid,map.get("TD_ORG").toString(),map.get("TASKNAME").toString(),reason,execDetailId);
+                    resp.saveCheckEjWdwExec(SnowflakeIdWorker.getInstance(10, 12).nextId(),taskid,1,3,userid,map.get("TD_ORG").toString(),map.get("TASKNAME").toString(),reason,xsZcTaskExecId);
                     String key = "ONE+" + taskid + "+1+3+" + userid + "+" + map.get("TD_ORG").toString() + "+" + map.get("TASKNAME").toString()+"+"+reason+"+"+execDetailId;
                     redisService.setex(key);
                 }
 
-                String value = new Date().getTime()+"#"+userid+"#"+Integer.parseInt(maps1.get(0).get("WDW").toString())+"#"+reason;
+                String value = new Date().getTime()+"#"+userid+"#"+Integer.parseInt(maps1.get(0).get("WDW").toString())+"#"+reason+"#"+xsZcTaskExecId+"#"+0;
                 budaoweiRedis(taskid,value);
             }
             return WebApiResponse.success("");
@@ -102,10 +102,18 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
     }
     //往redis中扔不到位数据
     private void budaoweiRedis(Long taskId,String value){
-        Jedis jedis = jedisPool.getResource();
-        jedis.select(5);
-        jedis.hset("budaowei",String.valueOf(taskId),value);
-        jedis.close();
+        Jedis jedis = null;
+        try {
+            jedis = jedisPool.getResource();
+            jedis.select(5);
+            jedis.hset("budaowei",String.valueOf(taskId),value);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }finally {
+            if(jedis!=null){
+                jedis.close();
+            }
+        }
     }
 
 

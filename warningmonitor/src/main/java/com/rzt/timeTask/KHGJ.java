@@ -1,6 +1,7 @@
 package com.rzt.timeTask;
 
 import com.rzt.entity.Monitorcheckyj;
+import com.rzt.repository.AlarmOfflineRepository;
 import com.rzt.repository.Monitorcheckejrepository;
 import com.rzt.repository.Monitorcheckyjrepository;
 import com.rzt.service.CurdService;
@@ -26,13 +27,16 @@ import java.util.Map;
 public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> {
 
     @Autowired
-    private JedisPool jedisPool;
+    JedisPool jedisPool;
 
     @Autowired
     private RedisService redisService;
 
     @Autowired
     private Monitorcheckejrepository resp;
+
+    @Autowired
+    private AlarmOfflineRepository offlineRepository;
 
     //超期任务
     public void inspectionMissionOverdue() {
@@ -42,10 +46,16 @@ public class KHGJ extends CurdService<Monitorcheckyj, Monitorcheckyjrepository> 
             Map<String, Object> map = list.get(i);
             //if(resp!=null)
             resp.saveCheckEj(SnowflakeIdWorker.getInstance(0, 0).nextId(), Long.valueOf(map.get("ID").toString()), 1, 1, map.get("CM_USER_ID").toString(), map.get("TD_ORG").toString(), map.get("TASK_NAME").toString());
+            //向ALARM_OVERDUE表中添加数据
+            addOverdue(Long.valueOf(map.get("ID").toString()),map.get("CM_USER_ID").toString());
             String key = "ONE+" + map.get("ID").toString() + "+1+1+" + map.get("CM_USER_ID") + "+" + map.get("TD_ORG") + "+" + map.get("TASK_NAME");
             redisService.setex(key);
 
         }
+    }
+    //向ALARM_OVERDUE表中添加数据
+    private  void addOverdue(Long taskId,String userId){
+        offlineRepository.addOverdue(SnowflakeIdWorker.getInstance(0,0).nextId(),taskId,userId);
     }
 
     //看护未上线  给定时拉取数据用
