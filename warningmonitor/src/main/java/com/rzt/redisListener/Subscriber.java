@@ -1,6 +1,7 @@
 package com.rzt.redisListener;
 
 import com.rzt.eureka.StaffLine;
+import com.rzt.service.AlarmOfflineService;
 import com.rzt.service.Monitorcheckejservice;
 import com.rzt.service.Monitorcheckyjservice;
 import com.rzt.service.RedisService;
@@ -30,6 +31,9 @@ public class Subscriber extends JedisPubSub {
 
     @Autowired
     private StaffLine staffLine;
+
+    @Autowired
+    private AlarmOfflineService offlineService;
 
 
 
@@ -61,6 +65,10 @@ public class Subscriber extends JedisPubSub {
                         key = "ONE+"+messages[1]+"+"+messages[2]+"+"+messages[3]+"+"+messages[4]+"+"+messages[5]+"+"+messages[6];
                     }
                     redisService.setex(key);
+                    //未按时接任务往ALARM表中添加数据
+                    if("4".equals(messages[3])||"10".equals(messages[3])){
+                        offlineService.addAlarm(messages);
+                    }
                 }catch (Exception e){
                     LOGGER.error("插入数据失败："+e.getMessage());
                 }

@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +42,9 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
     @Autowired
     private RedisTemplate<String,Object> redisTemplate;
 
+    @Autowired
+    JedisPool pool;
+
 
     //定时拉数据  1
     @Scheduled(cron = "0 30 0 * * ? ")
@@ -52,7 +56,7 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
         khgj.KHWKH();  //未按时间接任务
 
         khgj.JCOutOfTime();  //稽查超期
-        khgj.JCWsx();  //稽查未上线
+        //khgj.JCWsx();  //稽查未上线
         khgj.JCWdxc();  //稽查未到达现场
 
     }
@@ -141,6 +145,14 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
         if(maps.size()==0){
             return 0;
         }
+        String sql2 = " SELECT LOGINSTATUS FROM RZTSYSUSER WHERE ID=?1 ";
+        List<Map<String, Object>> maps2 = execSql(sql2, userId);
+        if(maps2.size()>0){
+            Integer loginstatus = Integer.parseInt(maps2.get(0).get("LOGINSTATUS").toString());
+            if(loginstatus==0){
+                return 0;
+            }
+        }
         int flag = 0;
         for (Map<String, Object> map:maps) {
             //开始时间
@@ -178,12 +190,15 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
                             if (taskType==2){
                                 key = "ONE+"+map.get("ID")+"+2+8+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME")+"+"+reason;
                                 resp.saveCheckEjWdw(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(map.get("ID").toString()),2,8,map.get("USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString(),reason);
+                                lixianRedis(map.get("USER_ID").toString());
                             }else if (taskType==1){
                                 key = "ONE+"+map.get("ID")+"+1+2+"+map.get("CM_USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME")+"+"+reason;
                                 resp.saveCheckEjWdw(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(map.get("ID").toString()),1,2,map.get("CM_USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString(),reason);
+                                lixianRedis(map.get("CM_USER_ID").toString());
                             }else if(taskType==3){
                                 key = "ONE+"+map.get("ID")+"+3+13+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME")+"+"+reason;
                                 resp.saveCheckEjWdw(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(map.get("ID").toString()),3,13,map.get("USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString(),reason);
+                                lixianRedis(map.get("USER_ID").toString());
                             }
                             redisService.setex(key);
 
@@ -209,6 +224,19 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
         return flag;
     }
 
-
+    private void lixianRedis(String userId){
+        Jedis jedis = null;
+        try {
+            jedis = pool.getResource();
+            jedis.select(5);
+            jedis.hset("lixian",userId,new Date().getTime()+"#0");
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            if(jedis!=null){
+                jedis.close();
+            }
+        }
+    }
 
 }

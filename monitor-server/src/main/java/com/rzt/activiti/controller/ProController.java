@@ -171,7 +171,7 @@ public class ProController {
             LOGGER.error("taskId      " + taskId);
             LOGGER.error("YHID      " + YHID);
             LOGGER.error("flag      " + flag);
-            return WebApiResponse.erro("稽查任务回调失败"+e.getMessage());
+            return WebApiResponse.success("稽查任务回调失败"+e.getMessage());
         }
     }
     /**
@@ -275,6 +275,27 @@ public class ProController {
         }
     }
 
+    /**
+     * 页面 派稽查权限接口
+     * 返回1 不显示 代表运检部  返回1时显示代表  监控中心
+     * @param currentUserId
+     * @return
+     */
+    @GetMapping("/activitiAuth")
+    public String activitiAuth(String currentUserId){
+        try{
+            String roleIdByUserId = redisUtil.findRoleIdByUserId(currentUserId);
+            if("sdid".equals(roleIdByUserId) || "jkid".equals(roleIdByUserId)){
+                return "0";
+            }else if("sdyjid".equals(roleIdByUserId) || "yjid".equals(roleIdByUserId)){
+                return "1";
+            }else {
+                return "";
+            }
+        }catch (Exception e){
 
+            return "权限查询失败"+e.getMessage();
+        }
+    }
 
 }

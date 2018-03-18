@@ -20,7 +20,11 @@ import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.geo.Metric;
+import org.springframework.data.geo.Point;
 import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.connection.RedisGeoCommands;
+import org.springframework.data.redis.core.GeoOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -441,7 +445,6 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
 
     }
 
-
     public void saveTask(KhSite site, Date startTime, Date endTime) {
         int count = this.getCount(site.getId(), site.getUserid());
         this.reposiotry.updateSite(startTime, endTime, site.getId(), count);
@@ -480,9 +483,9 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
     }
 
     public void deleteSiteById(long id) throws Exception {
-        //将对应的周期消缺
+        //将对应的周期停用
         this.reposiotry.deleteSiteById(id);
-        String sql = "select count(1) num FROM KH_SITE where YH_ID =(select YH_ID from KH_SITE WHERE id=" + id+") and status = 1";
+        String sql = "select count(1) num FROM KH_SITE where YH_ID =(select YH_ID from KH_SITE WHERE id=" + id + ") and status = 1";
         Map<String, Object> map = this.execSqlSingleResult(sql);
         //如果该隐患的周期全部停用  停用稽查
         if (Integer.parseInt(map.get("NUM").toString()) == 0) {
@@ -582,6 +585,22 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
     public void updateSiteTimeById(long id, Date startTime, Date endTime) {
         this.reposiotry.updateSiteTimeById(id, startTime, endTime);
         this.reposiotry.updateTaskTimeBySiteId(id, startTime, endTime);
+    }
+
+    //脱岗操作
+    public void offPost(GeoOperations<String, Object> geoOperations) {
+        String condition = " WHERE status=1 and PLAN_START_TIME<=sysdate and PLAN_END_TIME>=sysdate and IS_DW=1 and SFDJ=1 and ddxc_time is not null";
+        String userSql = "select distinct(user_id),k.id,YH_ID from KH_TASK k LEFT JOIN KH_YH_HISTORY y on y.id = k.YH_ID  " + condition;
+        //String sql = "select DISTINCT YH_ID from KH_TASK k LEFT JOIN KH_YH_HISTORY y on y.id = k.YH_ID " + condition;
+      //  List<Map<String, Object>> maps = this.execSql(sql);
+        List<Map<String, Object>> userMaps = this.execSql(userSql);
+        for (Map userMap :userMaps) {
+            List<Point> location = geoOperations.geoPos("location", userMap.get("USER_ID").toString());
+            double jd = location.get(0).getX();
+            double wd = location.get(0).getX();
+//            geoOperations.geoRadius("KhSite"+userMap.get("YH_ID").toString(),);
+        }
+//        return WebApiResponse.success(userMaps);
     }
 }
 
