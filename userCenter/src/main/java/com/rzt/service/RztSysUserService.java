@@ -361,6 +361,7 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
                             //人员登陆时间添加
                             this.reposiotry.insRztuserLoginTypeTime(userid.get(0).get("ID").toString(), 1);
                             KHSX(String.valueOf(userid.get(0).get("ID")), typee);
+                            removeLiXianRedis(String.valueOf(userid.get(0).get("ID")));
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -446,8 +447,8 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
                         key = "TWO+*+3+13+" + map.get("USER_ID") + "+" + map.get("DEPTID") + "+*";
                     }
                     removeKey(key);
-                    this.reposiotry.updateOnlineTime(userId, Long.parseLong(map.get("ID").toString()));
                 }
+                this.reposiotry.updateOnlineTime(userId, Long.parseLong(map.get("ID").toString()));
             } catch (Exception e) {
 
             }
@@ -465,6 +466,21 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
             if (ts.length > 0) {
                 connection.del(ts);
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            connection.close();
+        }
+    }
+
+    public void removeLiXianRedis(String s) {
+        RedisConnection connection = null;
+        try {
+            connection = redisTemplate.getConnectionFactory().getConnection();
+            connection.select(5);
+            byte[] bytes = "lixian".getBytes();
+            connection.hDel(bytes,s.getBytes());
+
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
