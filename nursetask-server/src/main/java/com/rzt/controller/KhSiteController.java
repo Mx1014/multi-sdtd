@@ -68,7 +68,12 @@ public class KhSiteController extends
     public WebApiResponse saveYh(KhYhHistory yh, String fxtime, String startTowerName, String endTowerName, String pictureId,String ids) {
         return this.service.saveYh(yh, fxtime, startTowerName, endTowerName, pictureId,ids);
     }
-
+    //新建无隐患看护
+    @PostMapping("/saveNoYh")
+    @ResponseBody
+    public WebApiResponse saveNoYh(KhYhHistory yh, String startTowerName, String endTowerName,String ids) {
+        return this.service.saveNoYh(yh, startTowerName, endTowerName,ids);
+    }
 
     /***
      * 获取 待安排的看护任务
@@ -192,41 +197,4 @@ public class KhSiteController extends
         }
     }
 
-	 /* */
-
-    /**
-     * 审批隐患后
-     *
-     * @param
-     * @return
-     *//*
-    @GetMapping("/shenpiYh")
-    @ResponseBody
-    public WebApiResponse shenpiYh(String id, KhYhHistory yh1) {
-        try {
-//			yhservice.update(); 修改隐患审批状态
-
-            KhYhHistory yh = yhservice.findOne(id);
-            KhSite task = new KhSite();
-            String taskName = yh.getVtype() + yh.getLineName() + yh.getStartTower() + "-" + yh.getEndTower() + "号杆塔看护任务";
-            task.setCreateTime(new Date());
-            task.setVtype(yh.getVtype());
-            task.setLineName(yh.getLineName());
-            task.setTdywOrg(yh.getTdywOrg());
-            task.setTaskName(taskName);
-            task.setStatus(0);//隐患未消除
-            task.setStatus(0);//未停用
-            task.setCount(0);//生成任务次数0
-            task.setYhId(yh.getId());
-            task.setCreateTime(new Date());
-            this.service.add(task);
-            //	yh1.setYhdm("已定级");
-            //yh1.setTaskId(task.getId());
-            yhservice.update(yh1, id);
-            return WebApiResponse.success("保存成功");
-        } catch (Exception e) {
-            e.printStackTrace();
-            return WebApiResponse.erro("数据查询失败" + e.getMessage());
-        }
-    }*/
 }

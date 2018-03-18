@@ -196,27 +196,39 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             if (roleType == 3) {
                 buffer.append(" and y.WXORG_ID ='" + companyid + "'");
             }
+            //隐患级别，隐患类别查询
             if (yhjb != null && !yhjb.equals("")) {
                 String[] split = yhjb.split(",");
-                String result = "";
+                buffer.append(" and (");
                 for (int i = 0; i < split.length; i++) {
                     String s = "'" + split[i] + "'";
-                    result += s + ",";
+                    buffer.append("yhjb1 = "+s+" or ");
+                    buffer.append("yhlb = "+s);
+                    if (i<split.length-1){
+                        buffer.append(" or ");
+                    }
                 }
-                buffer.append(" and yhjb1 in (" + result.substring(0, result.lastIndexOf(",")) + ")");
+                buffer.append(") ");
             }
-            if (yhlb != null && !yhlb.equals("")) {
-                buffer.append(" and yhlb like ?");
-                params.add("%" + yhlb + "%");
-            }
-//            buffer.append(" and yhzt = 0 ");
+            /*if (yhlb != null && !yhlb.equals("")) {
+                String[] split = yhlb.split(",");
+                buffer.append(" and (");
+                for (int i = 0; i < split.length; i++) {
+                    String s = "'" + split[i] + "'";
+                    buffer.append("yhlb = "+s);
+                    if (i<split.length-1){
+                        buffer.append(" or ");
+                    }
+                }
+                buffer.append(") ");
+            }*/
             String sql = "";
             if (queryAll != null) {
                 sql = "select id as yhid,y.* from KH_YH_HISTORY y " + buffer.toString();
                 List<Map<String, Object>> maps = this.execSql(sql, params.toArray());
                 return WebApiResponse.success(this.execSql(sql, params.toArray()));
             } else {
-                sql = "SELECT DISTINCT(y.id) as yhid, y.* FROM ( SELECT  y.id as yh_id, y.* FROM KH_YH_HISTORY y WHERE YHLB LIKE '在施类' AND YHZT = 0 UNION ALL SELECT DISTINCT  (s.YH_ID), y.* FROM KH_YH_HISTORY y, KH_SITE s  WHERE s.YH_ID = y.ID AND s.STATUS = 1 AND y.yhzt = 0) y " + buffer.toString();
+                sql = "SELECT DISTINCT(y.id) as yhid, y.* FROM ( SELECT  y.id as yh_id, y.* FROM KH_YH_HISTORY y WHERE YHLB LIKE '在施类' AND YHZT = 0 UNION ALL SELECT DISTINCT  (s.YH_ID), y.* FROM KH_YH_HISTORY y, KH_SITE s  WHERE s.YH_ID = y.ID AND s.STATUS = 1 AND y.yhzt = 0 and y.sfdj=1) y " + buffer.toString();
 //               sql = "SELECT DISTINCT(y.id) as yhid, y.* FROM KH_YH_HISTORY y, KH_SITE s  WHERE s.YH_ID = y.ID AND s.STATUS = 1 AND y.yhzt = 0 " + buffer.toString();
                 List<Map<String, Object>> list = this.execSql(sql, params.toArray());
                 List<Object> list1 = new ArrayList<>();

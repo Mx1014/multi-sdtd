@@ -472,4 +472,21 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
         }
     }
 
+    public WebApiResponse getAddressList(String userId, JSONObject jsonObject) {
+        try {
+            String userSql = "select u.*,d.deptname from rztsysuser u left join rztsysdepartment d on d.id= u.deptid where u.id='" + userId + "'";
+            Map<String, Object> map = this.execSqlSingleResult(userSql);
+            String sql ="";
+            if (map.get("DEPTNAME").toString().equals("公司本部")) {
+                 sql = "select u.*,d.deptname from rztsysuser u left join rztsysdepartment d on d.id= u.deptid where userdelete=1 order by realname desc";
+            } else {
+                 sql = "select u.*,d.deptname from rztsysuser u left join rztsysdepartment d on d.id= u.deptid where userdelete=1 and deptid= '" + map.get("DEPTID").toString() + "' order by realname";
+            }
+            List<Map<String, Object>> maps = this.execSql(sql);
+            return WebApiResponse.success(maps);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("");
+        }
+    }
 }

@@ -148,7 +148,6 @@ public class UserService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository>
      */
     public WebApiResponse findUserInfoOne(String tokenUserId) {
         String deptId = "";
-
         if(null  ==  tokenUserId ||  "".equals(tokenUserId)){
             return WebApiResponse.erro("当前登录用户状态错误   tokenUserId"+tokenUserId);
         }
@@ -607,6 +606,162 @@ public class UserService extends CurdService<KHYHHISTORY, KHYHHISTORYRepository>
 
 
     }
+
+
+
+    public WebApiResponse findSum(String tokenUserId){
+
+
+
+        String deptId = "";
+
+        if(null  ==  tokenUserId ||  "".equals(tokenUserId)){
+            return WebApiResponse.erro("当前登录用户状态错误   tokenUserId"+tokenUserId);
+        }
+        if("0".equals(findDeptByUserId(tokenUserId))){
+            return WebApiResponse.erro("当前登录用户状态错误   tokenUserId"+tokenUserId);
+        }
+        String BJDEPT =   "40283781608b848701608b85d3700000";
+        String deptSql = "";
+        String deptSql2 = "";
+        String deptSql3 = "";
+        if(!BJDEPT.equals(findDeptByUserId(tokenUserId))){
+            deptSql = "  AND r.DEPTID = '"+findDeptByUserId(tokenUserId)+"' ";
+            deptSql3 = "  AND u.DEPTID = '"+findDeptByUserId(tokenUserId)+"' ";
+            deptSql2 = "  AND DEPT_ID = '"+findDeptByUserId(tokenUserId)+"' ";
+        }
+
+
+         /*
+             * 巡视在线人员
+             */
+        String xsZxUser = " SELECT count(1) SM " +
+                "FROM (SELECT z.CM_USER_ID " +
+                "      FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID " +
+                "      WHERE  z.is_delete = 0 and LOGINSTATUS = 1 AND USERDELETE = 1 AND z.PLAN_END_TIME >= trunc( SYSDATE ) AND z.PLAN_START_TIME <= sysdate " + deptSql +
+                "      GROUP BY z.CM_USER_ID) ";
+        /**
+         * 巡视离线人员
+         */
+        String xsLxUser = " SELECT count(1) SM  FROM (SELECT z.CM_USER_ID " +
+                "  FROM RZTSYSUSER r RIGHT JOIN XS_ZC_TASK z ON r.ID = z.CM_USER_ID " +
+                "  WHERE z.is_delete = 0 and LOGINSTATUS = 0 AND USERDELETE = 1  AND z.PLAN_END_TIME >= trunc( SYSDATE ) AND z.PLAN_START_TIME <= sysdate " + deptSql +
+                "  GROUP BY z.CM_USER_ID) ";
+        /**
+         * 看护在线人员
+         */
+        String khZxUser = " SELECT count(1) SM FROM (SELECT count(u.ID) " +
+                "FROM RZTSYSUSER u LEFT JOIN KH_TASK k ON u.ID = k.USER_ID " +
+                "WHERE LOGINSTATUS = 1 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate) " + deptSql3 +
+                "GROUP BY k.USER_ID) ";
+        /**
+         * 看护离线人员
+         */
+        String khLxUser = " SELECT count(1) SM FROM (SELECT count(u.ID) " +
+                "FROM RZTSYSUSER u LEFT JOIN KH_TASK k ON u.ID = k.USER_ID " +
+                "WHERE LOGINSTATUS = 0 AND WORKTYPE = 1 AND USERDELETE = 1 AND USERTYPE = 0 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate) " + deptSql3 +
+                "GROUP BY k.USER_ID) ";
+
+        /**
+         * 前台稽查在线人员
+         */
+        String qjcZxUser = " SELECT count(1) SM FROM (SELECT " +
+                "    count(1) " +
+                "  FROM CHECK_LIVE_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID " +
+                "  WHERE u.LOGINSTATUS = 1 AND u.USERDELETE = 1 and to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > k.plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') < k.plan_end_time "+deptSql3+" GROUP BY k.USER_ID) ";
+        /**
+         * 前台稽查离线人员
+         */
+        String qjcLxUser = " SELECT count(1) SM FROM (SELECT " +
+                "    count(1) " +
+                "  FROM CHECK_LIVE_TASK k LEFT JOIN RZTSYSUSER u ON k.USER_ID = u.ID " +
+                "  WHERE u.LOGINSTATUS = 0 AND u.USERDELETE = 1  "+deptSql3+"  and to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > k.plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') < k.plan_end_time GROUP BY k.USER_ID) ";
+        int a = 0;
+        int b = 0;
+        try {
+            String user = "SELECT * FROM WORKING_TIMED WHERE 1=1 "+deptSql2;
+            List<Map<String, Object>> maps = this.execSql(user);
+            for (Map map : maps) {
+                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+                String format = formatter.format(new Date());
+                String s = format + " 00:00:00";
+                String userId = "";
+                String start = map.get("START_TIME").toString();
+                String end = map.get("END_TIME").toString();
+                Date nowDate = DateUtil.getNowDate();
+                if (nowDate.getTime() >= DateUtil.addDate(DateUtil.parseDate(s), Double.parseDouble(start)).getTime() && nowDate.getTime() <= DateUtil.addDate(DateUtil.parseDate(s), Double.parseDouble(end)).getTime()) {
+                    userId = map.get("DAY_USER").toString();
+                } else {
+                    userId = map.get("NIGHT_USER").toString();
+                }
+                String[] split = userId.split(",");
+                for (int i = 0; i < split.length; i++) {
+                    String sql = "SELECT LOGINSTATUS status FROM RZTSYSUSER where id=? and USERDELETE=1";
+                    List<Map<String, Object>> status = this.execSql(sql, split[i]);
+                    if (status.size() > 0) {
+                        if (status.get(0).get("STATUS").toString().equals("0")) {
+                            a++;
+                        } else {
+                            b++;
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        /**
+         * 后台稽查在线人员
+         */
+        //   String hjcZxUser = " SELECT count(id) SM FROM RZTSYSUSER WHERE LOGINSTATUS = 1 AND WORKTYPE = 4 AND USERDELETE = 1  AND USERTYPE=0 ";
+        /**
+         * 后台稽查离线人员
+         */
+        //  String hjcLxUser = " SELECT count(id) SM  FROM RZTSYSUSER WHERE LOGINSTATUS = 0 AND WORKTYPE = 4 AND USERDELETE = 1  AND USERTYPE=0 ";
+        try {
+            Map<Object, Object> returnMap = new HashMap<>();
+            Map<Object, Object> iocMap = new HashMap<>();
+            Map<String, Object> xsZxUserMap = this.execSqlSingleResult(xsZxUser);
+            Map<String, Object> xsLxUserMap = this.execSqlSingleResult(xsLxUser);
+            Map<String, Object> khZxUserMap = this.execSqlSingleResult(khZxUser);
+            Map<String, Object> khLxUserMap = this.execSqlSingleResult(khLxUser);
+            Map<String, Object> qjcZxUserMap = this.execSqlSingleResult(qjcZxUser);
+            Map<String, Object> qjcLxUserMap = this.execSqlSingleResult(qjcLxUser);
+            // Map<String, Object> hjcZxUserMap = this.execSqlSingleResult(hjcZxUser);
+            // Map<String, Object> hjcLxUserMap = this.execSqlSingleResult(hjcLxUser);
+            String XSZX = xsZxUserMap.get("SM").toString();
+            String XSLX = xsLxUserMap.get("SM").toString();
+            String KHZX = khZxUserMap.get("SM").toString();
+            String KHLX = khLxUserMap.get("SM").toString();
+            String QJCZX = qjcZxUserMap.get("SM").toString();
+            String QJCLX = qjcLxUserMap.get("SM").toString();
+            int offLine = Integer.parseInt(XSLX == null ? "0" : XSLX) + Integer.parseInt(KHLX == null ? "0" : KHLX)
+                    + Integer.parseInt(QJCLX == null ? "0" : QJCLX) + b ;
+            int login = Integer.parseInt(XSZX == null ? "0" : XSZX) + Integer.parseInt(KHZX == null ? "0" : KHZX)
+                    + Integer.parseInt(QJCZX == null ? "0" : QJCZX) + a ;
+            int sum = offLine + login;
+//            iocMap.put("HJCZX", a);
+//            iocMap.put("HJCLX", b);
+            iocMap.put("SUM", sum);
+            iocMap.put("LOGIN", login);
+            iocMap.put("OFF_LINE", offLine);
+            return WebApiResponse.success(iocMap);
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage());
+            return WebApiResponse.erro(e.getMessage());
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
 
 
 }

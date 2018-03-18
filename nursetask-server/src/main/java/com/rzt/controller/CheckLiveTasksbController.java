@@ -93,6 +93,17 @@ public class CheckLiveTasksbController extends
 		}
 	}
 
+	@ApiOperation(value = "修改已派发看审核任务稽查人",notes = "修改已派发审核任务稽查人")
+	@GetMapping("/updateSbCheckUser")
+	public WebApiResponse updateSbCheckUser(String id,String userId,String userName){
+		try{
+			this.service.updateSbCheckUser(Long.valueOf(id),userId,userName);
+			return WebApiResponse.success("数据更新成功");
+		}catch (Exception e){
+			return WebApiResponse.erro("数据更新失败"+e.getMessage());
+		}
+	}
+
 	//以上是隐患稽查pc的接口
 	//以下是隐患稽查app的接口
 	@ApiOperation(value = "app隐患稽查任务列表",notes = "app隐患稽查任务列表")

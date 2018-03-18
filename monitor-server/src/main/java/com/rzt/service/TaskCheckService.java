@@ -13,10 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 李成阳
@@ -626,6 +623,12 @@ public class TaskCheckService extends CurdService<TimedTask,XSZCTASKRepository>{
         return WebApiResponse.success(maps1);
     }
 
+    /**
+     * 根据任务id和任务类型查询任务的详细信息
+     * @param taskId
+     * @param taskType
+     * @return
+     */
     public WebApiResponse findTaskInfoByTaskId(String taskId, String taskType)  {
 
         if(null == taskType || "".equals(taskType)){
@@ -666,10 +669,15 @@ public class TaskCheckService extends CurdService<TimedTask,XSZCTASKRepository>{
 
         }
         if("3".equals(taskType)){//稽查
-            sql = "";
+            sql = "   SELECT u.REALNAME,u.PHONE,d.DEPTNAME,c.COMPANYNAME,t.ID as taskid," +
+                    "  u.ID as userid,t.REAL_START_TIME,t.REAL_END_TIME,t.PLAN_START_TIME,t.PLAN_END_TIME," +
+                    "  t.TASK_NAME,t.CREATE_TIME,t.TASK_ID" +
+                    "    FROM CHECK_LIVE_TASK t LEFT JOIN RZTSYSUSER u ON u.ID = t.USER_ID LEFT JOIN RZTSYSDEPARTMENT d ON d.ID = u.DEPTID" +
+                    "  LEFT JOIN RZTSYSCOMPANY c ON c.ID = u.COMPANYID WHERE t.ID = '"+taskId+"' ";
             map = this.execSqlSingleResult(sql);
             stringObjectHashMap.put("task",map);
-            picSql = "";
+            picSql = "SELECT ID,FILE_PATH,FILE_SMALL_PATH,PROCESS_NAME" +
+                    "   FROM PICTURE_JC WHERE TASK_ID = '"+taskId+"'  AND FILE_TYPE =1";
             List<Map<String, Object>> maps = this.execSql(picSql);
             stringObjectHashMap.put("pic",maps);
         }
@@ -680,6 +688,110 @@ public class TaskCheckService extends CurdService<TimedTask,XSZCTASKRepository>{
             return WebApiResponse.erro("查询任务详情失败"+e.getMessage());
         }
         LOGGER.info("查询任务详情成功");
+        return WebApiResponse.success(stringObjectHashMap);
+    }
+
+    /**
+     * 未开始列表
+     * @param currentUserId
+     * @param page
+     * @param size
+     * @return
+     */
+    public WebApiResponse findTaskWKS(String currentUserId, String page, String size) {
+        ArrayList<Object> objects = new ArrayList<>();
+        HashMap<String, Object> stringObjectHashMap = new HashMap<>();
+        try {
+            Object userInformation1 = redisTemplate.opsForHash().get("UserInformation", currentUserId);
+            if(null != userInformation1 && !"".equals(userInformation1)) {
+                JSONObject jsonObject1 = JSONObject.parseObject(userInformation1.toString());
+                String roletype = (String) jsonObject1.get("ROLETYPE");//用户权限信息  0 为1级单位  1为二级单位 2为单位 只展示当前单位的任务
+                String deptid = (String) jsonObject1.get("DEPTID");//当角色权限为3时需要只显示本单位的任务信息
+
+                if (null != roletype && !"".equals(roletype)) {//证明当前用户信息正常
+                    if ("0".equals(roletype) || "1".equals(roletype)) {//一级单位 或公司本部  显示所有后台稽查
+                        String sql = "SELECT ID,DEPTNAME" +
+                                "     FROM RZTSYSDEPARTMENT WHERE DEPTPID = '402881e6603a69b801603a6ab1d70000'";
+                        List<Map<String, Object>> maps = this.execSql(sql);
+                        for (Map<String, Object> map : maps) {
+                            if( (null != map.get("DEPTNAME") && !"".equals(map.get("DEPTNAME").toString())) && (null != map.get("ID") && !"".equals(map.get("ID").toString())) ){
+                                String deptname = map.get("DEPTNAME").toString();
+                                String ID = map.get("ID").toString();
+                                //查询进行中的时间
+                                String timedSql = "SELECT to_char(max(CREATE_TIME),'HH24') AS TIME " +
+                                        "      FROM TIMED_TASK_RECORD WHERE DEPT_ID = '"+ID+"'";
+                                Map<String, Object> map1 = this.execSqlSingleResult(timedSql);
+                                if(null != map1.get("TIME") && !"".equals(map1.get("TIME").toString())){
+                                    int hours = Integer.parseInt(map1.get("TIME").toString());
+                                    while (hours + 2 <= 22){
+                                        hours += 2;
+                                        HashMap<String, Object> stringObjectHashMap1 = new HashMap<>();
+                                        stringObjectHashMap1.put("hours",hours);
+                                        stringObjectHashMap1.put("dept",ID);
+                                        stringObjectHashMap1.put("deptName",deptname);
+                                        objects.add(stringObjectHashMap1);
+                                    }
+
+                                }
+                            }
+                        }
+
+                    }else {//属地单位  查询本单位未开始后台稽查
+                        String sql = "SELECT ID,DEPTNAME" +
+                                "           FROM RZTSYSDEPARTMENT WHERE ID = '"+deptid+"'";
+                        Map<String, Object> map = this.execSqlSingleResult(sql);
+                        if(null != map.get("DEPTNAME") && !"".equals(map.get("DEPTNAME").toString())){
+                            String deptname = map.get("DEPTNAME").toString();
+                            String timedSql = "SELECT to_char(max(CREATE_TIME),'HH24') AS TIME " +
+                                    "      FROM TIMED_TASK_RECORD WHERE DEPT_ID = '"+deptid+"'";
+                            Map<String, Object> map1 = this.execSqlSingleResult(timedSql);
+                            if(null != map1.get("TIME") && !"".equals(map1.get("TIME").toString())){
+                                int hours = Integer.parseInt(map1.get("TIME").toString());
+                                while (hours + 2 <= 22){
+                                    hours += 2;
+                                    HashMap<String, Object> stringObjectHashMap1 = new HashMap<>();
+                                    stringObjectHashMap1.put("hours",hours);
+                                    stringObjectHashMap1.put("dept",deptid);
+                                    stringObjectHashMap1.put("deptName",deptname);
+                                    objects.add(stringObjectHashMap1);
+                                }
+
+                            }
+
+                        }
+                    }
+                }
+            }
+
+
+            if((null != page && !"".equals(page)) && (null != size && !"".equals(size))){
+                int Page = Integer.parseInt(page);
+                int Size = Integer.parseInt(size);
+                if(0 == Page){
+                    if(Size <= objects.size()){
+                        stringObjectHashMap.put("data",objects.subList(0,Size));
+                    }else {
+                        stringObjectHashMap.put("data",objects);
+                    }
+
+                }else{
+                    if((Page * Size) > objects.size()){
+                        ArrayList<Object> data = new ArrayList<>();
+                        stringObjectHashMap.put("data",data);
+                    }else{
+                        stringObjectHashMap.put("data",objects.subList(Page * Size ,(Page * Size + Size) > objects.size()?objects.size():(Page * Size + Size) ));
+                    }
+                }
+            }
+            stringObjectHashMap.put("totalElements",objects.size());
+            stringObjectHashMap.put("page",page);
+            stringObjectHashMap.put("size",size);
+
+        } catch (Exception e) {
+            LOGGER.error("后台稽查未开始查询失败"+e.getMessage());
+            return WebApiResponse.erro("后台稽查未开始查询失败"+e.getMessage());
+        }
+        LOGGER.info("后台稽查未开始查询成功");
         return WebApiResponse.success(stringObjectHashMap);
     }
 }

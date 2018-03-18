@@ -37,7 +37,7 @@ public class UserController extends CurdController<KHYHHISTORY, UserService> {
      */
     @GetMapping("/findUserSum")
     public WebApiResponse findUserInfoTwo(String tokenUserId) {
-        return userService.findUserInfoOne(tokenUserId);
+        return userService.findSum(tokenUserId);
     }
     /**
      * 按照部门查询

@@ -6,6 +6,7 @@
  */
 package com.rzt.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.RztSysUser;
 import com.rzt.entity.RztSysUserauth;
 //import com.rzt.eureka.Cmuserfile;
@@ -366,5 +367,13 @@ public class RztSysUserController extends
         } catch (Exception e) {
             return WebApiResponse.erro("数据查询失败" + e.getMessage());
         }
+    }
+    //手机通讯录提供
+    @GetMapping("getAddressList")
+    public WebApiResponse getAddressList(String currentUserId) {
+        HashOperations<String, Object, Object> hash = redisTemplate.opsForHash();
+        Object userInformation = hash.get("UserInformation", currentUserId);
+        JSONObject jsonObject = JSONObject.parseObject(userInformation.toString());
+        return this.service.getAddressList(currentUserId,jsonObject);
     }
 }
