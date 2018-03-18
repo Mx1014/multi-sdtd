@@ -333,15 +333,17 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
         }
     }
 
-    //未按标准拍照
-    public void takePhoto(Long taskid, String userid) {
+    //未按标准拍照 巡视超速
+    public void takePhoto(Long taskid, String userid, Long xsZcExceptionId) {
 
         try {
             Map<String, Object> map = null;
-            String sql = "   SELECT TASK_NAME AS TASKNAME,TD_ORG FROM XS_ZC_TASK WHERE ID=? ";
+            String sql = "SELECT TASK_NAME AS TASKNAME,TD_ORG FROM XS_ZC_TASK WHERE ID=? ";
             map = this.execSqlSingleResult(sql, taskid);
             //往二级单位插数据
             resp.saveCheckEj(SnowflakeIdWorker.getInstance(10, 12).nextId(),taskid,1,5,userid,map.get("TD_ORG").toString(),map.get("TASKNAME").toString());
+            //新加的表插入数据
+            resp.saveAlarmUnqualifiedPatrol(SnowflakeIdWorker.getInstance(10, 14).nextId(),taskid,userid,xsZcExceptionId);
             String key = "ONE+" + taskid + "+1+5+" + userid + "+" + map.get("TD_ORG").toString() + "+" + map.get("TASKNAME").toString();
             redisService.setex(key);
         } catch (Exception e) {
