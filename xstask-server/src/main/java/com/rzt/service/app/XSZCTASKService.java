@@ -67,9 +67,10 @@ public class XSZCTASKService extends CurdService<XSZCTASK, XSZCTASKRepository> {
             /**z
              * 正常已办
              */
-            String sqlZcyb = "  select id,plan_start_time as planstarttime ,plan_end_time as planendtime,task_name as taskname,2 AS xslxnum,STAUTS status  from xs_zc_task where is_delete = 0 and cm_user_id =?2 and (stauts=2 )";
-            String sql = "" + sqlBdyb + " UNION ALL " + sqlZcyb + "";
-            return this.execSqlPage(pageable, sql, userid, userid);
+            String sqlZcyb = "  select id,plan_start_time as planstarttime ,plan_end_time as planendtime,task_name as taskname,2 AS xslxnum,STAUTS status  from xs_zc_task where is_delete = 0 and cm_user_id =?1 and (stauts=2 ) order by planstarttime desc";
+//            String sql = "" + sqlBdyb + " UNION ALL " + sqlZcyb + "";
+            String sql =  sqlZcyb ;
+            return this.execSqlPage(pageable, sql, userid);
         }
     }
 
