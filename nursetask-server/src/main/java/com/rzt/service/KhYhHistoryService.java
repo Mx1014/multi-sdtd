@@ -196,20 +196,32 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
             if (roleType == 3) {
                 buffer.append(" and y.WXORG_ID ='" + companyid + "'");
             }
+            //隐患级别，隐患类别查询
             if (yhjb != null && !yhjb.equals("")) {
                 String[] split = yhjb.split(",");
-                String result = "";
+                buffer.append(" and (");
                 for (int i = 0; i < split.length; i++) {
                     String s = "'" + split[i] + "'";
-                    result += s + ",";
+                    buffer.append("yhjb1 = "+s+" or ");
+                    buffer.append("yhlb = "+s);
+                    if (i<split.length-1){
+                        buffer.append(" or ");
+                    }
                 }
-                buffer.append(" and yhjb1 in (" + result.substring(0, result.lastIndexOf(",")) + ")");
+                buffer.append(") ");
             }
-            if (yhlb != null && !yhlb.equals("")) {
-                buffer.append(" and yhlb like ?");
-                params.add("%" + yhlb + "%");
-            }
-//            buffer.append(" and yhzt = 0 ");
+            /*if (yhlb != null && !yhlb.equals("")) {
+                String[] split = yhlb.split(",");
+                buffer.append(" and (");
+                for (int i = 0; i < split.length; i++) {
+                    String s = "'" + split[i] + "'";
+                    buffer.append("yhlb = "+s);
+                    if (i<split.length-1){
+                        buffer.append(" or ");
+                    }
+                }
+                buffer.append(") ");
+            }*/
             String sql = "";
             if (queryAll != null) {
                 sql = "select id as yhid,y.* from KH_YH_HISTORY y " + buffer.toString();

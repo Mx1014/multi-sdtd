@@ -294,7 +294,7 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
         } else {
             try {
                 if (sfdw == 1) {
-                    warningmonitorServerService.xsTourScope(taskid, userid, reason);
+                    warningmonitorServerService.xsTourScope(taskid, userid, reason,execDetailId);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -335,7 +335,7 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
                             long nextId = new SnowflakeIdWorker(18, 21).nextId();
                             this.reposiotry.insertException(nextId, taskid, "十分钟五基塔", JSONObject.toJSONString(gantas));
                             try {
-                                warningmonitorServerService.takePhoto(taskid, userid);
+                                warningmonitorServerService.takePhoto(taskid, userid,nextId);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
