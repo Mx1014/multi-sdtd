@@ -1,9 +1,12 @@
 package com.rzt.controller;
 
 import com.rzt.entity.Monitorcheckej;
+import com.rzt.repository.AlarmOfflineRepository;
+import com.rzt.service.AlarmOfflineService;
 import com.rzt.service.Monitorcheckejservice;
 import com.rzt.service.tourPublicService;
 import com.rzt.util.WebApiResponse;
+import com.rzt.utils.SnowflakeIdWorker;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -159,5 +162,18 @@ public class tourPublicController extends CurdController<Monitorcheckej, tourPub
         return service.getDocBytaskId(page,size, startDate,endDate,fileType);
     }
 
+    /*@Autowired
+    private AlarmOfflineService offlineService;
+    @Autowired
+    private AlarmOfflineRepository offlineRepository;
+    @GetMapping("notnotime")
+    public void notnotime(Long taskId,String userId){
+        String[] message  = new String[]{"0",taskId+"","n","m",userId};
+        offlineService.addAlarm(message);
+    }
 
+    @GetMapping("overdue")
+    public void overdue(Long taskId,String userId){
+        offlineRepository.addOverdue(SnowflakeIdWorker.getInstance(10,10).nextId(),taskId,userId);
+    }*/
 }

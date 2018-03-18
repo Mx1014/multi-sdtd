@@ -353,7 +353,7 @@ public class PcMapShowController {
                     Object o = menAboutLinesSon(Long.parseLong(lineId), currentUserId, startDate, yhTypes, gzTypes);
                     resList.add(o);
                 }*/
-                Object o = menAboutLinesAllSon(lineIdArr, currentUserId, startDate, yhTypes, gzTypes, deptId, workType, userId, loginType);
+                Object o = menAboutLinesAllSon(lineIdArr, currentUserId, startDate, yhTypes, gzTypes, deptId, workType, userId, loginType,null);
                 resList.add(o);
                 return WebApiResponse.success(resList);
             } catch (Exception e) {
@@ -364,7 +364,7 @@ public class PcMapShowController {
     }
 
     //地图上根据线路查询隐患、故障、人员、杆塔
-    private Object menAboutLinesAllSon(String[] lineIdArr, String currentUserId, Date startDate, String yhTypes, String gzTypes, String deptId, String workType, String userId, String loginType) throws Exception {
+    private Object menAboutLinesAllSon(String[] lineIdArr, String currentUserId, Date startDate, String yhTypes, String gzTypes, String deptId, String workType, String userId, String loginType,String yhlb) throws Exception {
         String s = "";
         String s1 = "";
         if (!StringUtils.isEmpty(deptId)) {
@@ -411,7 +411,7 @@ public class PcMapShowController {
         res.put("coordinateList", coordinateList);
         List<Map<String, Object>> guzhang = getGuzhang(gzTypes, lineIdArr, null);
         res.put("guzhang", guzhang);
-        Object yinhuan = getYinhuan2(yhTypes, currentUserId, null, lineIdArr, s);
+        Object yinhuan = getYinhuan2(yhTypes, currentUserId, yhlb, lineIdArr, s);
         res.put("yinhuan", yinhuan);
         return res;
     }
@@ -422,17 +422,21 @@ public class PcMapShowController {
         buffer.append(" where yhzt=0 ");
         if (yhjb != null && !yhjb.equals("")) {
             String[] split = yhjb.split(",");
-            String result = "";
+            buffer.append(" and (");
             for (int i = 0; i < split.length; i++) {
                 String s = "'" + split[i] + "'";
-                result += s + ",";
+                buffer.append("yhjb1 = "+s+" or ");
+                buffer.append("yhlb = "+s);
+                if (i<split.length-1){
+                    buffer.append(" or ");
+                }
             }
-            buffer.append(" and yhjb1 in (" + result.substring(0, result.lastIndexOf(",")) + ")");
+            buffer.append(") ");
         }
-        if (yhlb != null && !yhlb.equals("")) {
+        /*if (yhlb != null && !yhlb.equals("")) {
             buffer.append(" and yhlb like ?");
             params.add("%" + yhlb + "%");
-        }
+        }*/
         int length = lineIdArr.length;
         buffer.append(" and ( ");
         for (int i = 0; i < length; i++) {

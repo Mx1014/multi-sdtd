@@ -6,6 +6,7 @@ import com.rzt.service.CommonService;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.weekTime;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -313,4 +314,289 @@ public class OverdueController extends CurdController<RztSysUser, CommonService>
         }
         return null;
     }
+
+    @RequestMapping("overdueList1")
+    public WebApiResponse overdueList1(Integer tableType, String taskname, String loginstatus, String companyid, Integer page, Integer size, String currentUserId, String startTime, String endTime, String deptId){
+        Pageable pageable = new PageRequest(page, size);
+        JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", currentUserId).toString());
+        int roletype = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
+        Object deptid = jsonObject.get("DEPTID");
+
+        String s = "";
+        if (!StringUtils.isEmpty(tableType)) {
+            if (tableType == 0) {
+                s += " AND o.CHECK_STATUS=0 ";
+            }
+            if (!StringUtils.isEmpty(startTime) && !StringUtils.isEmpty(endTime)) {
+                //超期的告警时间就是创建时间
+                s += " AND o.ALARM_TIME >= to_date('" + startTime + "','yyyy-mm-dd hh24:mi:ss') ";
+                s += " AND o.ALARM_TIME <= to_date('" +endTime+ "','yyyy-mm-dd hh24:mi:ss') ";
+            } else if (tableType == 0 || tableType == 1) {
+                s += " AND trunc(o.ALARM_TIME) = trunc(sysdate) ";
+            } else if (tableType == 2) {
+                Map map = weekTime.weekTime();
+                Object mon = map.get("Mon");
+                Object sun = map.get("Sun");
+                s += " AND o.ALARM_TIME >= to_date('" + mon+ "','yyyy-mm-dd hh24:mi:ss') ";
+                s += " AND o.ALARM_TIME <= to_date('" + sun+ "','yyyy-mm-dd hh24:mi:ss') ";
+            } else if (tableType == 3) {
+                s += " AND to_char(o.ALARM_TIME,'yyyy-mm') = to_char(sysdate,'yyyy-mm') ";
+            }
+        }
+        if(!StringUtils.isEmpty(deptId)){
+            //条件查询通道单位
+            s+=" AND  u.DEPTID='"+deptId+"'";
+        }
+        if(!StringUtils.isEmpty(companyid)){
+            s+=" AND u.COMPANYID='"+companyid+"'";
+        }
+        if(!StringUtils.isEmpty(taskname)){
+            s+=" AND xs.TASK_NAME LIKE '%"+taskname+"%'";
+        }
+        if(!StringUtils.isEmpty(loginstatus)){
+            s+=" AND u.LOGINSTATUS="+loginstatus;
+        }
+        String sql="";
+        if(roletype==0){
+            sql = "SELECT o.ALARM_TIME,o.TASK_ID,o.USER_ID,o.CHECK_STATUS,xs.TASK_NAME,xs.PLAN_END_TIME,xs.PLAN_START_TIME,u.*" +
+                    " FROM ALARM_OVERDUE o LEFT JOIN XS_ZC_TASK xs ON o.TASK_ID=xs.ID LEFT JOIN USERINFO u\n" +
+                    "  ON o.USER_ID=u.ID WHERE 1=1 "+s+" ORDER BY ALARM_TIME DESC ";
+        }else if(roletype==1 || roletype==2){
+            sql = "SELECT o.ALARM_TIME,o.TASK_ID,o.USER_ID,o.CHECK_STATUS,xs.TASK_NAME,xs.PLAN_END_TIME,xs.PLAN_START_TIME,u.*" +
+                    " FROM ALARM_OVERDUE o LEFT JOIN XS_ZC_TASK xs ON o.TASK_ID=xs.ID LEFT JOIN USERINFO u\n" +
+                    "  ON o.USER_ID=u.ID WHERE u.DEPTID='"+deptid+"' "+s+" ORDER BY ALARM_TIME DESC ";
+        }
+
+        try {
+            if(!"".equals(sql)){
+                Page<Map<String, Object>> maps = this.service.execSqlPage(pageable, sql);
+                return WebApiResponse.success(maps);
+            }else{
+                return WebApiResponse.success("该用户无此权限");
+            }
+        }catch (Exception e){
+            return WebApiResponse.erro("查询失败："+e.getMessage());
+        }
+    }
+
+    @RequestMapping("overdueAscTable1")
+    public WebApiResponse overdueDeptTable1(Integer tableType, String taskname, String loginstatus, String companyid, String currentUserId, String startTime, String endTime, String deptId){
+        JSONObject jsonObject = JSONObject.parseObject(redisTemplate.opsForHash().get("UserInformation", currentUserId).toString());
+        int roletype = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
+        Object deptid = jsonObject.get("DEPTID");
+
+        String s = "";
+        String s1 = "";
+        String s2 = "";
+        String s3 = "";
+        String s4 = ""; //查询总任务数条件
+        if (!StringUtils.isEmpty(tableType)) {
+            if (tableType == 0) {
+                s += " AND o.CHECK_STATUS=0 ";
+            }
+            if (!StringUtils.isEmpty(startTime) && !StringUtils.isEmpty(endTime)) {
+                //超期的告警时间就是创建时间
+                s += " AND o.ALARM_TIME >= to_date('" + startTime + "','yyyy-mm-dd hh24:mi:ss') ";
+                s += " AND o.ALARM_TIME <= to_date('" +endTime+ "','yyyy-mm-dd hh24:mi:ss') ";
+                //超期是以结束任务算的，所以查询所有在这个时间段内并且是整体前一天结束的任务
+                s4 += " AND PLAN_END_TIME >= to_date('" + startTime + "','yyyy-mm-dd hh24:mi:ss')-1 ";
+                s4 += " AND PLAN_END_TIME <= to_date('" +endTime+ "','yyyy-mm-dd hh24:mi:ss')-1 ";
+            } else if (tableType == 0 || tableType == 1) {
+                s += " AND trunc(o.ALARM_TIME) = trunc(sysdate) ";
+
+                s4 +="  AND trunc(PLAN_END_TIME)=trunc(sysdate) ";
+            } else if (tableType == 2) {
+                Map map = weekTime.weekTime();
+                Object mon = map.get("Mon");
+                Object sun = map.get("Sun");
+                s += " AND o.ALARM_TIME >= to_date('" + mon+ "','yyyy-mm-dd hh24:mi:ss') ";
+                s += " AND o.ALARM_TIME <= to_date('" + sun+ "','yyyy-mm-dd hh24:mi:ss') ";
+
+                //超期是以结束任务算的，所以查询所有在这个时间段内并且是整体前一天结束的任务
+                s4 += " AND PLAN_END_TIME >= to_date('" + mon + "','yyyy-mm-dd hh24:mi:ss')-1 ";
+                s4 += " AND PLAN_END_TIME <= to_date('" +sun+ "','yyyy-mm-dd hh24:mi:ss')-1 ";
+            } else if (tableType == 3) {
+                s += " AND to_char(o.ALARM_TIME,'yyyy-mm') = to_char(sysdate,'yyyy-mm') ";
+
+                s4+=" AND (PLAN_END_TIME BETWEEN to_date('"+weekTime.getFirstDayOfMonth()+"','yyyy-MM-dd')-1  AND to_date('"+weekTime.getLastDayOfMonth()+"','yyyy-MM-dd')-1 )";
+            }
+        }
+        if(!StringUtils.isEmpty(deptId)){
+            if(roletype==0){
+                roletype=1;
+                //条件查询通道单位
+                s+=" AND  u.DEPTID='"+deptId+"'";
+                s2+=deptId;
+
+                s4+=" AND TD_ORG='"+deptId+"'";
+            }else if(roletype==1 || roletype==2){
+                s+=" AND  u.DEPTID='"+deptid+"'";
+                s2+=deptid;
+
+                s4+=" AND TD_ORG='"+deptid+"'";
+            }
+            s1+=" AND ORGID LIKE '%"+deptId+"%' ";
+        }
+        if(!StringUtils.isEmpty(companyid)){
+            s+=" AND u.COMPANYID='"+companyid+"'";
+            s3+=" AND ID='"+companyid+"' ";
+
+            s4+=" AND WX_ORG='"+companyid+"'";
+        }
+        if(!StringUtils.isEmpty(taskname)){
+            s+=" AND xs.TASK_NAME LIKE '%"+taskname+"%'";
+        }
+        if(!StringUtils.isEmpty(loginstatus)){
+            s+=" AND u.LOGINSTATUS="+loginstatus;
+        }
+        if (roletype == 0) {
+            //左下角查询通道单位
+            String overdue = "SELECT nvl(a.OVERDUEDEPT,0) AS VALUE,r.DEPTNAME as NAME,r.ID FROM\n" +
+                    "  (SELECT count(1) AS OVERDUEDEPT,u.DEPTID FROM ALARM_OVERDUE o LEFT JOIN XS_ZC_TASK xs ON o.TASK_ID=xs.ID\n" +
+                    "LEFT JOIN USERINFO u ON o.USER_ID=u.ID WHERE 1=1 "+s+" GROUP BY u.DEPTID) a\n" +
+                    "RIGHT JOIN (SELECT ID,DEPTNAME\n" +
+                    " FROM RZTSYSDEPARTMENT\n" +
+                    " WHERE DEPTSORT IS NOT NULL ORDER BY DEPTSORT) R ON a.DEPTID = r.ID ORDER BY VALUE DESC";
+            //左下角查询外协单位
+            String OVERDUECOMPANY = " SELECT b.ID,b.COMPANYNAME as NAME,nvl(a.OVERDUECOMPANY,0) as VALUE\n" +
+                    " FROM (SELECT count(1) AS OVERDUECOMPANY,u.COMPANYID FROM ALARM_OVERDUE o LEFT JOIN XS_ZC_TASK xs ON o.TASK_ID=xs.ID\n" +
+                    "LEFT JOIN USERINFO u ON o.USER_ID=u.ID WHERE 1=1 "+s+"  GROUP BY u.COMPANYID) a RIGHT JOIN \n" +
+                    "  (SELECT ID, COMPANYNAME FROM RZTSYSCOMPANY WHERE 1=1 "+s1+") b ON a.COMPANYID = b.ID ORDER BY VALUE DESC\n";
+
+            //查询通道单位对应的所有任务
+            String overdueTotal = "SELECT nvl(a.OVERDUEDEPT,0) AS VALUE,r.DEPTNAME as NAME,r.ID FROM\n" +
+                    "   (SELECT count(1) AS OVERDUEDEPT,u.DEPTID FROM XS_ZC_TASK xs\n" +
+                    "     LEFT JOIN USERINFO u ON xs.CM_USER_ID=u.ID WHERE 1=1 "+s4+" GROUP BY u.DEPTID) a\n" +
+                    " RIGHT JOIN (SELECT ID,DEPTNAME\n" +
+                    "  FROM RZTSYSDEPARTMENT\n" +
+                    "  WHERE DEPTSORT IS NOT NULL ORDER BY DEPTSORT) R ON a.DEPTID = r.ID ORDER BY VALUE DESC";
+            String OVERDUECOMPANYTotal = "  SELECT b.ID,b.COMPANYNAME as NAME,nvl(a.OVERDUECOMPANY,0) as VALUE\n" +
+                    "  FROM (SELECT count(1) AS OVERDUECOMPANY,u.COMPANYID FROM XS_ZC_TASK xs\n" +
+                    "     LEFT JOIN USERINFO u ON xs.CM_USER_ID=u.ID WHERE 1=1 "+s4+" GROUP BY u.COMPANYID) a RIGHT JOIN\n" +
+                    "   (SELECT ID, COMPANYNAME FROM RZTSYSCOMPANY WHERE 1=1 "+s1+") b ON a.COMPANYID = b.ID ORDER BY VALUE DESC";
+
+            String user = "SELECT uu.*,us.REALNAME FROM USERINFO us RIGHT JOIN\n" +
+                    "(SELECT count(u.ID) AS VALUE,u.ID FROM ALARM_OVERDUE o LEFT JOIN USERINFO u ON o.USER_ID=u.ID WHERE 1=1 "+s+" GROUP BY u.ID\n" +
+                    "ORDER BY VALUE DESC) uu ON uu.ID=us.ID";
+            try {
+                Map map = new HashMap();
+                //查询通道单位总数及超期总数
+                List<Map<String, Object>> totalTaskMap = this.service.execSql(overdueTotal);//查询通道单位所有任务
+                Map totalTask = new HashMap();
+                if (totalTaskMap != null) {
+                    for (Map mapp : totalTaskMap) {
+                        totalTask.put(mapp.get("ID"), mapp.get("VALUE"));
+                    }
+                }
+                //返回集合
+                List<Map<String, Object>> maps = this.service.execSql(overdue);//查询通道单位所有超期任务
+                for (Map mappp : maps) {
+                    Object id = mappp.get("ID");
+                    mappp.put("TOTALTASK", mappp.get(id) == null ? 0 : mappp.get(id));
+                }
+
+                //查询外协单位总数及超期总数
+                List<Map<String, Object>> maps3 = this.service.execSql(OVERDUECOMPANYTotal);//查询外协所有任务
+                Map companyTotalTask = new HashMap();
+                if (maps3 != null) {
+                    for (Map mapp : maps3) {
+                        companyTotalTask.put(mapp.get("ID"), mapp.get("VALUE"));
+                    }
+                }
+                //返回集合
+                List<Map<String, Object>> maps1 = this.service.execSql(OVERDUECOMPANY);//查询外协所有超期告警
+                for (Map mappp : maps1) {
+                    Object id = mappp.get("ID");
+                    mappp.put("TOTALTASK", mappp.get(id) == null ? 0 : mappp.get(id));
+                }
+                List<Map<String, Object>> maps2 = this.service.execSql(user);
+                map.put("OVERDUE", maps);
+                map.put("OVERDUECOMPANY", maps1);
+                map.put("USER",maps2);
+                return WebApiResponse.success(map);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return WebApiResponse.erro("查询失败");
+            }
+        }
+        if (roletype == 1 || roletype == 2) {
+            String overdue = "SELECT nvl(a.OVERDUECOMPANY, 0) AS VALUE,\n" +
+                    "  r.DEPTNAME AS NAME,\n" +
+                    "  r.ID FROM (\n" +
+                    "SELECT count(1) AS OVERDUECOMPANY,u.CLASSID FROM ALARM_OVERDUE o LEFT JOIN XS_ZC_TASK xs ON o.TASK_ID=xs.ID\n" +
+                    "LEFT JOIN USERINFO u ON o.USER_ID=u.ID WHERE 1=1 "+s+" GROUP BY u.CLASSID\n" +
+                    ") a RIGHT JOIN (SELECT ID,DEPTNAME FROM (SELECT  ID,  DEPTNAME,  LASTNODE FROM RZTSYSDEPARTMENT\n" +
+                    "    START WITH ID='"+s2+"' CONNECT BY PRIOR ID =DEPTPID)\n" +
+                    "     WHERE LASTNODE = 0) r ON a.CLASSID = r.ID ORDER BY VALUE DESC";
+            String OVERDUECOMPANY = " SELECT b.ID, b.COMPANYNAME AS NAME, nvl(a.OVERDUECOMPANY, 0) AS VALUE\n" +
+                    " FROM ( SELECT count(1) AS OVERDUECOMPANY, u.COMPANYID\n" +
+                    "   FROM ALARM_OVERDUE o LEFT JOIN XS_ZC_TASK xs ON o.TASK_ID = xs.ID\n" +
+                    "     LEFT JOIN USERINFO u ON o.USER_ID = u.ID\n" +
+                    "   WHERE 1 = 1 "+s+"\n" +
+                    "   GROUP BY u.COMPANYID ) a RIGHT JOIN(\n" +
+                    "SELECT ID, COMPANYNAME FROM RZTSYSCOMPANY\n" +
+                    "  WHERE 1=1 "+s3+")  b ON a.COMPANYID = b.ID ORDER BY VALUE DESC";
+
+            //查询通道单位对应的所有任务
+            String overdueTotal = "SELECT nvl(a.OVERDUECOMPANY, 0) AS VALUE,\n" +
+                    "  r.DEPTNAME AS NAME,\n" +
+                    "  r.ID FROM (\n" +
+                    "SELECT count(1) AS OVERDUECOMPANY,u.CLASSID FROM XS_ZC_TASK xs\n" +
+                    "     LEFT JOIN USERINFO u ON xs.CM_USER_ID=u.ID WHERE 1=1 "+s4+" GROUP BY u.CLASSID\n" +
+                    ") a RIGHT JOIN (SELECT ID,DEPTNAME FROM (SELECT  ID,  DEPTNAME,  LASTNODE FROM RZTSYSDEPARTMENT\n" +
+                    "    START WITH ID='"+s2+"' CONNECT BY PRIOR ID =DEPTPID)\n" +
+                    "     WHERE LASTNODE = 0) r ON a.CLASSID = r.ID ORDER BY VALUE DESC";
+            String OVERDUECOMPANYTotal = "  SELECT b.ID, b.COMPANYNAME AS NAME, nvl(a.OVERDUECOMPANY, 0) AS VALUE\n" +
+                    "  FROM ( SELECT count(1) AS OVERDUECOMPANY,u.COMPANYID FROM XS_ZC_TASK xs\n" +
+                    "     LEFT JOIN USERINFO u ON xs.CM_USER_ID=u.ID WHERE 1=1 "+s4+" GROUP BY u.COMPANYID ) a RIGHT JOIN(\n" +
+                    " SELECT ID, COMPANYNAME FROM RZTSYSCOMPANY\n" +
+                    "   WHERE 1=1 "+s3+")  b ON a.COMPANYID = b.ID ORDER BY VALUE DESC";
+            //查询左下角人员
+            String user = "SELECT uu.*,us.REALNAME FROM USERINFO us RIGHT JOIN\n" +
+                    "(SELECT count(u.ID) AS VALUE,u.ID FROM ALARM_OVERDUE o LEFT JOIN USERINFO u ON o.USER_ID=u.ID WHERE 1=1 "+s+" GROUP BY u.ID\n" +
+                    "ORDER BY VALUE DESC) uu ON uu.ID=us.ID";
+            try {
+                Map map = new HashMap();
+                //查询通道单位总数及超期总数
+                List<Map<String, Object>> totalTaskMap = this.service.execSql(overdueTotal);// 查询通道单位所有任务
+                Map totalTask = new HashMap();
+                if (totalTaskMap != null) {
+                    for (Map mapp : totalTaskMap) {
+                        totalTask.put(mapp.get("ID"), mapp.get("VALUE"));
+                    }
+                }
+                //返回集合
+                List<Map<String, Object>> maps = this.service.execSql(overdue);//查询通道单位所有超期任务
+                for (Map mappp : maps) {
+                    Object id = mappp.get("ID");
+                    mappp.put("TOTALTASK", mappp.get(id) == null ? 0 : mappp.get(id));
+                }
+
+                //查询外协单位总数及超期总数
+                List<Map<String, Object>> maps3 = this.service.execSql(OVERDUECOMPANYTotal);//查询外协所有任务
+                Map companyTotalTask = new HashMap();
+                if (maps3 != null) {
+                    for (Map mapp : maps3) {
+                        companyTotalTask.put(mapp.get("ID"), mapp.get("VALUE"));
+                    }
+                }
+                //返回集合
+                List<Map<String, Object>> maps1 = this.service.execSql(OVERDUECOMPANY);//查询外协所有超期告警
+                for (Map mappp : maps1) {
+                    Object id = mappp.get("ID");
+                    mappp.put("TOTALTASK", mappp.get(id) == null ? 0 : mappp.get(id));
+                }
+                List<Map<String, Object>> maps2 = this.service.execSql(user);
+                map.put("OVERDUE", maps);
+                map.put("OVERDUECOMPANY", maps1);
+                map.put("USER",maps2);
+                return WebApiResponse.success(map);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return WebApiResponse.erro("查询失败");
+            }
+        }
+        return null;
+    }
+
 }

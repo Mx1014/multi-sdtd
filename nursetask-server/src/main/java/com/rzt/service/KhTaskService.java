@@ -20,7 +20,11 @@ import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.geo.Metric;
+import org.springframework.data.geo.Point;
 import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.connection.RedisGeoCommands;
+import org.springframework.data.redis.core.GeoOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -584,22 +588,19 @@ public class KhTaskService extends CurdService<KhTask, KhTaskRepository> {
     }
 
     //脱岗操作
-    public WebApiResponse offPost() {
+    public void offPost(GeoOperations<String, Object> geoOperations) {
         String condition = " WHERE status=1 and PLAN_START_TIME<=sysdate and PLAN_END_TIME>=sysdate and IS_DW=1 and SFDJ=1 and ddxc_time is not null";
         String userSql = "select distinct(user_id),k.id,YH_ID from KH_TASK k LEFT JOIN KH_YH_HISTORY y on y.id = k.YH_ID  " + condition;
-        String sql = "select DISTINCT YH_ID from KH_TASK k LEFT JOIN KH_YH_HISTORY y on y.id = k.YH_ID " + condition;
-        List<Map<String, Object>> maps = this.execSql(sql);
-        String towerSql = "SELECT YH_ID,TOWER_ID FROM KH_YH_TOWER WHERE yh_id in (?1)";
-        List<Long> list = new ArrayList<>();
-        for (Map map : maps) {
-            list.add(Long.parseLong(map.get("YH_ID").toString()));
-        }
-        List<Map<String, Object>> towerMaps = this.execSql(towerSql, list);
+        //String sql = "select DISTINCT YH_ID from KH_TASK k LEFT JOIN KH_YH_HISTORY y on y.id = k.YH_ID " + condition;
+      //  List<Map<String, Object>> maps = this.execSql(sql);
         List<Map<String, Object>> userMaps = this.execSql(userSql);
-       for (Map userMap :userMaps){
-           String yh_id = userMap.get("YH_ID").toString();
-       }
-        return WebApiResponse.success(towerMaps);
+        for (Map userMap :userMaps) {
+            List<Point> location = geoOperations.geoPos("location", userMap.get("USER_ID").toString());
+            double jd = location.get(0).getX();
+            double wd = location.get(0).getX();
+//            geoOperations.geoRadius("KhSite"+userMap.get("YH_ID").toString(),);
+        }
+//        return WebApiResponse.success(userMaps);
     }
 }
 

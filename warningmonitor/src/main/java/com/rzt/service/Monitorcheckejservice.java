@@ -8,6 +8,7 @@ package com.rzt.service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.Monitorcheckej;
+import com.rzt.repository.AlarmOfflineRepository;
 import com.rzt.repository.Monitorcheckejrepository;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.SnowflakeIdWorker;
@@ -48,7 +49,10 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
     private RedisService redisService;
 
     @Autowired
-    private JedisPool pool;
+    JedisPool pool;
+
+    @Autowired
+    private AlarmOfflineRepository offlineRepository;
 
     //获取通道公司ID
     public Object getDeptId(String userId) {
@@ -104,10 +108,18 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
         return flag;
     }
     private void lixianRedis(String userId){
-        Jedis jedis = pool.getResource();
-        jedis.select(5);
-        jedis.hset("lixian",userId,new Date().getTime()+"#0");
-        jedis.close();
+        Jedis jedis=null;
+        try {
+            jedis = pool.getResource();
+            jedis.select(5);
+            jedis.hset("lixian",userId,new Date().getTime()+"#0");
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            if(jedis!=null){
+                jedis.close();
+            }
+        }
     }
 
     //判断权限，获取当前登录用户的deptId，如果是全部查询则返回0
@@ -518,6 +530,7 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
             if ("0".equals(deptId)) {
                 return WebApiResponse.success(resp.updateYJ(taskId, type, warningType, checkInfo, checkAppInfo,createTime,checkMode));
             } else {
+                checkAlarm(userId,taskId,warningType,1);
                 return WebApiResponse.success(resp.updateEJ(taskId, type, warningType, checkInfo, checkAppInfo,createTime,checkMode));
             }
         } catch (Exception e) {
@@ -538,10 +551,31 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
             if ("0".equals(deptId)) {
                 return WebApiResponse.success(resp.updateYJC(taskId, type, warningType, checkInfo, userId,createTime,checkMode));
             } else {
+                checkAlarm(userId,taskId,warningType,2);
                 return WebApiResponse.success(resp.updateEJC(taskId, type, warningType, checkInfo, userId,createTime,checkMode));
             }
         } catch (Exception e) {
             return WebApiResponse.erro("添加失败" + e.getMessage());
+        }
+    }
+
+    //更改Alarm系列表中的状态
+    private void checkAlarm(String userId, Long taskId, Integer warningType,Integer status){
+        if(warningType==2 || warningType==8||warningType==13){
+            //更改离线表中的状态
+            offlineRepository.updateOffLineStatus(userId,status);
+        }else if(warningType==3 || warningType==5){
+            //更改巡视不合格表中的状态
+            offlineRepository.updateXS(userId,taskId,status);
+        }else if(warningType==4 || warningType==10){
+            //更改未按时接任务中的状态
+            offlineRepository.updateNotNoTimeStatus(userId,taskId,status);
+        }else if(warningType==1){
+            //更改超期表中的状态
+            offlineRepository.updateOverdue(userId,taskId,status);
+        }else if(warningType==7){
+            //更改看护脱岗表中的状态
+            offlineRepository.updateoffWorkStatus(userId,taskId,status);
         }
     }
 

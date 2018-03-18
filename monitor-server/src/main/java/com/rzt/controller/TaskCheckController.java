@@ -65,6 +65,19 @@ public class TaskCheckController extends
         return taskCheckService.findTaskInfoByTaskId(taskId,taskType);
     }
 
+    /**
+     * 未开始
+     * @param currentUserId
+     * @param page
+     * @param size
+     * @return
+     */
+    @GetMapping("/findTaskWKS")
+    public WebApiResponse findTaskWKS(String currentUserId,String page,String size){
+        return taskCheckService.findTaskWKS(currentUserId,page,size);
+    }
+
+
 
 
 }

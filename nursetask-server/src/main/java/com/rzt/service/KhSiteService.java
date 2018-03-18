@@ -308,7 +308,15 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             String[] split = id.split(",");
             if (split.length > 0) {
                 for (int i = 0; i < split.length; i++) {
-                    this.reposiotry.deleteById(Long.parseLong(split[i].toString()));
+                    long cycleId = Long.parseLong(split[i].toString());
+                    String sql = "select * from kh_site where yh_id=(select yh_id from kh_cycle where id=?) and status=1";
+                    List<Map<String, Object>> maps = this.execSql(sql, cycleId);
+                    if (maps.size() > 0 && maps != null) {
+                        //如果该隐患下存在未停用的周期，将cycle置为已派发，供稽查抽取，否则删除
+                        this.reposiotry.updateCycleById(cycleId);
+                    } else {
+                        this.reposiotry.deleteById(cycleId);
+                    }
                 }
             } else {
                 this.reposiotry.deleteById(Long.parseLong(id));
@@ -347,6 +355,7 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
                     task.setWxOrgId(map1.get("ID").toString());
                     task.setWxOrg(map1.get("NAME").toString());
                 } catch (Exception e) {
+
                 }
                 site.setVtype(cycle.getVtype());
                 site.setLineName(cycle.getLineName());
@@ -391,10 +400,11 @@ public class KhSiteService extends CurdService<KhSite, KhSiteRepository> {
             }
             String sql1 = "select SFDJ from kh_cycle C LEFT JOIN KH_YH_HISTORY Y on y.id = c.yh_id where C.id= " + cycle.getId();
             Map<String, Object> map1 = this.execSqlSingleResult(sql1);
+            //如果是未定级表示无隐患看护,不需要稽查，设置cycle状态为3
             if (map1.get("SFDJ").toString().equals("1")) {
-                this.reposiotry.updateCycleById(id);  // 重新生成多个周期
-            }else {
-                this.reposiotry.updateCycleById2(id);
+                this.reposiotry.updateCycleById(Long.parseLong(id));  // 重新生成多个周期
+            } else {
+                this.reposiotry.updateCycleById2(Long.parseLong(id));
             }
             try {
                 String userId = list.get(0).get("userId").toString();
