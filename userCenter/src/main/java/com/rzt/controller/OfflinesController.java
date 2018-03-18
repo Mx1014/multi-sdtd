@@ -58,7 +58,7 @@ public class OfflinesController extends CurdController<RztSysUser, CommonService
             s += " AND r.CREATE_TIME>= to_date('" + mon + "','yyyy-mm-dd hh24:mi:ss') ";
             s += " AND r.CREATE_TIME<= to_date('" + sun + "','yyyy-mm-dd hh24:mi:ss') ";
         } else if (tableType == 3) {
-            s += " AND trunc(r.CREATE_TIME,'yyyy-mm')=trunc(sysdate,'yyyy-mm') ";
+            s += " AND to_char(r.CREATE_TIME, 'yyyy-mm') = to_char(sysdate, 'yyyy-mm') ";
         }
         if (tableType == 0) {
             s += " AND u.LOGINSTATUS = 0 ";
@@ -128,8 +128,8 @@ public class OfflinesController extends CurdController<RztSysUser, CommonService
             s += " AND a.CREATE_TIME<= to_date('" + sun + "','yyyy-mm-dd hh24:mi:ss') ";
             userNumTime = " AND PLAN_START_TIME >=  to_date('" + mon + "','yyyy-mm-dd hh24:mi:ss') AND PLAN_END_TIME <= to_date('" + sun + "','yyyy-mm-dd hh24:mi:ss') ";
         } else if (tableType == 3) {
-            s += " AND to_date(a.CREATE_TIME,'yyyy-mm')=to_date(sysdate,'yyyy-mm') ";
-            userNumTime = " AND PLAN_START_TIME >= to_date(to_sysdate,'yyyy-mm') AND PLAN_END_TIME <= to_date(sysdate,'yyyy-mm') ";
+            s += " AND to_char(A.CREATE_TIME, 'yyyy-mm') = to_char(sysdate, 'yyyy-mm')  ";
+            userNumTime = " AND to_char(PLAN_START_TIME,'yyyy-mm-dd hh24:mi:ss') >= to_char(sysdate,'yyyy-mm') AND to_char(PLAN_END_TIME,'yyyy-mm-dd hh24:mi:ss') <= to_char(sysdate,'yyyy-mm') ";
         }
         if (tableType == 0) {
             s += " AND r.LOGINSTATUS = 0 ";
