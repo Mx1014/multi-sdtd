@@ -1103,6 +1103,9 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
         }
         this.reposiotry.deleteMonitorEj(ids);
         this.reposiotry.deleteMonitorYj(ids);
+        this.reposiotry.deleteAlarmNotNoTimeTask(ids);
+        this.reposiotry.deleteAlarmUnqualifiedpatrol(ids);
+        this.reposiotry.deleteAlarmOVERDUE(ids);
     }
     public void removeKey(String s){
 
