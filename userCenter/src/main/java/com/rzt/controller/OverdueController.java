@@ -418,7 +418,7 @@ public class OverdueController extends CurdController<RztSysUser, CommonService>
             } else if (tableType == 3) {
                 s += " AND to_char(o.ALARM_TIME,'yyyy-mm') = to_char(sysdate,'yyyy-mm') ";
 
-                s4+=" AND (PLAN_END_TIME BETWEEN to_date('"+weekTime.getFirstDayOfMonth()+"','yyyy-MM-dd')-1  AND to_date('"+weekTime.getLastDayOfMonth()+"','yyyy-MM-dd')-1 )";
+                s4+=" AND (trunc(PLAN_END_TIME) BETWEEN to_date('"+weekTime.getFirstDayOfMonth()+"','yyyy-MM-dd')-1  AND to_date('"+weekTime.getLastDayOfMonth()+"','yyyy-MM-dd')-1 )";
             }
         }
         if(!StringUtils.isEmpty(deptId)){
