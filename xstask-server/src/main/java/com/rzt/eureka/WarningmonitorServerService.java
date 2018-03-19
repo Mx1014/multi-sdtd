@@ -17,7 +17,7 @@ public interface WarningmonitorServerService {
     * @author nwz
     */
     @GetMapping(value = "warningmonitorServer/GJKH/xsTourScope")
-    WebApiResponse xsTourScope(@RequestParam("taskid") Long taskid, @RequestParam("userid") String userid, @RequestParam("reason") String reason);
+    WebApiResponse xsTourScope(@RequestParam("taskid") Long taskid, @RequestParam("userid") String userid, @RequestParam("reason") String reason,@RequestParam("execDetailId") Long execDetailId);
 
 
     /***
@@ -29,5 +29,5 @@ public interface WarningmonitorServerService {
     * @author nwz
     */
     @GetMapping(value = "warningmonitorServer/GJKH/takePhoto")
-    void takePhoto(@RequestParam("taskid") Long taskid, @RequestParam("userid") String userid);
+    void takePhoto(@RequestParam("taskid") Long taskid, @RequestParam("userid") String userid,@RequestParam("xsZcExceptionId") Long xsZcExceptionId);
 }

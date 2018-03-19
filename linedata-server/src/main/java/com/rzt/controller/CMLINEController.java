@@ -41,8 +41,8 @@ public class CMLINEController extends
 
 	@ApiOperation(value = "获取线路名称",notes = "获取线路名称")
 	@GetMapping("getLines")
-	public WebApiResponse getLines(String kv,String currentUserId){
-		return service.getLines(kv,currentUserId);
+	public WebApiResponse getLines(String kv,String lineName,String currentUserId){
+		return service.getLines(kv,lineName,currentUserId);
 	}
 
 	@ApiOperation(tags = "线路名转拼音",value = "")

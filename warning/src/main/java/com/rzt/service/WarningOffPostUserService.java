@@ -13,8 +13,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +35,7 @@ import java.util.Map;
 @Service
 public class WarningOffPostUserService extends CurdService<OffPostUser, OffPostUserRepository> {
 
+    private static int faixTime = 2400;
     @Autowired
     private OffPostUserRepository warning;
 
@@ -99,5 +104,63 @@ public class WarningOffPostUserService extends CurdService<OffPostUser, OffPostU
 
     public int updateTimeStatus(Object fk_task_id, Object fk_user_id,Long id) {
        return reposiotry.updateTimeStatus(fk_task_id,fk_user_id,id);
+    }
+
+
+    public void KHTG(String userId,Long taskId){
+        String sql = "SELECT kh.TASK_NAME,kh.YWORG_ID AS TDYW_ORG FROM KH_TASK kh WHERE kh.ID =?1";
+        try {
+            Map<String, Object> map = execSqlSingleResult(sql, taskId);
+            //直接存到二级单位
+            reposiotry.saveCheckEj(SnowflakeIdWorker.getInstance(0,0).nextId(),taskId,2,7,userId,map.get("TDYW_ORG").toString(),map.get("TASK_NAME").toString());
+            String key = "ONE+"+taskId+"+2+7+"+userId+"+"+map.get("TDYW_ORG").toString()+"+"+map.get("TASK_NAME").toString();
+            setex(key);
+            //String value = map.get("START_TIME").toString();
+           /* Date date = new Date();
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String format1 = format.format(date);
+            Date da = format.parse(format1);
+            String value = da.getTime()+"";
+            String key1 = userId+"#"+taskId;
+            tuoGangRedis(key1,value);*/
+        } catch (Exception e) {
+            e.getMessage();
+            //throw new RuntimeException(e.getMessage()+"看护脱岗");
+        }
+    }
+
+    @Autowired
+    JedisPool jedisPool;
+
+    public void setex(String key){
+        //redisTemplate.
+        Jedis jedis = jedisPool.getResource();
+        jedis.select(1);//这里应该是1
+        try {
+            jedis.setex(key, faixTime, " ");
+        } catch (Exception e) {
+        }finally {
+            jedis.close();
+        }
+    }
+
+    public void tuoGangRedis(String userId,String value){
+        Jedis jedis = null;
+        try {
+            jedis = jedisPool.getResource();
+            jedis.select(5);
+            jedis.hset("tuogang",userId,value+"#0");
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            if(jedis!=null){
+                jedis.close();
+            }
+        }
+    }
+
+    //人员回岗后，将ALARM_OFFWORK中的状态置为回岗
+    public void updateAlarmOffWorkStatus(String userId, Long taskId) {
+        reposiotry.updateAlarmOffWorkStatus(userId,taskId);
     }
 }
