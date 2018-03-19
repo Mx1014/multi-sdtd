@@ -8,14 +8,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 
-@FeignClient("NURSETASK")
+@FeignClient("nurseTask")
 public interface nurseTaskService {
     /**
      * 生成看护任务   或 变更看护任务
      * @param YHID
      * @return
      */
-    @PostMapping("/nurseTask/KhLsCycle/saveLsCycle")
+    @PostMapping("/KhLsCycle/saveLsCycle")
     WebApiResponse saveLsCycle(@RequestParam(name = "yhId") String YHID);
 
     /**
@@ -30,7 +30,7 @@ public interface nurseTaskService {
      * @param checkDept
      * @return
      */
-    @PostMapping("/nurseTask/CheckLiveTasksb/addCheckLiveTasksb")
+    @PostMapping("/CheckLiveTasksb/addCheckLiveTasksb")
     WebApiResponse addCheckLiveTasksb(@RequestParam(name = "taskId")String taskId,
                                       @RequestParam(name = "taskType")String taskType,
                                       @RequestParam(name = "taskName")String taskName,
@@ -45,7 +45,7 @@ public interface nurseTaskService {
      * @param yhId
      * @return
      */
-    @GetMapping("/nurseTask/kyYhHistory/reviewYh")
+    @GetMapping("/kyYhHistory/reviewYh")
     WebApiResponse reviewYh(@RequestParam(name = "yhId") long yhId);
 
 
