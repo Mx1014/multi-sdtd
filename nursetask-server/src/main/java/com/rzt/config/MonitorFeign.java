@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 
-@FeignClient("monitorServer")
+@FeignClient("MONITORSERVER")
 public interface MonitorFeign {
 
     /**
@@ -16,7 +16,7 @@ public interface MonitorFeign {
      * @param flag
      * @return
      */
-    @GetMapping("/pro/jchd")
+    @GetMapping("/monitorServer/pro/jchd")
     public WebApiResponse jicha(@RequestParam(name = "taskId") String taskId,
                                 @RequestParam(name = "YHID") String YHID,
                                 @RequestParam(name = "flag") String flag);
