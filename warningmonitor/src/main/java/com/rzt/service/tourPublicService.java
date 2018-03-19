@@ -1,6 +1,7 @@
 package com.rzt.service;
 
 import com.rzt.entity.Monitorcheckej;
+import com.rzt.repository.AlarmOfflineRepository;
 import com.rzt.repository.Monitorcheckejrepository;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.SnowflakeIdWorker;
@@ -31,6 +32,9 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
 
     @Autowired
     private RedisTemplate<String,Object> redisTemplate;
+
+    @Autowired
+    private AlarmOfflineRepository offline;
 
     /**
      * 巡视人员未到杆塔半径5米范围内
@@ -91,8 +95,7 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
                     redisService.setex(key);
                 }
 
-                String value = new Date().getTime()+"#"+userid+"#"+Integer.parseInt(maps1.get(0).get("WDW").toString())+"#"+reason+"#"+xsZcTaskExecId+"#"+0;
-                budaoweiRedis(taskid,value);
+                budaoweiRedis(taskid,userid,Integer.parseInt(maps1.get(0).get("WDW").toString()),reason,xsZcTaskExecId);
             }
             return WebApiResponse.success("");
         } catch (Exception e) {
@@ -101,18 +104,20 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
         }
     }
     //往redis中扔不到位数据
-    private void budaoweiRedis(Long taskId,String value){
-        Jedis jedis = null;
-        try {
-            jedis = jedisPool.getResource();
-            jedis.select(5);
-            jedis.hset("budaowei",String.valueOf(taskId),value);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }finally {
-            if(jedis!=null){
-                jedis.close();
+    private void budaoweiRedis(Long taskId,String userid,Integer wdwTour,String reason,Long xsZcTaskExecId){
+
+        String sql = "SELECT * FROM ALARM_UNQUALIFIEDPATROL WHERE TASK_ID=?1 AND trunc(CREATE_TIME)=trunc(sysdate)";
+        List<Map<String, Object>> maps = execSql(sql, taskId);
+        //String value = new Date().getTime()+"#"+userid+"#"+Integer.parseInt(maps1.get(0).get("WDW").toString())+"#"+reason+"#"+xsZcTaskExecId+"#"+0;
+        if(maps.size()>0){
+            //如果表中有了，则只更新不到位的塔的个数
+            Integer isDwTour = Integer.parseInt(maps.get(0).get("IS_DW_TOUR").toString());
+            if(isDwTour!=wdwTour){
+                offline.updateBuDaoWeiTour(taskId,wdwTour);
             }
+        }else{
+            Date warningTime = new Date();
+            offline.addBuDaoWei(SnowflakeIdWorker.getInstance(10,10).nextId(),warningTime,taskId,userid, wdwTour,reason,xsZcTaskExecId,0);
         }
     }
 

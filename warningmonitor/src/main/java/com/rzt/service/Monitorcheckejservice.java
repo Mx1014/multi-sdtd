@@ -54,6 +54,9 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
     @Autowired
     private AlarmOfflineRepository offlineRepository;
 
+    @Autowired
+    private AlarmOfflineRepository offline;
+
     //获取通道公司ID
     public Object getDeptId(String userId) {
         String deptID = getDeptID(userId);
@@ -108,11 +111,23 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
         return flag;
     }
     private void lixianRedis(String userId){
+        String sql = "SELECT * FROM ALARM_OFFLINE WHERE USER_ID=?1 AND trunc(CREATE_TIME)=trunc(sysdate)";
+        List<Map<String, Object>> maps = execSql(sql, userId);
+        Date date = new Date();
+        Long timeLong = date.getTime()+5400000l;
+        if(maps.size()==0){//如果ALARM_OFFLINE表中没有数据，则进行添加
+            //向ALARM_OFFLINE中添加数据
+            offline.addoffLine(SnowflakeIdWorker.getInstance(10,10).nextId(),userId,timeLong,date);
+        }else{ //如果已经存在，则只更细时长和次数
+            Integer frequency = Integer.parseInt(maps.get(0).get("OFFLINE_FREQUENCY").toString())+1;
+            timeLong = Long.parseLong(maps.get(0).get("OFFLINE_TIME_LONG").toString())+timeLong;
+            offline.updateoffLine(Long.parseLong(maps.get(0).get("ID").toString()),frequency,timeLong,date);
+        }
         Jedis jedis=null;
         try {
             jedis = pool.getResource();
             jedis.select(5);
-            jedis.hset("lixian",userId,new Date().getTime()+"#0");
+            jedis.hset("lixian",userId,String.valueOf(date.getTime()));
         }catch (Exception e){
             e.printStackTrace();
         }finally {
