@@ -101,15 +101,15 @@ public class KhLsCycleService extends CurdService<KhLsCycle, KhLsCycleRepository
             //权限
             if (roleType != null) {
                 if (roleType == 1 || roleType == 2) {
-                    buffer.append(" and k.TDYW_ORGID = " + tdId);
+                    buffer.append(" and k.TDYW_ORGID = '"+tdId+"'" );
                 }
                 if (roleType == 3) {
-                    buffer.append(" and k.WX_ORGID = " + companyid);
+                    buffer.append(" and k.WX_ORGID = '"+companyid+"' ");
                 }
                 if (roleType == 0) {
 
                 } else {
-                    buffer.append(" and y.id=0 ");
+                    //buffer.append(" and y.id=0 ");
                 }
             }
 
