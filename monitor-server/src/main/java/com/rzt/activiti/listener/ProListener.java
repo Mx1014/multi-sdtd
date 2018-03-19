@@ -28,13 +28,17 @@ public class ProListener implements TaskListener {
      */
     @Override
     public void notify(DelegateTask delegateTask) {
-        ProServiceImpl proServiceImpl = (ProServiceImpl) SpringUtil.getObject("proServiceImpl");
-        //查询当前流程是否由看护任务
-        //通过当前节点id获取到这条流程中存储的看护id
-        //不需要取消看护任务  到期自动取消
-        //String khid = (String) proServiceImpl.checkTask(delegateTask.getId(), "khid");
-        //结束流程
-        proServiceImpl.complete(delegateTask.getId(),null);
+        try {
+            ProServiceImpl proServiceImpl = (ProServiceImpl) SpringUtil.getObject("proServiceImpl");
+            //查询当前流程是否由看护任务
+            //通过当前节点id获取到这条流程中存储的看护id
+            //不需要取消看护任务  到期自动取消
+            //String khid = (String) proServiceImpl.checkTask(delegateTask.getId(), "khid");
+            //结束流程
+            proServiceImpl.complete(delegateTask.getId(),null);
+        }catch (Exception e){
+            e.getMessage();
+        }
     }
 
 
