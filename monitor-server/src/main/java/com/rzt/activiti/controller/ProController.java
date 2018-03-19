@@ -89,6 +89,7 @@ public class ProController {
      * @return
      */
     @GetMapping("/proClick")
+    @Transactional
     public WebApiResponse chuLi(String taskId,String YHID,String flag,String isKH,String info,String proId,String currentUserId
     ,String LINE_NAME,String TDYW_ORG,String YWORG_ID){
         String dept = "";
