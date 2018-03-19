@@ -292,6 +292,12 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
         if (xslx == 0 || xslx == 1) {
             this.reposiotry.updateTxbdExecDetail(sfdw, reason, execDetailId);
         } else {
+            //计算十分钟五基塔
+            jiSuanGanTa(execDetailId, taskid, userid);
+
+            //修改状态
+            this.reposiotry.updateZcxsExecDetail(sfdw, reason, execDetailId, longtitude, latitude);
+            
             try {
                 if (sfdw == 1) {
                     warningmonitorServerService.xsTourScope(taskid, userid, reason,execDetailId);
@@ -299,11 +305,6 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            //计算十分钟五基塔
-            jiSuanGanTa(execDetailId, taskid, userid);
-
-            //修改状态
-            this.reposiotry.updateZcxsExecDetail(sfdw, reason, execDetailId, longtitude, latitude);
         }
     }
 
