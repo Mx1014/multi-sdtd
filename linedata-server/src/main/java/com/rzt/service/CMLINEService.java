@@ -114,7 +114,7 @@ public class CMLINEService extends CurdService<CMLINE,CMLINERepository> {
             list.add(kv);
             sql += " and v_level= ?" + list.size();
         }
-        if(lineName != null || lineName.trim().length() == 0){
+        if(lineName != null && lineName.trim().length() != 0){
             sql += " and line_name like '%"+lineName+"%'" ;
         }
         sql += ") ORDER BY NLSSORT(line_name,'NLS_SORT = SCHINESE_PINYIN_M')";
