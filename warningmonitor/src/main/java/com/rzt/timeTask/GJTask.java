@@ -234,7 +234,7 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
         String sql = "SELECT * FROM ALARM_OFFLINE WHERE USER_ID=?1 AND trunc(CREATE_TIME)=trunc(sysdate)";
         List<Map<String, Object>> maps = execSql(sql, userId);
         Date date = new Date();
-        Long timeLong = date.getTime()+5400000l;
+        Long timeLong = 5400000l; //延迟之后报的警，所以告警产生时就已经离线90分钟
         if(maps.size()==0){//如果ALARM_OFFLINE表中没有数据，则进行添加
             //向ALARM_OFFLINE中添加数据
             offline.addoffLine(SnowflakeIdWorker.getInstance(10,10).nextId(),userId,timeLong,date);
