@@ -48,29 +48,20 @@ public class TimeTask  extends CurdService<AlarmOffline, AlarmOfflineRepository>
         }
         Set<String> strings = lixian.keySet();
         for (String userId:strings) {
-            String value = lixian.get(userId);
+            String value = lixian.get(userId); //value 是离线时间
             String[] split = value.split("#");
-            long start = Long.parseLong(split[0]);
             long current = new Date().getTime();
+            Date offLineTime = new Date(Long.parseLong(split[0]));
+            String sql = "SELECT * FROM ALARM_OFFLINE WHERE USER_ID=?1 AND OFFLINE_END_TIME=?2";
+            List<Map<String, Object>> maps = execSql(sql, userId,offLineTime);
 
-            String sql = "SELECT * FROM ALARM_OFFLINE WHERE USER_ID=?1 AND trunc(CREATE_TIME)=trunc(sysdate)";
-            List<Map<String, Object>> maps = execSql(sql, userId);
-
-            if(Integer.parseInt(split[1])==0){ //如果是0，则证明是第一次添加进来
-                lixianRedis(userId,String.valueOf(start));
-                Long timeLong = current-start+5400000l;
-                Date date = new Date(start);
-                if(maps.size()>0){
-                    Integer frequency = Integer.parseInt(maps.get(0).get("OFFLINE_FREQUENCY").toString())+1; //离线次数
-                    timeLong = Long.parseLong(maps.get(0).get("OFFLINE_TIME_LONG").toString())+timeLong; //离线时长
-                    offline.updateoffLine(Long.parseLong(maps.get(0).get("ID").toString()),frequency,timeLong,date);
-                }else{
-                    offline.addoffLine(SnowflakeIdWorker.getInstance(10,10).nextId(),userId,timeLong,date);
-                }
-            }else{//如果是1，则证明是已经存在的，不增加次数，只更新时长
+            if(maps.size()>0){
+                //只更新时长
                 Date last_flush_time = (Date) maps.get(0).get("LAST_FLUSH_TIME");
                 Long timeLong = current-last_flush_time.getTime()+Long.parseLong(maps.get(0).get("OFFLINE_TIME_LONG").toString());
                 offline.updateoffLineTime(userId,timeLong);
+            }else{
+                System.out.println("ALARM_OFFLINE添加时没添加进去"+userId);
             }
 
         }
@@ -79,8 +70,8 @@ public class TimeTask  extends CurdService<AlarmOffline, AlarmOfflineRepository>
     }
 
     //定时1分钟
-    @Scheduled(fixedDelay = 60000)
-    public void budaoweitask(){
+    //@Scheduled(fixedDelay = 60000)
+  /*  public void budaoweitask(){
         Jedis jedis = null;
         Map<String, String> budaowei = new HashMap<>();
         try {
@@ -110,10 +101,10 @@ public class TimeTask  extends CurdService<AlarmOffline, AlarmOfflineRepository>
                 }
             }else{
                 Date warningTime = new Date(Long.parseLong(split[0]));
-                offline.addBuDaoWei(SnowflakeIdWorker.getInstance(10,10).nextId(),warningTime,Long.parseLong(taskId),split[1], Integer.parseInt(split[2]),split[3],Long.parseLong(split[4]),Integer.parseInt(split[5]));
+                offline.addBuDaoWei(SnowflakeIdWorker.getInstance(10,10).nextId(),warningTime,Long.parseLong(taskId),split[1], Integer.parseInt(split[2]),split[3],Long.parseLong(split[4]),0);
             }
         }
-    }
+    }*/
 
     public void lixianRedis(String userId,String value){
         Jedis jedis = null;
@@ -167,29 +158,23 @@ public class TimeTask  extends CurdService<AlarmOffline, AlarmOfflineRepository>
             String[] keys = key.split("#");
             String userId = keys[0];
             Long taskId = Long.parseLong(keys[1]);
-            String[] split = value.split("#");
-            long start = Long.parseLong(split[0]); //脱岗时间
+
+            long start = Long.parseLong(value); //脱岗时间
+            Date offWorkTime = new Date(start);
             long current = new Date().getTime();
 
-            String sql = "SELECT * FROM ALARM_OFFWORK WHERE USER_ID=?1 AND TASK_ID=?2 AND trunc(ALARM_TIME)=trunc(sysdate)";
-            List<Map<String, Object>> maps = execSql(sql, userId,taskId);
+            String sql = "SELECT * FROM ALARM_OFFWORK WHERE USER_ID=?1 AND TASK_ID=?2 AND OFFWORK_TIME=?3";
+            List<Map<String, Object>> maps = execSql(sql, userId,taskId,offWorkTime);
 
-            if(Integer.parseInt(split[1])==0){ //如果是0，则证明是第一次添加进来
-                tuoGangRedis(key,String.valueOf(start));
-                Long timeLong = current-start;
-                Date date = new Date(start);
-                if(maps.size()>0){
-                    Integer frequency = Integer.parseInt(maps.get(0).get("OFFWORK_FREQUENCY").toString())+1; //脱岗次数
-                    timeLong = Long.parseLong(maps.get(0).get("OFFWORK_TIME_LONG").toString())+timeLong; //脱岗时长
-                    offline.updateoffWork(Long.parseLong(maps.get(0).get("ID").toString()),frequency,timeLong,date);
-                }else{
-                    offline.addoffWork(SnowflakeIdWorker.getInstance(10,10).nextId(),userId,timeLong,date,taskId);
-                }
-            }else{//如果是1，则证明是已经存在的，不增加次数，只更新时长
+            //tuoGangRedis(key,String.valueOf(start));
+            if(maps.size()>0){
                 Date last_flush_time = (Date) maps.get(0).get("LAST_FLUSH_TIME");
                 Long timeLong = current-last_flush_time.getTime()+Long.parseLong(maps.get(0).get("OFFWORK_TIME_LONG").toString());
                 offline.updateoffWorkTime(userId,timeLong,taskId);
+            }else{
+                System.out.println("ALARM_OFFWORK添加时没添加进去"+userId+"==="+taskId);
             }
+
 
         }
 

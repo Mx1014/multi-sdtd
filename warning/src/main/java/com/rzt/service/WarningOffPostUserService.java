@@ -115,14 +115,7 @@ public class WarningOffPostUserService extends CurdService<OffPostUser, OffPostU
             reposiotry.saveCheckEj(SnowflakeIdWorker.getInstance(0,0).nextId(),taskId,2,7,userId,map.get("TDYW_ORG").toString(),map.get("TASK_NAME").toString());
             String key = "ONE+"+taskId+"+2+7+"+userId+"+"+map.get("TDYW_ORG").toString()+"+"+map.get("TASK_NAME").toString();
             setex(key);
-            //String value = map.get("START_TIME").toString();
-           /* Date date = new Date();
-            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            String format1 = format.format(date);
-            Date da = format.parse(format1);
-            String value = da.getTime()+"";
-            String key1 = userId+"#"+taskId;
-            tuoGangRedis(key1,value);*/
+
         } catch (Exception e) {
             e.getMessage();
             //throw new RuntimeException(e.getMessage()+"看护脱岗");
@@ -144,12 +137,30 @@ public class WarningOffPostUserService extends CurdService<OffPostUser, OffPostU
         }
     }
 
-    public void tuoGangRedis(String userId,String value){
+    public void tuoGangRedis(String userId,Long taskId,Date offWorkTime){ //offWorkTime为脱岗开始时间
+        String sql = "SELECT * FROM ALARM_OFFWORK WHERE USER_ID=?1 AND TASK_ID=?2 AND trunc(ALARM_TIME)=trunc(sysdate)";
+        List<Map<String, Object>> maps = execSql(sql, userId,taskId);
+
+        Date current = new Date();
+        Long timeLong = current.getTime()-offWorkTime.getTime();
+
+        if(maps.size()==0){//如果ALARM_OFFWORK表中没有数据，则进行添加
+
+            //向ALARM_OFFWORK中添加数据
+            warning.addoffWork(SnowflakeIdWorker.getInstance(10,10).nextId(),userId,timeLong,offWorkTime,taskId);
+
+        }else{ //如果已经存在，则只更新时长和次数 和最新一次的脱岗时间
+
+            Integer frequency = Integer.parseInt(maps.get(0).get("OFFWORK_FREQUENCY").toString())+1; //脱岗次数
+            timeLong = Long.parseLong(maps.get(0).get("OFFWORK_TIME_LONG").toString())+timeLong; //脱岗时长
+            warning.updateoffWork(Long.parseLong(maps.get(0).get("ID").toString()),frequency,timeLong,offWorkTime);
+        }
+        String key = userId+"#"+taskId;
         Jedis jedis = null;
         try {
             jedis = jedisPool.getResource();
             jedis.select(5);
-            jedis.hset("tuogang",userId,value+"#0");
+            jedis.hset("tuogang",key,String.valueOf(offWorkTime.getTime()));
         }catch (Exception e){
             e.printStackTrace();
         }finally {
