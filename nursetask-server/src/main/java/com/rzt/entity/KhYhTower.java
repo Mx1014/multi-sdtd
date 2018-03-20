@@ -11,6 +11,7 @@ import com.rzt.utils.SnowflakeIdWorker;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Table;
 import java.io.Serializable;
 
 /**
@@ -24,6 +25,7 @@ import java.io.Serializable;
  * @version
  */
 @Entity
+@Table(name = "KH_YH_TOWER")
 public class KhYhTower implements Serializable {
     //字段描述:
     @Id
