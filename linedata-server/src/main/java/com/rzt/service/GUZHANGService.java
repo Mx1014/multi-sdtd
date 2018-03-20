@@ -105,10 +105,10 @@ public class GUZHANGService extends CurdService<GUZHANG,GUZHANGRepository> {
                 String kv = ExcelUtil.getCellValue(row.getCell(4));
                 guzhang.setVLevel(kv+"kV");
                 String lineName = ExcelUtil.getCellValue(row.getCell(5)).replace("线","");
-                guzhang.setLineName(lineName);
                 try{
-                    Map<String, Object> result = execSqlSingleResult("select min(line_id) id from cm_line_section where line_name1 = ?1",  lineName );
+                    Map<String, Object> result = execSqlSingleResult("select line_id id,line_name from cm_line_section where line_name1 = ?1",  lineName );
                     guzhang.setLineId(Long.valueOf(String.valueOf(result.get("ID"))));
+                    guzhang.setLineName(String.valueOf(result.get("LINE_NAME")));
                 }catch (Exception e){
                     errlist.add("excel第"+i+"行数据,线路匹配失败！--->"+kv+"kV"+lineName);
                     if("1".equals(flag)){//忽略此条信息
@@ -262,7 +262,7 @@ public class GUZHANGService extends CurdService<GUZHANG,GUZHANGRepository> {
                 Map<String, Object> map = execSqlSingleResult("select * from cm_sql where sql_desc=?", what);
                 sql = map.get("SQL_STR").toString();
             } catch (Exception e) {
-                LOGGER.error("获取的值不唯一!",e);
+                LOGGER.error("获取的值不唯一或不存在!",e);
             }
 
             List params = new ArrayList();
@@ -289,6 +289,21 @@ public class GUZHANGService extends CurdService<GUZHANG,GUZHANGRepository> {
             return WebApiResponse.erro("更新失败!");
         }
         return WebApiResponse.success("更新成功!");
+
+    }
+
+    public WebApiResponse updateGuzhang(GUZHANG guzhang) {
+        reposiotry.save(guzhang);
+        return WebApiResponse.success("");
+    }
+
+    public WebApiResponse getGuzhangById(String id) throws Exception {
+        String sql = "select * from guzhang where id=?";
+        String sql1 = "select * from picture_yh where task_id = ?";
+        Map<String, Object> map = execSqlSingleResult(sql, id);
+        List<Map<String, Object>> list1 = execSql(sql1, id);
+        map.put("imgs",list1);
+        return WebApiResponse.success(map);
 
     }
 }

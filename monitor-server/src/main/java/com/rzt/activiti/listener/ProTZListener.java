@@ -21,16 +21,20 @@ public class ProTZListener  implements TaskListener {
      */
     @Override
     public void notify(DelegateTask delegateTask) {
-        ProServiceImpl proService = (ProServiceImpl) SpringUtil.getObject("proServiceImpl");
-        nurseTaskService nurseTaskService = (com.rzt.activiti.Eureka.nurseTaskService) SpringUtil.getObject("nurseTaskService");
-        //查询当前流程是否由看护任务
-        String YHID = (String) proService.checkTask(delegateTask.getId(), "YHID");
-        //添加隐患台账
-        if(null != YHID && !"".equals(YHID)){
-            //变更看护任务和生成看护任务为一个接口  添加隐患台账
-            nurseTaskService.reviewYh(new Long(YHID));
+        try{
+            ProServiceImpl proService = (ProServiceImpl) SpringUtil.getObject("proServiceImpl");
+            nurseTaskService nurseTaskService = (com.rzt.activiti.Eureka.nurseTaskService) SpringUtil.getObject("com.rzt.activiti.Eureka.nurseTaskService");
+            //查询当前流程是否由看护任务
+            String YHID = (String) proService.checkTask(delegateTask.getId(), "YHID");
+            //添加隐患台账
+            if(null != YHID && !"".equals(YHID)){
+                //变更看护任务和生成看护任务为一个接口  添加隐患台账
+                nurseTaskService.reviewYh(new Long(YHID));
+            }
+            //结束流程
+            proService.complete(delegateTask.getId(),null);
+        }catch (Exception e){
+            e.getMessage();
         }
-        //结束流程
-        proService.complete(delegateTask.getId(),null);
     }
 }

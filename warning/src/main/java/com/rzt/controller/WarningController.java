@@ -121,25 +121,26 @@ public class WarningController extends CurdController<OffPostUser,WarningOffPost
                         String value = map.get("START_TIME").toString();
 						SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 						Date da = format.parse(value);
-						String key =  fk_user_id+"#"+fk_task_id;
-                        service.tuoGangRedis(key,da.getTime()+"");
+                        service.tuoGangRedis(fk_user_id,fk_task_id,da);
                     } catch (Exception e) {
+                    	e.printStackTrace();
                     }
                 }
             }
 		}
 	}
 
-/*	@GetMapping("khtg") //脱岗测试使用
+	@GetMapping("khtg") //脱岗测试使用
 	public void khtg(String fk_user_id,Long fk_task_id){
-		service.KHTG(fk_user_id,fk_task_id);
+		Date da = new Date();
+		service.tuoGangRedis(fk_user_id,fk_task_id,da);
 	}
 	@GetMapping("hg") //回岗测试使用
 	public void hg(String userId,Long taskId){
 		service.updateAlarmOffWorkStatus(userId,taskId);
 		String key = userId+"#"+taskId;
 		removeTuoGangRedis(key);
-	}*/
+	}
 	//人员回岗后删除redis中的键
 	//@GetMapping("removeTuogang")
 	public void removeTuoGangRedis(String s) {

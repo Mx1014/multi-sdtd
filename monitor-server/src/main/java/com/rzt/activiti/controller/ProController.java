@@ -126,6 +126,9 @@ public class ProController {
           String id = proService.findIdByProId(proId);
           //测试稽查  sdid 代表属地监控中心   jkid 代表公司监控中心
           if("sdid".equals(currentUserId) || "jkid".equals(currentUserId)){
+              if(null == id || "".equals(id)){
+                  return WebApiResponse.erro("当前节点任务不存在");
+              }
             // 当dept.equals(TDYW_ORG)?"2":"1"   等于时代表是第二次派出稽查   不等于是派出第一次稽查
               nurseTaskService.addCheckLiveTasksb(id,
                       "0",LINE_NAME+"隐患点",YHID,YWORG_ID,
@@ -134,9 +137,7 @@ public class ProController {
               //proService.complete(id,map);
           }
 
-          if(null == id || "".equals(id)){
-              return WebApiResponse.erro("当前节点任务不存在");
-          }
+
 
 
           //调用稽查接口   派发稽查任务
@@ -298,5 +299,16 @@ public class ProController {
             return "权限查询失败"+e.getMessage();
         }
     }
+
+    /**
+     * 根据上报隐患id查询隐患回显数据
+     * @return
+     */
+    @GetMapping("/findYHINFO")
+    public WebApiResponse findYHINFO(String proId){
+        return proService.findYHINFO(proId);
+    }
+
+
 
 }

@@ -124,7 +124,8 @@ public class KhYhHistoryService extends CurdService<KhYhHistory, KhYhHistoryRepo
                 tower1.setTowerId(Long.parseLong(yh.getEndTower()));
                 towerRepository.save(tower);
                 towerRepository.save(tower1);
-            } catch (NumberFormatException e) {
+            } catch (Exception e) {
+                e.getMessage();
             }
 
             //为图片关联隐患id

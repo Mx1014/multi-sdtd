@@ -1,6 +1,7 @@
 package com.rzt.timeTask;
 
 import com.rzt.entity.Monitorcheckyj;
+import com.rzt.repository.AlarmOfflineRepository;
 import com.rzt.repository.Monitorcheckejrepository;
 import com.rzt.repository.Monitorcheckyjrepository;
 import com.rzt.service.CurdService;
@@ -13,6 +14,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.GetMapping;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
@@ -44,6 +46,9 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
 
     @Autowired
     JedisPool pool;
+
+    @Autowired
+    private AlarmOfflineRepository offline;
 
 
     //定时拉数据  1
@@ -224,12 +229,26 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
         return flag;
     }
 
-    private void lixianRedis(String userId){
+
+    public void lixianRedis(String userId){
+        String sql = "SELECT * FROM ALARM_OFFLINE WHERE USER_ID=?1 AND trunc(CREATE_TIME)=trunc(sysdate)";
+        List<Map<String, Object>> maps = execSql(sql, userId);
+        Date date = new Date();
+        Long timeLong = 5400000l; //延迟之后报的警，所以告警产生时就已经离线90分钟
+        if(maps.size()==0){//如果ALARM_OFFLINE表中没有数据，则进行添加
+            //向ALARM_OFFLINE中添加数据
+            offline.addoffLine(SnowflakeIdWorker.getInstance(10,10).nextId(),userId,timeLong,date);
+        }else{ //如果已经存在，则只更细时长和次数
+
+            Integer frequency = Integer.parseInt(maps.get(0).get("OFFLINE_FREQUENCY").toString())+1;
+            timeLong = Long.parseLong(maps.get(0).get("OFFLINE_TIME_LONG").toString())+timeLong;
+            offline.updateoffLine(Long.parseLong(maps.get(0).get("ID").toString()),frequency,timeLong,date);
+        }
         Jedis jedis = null;
         try {
             jedis = pool.getResource();
             jedis.select(5);
-            jedis.hset("lixian",userId,new Date().getTime()+"#0");
+            jedis.hset("lixian",userId,String.valueOf(date.getTime()));
         }catch (Exception e){
             e.printStackTrace();
         }finally {

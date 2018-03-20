@@ -13,6 +13,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
+
 /**
  * 类名称：WarningOffPostUserRepository    
  * 类描述：    
@@ -45,4 +47,19 @@ public interface OffPostUserRepository extends JpaRepository<OffPostUser,String>
     @Modifying
     @Query(value = "UPDATE ALARM_OFFWORK SET CURRENT_STATUS=0 WHERE USER_ID=?1 AND TASK_ID=?2",nativeQuery = true)
     void updateAlarmOffWorkStatus(String userId, Long taskId);
+
+   //更改脱岗时长、次数和最后一次刷新时间
+   @Transactional
+   @Modifying
+   @Query(value = "UPDATE ALARM_OFFWORK SET OFFWORK_FREQUENCY=?2,OFFWORK_TIME_LONG=?3,OFFWORK_TIME=?4,LAST_FLUSH_TIME=sysdate,CURRENT_STATUS=1 " +
+           "WHERE ID=?1 AND trunc(ALARM_TIME)=trunc(sysdate) ",nativeQuery = true)
+   void updateoffWork(Long id,Integer frequency,Long timeLong,Date endTime);
+
+   //添加脱岗
+   @Transactional
+   @Modifying
+   @Query(value = "INSERT INTO ALARM_OFFWORK(ID,USER_ID,OFFWORK_FREQUENCY,OFFWORK_TIME_LONG,ALARM_TIME,OFFWORK_TIME,LAST_FLUSH_TIME,TASK_ID) " +
+           " VALUES (?1,?2,1,?3,sysdate,?4,sysdate,?5)",nativeQuery = true)
+   void addoffWork(Long id,String userId,Long timeLong,Date endTime,Long taskId);
+
 }
