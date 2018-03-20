@@ -114,7 +114,7 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
         String sql = "SELECT * FROM ALARM_OFFLINE WHERE USER_ID=?1 AND trunc(CREATE_TIME)=trunc(sysdate)";
         List<Map<String, Object>> maps = execSql(sql, userId);
         Date date = new Date();
-        Long timeLong = date.getTime()+5400000l;
+        Long timeLong = 5400000l;//延迟了90分钟报的警，所以报警时此人已经离线90分钟
         if(maps.size()==0){//如果ALARM_OFFLINE表中没有数据，则进行添加
             //向ALARM_OFFLINE中添加数据
             offline.addoffLine(SnowflakeIdWorker.getInstance(10,10).nextId(),userId,timeLong,date);

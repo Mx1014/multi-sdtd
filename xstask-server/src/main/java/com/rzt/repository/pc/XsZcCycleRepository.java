@@ -89,16 +89,16 @@ public interface XsZcCycleRepository extends JpaRepository<XsZcCycle,String> {
 
     @Modifying
     @Transactional
-    @Query(value = "DELETE FROM ALARM_NOT_ON_TIME_TASK WHERE TASK_ID=?1", nativeQuery = true)
+    @Query(value = "DELETE FROM ALARM_NOT_ON_TIME_TASK WHERE TASK_ID IN(?1)", nativeQuery = true)
     void deleteAlarmNotNoTimeTask(Long[] ids);
 
     @Modifying
     @Transactional
-    @Query(value = "DELETE FROM ALARM_UNQUALIFIEDPATROL WHERE TASK_ID=?1", nativeQuery = true)
+    @Query(value = "DELETE FROM ALARM_UNQUALIFIEDPATROL WHERE TASK_ID IN(?1)", nativeQuery = true)
     void deleteAlarmUnqualifiedpatrol(Long[] ids);
     @Modifying
     @Transactional
-    @Query(value = "DELETE FROM ALARM_OVERDUE WHERE TASK_ID=?1", nativeQuery = true)
+    @Query(value = "DELETE FROM ALARM_OVERDUE WHERE TASK_ID IN(?1)", nativeQuery = true)
     void deleteAlarmOVERDUE(Long[] ids);
 
     @Modifying

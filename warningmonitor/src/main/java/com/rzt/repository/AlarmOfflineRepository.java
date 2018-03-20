@@ -101,6 +101,6 @@ public interface AlarmOfflineRepository extends JpaRepository<AlarmOffline, Stri
     //更改脱岗处理状态
     @Transactional
     @Modifying
-    @Query(value = "UPDATE ALARM_OFFWORK SET CURRENT_STATUS=?3 WHERE USER_ID=?1 AND TASK_ID=?2",nativeQuery = true)
+    @Query(value = "UPDATE ALARM_OFFWORK SET CHECK_STATUS=?3 WHERE USER_ID=?1 AND TASK_ID=?2",nativeQuery = true)
     void updateoffWorkStatus(String userId, Long taskId, Integer status);
 }
