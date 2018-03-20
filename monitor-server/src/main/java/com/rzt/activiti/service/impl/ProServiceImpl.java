@@ -423,7 +423,7 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
         try {
             String sql = "SELECT *" +
                     "    FROM XS_SB_YH WHERE ID = '"+proId+"'";
-             this.execSqlSingleResult(sql);
+            map = this.execSqlSingleResult(sql);
         } catch (Exception e) {
             LOGGER.error("隐患详情回显数据查询失败"+e.getMessage());
             return WebApiResponse.erro("隐患详情回显数据查询失败"+e.getMessage());
