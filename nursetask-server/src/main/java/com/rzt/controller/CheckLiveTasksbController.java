@@ -159,6 +159,19 @@ public class CheckLiveTasksbController extends
 		}
 	}
 
+
+	@ApiOperation(value = "到达现场回显",notes = "到达现场回显")
+	@PostMapping("checkLiveTasksbInfo")
+	public WebApiResponse checkLiveTasksbInfo(String taskId){
+		try{
+			List<Map<String, Object>> list = service.checkLiveTasksbInfo(taskId);
+			return WebApiResponse.success(list);
+		}catch (Exception e){
+			LOGGER.error("app任务列表获取失败",e);
+			return WebApiResponse.erro("数据获取失败"+e.getMessage());
+		}
+	}
+
 	@ApiOperation(value = "三级联动,区县镇",notes = "三级联动,区县镇")
 	@GetMapping("areas")
 	public WebApiResponse areas(){
