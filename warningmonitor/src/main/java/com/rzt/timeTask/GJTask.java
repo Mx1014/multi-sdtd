@@ -209,21 +209,9 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
 
                         }
                     }
-                }/*else if(new Date().getTime()<startDate){
-                    String s = "未上线";
-                    String key = "";
-                    if (taskType==2){
-                        key = "TWO+"+map.get("ID")+"+2+8+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME")+"+"+s;
-                    }else if (taskType==1){
-                        key = "TWO+"+map.get("ID")+"+1+2+"+map.get("CM_USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME")+"+"+s;
-                    }else if(taskType==3){
-                        key = "TWO+"+map.get("ID")+"+3+13+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME")+"+"+s;
-                    }
-                    Long time = plan_start_time.getTime() - new Date().getTime();
-                    time = time+5400000L;
-                    redisService.psetex(key,time);
-                }*/
+                }
             } catch (Exception e) {
+                e.printStackTrace();
             }
         }
         return flag;
@@ -231,21 +219,22 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
 
 
     public void lixianRedis(String userId){
-        String sql = "SELECT * FROM ALARM_OFFLINE WHERE USER_ID=?1 AND trunc(CREATE_TIME)=trunc(sysdate)";
-        List<Map<String, Object>> maps = execSql(sql, userId);
-        Date date = new Date();
-        Long timeLong = 5400000l; //延迟之后报的警，所以告警产生时就已经离线90分钟
-        if(maps.size()==0){//如果ALARM_OFFLINE表中没有数据，则进行添加
-            //向ALARM_OFFLINE中添加数据
-            offline.addoffLine(SnowflakeIdWorker.getInstance(10,10).nextId(),userId,timeLong,date);
-        }else{ //如果已经存在，则只更细时长和次数
-
-            Integer frequency = Integer.parseInt(maps.get(0).get("OFFLINE_FREQUENCY").toString())+1;
-            timeLong = Long.parseLong(maps.get(0).get("OFFLINE_TIME_LONG").toString())+timeLong;
-            offline.updateoffLine(Long.parseLong(maps.get(0).get("ID").toString()),frequency,timeLong,date);
-        }
         Jedis jedis = null;
         try {
+            String sql = "SELECT * FROM ALARM_OFFLINE WHERE USER_ID=?1 AND trunc(CREATE_TIME)=trunc(sysdate)";
+            List<Map<String, Object>> maps = execSql(sql, userId);
+            Date date = new Date();
+            Long timeLong = 5400000l; //延迟之后报的警，所以告警产生时就已经离线90分钟
+            if(maps.size()==0){//如果ALARM_OFFLINE表中没有数据，则进行添加
+                //向ALARM_OFFLINE中添加数据
+                offline.addoffLine(SnowflakeIdWorker.getInstance(10,10).nextId(),userId,timeLong,date);
+            }else{ //如果已经存在，则只更细时长和次数
+
+                Integer frequency = Integer.parseInt(maps.get(0).get("OFFLINE_FREQUENCY").toString())+1;
+                timeLong = Long.parseLong(maps.get(0).get("OFFLINE_TIME_LONG").toString())+timeLong;
+                offline.updateoffLine(Long.parseLong(maps.get(0).get("ID").toString()),frequency,timeLong,date);
+            }
+
             jedis = pool.getResource();
             jedis.select(5);
             jedis.hset("lixian",userId,String.valueOf(date.getTime()));

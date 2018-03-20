@@ -8,6 +8,7 @@ import com.rzt.service.CurdService;
 import com.rzt.utils.SnowflakeIdWorker;
 import io.swagger.models.auth.In;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -63,6 +64,8 @@ public class TimeTask  extends CurdService<AlarmOffline, AlarmOfflineRepository>
                 Long timeLong = current-last_flush_time.getTime()+Long.parseLong(maps.get(0).get("OFFLINE_TIME_LONG").toString());
                 offline.updateoffLineTime(userId,timeLong);
             }else{
+                Long timeLong = current-offLineTime.getTime()+5400000l;
+                offline.addoffLine(SnowflakeIdWorker.getInstance(10,10).nextId(),userId,timeLong,offLineTime);
                 System.out.println("ALARM_OFFLINE添加时没添加进去"+userId);
             }
 
@@ -166,13 +169,19 @@ public class TimeTask  extends CurdService<AlarmOffline, AlarmOfflineRepository>
             long current = new Date().getTime();
 
 
-            String sql = "SELECT * FROM ALARM_OFFWORK WHERE USER_ID=?1 AND TASK_ID=?2 AND OFFWORK_TIME=?3";
+            String sql = "SELECT o.*,t.STATUS FROM ALARM_OFFWORK o LEFT JOIN KH_TASK t ON o.TASK_ID=t.ID WHERE o.USER_ID=?1 " +
+                    "    AND TASK_ID=?2 AND OFFWORK_TIME=?3";
             List<Map<String, Object>> maps = execSql(sql, userId,taskId,offWorkTime);
 
             if(maps.size()>0){
-                Date last_flush_time = (Date) maps.get(0).get("LAST_FLUSH_TIME");
-                Long timeLong = current-last_flush_time.getTime()+Long.parseLong(maps.get(0).get("OFFWORK_TIME_LONG").toString());
-                offline.updateoffWorkTime(userId,timeLong,taskId);
+                if("2".equals(maps.get(0).get("STATUS").toString())){
+                    //如果任务完成了，则将redis删除掉
+                    removeTuoGangRedis(key);
+                }else{
+                    Date last_flush_time = (Date) maps.get(0).get("LAST_FLUSH_TIME");
+                    Long timeLong = current-last_flush_time.getTime()+Long.parseLong(maps.get(0).get("OFFWORK_TIME_LONG").toString());
+                    offline.updateoffWorkTime(userId,timeLong,taskId);
+                }
             }else{
                 System.out.println("ALARM_OFFWORK添加时没添加进去"+userId+"==="+taskId);
             }
@@ -180,6 +189,21 @@ public class TimeTask  extends CurdService<AlarmOffline, AlarmOfflineRepository>
 
         }
 
+    }
+
+    public void removeTuoGangRedis(String s) {
+        RedisConnection connection = null;
+        try {
+            connection = redisTemplate.getConnectionFactory().getConnection();
+            connection.select(5);
+            byte[] bytes = "tuogang".getBytes();
+            connection.hDel(bytes,s.getBytes());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            connection.close();
+        }
     }
 
 }
