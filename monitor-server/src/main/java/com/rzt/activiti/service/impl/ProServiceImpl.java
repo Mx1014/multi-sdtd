@@ -3,6 +3,7 @@ package com.rzt.activiti.service.impl;
 import com.rzt.activiti.service.ActivitiService;
 import com.rzt.entity.CheckResult;
 import com.rzt.repository.CheckResultRepository;
+import com.rzt.repository.YHrepository;
 import com.rzt.service.CurdService;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.RedisUtil;
@@ -19,10 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 隐患上报流程
@@ -41,6 +39,8 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
     private RuntimeService runtimeService;
     @Autowired
     private RepositoryService repositoryService;
+    @Autowired
+    private YHrepository yHrepository;
     @Autowired
     private RedisUtil redisUtil;
     protected static Logger LOGGER = LoggerFactory.getLogger(ProServiceImpl.class);
@@ -432,4 +432,56 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
         return WebApiResponse.success(map);
 
     }
+
+    public WebApiResponse findJD(String proId)  {
+        String sql = "SELECT *" +
+                "     FROM ACT_RU_TASK WHERE PROC_INST_ID_ = '"+proId+"'";
+        Map<String, Object> map = null;
+        try {
+            map = this.execSqlSingleResult(sql);
+        } catch (Exception e) {
+            return WebApiResponse.erro("进度查询失败"+e.getMessage());
+        }
+        return WebApiResponse.success(map);
+    }
+
+    /**
+     * 添加到流转表
+     * @param id
+     * @param proKey
+     * @param proId
+     * @param userId
+     * @param flag
+     * @param info
+     * @param assignee
+     */
+    public void insertActTaskInfo(String id,String proKey,String proId,String userId,String flag,String info,String assignee,String iskh,String isjc){
+        yHrepository.inserActTaskInfo(id,proKey,proId,userId,flag,info,assignee,new Date(),iskh,isjc);
+
+    }
+
+    public String findAssignee(String proId)  {
+        String sql = "SELECT NAME_" +
+                "     FROM ACT_RU_TASK WHERE PROC_INST_ID_ = '"+proId+"'";
+        Map<String, Object> map = null;
+        try {
+            map = this.execSqlSingleResult(sql);
+            return map.get("NAME_").toString();
+        } catch (Exception e) {
+            return "";
+        }
+    }
+    public String findProInstId(String taskId) {
+        String sql = "SELECT PROC_INST_ID_" +
+                 "    FROM ACT_RU_TASK WHERE ID_ = '"+taskId+"'";
+        Map<String, Object> map = null;
+        try {
+            map = this.execSqlSingleResult(sql);
+            return map.get("PROC_INST_ID_").toString();
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+
 }
