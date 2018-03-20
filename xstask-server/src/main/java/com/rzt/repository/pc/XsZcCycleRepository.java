@@ -101,4 +101,14 @@ public interface XsZcCycleRepository extends JpaRepository<XsZcCycle,String> {
     @Query(value = "DELETE FROM ALARM_OVERDUE WHERE TASK_ID IN(?1)", nativeQuery = true)
     void deleteAlarmOVERDUE(Long[] ids);
 
+    @Modifying
+    @Transactional
+    @Query(value = "INSERT INTO XS_ZC_CYCLE_RECORD (id, XS_ZC_CYCLE_ID, XS_ZC_CYCLE, PLAN_XS_NUM, CHANGE_REASON, DESCRIPTION, proposer_id, PROPOSER_TIME, PROPOSER_STATUS, PROPOSER_TYPE)\n" +
+            "VALUES (?, ?, ?, ?, ?, ?, ?, sysdate, 0, 1)", nativeQuery = true)
+    void addXsCycleRecord(long newId, Long id, Integer cycle, Integer planXsNum, String changeReson, String description, String currentUserId);
+
+    @Modifying
+    @Transactional
+    @Query(value = "update xs_zc_cycle set PROPOSER_STATUS = 1 where id = ?", nativeQuery = true)
+    void updateXsCycleProposerStatus(long id);
 }

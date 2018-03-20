@@ -297,7 +297,7 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
 
             //修改状态
             this.reposiotry.updateZcxsExecDetail(sfdw, reason, execDetailId, longtitude, latitude);
-            
+
             try {
                 if (sfdw == 1) {
                     warningmonitorServerService.xsTourScope(taskid, userid, reason,execDetailId);
