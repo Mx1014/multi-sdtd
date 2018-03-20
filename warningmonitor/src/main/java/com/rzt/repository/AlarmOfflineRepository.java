@@ -40,7 +40,7 @@ public interface AlarmOfflineRepository extends JpaRepository<AlarmOffline, Stri
     @Transactional
     @Modifying
     @Query(value = "UPDATE ALARM_UNQUALIFIEDPATROL SET IS_DW_TOUR=?2 WHERE TASK_ID=?1 AND trunc(CREATE_TIME)=trunc(sysdate)",nativeQuery = true)
-    void updateBuDaoWeiTour(String taskId, Integer tour);
+    void updateBuDaoWeiTour(Long taskId, Integer tour);
 
     //插入综合展示未按时开始任务
     @Transactional
