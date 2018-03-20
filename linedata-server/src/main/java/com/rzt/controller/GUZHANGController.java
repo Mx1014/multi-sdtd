@@ -45,7 +45,7 @@ public class GUZHANGController extends
 	}
 
 	@ApiOperation(value = "台账故障信息详情",notes = "台账故障信息详情")
-	@GetMapping("getGuZhang")
+	@GetMapping("getGuzhangById")
 	public WebApiResponse getGuzhangById(String id ){
 
 		try {

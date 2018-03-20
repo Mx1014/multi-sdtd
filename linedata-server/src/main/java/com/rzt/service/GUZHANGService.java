@@ -105,10 +105,10 @@ public class GUZHANGService extends CurdService<GUZHANG,GUZHANGRepository> {
                 String kv = ExcelUtil.getCellValue(row.getCell(4));
                 guzhang.setVLevel(kv+"kV");
                 String lineName = ExcelUtil.getCellValue(row.getCell(5)).replace("线","");
-                guzhang.setLineName(lineName);
                 try{
-                    Map<String, Object> result = execSqlSingleResult("select min(line_id) id from cm_line_section where line_name1 = ?1",  lineName );
+                    Map<String, Object> result = execSqlSingleResult("select line_id id,line_name from cm_line_section where line_name1 = ?1",  lineName );
                     guzhang.setLineId(Long.valueOf(String.valueOf(result.get("ID"))));
+                    guzhang.setLineName(String.valueOf(result.get("LINE_NAME")));
                 }catch (Exception e){
                     errlist.add("excel第"+i+"行数据,线路匹配失败！--->"+kv+"kV"+lineName);
                     if("1".equals(flag)){//忽略此条信息
