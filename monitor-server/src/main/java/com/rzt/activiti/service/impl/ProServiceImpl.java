@@ -417,4 +417,19 @@ public class ProServiceImpl  extends CurdService<CheckResult, CheckResultReposit
         }
 
     }
+
+    public WebApiResponse findYHINFO(String proId) {
+        Map<String, Object> map = null;
+        try {
+            String sql = "SELECT *" +
+                    "    FROM XS_SB_YH WHERE ID = '"+proId+"'";
+             this.execSqlSingleResult(sql);
+        } catch (Exception e) {
+            LOGGER.error("隐患详情回显数据查询失败"+e.getMessage());
+            return WebApiResponse.erro("隐患详情回显数据查询失败"+e.getMessage());
+        }
+        LOGGER.info("隐患详情回显数据查询成功");
+        return WebApiResponse.success(map);
+
+    }
 }

@@ -299,4 +299,15 @@ public class ProController {
         }
     }
 
+    /**
+     * 根据上报隐患id查询隐患回显数据
+     * @return
+     */
+    @GetMapping("/findYHINFO")
+    public WebApiResponse findYHINFO(String proId){
+        return proService.findYHINFO(proId);
+    }
+
+
+
 }
