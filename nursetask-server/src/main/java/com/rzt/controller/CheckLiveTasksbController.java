@@ -162,9 +162,9 @@ public class CheckLiveTasksbController extends
 
 	@ApiOperation(value = "到达现场回显",notes = "到达现场回显")
 	@PostMapping("checkLiveTasksbInfo")
-	public WebApiResponse checkLiveTasksbInfo(String taskId){
+	public WebApiResponse checkLiveTasksbInfo(String yhId){
 		try{
-			List<Map<String, Object>> list = service.checkLiveTasksbInfo(taskId);
+			List<Map<String, Object>> list = service.checkLiveTasksbInfo(yhId);
 			return WebApiResponse.success(list);
 		}catch (Exception e){
 			LOGGER.error("app任务列表获取失败",e);
