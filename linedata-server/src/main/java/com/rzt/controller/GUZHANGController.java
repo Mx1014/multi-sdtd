@@ -44,6 +44,25 @@ public class GUZHANGController extends
 
 	}
 
+	@ApiOperation(value = "台账故障信息详情",notes = "台账故障信息详情")
+	@GetMapping("getGuZhang")
+	public WebApiResponse getGuzhangById(String id ){
+
+		try {
+			return service.getGuzhangById(id);
+		} catch (Exception e) {
+			LOGGER.error("台账故障信息详情",e);
+			return WebApiResponse.erro("台账故障信息详情获取失败");
+		}
+	}
+
+	@ApiOperation(value = "台账故障信息修改接口",notes = "台账故障信息修改接口")
+	@PostMapping("updateGuzhang")
+	public WebApiResponse updateGuzhang(GUZHANG guzhang){
+		return service.updateGuzhang(guzhang);
+	}
+
+
 
 	@ApiOperation(value = "台账故障导入接口",notes = "搜索、分页获取台账故障信息")
 	@PostMapping("ImportGuZhang")

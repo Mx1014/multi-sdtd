@@ -262,7 +262,7 @@ public class GUZHANGService extends CurdService<GUZHANG,GUZHANGRepository> {
                 Map<String, Object> map = execSqlSingleResult("select * from cm_sql where sql_desc=?", what);
                 sql = map.get("SQL_STR").toString();
             } catch (Exception e) {
-                LOGGER.error("获取的值不唯一!",e);
+                LOGGER.error("获取的值不唯一或不存在!",e);
             }
 
             List params = new ArrayList();
@@ -289,6 +289,21 @@ public class GUZHANGService extends CurdService<GUZHANG,GUZHANGRepository> {
             return WebApiResponse.erro("更新失败!");
         }
         return WebApiResponse.success("更新成功!");
+
+    }
+
+    public WebApiResponse updateGuzhang(GUZHANG guzhang) {
+        reposiotry.save(guzhang);
+        return WebApiResponse.success("");
+    }
+
+    public WebApiResponse getGuzhangById(String id) throws Exception {
+        String sql = "select * from guzhang where id=?";
+        String sql1 = "select * from picture_yh where task_id = ?";
+        Map<String, Object> map = execSqlSingleResult(sql, id);
+        List<Map<String, Object>> list1 = execSql(sql1, id);
+        map.put("imgs",list1);
+        return WebApiResponse.success(map);
 
     }
 }
