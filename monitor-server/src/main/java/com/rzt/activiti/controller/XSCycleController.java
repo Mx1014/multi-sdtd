@@ -24,6 +24,11 @@ public class XSCycleController {
 
     /**
      * 开启流程
+     * @param key       xssh
+     * @param userName 当前登录用户id
+     * @param XSID     巡视周期id
+     * @param flag     1
+     * @param info
      * @return
      */
     @GetMapping("/start")

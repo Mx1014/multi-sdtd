@@ -11,6 +11,7 @@ import com.rzt.entity.app.XSZCTASK;
 import com.rzt.entity.pc.XsZcCycle;
 import com.rzt.entity.pc.XsZcCycleLineTower;
 import com.rzt.entity.sch.XsTaskSCh;
+import com.rzt.eureka.MonitorServerService;
 import com.rzt.repository.pc.XsZcCycleRepository;
 import com.rzt.service.CurdService;
 import com.rzt.service.app.XSZCTASKService;
@@ -61,6 +62,8 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
     private RedisTemplate<String, Object> redisTemplate;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    MonitorServerService monitorServerService;
 
     /***
      * @Method
@@ -377,7 +380,7 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
             arrList.add(startDate);
             arrList.add(startDate);
         } else {
-            if (null != home && home.equals("1")){
+            if (null != home && home.equals("1")) {
                 sqlBuffer.append(" and PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)");
             }else {
                 sqlBuffer.append(" and PLAN_END_TIME >= trunc(sysdate) and  PLAN_START_TIME <= trunc(sysdate+1)");
@@ -903,7 +906,7 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
 
 
     public static void main(String[] args) {
-        String execlPath = "C:/Users/nwz/Documents/巡视周期导入模板.xlsx";
+       /* String execlPath = "C:/Users/nwz/Documents/巡视周期导入模板.xlsx";
         try {
 //            importCycle(execlPath);
             Date a = DateUtil.StringToDateForImport("9:00");
@@ -923,7 +926,12 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
 
         } catch (Exception e) {
             e.printStackTrace();
-        }
+        }*/
+        long time1 = DateUtil.stringToDate("2018-03-03 07:52:23").getTime();
+        long time2 = DateUtil.stringToDate("2018-03-03 08:33:37").getTime();
+        long time = new Date().getTime();
+        boolean b = time2 - time1 < 10 * 60 * 1000;
+        System.out.println(b);
     }
 
     @Transactional
@@ -1125,6 +1133,24 @@ public class XsZcCycleService extends CurdService<XsZcCycle,XsZcCycleRepository>
         }
     }
 
-
+    /***
+    * @Method xsCycleEdit
+    * @Description  巡视周期变更
+    * @param [currentUserId, id, cycle, inUse, planXsNum, planStartTime, planEndTime, isKt, userId, changeReson, description]
+    * @return void
+    * @date 2018/3/20 16:05
+    * @author nwz
+    */
+    @Transactional
+    public void xsCycleEdit(String currentUserId,Long id,Integer cycle,Integer inUse,Integer planXsNum,String planStartTime,String planEndTime,Integer isKt,String userId,String changeReson,String description) {
+        long newId = SnowflakeIdWorker.getInstance(1, 12).nextId();
+        this.reposiotry.addXsCycleRecord(newId,id,cycle,planXsNum,changeReson,description,currentUserId);//周期变更记录表增加一条数据
+        this.reposiotry.updateXsCycleProposerStatus(id);//修改周期的id
+        try {
+            monitorServerService.start("xssh",currentUserId,newId,1 + "","");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
 

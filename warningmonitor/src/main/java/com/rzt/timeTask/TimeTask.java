@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 
@@ -49,11 +50,12 @@ public class TimeTask  extends CurdService<AlarmOffline, AlarmOfflineRepository>
         Set<String> strings = lixian.keySet();
         for (String userId:strings) {
             String value = lixian.get(userId); //value 是离线时间
-            String[] split = value.split("#");
             long current = new Date().getTime();
-            Date offLineTime = new Date(Long.parseLong(split[0]));
-            String sql = "SELECT * FROM ALARM_OFFLINE WHERE USER_ID=?1 AND OFFLINE_END_TIME=?2";
-            List<Map<String, Object>> maps = execSql(sql, userId,offLineTime);
+            Date offLineTime = new Date(Long.parseLong(value));
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String offLine = format.format(offLineTime);
+            String sql = "SELECT * FROM ALARM_OFFLINE WHERE USER_ID=?1 AND OFFLINE_END_TIME=to_date( ?2,'yyyy-MM-dd hh24:mi:ss')";
+            List<Map<String, Object>> maps = execSql(sql, userId,offLine);
 
             if(maps.size()>0){
                 //只更新时长
@@ -163,10 +165,10 @@ public class TimeTask  extends CurdService<AlarmOffline, AlarmOfflineRepository>
             Date offWorkTime = new Date(start);
             long current = new Date().getTime();
 
+
             String sql = "SELECT * FROM ALARM_OFFWORK WHERE USER_ID=?1 AND TASK_ID=?2 AND OFFWORK_TIME=?3";
             List<Map<String, Object>> maps = execSql(sql, userId,taskId,offWorkTime);
 
-            //tuoGangRedis(key,String.valueOf(start));
             if(maps.size()>0){
                 Date last_flush_time = (Date) maps.get(0).get("LAST_FLUSH_TIME");
                 Long timeLong = current-last_flush_time.getTime()+Long.parseLong(maps.get(0).get("OFFWORK_TIME_LONG").toString());

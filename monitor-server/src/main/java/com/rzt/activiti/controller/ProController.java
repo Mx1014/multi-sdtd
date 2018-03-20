@@ -20,6 +20,7 @@ import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * 隐患上报处理流程
@@ -96,7 +97,7 @@ public class ProController {
         if(null == currentUserId || "".equals(currentUserId)){
             return WebApiResponse.erro("当前用户权限获取失败 ");
         }
-
+        String userId = currentUserId;
       try {
           if(null != currentUserId && !"".equals(currentUserId)){
                dept = redisUtil.findTDByUserId(currentUserId);
@@ -121,7 +122,7 @@ public class ProController {
           map.put("flag",flag);
           map.put("info",info);
           proService.complete(taskId,map);
-
+          String isjc = "0";
           //获取节点前进后的id   用流程实例id做条件
           String id = proService.findIdByProId(proId);
           //测试稽查  sdid 代表属地监控中心   jkid 代表公司监控中心
@@ -133,10 +134,12 @@ public class ProController {
               nurseTaskService.addCheckLiveTasksb(id,
                       "0",LINE_NAME+"隐患点",YHID,YWORG_ID,
                       TDYW_ORG,dept.equals(TDYW_ORG)?"2":"1",dept);
+              isjc = "1";
               //  测试模拟稽查   默认为true
               //proService.complete(id,map);
           }
-
+          String name_ = proService.findAssignee(proId);
+          proService.insertActTaskInfo(UUID.randomUUID().toString(),"wtsh",proId,userId,flag,info,name_,isKH,isjc);
 
 
 
@@ -160,13 +163,17 @@ public class ProController {
      * @return
      */
     @GetMapping("/jchd")
-    public WebApiResponse jicha(String taskId,String YHID,String flag){
+    public WebApiResponse jicha(String taskId,String YHID,String flag,String userId){
         try {
+            String proInstId = proService.findProInstId(taskId);
             //稽查任务回调   回调时需要传递当前任务id  和flag  隐患id
             Map<String, Object> map = new HashMap<>();
             map.put("YHID",YHID);
             map.put("flag",flag);
             proService.complete(taskId,map);
+            String name_ = proService.findAssignee(proInstId);
+            proService.insertActTaskInfo(UUID.randomUUID().toString(),"wtsh",proInstId,userId,flag,"",name_,"","");
+
             LOGGER.info("稽查回调成功");
             return WebApiResponse.success("稽查回调成功");
         }catch (Exception e){
@@ -307,6 +314,15 @@ public class ProController {
     @GetMapping("/findYHINFO")
     public WebApiResponse findYHINFO(String proId){
         return proService.findYHINFO(proId);
+    }
+
+    /**
+     * 查询当前任务的进度
+     * @return
+     */
+    @GetMapping("/findJD")
+    public WebApiResponse findJD(String proId){
+        return proService.findJD(proId);
     }
 
 
