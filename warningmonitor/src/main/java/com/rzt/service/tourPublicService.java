@@ -1,6 +1,7 @@
 package com.rzt.service;
 
 import com.rzt.entity.Monitorcheckej;
+import com.rzt.repository.AlarmOfflineRepository;
 import com.rzt.repository.Monitorcheckejrepository;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.SnowflakeIdWorker;
@@ -21,7 +22,7 @@ import java.util.*;
 @Service
 public class tourPublicService extends CurdService<Monitorcheckej, Monitorcheckejrepository> {
     @Autowired
-    private JedisPool jedisPool;
+    JedisPool jedisPool;
 
     @Autowired
     private Monitorcheckejrepository resp;
@@ -32,14 +33,17 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
     @Autowired
     private RedisTemplate<String,Object> redisTemplate;
 
+    @Autowired
+    private AlarmOfflineRepository offline;
+
     /**
      * 巡视人员未到杆塔半径5米范围内
      */
     @Transactional(rollbackFor = Exception.class)
-    public WebApiResponse xsTourScope(Long taskid, String userid,String reason) {
+    public WebApiResponse xsTourScope(Long taskid, String userid,String reason,Long execDetailId) {
         try {
             //查询任务的所有塔的个数
-            String sql1 = "SELECT c.SECTION FROM XS_ZC_TASK x RIGHT JOIN  XS_ZC_CYCLE c ON x.XS_ZC_CYCLE_ID=c.ID WHERE x.ID=?1";
+            /*String sql1 = "SELECT c.SECTION FROM XS_ZC_TASK x RIGHT JOIN  XS_ZC_CYCLE c ON x.XS_ZC_CYCLE_ID=c.ID WHERE x.ID=?1";
             Map<String, Object> map1 = execSqlSingleResult(sql1, taskid);
             String section = (String) map1.get("SECTION");
             String[] split = section.split("-");
@@ -57,7 +61,26 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
                     Double isDWNum =  Double.parseDouble(maps.get(0).get("COUNT").toString());
                     d = isDWNum / sum;
                 }
+            }*/
+            String sql1 = "SELECT\n" +
+                    "  nvl(sum(decode(IS_DW, 1, 1, 0)),0) wdw,\n" +
+                    "  count(1)                    total,\n" +
+                    "  t.XS_ZC_TASK_EXEC_ID\n" +
+                    "FROM XS_ZC_TASK_EXEC_DETAIL t\n" +
+                    "WHERE exists(SELECT id\n" +
+                    "             FROM XS_ZC_TASK_EXEC_DETAIL tt\n" +
+                    "             WHERE t.XS_ZC_TASK_EXEC_ID = tt.XS_ZC_TASK_EXEC_ID AND tt.id\n" +
+                    "=?1  AND t.END_TOWER_ID = 0)\n" +
+                    "GROUP BY t.XS_ZC_TASK_EXEC_ID";
+            List<Map<String, Object>> maps1 = execSql(sql1, execDetailId);
+            Double d = 0.0;
+            if(maps1.size()>0){
+               Double wdw = Double.parseDouble(maps1.get(0).get("WDW").toString());
+               Double total = Double.parseDouble(maps1.get(0).get("TOTAL").toString());
+               d = wdw/total;
             }
+
+            Long xsZcTaskExecId = Long.parseLong(maps1.get(0).get("XS_ZC_TASK_EXEC_ID").toString());
             //如果大于等于0.3则插入告警
             if(d>=0.3){
                 //查询是否已经插入告警
@@ -67,17 +90,34 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
                     String sql = "   SELECT TASK_NAME AS TASKNAME,TD_ORG FROM XS_ZC_TASK WHERE ID=?1 ";
                     Map<String, Object> map = this.execSqlSingleResult(sql, taskid);
                     //往二级单位插数据
-                    //System.out.println(reason+"----------巡视未到位原因");
-                    resp.saveCheckEjWdw(SnowflakeIdWorker.getInstance(10, 12).nextId(),taskid,1,3,userid,map.get("TD_ORG").toString(),map.get("TASKNAME").toString(),reason);
-                    String key = "ONE+" + taskid + "+1+3+" + userid + "+" + map.get("TD_ORG").toString() + "+" + map.get("TASKNAME").toString()+"+"+reason;
-
+                    resp.saveCheckEjWdwExec(SnowflakeIdWorker.getInstance(10, 12).nextId(),taskid,1,3,userid,map.get("TD_ORG").toString(),map.get("TASKNAME").toString(),reason,xsZcTaskExecId);
+                    String key = "ONE+" + taskid + "+1+3+" + userid + "+" + map.get("TD_ORG").toString() + "+" + map.get("TASKNAME").toString()+"+"+reason+"+"+execDetailId;
                     redisService.setex(key);
                 }
+
+                budaoweiRedis(taskid,userid,Integer.parseInt(maps1.get(0).get("WDW").toString()),reason,xsZcTaskExecId);
             }
             return WebApiResponse.success("");
         } catch (Exception e) {
             e.printStackTrace();
             return WebApiResponse.erro("erro"+e.getMessage());
+        }
+    }
+    //往redis中扔不到位数据
+    private void budaoweiRedis(Long taskId,String userid,Integer wdwTour,String reason,Long xsZcTaskExecId){
+
+        String sql = "SELECT * FROM ALARM_UNQUALIFIEDPATROL WHERE TASK_ID=?1 AND trunc(CREATE_TIME)=trunc(sysdate)";
+        List<Map<String, Object>> maps = execSql(sql, taskId);
+        //String value = new Date().getTime()+"#"+userid+"#"+Integer.parseInt(maps1.get(0).get("WDW").toString())+"#"+reason+"#"+xsZcTaskExecId+"#"+0;
+        if(maps.size()>0){
+            //如果表中有了，则只更新不到位的塔的个数
+            Integer isDwTour = Integer.parseInt(maps.get(0).get("IS_DW_TOUR").toString());
+            if(isDwTour!=wdwTour){
+                offline.updateBuDaoWeiTour(taskId,wdwTour);
+            }
+        }else{
+            Date warningTime = new Date();
+            offline.addBuDaoWei(SnowflakeIdWorker.getInstance(10,10).nextId(),warningTime,taskId,userid, wdwTour,reason,xsZcTaskExecId,0);
         }
     }
 
@@ -298,15 +338,17 @@ public class tourPublicService extends CurdService<Monitorcheckej, Monitorchecke
         }
     }
 
-    //未按标准拍照
-    public void takePhoto(Long taskid, String userid) {
+    //未按标准拍照 巡视超速
+    public void takePhoto(Long taskid, String userid, Long xsZcExceptionId) {
 
         try {
             Map<String, Object> map = null;
-            String sql = "   SELECT TASK_NAME AS TASKNAME,TD_ORG FROM XS_ZC_TASK WHERE ID=? ";
+            String sql = "SELECT TASK_NAME AS TASKNAME,TD_ORG FROM XS_ZC_TASK WHERE ID=? ";
             map = this.execSqlSingleResult(sql, taskid);
             //往二级单位插数据
             resp.saveCheckEj(SnowflakeIdWorker.getInstance(10, 12).nextId(),taskid,1,5,userid,map.get("TD_ORG").toString(),map.get("TASKNAME").toString());
+            //新加的表插入数据
+            resp.saveAlarmUnqualifiedPatrol(SnowflakeIdWorker.getInstance(10, 14).nextId(),taskid,userid,xsZcExceptionId);
             String key = "ONE+" + taskid + "+1+5+" + userid + "+" + map.get("TD_ORG").toString() + "+" + map.get("TASKNAME").toString();
             redisService.setex(key);
         } catch (Exception e) {

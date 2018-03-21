@@ -211,7 +211,7 @@ public class PcMapShowController {
         }
     }
 
-
+    //地图上显示没有任务的人
     private void chouYiXia2(String workTypes, Integer loginStatus, String needDateString, String hasTask, List<Map> menInMap, ValueOperations<String, Object> valueOperations) {
         JSONObject allMen = new JSONObject();
         List<Map> menInMap2 = new ArrayList<>();
@@ -353,7 +353,7 @@ public class PcMapShowController {
                     Object o = menAboutLinesSon(Long.parseLong(lineId), currentUserId, startDate, yhTypes, gzTypes);
                     resList.add(o);
                 }*/
-                Object o = menAboutLinesAllSon(lineIdArr, currentUserId, startDate, yhTypes, gzTypes, deptId, workType, userId, loginType);
+                Object o = menAboutLinesAllSon(lineIdArr, currentUserId, startDate, yhTypes, gzTypes, deptId, workType, userId, loginType,null);
                 resList.add(o);
                 return WebApiResponse.success(resList);
             } catch (Exception e) {
@@ -364,7 +364,7 @@ public class PcMapShowController {
     }
 
     //地图上根据线路查询隐患、故障、人员、杆塔
-    private Object menAboutLinesAllSon(String[] lineIdArr, String currentUserId, Date startDate, String yhTypes, String gzTypes, String deptId, String workType, String userId, String loginType) throws Exception {
+    private Object menAboutLinesAllSon(String[] lineIdArr, String currentUserId, Date startDate, String yhTypes, String gzTypes, String deptId, String workType, String userId, String loginType,String yhlb) throws Exception {
         String s = "";
         String s1 = "";
         if (!StringUtils.isEmpty(deptId)) {
@@ -411,38 +411,32 @@ public class PcMapShowController {
         res.put("coordinateList", coordinateList);
         List<Map<String, Object>> guzhang = getGuzhang(gzTypes, lineIdArr, null);
         res.put("guzhang", guzhang);
-        Object yinhuan = getYinhuan2(yhTypes, currentUserId, null, lineIdArr, s);
+        Object yinhuan = getYinhuan2(yhTypes, currentUserId, yhlb, lineIdArr, s);
         res.put("yinhuan", yinhuan);
         return res;
     }
 
     private Object getYinhuan2(String yhjb, String currentUserId, String yhlb, String[] lineIdArr, String deptId) throws Exception {
-//        Map<String, Object> jsonObject = pcMapShowService.userInfoFromRedis(currentUserId);
         List params = new ArrayList<>();
         StringBuffer buffer = new StringBuffer();
-//        Integer roleType = Integer.parseInt(jsonObject.get("ROLETYPE").toString());
-//        Object tdId = jsonObject.get("DEPTID");
-//        Object companyid = jsonObject.get("COMPANYID");
         buffer.append(" where yhzt=0 ");
-//        if (roleType == 1 || roleType == 2) {
-//            buffer.append(" and y.YWORG_ID = '" + tdId+"'");
-//        }
-//        if (roleType == 3) {
-//            buffer.append(" and y.WXORG_ID ='" + companyid+"'");
-//        }
         if (yhjb != null && !yhjb.equals("")) {
             String[] split = yhjb.split(",");
-            String result = "";
+            buffer.append(" and (");
             for (int i = 0; i < split.length; i++) {
                 String s = "'" + split[i] + "'";
-                result += s + ",";
+                buffer.append("yhjb1 = "+s+" or ");
+                buffer.append("yhlb = "+s);
+                if (i<split.length-1){
+                    buffer.append(" or ");
+                }
             }
-            buffer.append(" and yhjb1 in (" + result.substring(0, result.lastIndexOf(",")) + ")");
+            buffer.append(") ");
         }
-        if (yhlb != null && !yhlb.equals("")) {
+        /*if (yhlb != null && !yhlb.equals("")) {
             buffer.append(" and yhlb like ?");
             params.add("%" + yhlb + "%");
-        }
+        }*/
         int length = lineIdArr.length;
         buffer.append(" and ( ");
         for (int i = 0; i < length; i++) {
@@ -459,8 +453,8 @@ public class PcMapShowController {
         buffer.append(" ) ");
         buffer.append(deptId);
 //            buffer.append(" and yhzt = 0 ");
-        //String sql = "SELECT DISTINCT(y.id) as yhid, y.* FROM ( SELECT  y.id as yh_id, y.* FROM KH_YH_HISTORY y WHERE YHLB LIKE '在施类' AND YHZT = 0 UNION ALL SELECT DISTINCT  (s.YH_ID), y.* FROM KH_YH_HISTORY y, KH_SITE s  WHERE s.YH_ID = y.ID AND s.STATUS = 1 AND y.yhzt = 0) y " + buffer.toString();
-        String sql = "select * from KH_YH_HISTORY y " + buffer.toString();
+        String sql = "SELECT DISTINCT(y.id) as yhid, y.* FROM ( SELECT  y.id as yh_id, y.* FROM KH_YH_HISTORY y WHERE YHLB LIKE '在施类' AND YHZT = 0 UNION ALL SELECT DISTINCT  (s.YH_ID), y.* FROM KH_YH_HISTORY y, KH_SITE s  WHERE s.YH_ID = y.ID AND s.STATUS = 1 AND y.yhzt = 0 and y.sfdj=1) y " + buffer.toString();
+//        String sql = "select * from KH_YH_HISTORY y " + buffer.toString();
         List<Map<String, Object>> list = cmcoordinateService.execSql(sql, params.toArray());
         List<Object> list1 = new ArrayList<>();
         for (Map map : list) {

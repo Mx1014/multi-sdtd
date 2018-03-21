@@ -373,7 +373,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
             }
             LOGGER.info("看护任务抽查完毕");
             //看护稽查
-         /*   String khjcsql = "SELECT ID,STATUS,USER_ID,TASK_NAME  " +
+            String khjcsql = "SELECT ID,STATUS,USER_ID,TASK_NAME  " +
                     "         FROM CHECK_LIVE_TASK  WHERE STATUS != 0 AND STATUS != 3 AND ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 3 )";
             List<Map<String, Object>> khjcmaps = this.execSql(khjcsql, null);
             Iterator<Map<String, Object>> khjciterator = khjcmaps.iterator();
@@ -391,9 +391,9 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                         null!=a.get("USER_ID")?a.get("USER_ID").toString():"","3" ,
                         null!=a.get("TASK_NAME")?a.get("TASK_NAME").toString():"",CheckStatus,"0");
             }
-            LOGGER.info("看护稽查任务抽查完毕");*/
+            LOGGER.info("看护稽查任务抽查完毕");
             //巡视稽查
-          /*  String xsjcsql = "SELECT ID,STATUS,USER_ID,TASK_NAME" +
+            String xsjcsql = "SELECT ID,STATUS,USER_ID,TASK_NAME" +
                     "    FROM CHECK_LIVE_TASKXS  WHERE STATUS != 0   AND ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 4 )";
             List<Map<String, Object>> xsjcmaps = this.execSql(xsjcsql, null);
             Iterator<Map<String, Object>> xsjciterator = xsjcmaps.iterator();
@@ -411,7 +411,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                         null!=a.get("USER_ID")?a.get("USER_ID").toString():"","4" ,
                         null!=a.get("TASK_NAME")?a.get("TASK_NAME").toString():"",CheckStatus,"0");
             }
-                LOGGER.info("巡视稽查任务抽查完毕");*/
+                LOGGER.info("巡视稽查任务抽查完毕");
 
 
           // 此处更改定时器配置表中的上次刷新时间
@@ -488,12 +488,11 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                 //判断证明是白班用户
                 if (hours <= Integer.parseInt(end_time) && hours >= Integer.parseInt(start_time)) {
                     JCID = day_user;
-
-                    timedConfigRepository.insertTaskRecord(uuid, date1, sum, comSum, "40283781608b848701608b85d3700000", parse, JCID);
-
-                    LOGGER.info("公司本部" + "单位本周期查询情况添加");
+                }else{//夜班
+                    JCID = night_user;
                 }
-
+            timedConfigRepository.insertTaskRecord(uuid, date1, sum, comSum, "40283781608b848701608b85d3700000", parse, JCID);
+            LOGGER.info("公司本部" + "单位本周期查询情况添加");
 
                 //巡视sql
                 String findSql1 = "SELECT k.TASK_NAME,k.STAUTS,k.ID,k.CM_USER_ID" +
@@ -547,7 +546,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                 LOGGER.info("看护任务抽查完毕");
 
                 //看护稽查
-            /*String khjcsql = "SELECT ID,STATUS,USER_ID,TASK_NAME  " +
+            String khjcsql = "SELECT ID,STATUS,USER_ID,TASK_NAME  " +
                     "         FROM CHECK_LIVE_TASK  WHERE STATUS != 0  AND STATUS != 3  AND ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 3 )";
             List<Map<String, Object>> khjcmaps = this.execSql(khjcsql, null);
             Iterator<Map<String, Object>> khjciterator = khjcmaps.iterator();
@@ -565,9 +564,9 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
                         null!=a.get("USER_ID")?a.get("USER_ID").toString():"","3" ,
                         null!=a.get("TASK_NAME")?a.get("TASK_NAME").toString():"",CheckStatus,"1");
             }
-            LOGGER.info("看护稽查任务抽查完毕");*/
+            LOGGER.info("看护稽查任务抽查完毕");
             //巡视稽查
-           /* String xsjcsql = "SELECT ID,STATUS,USER_ID,TASK_NAME" +
+            String xsjcsql = "SELECT ID,STATUS,USER_ID,TASK_NAME" +
                     "    FROM CHECK_LIVE_TASKXS  WHERE STATUS != 0   AND ID NOT IN (SELECT  t.TASKID from TIMED_TASK t WHERE t.CHECKSTATUS = 1 AND t.TASKTYPE = 4 )";
             List<Map<String, Object>> xsjcmaps = this.execSql(xsjcsql, null);
             Iterator<Map<String, Object>> xsjciterator = xsjcmaps.iterator();
@@ -587,7 +586,7 @@ public class XSZCTASKService extends CurdService<TimedTask,XSZCTASKRepository>{
             }
             LOGGER.info("巡视稽查任务抽查完毕");
 
-*/
+
 
             } catch (Exception e) {
                 LOGGER.error("（一级单位，三天周期）定时任务数据抽取失败" + e.getMessage());

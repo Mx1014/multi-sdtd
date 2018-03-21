@@ -505,7 +505,7 @@ public class XsSbYh implements Serializable {
     }
 
     public void setTdwxOrg(String tdwxOrg) {
-        if (wxorgId.equals("")) {
+        if ("".equals(tdwxOrg)) {
 
         } else {
             this.tdwxOrg = tdwxOrg;
@@ -593,7 +593,7 @@ public class XsSbYh implements Serializable {
     }
 
     public void setWxorgId(String wxorgId) {
-        if (wxorgId.equals("")) {
+        if ("".equals(wxorgId)) {
 
         } else {
             this.wxorgId = wxorgId;

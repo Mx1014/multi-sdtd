@@ -40,61 +40,79 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
     @Scheduled(fixedDelay = 30000)
     public void adminModule4() {
         Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
-        sendMsg.forEach((sessionId, session) -> {
-            String sql = " select  " +
-                    "(select count(h.id) from KH_YH_HISTORY h where yhjb1='施工隐患' and yhzt=0) sg, " +
-                    "(select count(h.id) from KH_YH_HISTORY h where yhjb1='建筑隐患' and yhzt=0) jz, " +
-                    "(select count(h.id) from KH_YH_HISTORY h where yhjb1='异物隐患' and yhzt=0) yw, " +
-                    "(select count(h.id) from KH_YH_HISTORY h where yhjb1='树木隐患' and yhzt=0) sm from dual  ";
-            try {
-                Map<Object, Object> map1 = new HashMap<>();
-                Map<String, Object> map = this.execSqlSingleResult(sql);
-                map1.put("data", map);
-                map1.put("adminModule", 4);
-                firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), map1);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
+        String sql = " select  " +
+                "(select count(h.id) from KH_YH_HISTORY h where yhjb1='施工隐患' and yhzt=0) sg, " +
+                "(select count(h.id) from KH_YH_HISTORY h where yhjb1='建筑隐患' and yhzt=0) jz, " +
+                "(select count(h.id) from KH_YH_HISTORY h where yhjb1='异物隐患' and yhzt=0) yw, " +
+                "(select count(h.id) from KH_YH_HISTORY h where yhjb1='树木隐患' and yhzt=0) sm from dual  ";
+        Map<String, Object> map = null;
+        try {
+            map = this.execSqlSingleResult(sql);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+//        sendMsg.forEach((sessionId, session) -> {
+//            Map<Object, Object> map1 = new HashMap<>();
+//            map1.put("data", map);
+//            map1.put("adminModule", 4);
+//            firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), map1);
+//
+//        });
+//        map.entr
+        Set<String> strings = sendMsg.keySet();
+        for (String session : strings) {
+            Map<Object, Object> map1 = new HashMap<>();
+            map1.put("data", map);
+            map1.put("adminModule", 4);
+            firstLevelCommandServerEndpoint.sendText((Session) sendMsg.get(session).get("session"), map1);
+        }
     }
 
     @Scheduled(fixedDelay = 30000)
     public void adminModule3() {
         Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
-        sendMsg.forEach((sessionId, session) -> {
-            String sql = "SELECT " +
-                    "  (SELECT count(h.id) " +
-                    "   FROM KH_YH_HISTORY h " +
-                    "   WHERE trunc(CREATE_TIME) = trunc(sysdate)) xzyh, " +
-                    "  (SELECT count(*) " +
-                    "   FROM KH_YH_HISTORY h " +
-                    "   WHERE (yhjb1 = '施工隐患' OR yhjb1 = '建筑隐患' OR yhjb1 = '异物隐患' OR " +
-                    "         yhjb1 = '树木隐患') AND UPDATE_TIME IS NOT NULL AND   YHXQ_TIME IS NULL AND trunc(UPDATE_TIME) = trunc(sysdate) " +
-                    "  )                                           tzyh, " +
-                    "  (SELECT count(*) " +
-                    "   FROM KH_YH_HISTORY h " +
-                    "   WHERE (yhjb1 = '施工隐患' OR yhjb1 = '建筑隐患' OR yhjb1 = '异物隐患' OR " +
-                    "         yhjb1 = '树木隐患') AND YHXQ_TIME IS NOT NULL AND trunc(YHXQ_TIME) = trunc(sysdate) " +
-                    "  )                                           zlyh " +
-                    "FROM dual";
-
-            try {
-                HashMap<Object, Object> map1 = new HashMap<>();
-                Map<String, Object> map = this.execSqlSingleResult(sql);
-                map1.put("data", map);
-                map1.put("adminModule", 3);
-                firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), map1);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
+        String sql = "SELECT " +
+                "  (SELECT count(h.id) " +
+                "   FROM KH_YH_HISTORY h " +
+                "   WHERE trunc(CREATE_TIME) = trunc(sysdate) and sfdj=1) xzyh, " +
+                "  (SELECT count(*) " +
+                "   FROM KH_YH_HISTORY h " +
+                "   WHERE (yhjb1 = '施工隐患' OR yhjb1 = '建筑隐患' OR yhjb1 = '异物隐患' OR " +
+                "         yhjb1 = '树木隐患') AND UPDATE_TIME IS NOT NULL AND  YHXQ_TIME IS NULL AND trunc(UPDATE_TIME) = trunc(sysdate) " +
+                "  )                                           tzyh, " +
+                "  (SELECT count(*) " +
+                "   FROM KH_YH_HISTORY h " +
+                "   WHERE (yhjb1 = '施工隐患' OR yhjb1 = '建筑隐患' OR yhjb1 = '异物隐患' OR " +
+                "         yhjb1 = '树木隐患') AND YHXQ_TIME IS NOT NULL AND trunc(YHXQ_TIME) = trunc(sysdate) " +
+                "  )                                           zlyh " +
+                "FROM dual";
+        Map<String, Object> map = null;
+        try {
+            map = this.execSqlSingleResult(sql);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+//        sendMsg.forEach((sessionId, session) -> {
+//                HashMap<Object, Object> map1 = new HashMap<>();
+//                map1.put("data", map);
+//                map1.put("adminModule", 3);
+//                firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), map1);
+//        });
+        Set<String> strings = sendMsg.keySet();
+        for (String session : strings) {
+            HashMap<Object, Object> map1 = new HashMap<>();
+            map1.put("data", map);
+            map1.put("adminModule", 3);
+            firstLevelCommandServerEndpoint.sendText((Session) sendMsg.get(session).get("session"), map1);
+        }
     }
 
     @Scheduled(fixedDelay = 30000)
     public void adminModule5() {
         Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
-        sendMsg.forEach((sessionId, session) -> {
-            Object deptid = session.get("DEPTID");
+        Map<Object, Object> returnMap = null;
+        Map<Object, Object> iocMap = null;
+        try {
             /*
              * 巡视在线人员
              */
@@ -181,38 +199,46 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
              * 后台稽查离线人员
              */
             //  String hjcLxUser = " SELECT count(id) SM  FROM RZTSYSUSER WHERE LOGINSTATUS = 0 AND WORKTYPE = 4 AND USERDELETE = 1  AND USERTYPE=0 ";
-            try {
-                Map<Object, Object> returnMap = new HashMap<>();
-                Map<Object, Object> iocMap = new HashMap<>();
-                Map<String, Object> xsZxUserMap = this.execSqlSingleResult(xsZxUser);
-                Map<String, Object> xsLxUserMap = this.execSqlSingleResult(xsLxUser);
-                Map<String, Object> khZxUserMap = this.execSqlSingleResult(khZxUser);
-                Map<String, Object> khLxUserMap = this.execSqlSingleResult(khLxUser);
-                Map<String, Object> qjcZxUserMap = this.execSqlSingleResult(qjcZxUser);
-                Map<String, Object> qjcLxUserMap = this.execSqlSingleResult(qjcLxUser);
-                // Map<String, Object> hjcZxUserMap = this.execSqlSingleResult(hjcZxUser);
-                // Map<String, Object> hjcLxUserMap = this.execSqlSingleResult(hjcLxUser);
-                iocMap.put("XSZX", xsZxUserMap.get("SM").toString());
-                iocMap.put("XSLX", xsLxUserMap.get("SM").toString());
-                iocMap.put("KHZX", khZxUserMap.get("SM").toString());
-                iocMap.put("KHLX", khLxUserMap.get("SM").toString());
-                iocMap.put("QJCZX", qjcZxUserMap.get("SM").toString());
-                iocMap.put("QJCLX", qjcLxUserMap.get("SM").toString());
-                iocMap.put("HJCZX", a);
-                iocMap.put("HJCLX", b);
-                returnMap.put("data", iocMap);
-                returnMap.put("adminModule", 5);
-                firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), returnMap);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
+            returnMap = new HashMap<>();
+            iocMap = new HashMap<>();
+            Map<String, Object> xsZxUserMap = this.execSqlSingleResult(xsZxUser);
+            Map<String, Object> xsLxUserMap = this.execSqlSingleResult(xsLxUser);
+            Map<String, Object> khZxUserMap = this.execSqlSingleResult(khZxUser);
+            Map<String, Object> khLxUserMap = this.execSqlSingleResult(khLxUser);
+            Map<String, Object> qjcZxUserMap = this.execSqlSingleResult(qjcZxUser);
+            Map<String, Object> qjcLxUserMap = this.execSqlSingleResult(qjcLxUser);
+            // Map<String, Object> hjcZxUserMap = this.execSqlSingleResult(hjcZxUser);
+            // Map<String, Object> hjcLxUserMap = this.execSqlSingleResult(hjcLxUser);
+            iocMap.put("XSZX", xsZxUserMap.get("SM").toString());
+            iocMap.put("XSLX", xsLxUserMap.get("SM").toString());
+            iocMap.put("KHZX", khZxUserMap.get("SM").toString());
+            iocMap.put("KHLX", khLxUserMap.get("SM").toString());
+            iocMap.put("QJCZX", qjcZxUserMap.get("SM").toString());
+            iocMap.put("QJCLX", qjcLxUserMap.get("SM").toString());
+            iocMap.put("HJCZX", a);
+            iocMap.put("HJCLX", b);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+//        sendMsg.forEach((sessionId, session) -> {
+//            returnMap.put("data", iocMap);
+//            returnMap.put("adminModule", 5);
+//            firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), returnMap);
+//        });
+        Set<String> strings = sendMsg.keySet();
+        for (String session : strings) {
+            returnMap.put("data", iocMap);
+            returnMap.put("adminModule", 5);
+            firstLevelCommandServerEndpoint.sendText((Session) sendMsg.get(session).get("session"), returnMap);
+        }
     }
 
     @Scheduled(fixedDelay = 10000)
     public void adminModule8() {
         Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
-        sendMsg.forEach((sessionId, session) -> {
+        Map map1 = null;
+        Map map = null;
+        try {
             /**
              * 离线
              */
@@ -246,139 +272,144 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
              * 临时巡视不合格
              */
 //            String unqualifiedpatrol = " SELECT A as unqualifiedpatrol FROM UNQUALIFIEDPATROLCOUNT ";
-            try {
-                Map map1 = new HashMap();
-                Map map = new HashMap();
-                Map<String, Object> offlineMap = this.execSqlSingleResult(offline);
-                Map<String, Object> answertimeMap = this.execSqlSingleResult(answertime);
-                Map<String, Object> overdueMap = this.execSqlSingleResult(overdue);
-                Map<String, Object> temporarilyMap = this.execSqlSingleResult(temporarily);
-                Map<String, Object> unqualifiedpatrolMap = this.execSqlSingleResult(unqualifiedpatrol);
-                map.put("OFFLINEMAP", offlineMap.get("OFFLINES"));
-                map.put("ANSWERTIMEMAP", answertimeMap.get("ANSWERTIME"));
-                map.put("OVERDUEMAP", overdueMap.get("OVERDUE"));
-                map.put("TEMPORARILYMAP", temporarilyMap.get("TEMPORARILY"));
-                map.put("UNQUALIFIEDPATROLMAP", unqualifiedpatrolMap.get("UNQUALIFIEDPATROL"));
-                map1.put("data", map);
-                map1.put("adminModule", 8);
-                firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), map1);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
+            map1 = new HashMap();
+            map = new HashMap();
+            Map<String, Object> offlineMap = this.execSqlSingleResult(offline);
+            Map<String, Object> answertimeMap = this.execSqlSingleResult(answertime);
+            Map<String, Object> overdueMap = this.execSqlSingleResult(overdue);
+            Map<String, Object> temporarilyMap = this.execSqlSingleResult(temporarily);
+            Map<String, Object> unqualifiedpatrolMap = this.execSqlSingleResult(unqualifiedpatrol);
+            map.put("OFFLINEMAP", offlineMap.get("OFFLINES"));
+            map.put("ANSWERTIMEMAP", answertimeMap.get("ANSWERTIME"));
+            map.put("OVERDUEMAP", overdueMap.get("OVERDUE"));
+            map.put("TEMPORARILYMAP", temporarilyMap.get("TEMPORARILY"));
+            map.put("UNQUALIFIEDPATROLMAP", unqualifiedpatrolMap.get("UNQUALIFIEDPATROL"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+//        sendMsg.forEach((sessionId, session) -> {
+//            map1.put("data", map);
+//            map1.put("adminModule", 8);
+//            firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), map1);
+//        });
+        Set<String> strings = sendMsg.keySet();
+        for (String session : strings) {
+            map1.put("data", map);
+            map1.put("adminModule", 8);
+            firstLevelCommandServerEndpoint.sendText((Session) sendMsg.get(session).get("session"), map1);
+        }
     }
 
     @Scheduled(fixedDelay = 30000)
     public void adminModule6() {
         Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
-        sendMsg.forEach((sessionId, session) -> {
-            Object deptid = session.get("DEPTID");
-            /**
-             * 正常巡视未开始
-             */
-            String zcXsWks = "SELECT count(1)  " +
-                    "FROM XS_ZC_TASK " +
-                    "WHERE is_delete = 0 and STAUTS = 0 AND PLAN_START_TIME<= trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
-            /**
-             * 保电巡视未开始
-             */
-            String bdXsWks = "SELECT count(1)  " +
-                    "FROM XS_TXBD_TASK " +
-                    "WHERE STAUTS = 0 AND PLAN_START_TIME<= trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
-            /**
-             * 看护未开始
-             */
-            String khWks = "SELECT count(1)  " +
-                    "FROM KH_TASK " +
-                    "WHERE STATUS = 0 AND PLAN_START_TIME<= trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
-            /**
-             * 现场稽查未开始
-             */
-            String xcJcWks = "SELECT count(1)  " +
-                    "FROM CHECK_LIVE_TASK " +
-                    "WHERE STATUS = 0 and to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') < plan_end_time ";
-            /**
-             * 正常巡视进行中
-             */
-            String zcXsJxz = "SELECT count(1)  " +
-                    "FROM XS_ZC_TASK " +
-                    "WHERE is_delete = 0 and STAUTS = 1 AND PLAN_START_TIME <= trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
-            /**
-             * 保电巡视进行中
-             */
-            String bdXsJxz = "SELECT count(1)  " +
-                    "FROM XS_TXBD_TASK " +
-                    "WHERE STAUTS = 1 AND PLAN_START_TIME<= trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
-            /**
-             * 看护进行中
-             */
-            String khJxz = "SELECT count(1)  " +
-                    "FROM KH_TASK " +
-                    "WHERE STATUS = 1 AND PLAN_START_TIME<= trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
-            /**
-             * 现场稽查进行中
-             */
-            String xcJcJxz = "SELECT count(1)  " +
-                    "FROM CHECK_LIVE_TASK " +
-                    "WHERE STATUS = 1  and to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') < plan_end_time";
-            /**
-             * 正常巡视已完成
-             */
-            String zcXsYwc = "SELECT count(1)  " +
-                    "FROM XS_ZC_TASK " +
-                    "WHERE is_delete = 0 and STAUTS = 2 AND PLAN_START_TIME <= trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
-            /**
-             * 保电巡视已完成
-             */
-            String bdXsYwc = "SELECT count(1)  " +
-                    "FROM XS_TXBD_TASK " +
-                    "WHERE STAUTS = 2 AND PLAN_START_TIME<= trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
-            /**
-             * 看护已完成
-             */
-            String khYwc = "SELECT count(1)  " +
-                    "FROM KH_TASK " +
-                    "WHERE STATUS = 2 AND PLAN_START_TIME<= trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
-            /**
-             *现场稽查已完成
-             */
-            String xcJcYwc = "SELECT count(1)  " +
-                    "FROM CHECK_LIVE_TASK " +
-                    "WHERE STATUS = 2 and to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') <plan_end_time";
+        /**
+         * 正常巡视未开始
+         */
+        String zcXsWks = "SELECT count(1)  " +
+                "FROM XS_ZC_TASK " +
+                "WHERE is_delete = 0 and STAUTS = 0 AND PLAN_START_TIME<= trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
+        /**
+         * 保电巡视未开始
+         */
+        String bdXsWks = "SELECT count(1)  " +
+                "FROM XS_TXBD_TASK " +
+                "WHERE STAUTS = 0 AND PLAN_START_TIME<= trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
+        /**
+         * 看护未开始
+         */
+        String khWks = "SELECT count(1)  " +
+                "FROM KH_TASK " +
+                "WHERE STATUS = 0 AND PLAN_START_TIME<= trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
+        /**
+         * 现场稽查未开始
+         */
+        String xcJcWks = "SELECT count(1)  " +
+                "FROM CHECK_LIVE_TASK " +
+                "WHERE STATUS = 0 and to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') < plan_end_time ";
+        /**
+         * 正常巡视进行中
+         */
+        String zcXsJxz = "SELECT count(1)  " +
+                "FROM XS_ZC_TASK " +
+                "WHERE is_delete = 0 and STAUTS = 1 AND PLAN_START_TIME <= trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
+        /**
+         * 保电巡视进行中
+         */
+        String bdXsJxz = "SELECT count(1)  " +
+                "FROM XS_TXBD_TASK " +
+                "WHERE STAUTS = 1 AND PLAN_START_TIME<= trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
+        /**
+         * 看护进行中
+         */
+        String khJxz = "SELECT count(1)  " +
+                "FROM KH_TASK " +
+                "WHERE STATUS = 1 AND PLAN_START_TIME<= trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
+        /**
+         * 现场稽查进行中
+         */
+        String xcJcJxz = "SELECT count(1)  " +
+                "FROM CHECK_LIVE_TASK " +
+                "WHERE STATUS = 1  and to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') < plan_end_time";
+        /**
+         * 正常巡视已完成
+         */
+        String zcXsYwc = "SELECT count(1)  " +
+                "FROM XS_ZC_TASK " +
+                "WHERE is_delete = 0 and STAUTS = 2 AND PLAN_START_TIME <= trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
+        /**
+         * 保电巡视已完成
+         */
+        String bdXsYwc = "SELECT count(1)  " +
+                "FROM XS_TXBD_TASK " +
+                "WHERE STAUTS = 2 AND PLAN_START_TIME<= trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
+        /**
+         * 看护已完成
+         */
+        String khYwc = "SELECT count(1)  " +
+                "FROM KH_TASK " +
+                "WHERE STATUS = 2 AND PLAN_START_TIME<= trunc(sysdate+1) AND PLAN_END_TIME >= trunc(sysdate)";
+        /**
+         *现场稽查已完成
+         */
+        String xcJcYwc = "SELECT count(1)  " +
+                "FROM CHECK_LIVE_TASK " +
+                "WHERE STATUS = 2 and to_date('" + DateUtil.timeUtil(2) + "','yyyy-MM-dd HH24:mi') > plan_start_time and to_date('" + DateUtil.timeUtil(1) + "','yyyy-MM-dd HH24:mi') <plan_end_time";
 
-            String sql1 = "select * from(SELECT CREATETIME FROM TIMED_TASK where THREEDAY=1 ORDER BY CREATETIME DESC ) where ROWNUM=1";
-            List<Map<String, Object>> maps = this.execSql(sql1);
-            Date createtime = DateUtil.parseDate(maps.get(0).get("CREATETIME").toString());
-            Date nextTime = DateUtil.addDate(createtime, 72);
-            /**
-             *后台稽查未完成
-             */
-            String htJcWks = "SELECT count(*) FROM TIMED_TASK_RECORD WHERE CREATE_TIME >= trunc(sysdate) and (TASKS>COMPLETE)";
-            /**
-             *后台稽查进行中
-             */
+        String sql1 = "select * from(SELECT CREATETIME FROM TIMED_TASK where THREEDAY=1 ORDER BY CREATETIME DESC ) where ROWNUM=1";
+        List<Map<String, Object>> maps = this.execSql(sql1);
+        Date createtime = DateUtil.parseDate(maps.get(0).get("CREATETIME").toString());
+        Date nextTime = DateUtil.addDate(createtime, 72);
+        /**
+         *后台稽查未完成
+         */
+        String htJcWks = "SELECT count(*) FROM TIMED_TASK_RECORD WHERE CREATE_TIME >= trunc(sysdate) and (TASKS>COMPLETE)";
+        /**
+         *后台稽查进行中
+         */
 //            String htJcYks = "SELECT count(1) FROM TIMED_TASK t WHERE  t.CREATETIME >  ( select sysdate - (3 * 24 * 60 * 60 + 60 * 60) / (1 * 24 * 60 * 60)   from  dual) AND  THREEDAY  = 1 AND t.STATUS = 1";
-            String htJcYks = "SELECT count(DISTINCT (DEPT_ID)) FROM TIMED_TASK_RECORD";
-            /**
-             *后台稽查已完成
-             */
-            String htJcYwc = "SELECT count(*) FROM TIMED_TASK_RECORD WHERE CREATE_TIME >= trunc(sysdate) and (TASKS=COMPLETE)";
-            String sql = "SELECT " +
-                    "(" + zcXsWks + ")+(" + bdXsWks + ") as XsWks," +
-                    "(" + zcXsJxz + ")+(" + bdXsJxz + ") as XsJxz," +
-                    "(" + zcXsYwc + ")+(" + bdXsYwc + ") as XsYwc," +
-                    "(" + khJxz + ") as khJxz," +
-                    "(" + khWks + ") as khWks, " +
-                    "(" + khYwc + ") as khYwc," +
-                    "(" + xcJcJxz + ") as xcJcJxz," +
-                    "(" + xcJcWks + ") as xcJcWks," +
-                    "(" + xcJcYwc + ") as xcJcYwc, " +
+        String htJcYks = "SELECT count(DISTINCT (DEPT_ID)) FROM TIMED_TASK_RECORD";
+        /**
+         *后台稽查已完成
+         */
+        String htJcYwc = "SELECT count(*) FROM TIMED_TASK_RECORD WHERE CREATE_TIME >= trunc(sysdate) and (TASKS=COMPLETE)";
+        String sql = "SELECT " +
+                "(" + zcXsWks + ")+(" + bdXsWks + ") as XsWks," +
+                "(" + zcXsJxz + ")+(" + bdXsJxz + ") as XsJxz," +
+                "(" + zcXsYwc + ")+(" + bdXsYwc + ") as XsYwc," +
+                "(" + khJxz + ") as khJxz," +
+                "(" + khWks + ") as khWks, " +
+                "(" + khYwc + ") as khYwc," +
+                "(" + xcJcJxz + ") as xcJcJxz," +
+                "(" + xcJcWks + ") as xcJcWks," +
+                "(" + xcJcYwc + ") as xcJcYwc, " +
 //                    "(" + htJcWks + ") as htJcWks, " +
-                    "(" + htJcWks + ") as htJcWks, " +
-                    "(" + htJcYks + ") as htJcYks, " +
-                    "(" + htJcYwc + ") as htJcYwc " +
-                    "  FROM dual";
-            List<Map<String, Object>> list = this.execSql(sql);
+                "(" + htJcWks + ") as htJcWks, " +
+                "(" + htJcYks + ") as htJcYks, " +
+                "(" + htJcYwc + ") as htJcYwc " +
+                "  FROM dual";
+        List<Map<String, Object>> list = this.execSql(sql);
+        sendMsg.forEach((sessionId, session) -> {
             Map map = new HashMap();
             map.put("data", list);
             map.put("adminModule", 6);
@@ -389,113 +420,112 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
     @Scheduled(fixedDelay = 30000)
     public void adminModule6_1() {
         Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
-        sendMsg.forEach((sessionId, session) -> {
-            Object deptid = session.get("DEPTID");
-            /**
-             * 正常巡视未开始
-             */
-            String zcXsWks = "SELECT count(1)  " +
-                    "FROM XS_ZC_TASK " +
-                    "WHERE is_delete = 0 and STAUTS = 0 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
-            /**
-             * 保电巡视未开始
-             */
-            String bdXsWks = "SELECT count(1)  " +
-                    "FROM XS_TXBD_TASK " +
-                    "WHERE STAUTS = 0 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
-            /**
-             * 看护未开始
-             */
-            String khWks = "SELECT count(1)  " +
-                    "FROM KH_TASK " +
-                    "WHERE STATUS = 0 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
-            /**
-             * 现场稽查未开始
-             */
-            String xcJcWks = "SELECT count(1)  " +
-                    "FROM CHECK_LIVE_TASK " +
-                    "WHERE STATUS = 0 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
-            /**
-             * 正常巡视进行中
-             */
-            String zcXsJxz = "SELECT count(1)  " +
-                    "FROM XS_ZC_TASK " +
-                    "WHERE is_delete = 0 and STAUTS = 1 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
-            /**
-             * 保电巡视进行中
-             */
-            String bdXsJxz = "SELECT count(1)  " +
-                    "FROM XS_TXBD_TASK " +
-                    "WHERE STAUTS = 1 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
-            /**
-             * 看护进行中
-             */
-            String khJxz = "SELECT count(1)  " +
-                    "FROM KH_TASK " +
-                    "WHERE STATUS = 1 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
-            /**
-             * 现场稽查进行中
-             */
-            String xcJcJxz = "SELECT count(1)  " +
-                    "FROM CHECK_LIVE_TASK " +
-                    "WHERE STATUS = 1  AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
-            /**
-             * 正常巡视已完成
-             */
-            String zcXsYwc = "SELECT count(1)  " +
-                    "FROM XS_ZC_TASK " +
-                    "WHERE is_delete = 0 and STAUTS = 2 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
-            /**
-             * 保电巡视已完成
-             */
-            String bdXsYwc = "SELECT count(1)  " +
-                    "FROM XS_TXBD_TASK " +
-                    "WHERE STAUTS = 2 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
-            /**
-             * 看护已完成
-             */
-            String khYwc = "SELECT count(1)  " +
-                    "FROM KH_TASK " +
-                    "WHERE STATUS = 2 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
-            /**
-             *现场稽查已完成
-             */
-            String xcJcYwc = "SELECT count(1)  " +
-                    "FROM CHECK_LIVE_TASK " +
-                    "WHERE STATUS = 2 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
+        /**
+         * 正常巡视未开始
+         */
+        String zcXsWks = "SELECT count(1)  " +
+                "FROM XS_ZC_TASK " +
+                "WHERE is_delete = 0 and STAUTS = 0 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
+        /**
+         * 保电巡视未开始
+         */
+        String bdXsWks = "SELECT count(1)  " +
+                "FROM XS_TXBD_TASK " +
+                "WHERE STAUTS = 0 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
+        /**
+         * 看护未开始
+         */
+        String khWks = "SELECT count(1)  " +
+                "FROM KH_TASK " +
+                "WHERE STATUS = 0 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
+        /**
+         * 现场稽查未开始
+         */
+        String xcJcWks = "SELECT count(1)  " +
+                "FROM CHECK_LIVE_TASK " +
+                "WHERE STATUS = 0 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
+        /**
+         * 正常巡视进行中
+         */
+        String zcXsJxz = "SELECT count(1)  " +
+                "FROM XS_ZC_TASK " +
+                "WHERE is_delete = 0 and STAUTS = 1 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
+        /**
+         * 保电巡视进行中
+         */
+        String bdXsJxz = "SELECT count(1)  " +
+                "FROM XS_TXBD_TASK " +
+                "WHERE STAUTS = 1 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
+        /**
+         * 看护进行中
+         */
+        String khJxz = "SELECT count(1)  " +
+                "FROM KH_TASK " +
+                "WHERE STATUS = 1 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
+        /**
+         * 现场稽查进行中
+         */
+        String xcJcJxz = "SELECT count(1)  " +
+                "FROM CHECK_LIVE_TASK " +
+                "WHERE STATUS = 1  AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
+        /**
+         * 正常巡视已完成
+         */
+        String zcXsYwc = "SELECT count(1)  " +
+                "FROM XS_ZC_TASK " +
+                "WHERE is_delete = 0 and STAUTS = 2 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
+        /**
+         * 保电巡视已完成
+         */
+        String bdXsYwc = "SELECT count(1)  " +
+                "FROM XS_TXBD_TASK " +
+                "WHERE STAUTS = 2 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
+        /**
+         * 看护已完成
+         */
+        String khYwc = "SELECT count(1)  " +
+                "FROM KH_TASK " +
+                "WHERE STATUS = 2 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
+        /**
+         *现场稽查已完成
+         */
+        String xcJcYwc = "SELECT count(1)  " +
+                "FROM CHECK_LIVE_TASK " +
+                "WHERE STATUS = 2 AND PLAN_START_TIME <= sysdate AND PLAN_END_TIME >= trunc(sysdate)";
 
            /* String sql1 = "select * from(SELECT CREATETIME FROM TIMED_TASK where THREEDAY=1 ORDER BY CREATETIME DESC ) where ROWNUM=1";
             List<Map<String, Object>> maps = this.execSql(sql1);
             Date createtime = DateUtil.parseDate(maps.get(0).get("CREATETIME").toString());
             Date nextTime = DateUtil.addDate(createtime, 72);*/
-            /**
-             *后台稽查未完成
-             */
-            String htJcWks = "SELECT count(*) FROM TIMED_TASK_RECORD WHERE CREATE_TIME >= trunc(sysdate) and (TASKS>COMPLETE)";
-            /**
-             *后台稽查进行中
-             */
+        /**
+         *后台稽查未完成
+         */
+        String htJcWks = "SELECT count(*) FROM TIMED_TASK_RECORD WHERE CREATE_TIME >= trunc(sysdate) and (TASKS>COMPLETE)";
+        /**
+         *后台稽查进行中
+         */
 //            String htJcYks = "SELECT count(1) FROM TIMED_TASK t WHERE  t.CREATETIME >  ( select sysdate - (3 * 24 * 60 * 60 + 60 * 60) / (1 * 24 * 60 * 60)   from  dual) AND  THREEDAY  = 1 AND t.STATUS = 1";
-            String htJcYks = "SELECT count(DISTINCT (DEPT_ID)) FROM TIMED_TASK_RECORD";
-            /**
-             *后台稽查已完成
-             */
-            String htJcYwc = "SELECT count(*) FROM TIMED_TASK_RECORD WHERE CREATE_TIME >= trunc(sysdate) and (TASKS=COMPLETE)";
-            String sql = "SELECT " +
-                    "(" + zcXsWks + ")+(" + bdXsWks + ") as XsWks," +
-                    "(" + zcXsJxz + ")+(" + bdXsJxz + ") as XsJxz," +
-                    "(" + zcXsYwc + ")+(" + bdXsYwc + ") as XsYwc," +
-                    "(" + khJxz + ") as khJxz," +
-                    "(" + khWks + ") as khWks, " +
-                    "(" + khYwc + ") as khYwc," +
-                    "(" + xcJcJxz + ") as xcJcJxz," +
-                    "(" + xcJcWks + ") as xcJcWks," +
-                    "(" + xcJcYwc + ") as xcJcYwc, " +
-                    "(" + htJcWks + ") as htJcWks, " +
-                    "(" + htJcYks + ") as htJcYks, " +
-                    "(" + htJcYwc + ") as htJcYwc " +
-                    "  FROM dual";
-            List<Map<String, Object>> list = this.execSql(sql);
+        String htJcYks = "SELECT count(DISTINCT (DEPT_ID)) FROM TIMED_TASK_RECORD";
+        /**
+         *后台稽查已完成
+         */
+        String htJcYwc = "SELECT count(*) FROM TIMED_TASK_RECORD WHERE CREATE_TIME >= trunc(sysdate) and (TASKS=COMPLETE)";
+        String sql = "SELECT " +
+                "(" + zcXsWks + ")+(" + bdXsWks + ") as XsWks," +
+                "(" + zcXsJxz + ")+(" + bdXsJxz + ") as XsJxz," +
+                "(" + zcXsYwc + ")+(" + bdXsYwc + ") as XsYwc," +
+                "(" + khJxz + ") as khJxz," +
+                "(" + khWks + ") as khWks, " +
+                "(" + khYwc + ") as khYwc," +
+                "(" + xcJcJxz + ") as xcJcJxz," +
+                "(" + xcJcWks + ") as xcJcWks," +
+                "(" + xcJcYwc + ") as xcJcYwc, " +
+                "(" + htJcWks + ") as htJcWks, " +
+                "(" + htJcYks + ") as htJcYks, " +
+                "(" + htJcYwc + ") as htJcYwc " +
+                "  FROM dual";
+        List<Map<String, Object>> list = this.execSql(sql);
+        sendMsg.forEach((sessionId, session) -> {
             Map map = new HashMap();
             map.put("data", list);
             map.put("adminModule", "6_1");
@@ -506,7 +536,9 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
     @Scheduled(fixedDelay = 30000)
     public void adminModule20() {
         Map<String, HashMap> sendMsg = firstLevelCommandServerEndpoint.sendMsg();
-        sendMsg.forEach((sessionId, session) -> {
+        Map map1 = null;
+        Map map = null;
+        try {
             /**
              * 离线
              */
@@ -543,26 +575,32 @@ public class FirstLevelCommandPushService extends CurdService<websocket, websock
              * 巡视不合格
              */
             String unqualifiedpatrol = " SELECT count(1) as unqualifiedpatrol FROM MONITOR_CHECK_EJ WHERE (WARNING_TYPE = 5 OR WARNING_TYPE = 3) AND trunc(CREATE_TIME) = trunc(sysdate)  ";
-            try {
-                Map map1 = new HashMap();
-                Map map = new HashMap();
-                Map<String, Object> offlineMap = this.execSqlSingleResult(offline);
-                Map<String, Object> answertimeMap = this.execSqlSingleResult(answertime);
-                Map<String, Object> overdueMap = this.execSqlSingleResult(overdue);
-                Map<String, Object> temporarilyMap = this.execSqlSingleResult(temporarily);
-                Map<String, Object> unqualifiedpatrolMap = this.execSqlSingleResult(unqualifiedpatrol);
-                map.put("OFFLINEMAP", offlineMap.get("OFFLINES"));
-                map.put("ANSWERTIMEMAP", answertimeMap.get("ANSWERTIME"));
-                map.put("OVERDUEMAP", overdueMap.get("OVERDUE"));
-                map.put("TEMPORARILYMAP", temporarilyMap.get("TEMPORARILY"));
-                map.put("UNQUALIFIEDPATROLMAP", unqualifiedpatrolMap.get("UNQUALIFIEDPATROL"));
-                map1.put("data", map);
-                map1.put("adminModule", 20);
-                firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), map1);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
+            map1 = new HashMap();
+            map = new HashMap();
+            Map<String, Object> offlineMap = this.execSqlSingleResult(offline);
+            Map<String, Object> answertimeMap = this.execSqlSingleResult(answertime);
+            Map<String, Object> overdueMap = this.execSqlSingleResult(overdue);
+            Map<String, Object> temporarilyMap = this.execSqlSingleResult(temporarily);
+            Map<String, Object> unqualifiedpatrolMap = this.execSqlSingleResult(unqualifiedpatrol);
+            map.put("OFFLINEMAP", offlineMap.get("OFFLINES"));
+            map.put("ANSWERTIMEMAP", answertimeMap.get("ANSWERTIME"));
+            map.put("OVERDUEMAP", overdueMap.get("OVERDUE"));
+            map.put("TEMPORARILYMAP", temporarilyMap.get("TEMPORARILY"));
+            map.put("UNQUALIFIEDPATROLMAP", unqualifiedpatrolMap.get("UNQUALIFIEDPATROL"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+//        sendMsg.forEach((sessionId, session) -> {
+//            map1.put("data", map);
+//            map1.put("adminModule", 20);
+//            firstLevelCommandServerEndpoint.sendText((Session) session.get("session"), map1);
+//        });
+        Set<String> strings = sendMsg.keySet();
+        for (String session : strings) {
+            map1.put("data", map);
+            map1.put("adminModule", 20);
+            firstLevelCommandServerEndpoint.sendText((Session) sendMsg.get(session).get("session"), map1);
+        }
     }
 
     @Scheduled(fixedDelay = 30000)

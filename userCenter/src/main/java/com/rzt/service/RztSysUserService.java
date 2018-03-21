@@ -361,6 +361,7 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
                             //人员登陆时间添加
                             this.reposiotry.insRztuserLoginTypeTime(userid.get(0).get("ID").toString(), 1);
                             KHSX(String.valueOf(userid.get(0).get("ID")), typee);
+                            removeLiXianRedis(String.valueOf(userid.get(0).get("ID")));
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -446,8 +447,8 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
                         key = "TWO+*+3+13+" + map.get("USER_ID") + "+" + map.get("DEPTID") + "+*";
                     }
                     removeKey(key);
-                    this.reposiotry.updateOnlineTime(userId, Long.parseLong(map.get("ID").toString()));
                 }
+                this.reposiotry.updateOnlineTime(userId, Long.parseLong(map.get("ID").toString()));
             } catch (Exception e) {
 
             }
@@ -472,4 +473,36 @@ public class RztSysUserService extends CurdService<RztSysUser, RztSysUserReposit
         }
     }
 
+    public void removeLiXianRedis(String s) {
+        RedisConnection connection = null;
+        try {
+            connection = redisTemplate.getConnectionFactory().getConnection();
+            connection.select(5);
+            byte[] bytes = "lixian".getBytes();
+            connection.hDel(bytes,s.getBytes());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            connection.close();
+        }
+    }
+
+    public WebApiResponse getAddressList(String userId, JSONObject jsonObject) {
+        try {
+            String userSql = "select u.*,d.deptname from rztsysuser u left join rztsysdepartment d on d.id= u.deptid where u.id='" + userId + "'";
+            Map<String, Object> map = this.execSqlSingleResult(userSql);
+            String sql ="";
+            if (map.get("DEPTNAME").toString().equals("公司本部")) {
+                 sql = "select u.*,d.deptname from rztsysuser u left join rztsysdepartment d on d.id= u.deptid where userdelete=1 order by realname desc";
+            } else {
+                 sql = "select u.*,d.deptname from rztsysuser u left join rztsysdepartment d on d.id= u.deptid where userdelete=1 and deptid= '" + map.get("DEPTID").toString() + "' order by realname";
+            }
+            List<Map<String, Object>> maps = this.execSql(sql);
+            return WebApiResponse.success(maps);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return WebApiResponse.erro("");
+        }
+    }
 }

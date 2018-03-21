@@ -7,12 +7,17 @@ import com.rzt.eureka.StaffLine;
 import com.rzt.service.WarningOffPostUserService;
 import com.rzt.service.WarningOffPostUserTimeService;
 import com.rzt.util.WebApiResponse;
+import com.rzt.utils.SnowflakeIdWorker;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import redis.clients.jedis.Jedis;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +34,9 @@ public class WarningController extends CurdController<OffPostUser,WarningOffPost
 
 	@Autowired
 	private StaffLine staffLine;
+
+	@Autowired
+	private RedisTemplate<String, Object> redisTemplate;
 	
 	/**
 	 * 添加看护人员脱岗信息
@@ -63,6 +71,9 @@ public class WarningController extends CurdController<OffPostUser,WarningOffPost
                                 //offPostUserTime.setEndTime(new Date());
                                 timeService.updateOffUserEndTime(offPostUserTime);
                             }
+                            String key  = offPostUser.getUserId()+"#"+offPostUser.getTaskId();
+							removeTuoGangRedis(key);
+							service.updateAlarmOffWorkStatus(offPostUser.getUserId(),offPostUser.getTaskId());
                         }else if(offPostUser.getStatus()==1){
                             //脱岗
                             if(list.size()==0){
@@ -105,12 +116,48 @@ public class WarningController extends CurdController<OffPostUser,WarningOffPost
                 int i = service.updateTimeStatus(fk_task_id,fk_user_id,id);
                 if(i>0){
                     try {
-                        staffLine.khtg(fk_user_id,fk_task_id);
+                        //staffLine.khtg(fk_user_id,fk_task_id); //由于怕feign调用服务出错，将告警代码直接移到这个项目中
+                        service.KHTG(fk_user_id,fk_task_id); //看护告警代码
+                        String value = map.get("START_TIME").toString();
+						SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+						Date da = format.parse(value);
+                        service.tuoGangRedis(fk_user_id,fk_task_id,da);
                     } catch (Exception e) {
+                    	e.printStackTrace();
                     }
                 }
             }
 		}
 	}
+
+	@GetMapping("khtg") //脱岗测试使用
+	public void khtg(String fk_user_id,Long fk_task_id){
+		Date da = new Date();
+		service.tuoGangRedis(fk_user_id,fk_task_id,da);
+	}
+	@GetMapping("hg") //回岗测试使用
+	public void hg(String userId,Long taskId){
+		service.updateAlarmOffWorkStatus(userId,taskId);
+		String key = userId+"#"+taskId;
+		removeTuoGangRedis(key);
+	}
+	//人员回岗后删除redis中的键
+	//@GetMapping("removeTuogang")
+	public void removeTuoGangRedis(String s) {
+		RedisConnection connection = null;
+		try {
+			connection = redisTemplate.getConnectionFactory().getConnection();
+			connection.select(5);
+			byte[] bytes = "tuogang".getBytes();
+			connection.hDel(bytes,s.getBytes());
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			connection.close();
+		}
+	}
+
+
 
 }

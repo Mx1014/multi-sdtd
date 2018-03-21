@@ -93,6 +93,17 @@ public class CheckLiveTasksbController extends
 		}
 	}
 
+	@ApiOperation(value = "修改已派发看审核任务稽查人",notes = "修改已派发审核任务稽查人")
+	@GetMapping("/updateSbCheckUser")
+	public WebApiResponse updateSbCheckUser(String id,String userId,String userName){
+		try{
+			this.service.updateSbCheckUser(Long.valueOf(id),userId,userName);
+			return WebApiResponse.success("数据更新成功");
+		}catch (Exception e){
+			return WebApiResponse.erro("数据更新失败"+e.getMessage());
+		}
+	}
+
 	//以上是隐患稽查pc的接口
 	//以下是隐患稽查app的接口
 	@ApiOperation(value = "app隐患稽查任务列表",notes = "app隐患稽查任务列表")
@@ -136,12 +147,25 @@ public class CheckLiveTasksbController extends
 
 	@ApiOperation(value = "app隐患稽查任务完成按钮",notes = "app隐患稽查任务完成按钮")
 	@PostMapping("checkLiveTasksbComplete")
-	public WebApiResponse checkLiveTasksbComplete(XsSbYh yh,String activityId,String flag){
+	public WebApiResponse checkLiveTasksbComplete(XsSbYh yh,String activityId,String flag,String currentUserId){
 		//taskId是check_live_tasksb的id
 		try{
 			service.checkLiveTasksbComplete(yh);
-			monitorFeign.jicha(activityId,yh.getId().toString(),flag);
+			monitorFeign.jicha(activityId,yh.getId().toString(),flag,currentUserId);
 			return WebApiResponse.success("");
+		}catch (Exception e){
+			LOGGER.error("app任务列表获取失败",e);
+			return WebApiResponse.erro("数据获取失败"+e.getMessage());
+		}
+	}
+
+
+	@ApiOperation(value = "到达现场回显",notes = "到达现场回显")
+	@PostMapping("checkLiveTasksbInfo")
+	public WebApiResponse checkLiveTasksbInfo(String yhId){
+		try{
+			List<Map<String, Object>> list = service.checkLiveTasksbInfo(yhId);
+			return WebApiResponse.success(list);
 		}catch (Exception e){
 			LOGGER.error("app任务列表获取失败",e);
 			return WebApiResponse.erro("数据获取失败"+e.getMessage());

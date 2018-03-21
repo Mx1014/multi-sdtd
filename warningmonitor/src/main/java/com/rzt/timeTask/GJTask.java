@@ -1,6 +1,7 @@
 package com.rzt.timeTask;
 
 import com.rzt.entity.Monitorcheckyj;
+import com.rzt.repository.AlarmOfflineRepository;
 import com.rzt.repository.Monitorcheckejrepository;
 import com.rzt.repository.Monitorcheckyjrepository;
 import com.rzt.service.CurdService;
@@ -13,9 +14,11 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.GetMapping;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +44,12 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
     @Autowired
     private RedisTemplate<String,Object> redisTemplate;
 
+    @Autowired
+    JedisPool pool;
+
+    @Autowired
+    private AlarmOfflineRepository offline;
+
 
     //定时拉数据  1
     @Scheduled(cron = "0 30 0 * * ? ")
@@ -52,7 +61,7 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
         khgj.KHWKH();  //未按时间接任务
 
         khgj.JCOutOfTime();  //稽查超期
-        khgj.JCWsx();  //稽查未上线
+        //khgj.JCWsx();  //稽查未上线
         khgj.JCWdxc();  //稽查未到达现场
 
     }
@@ -141,6 +150,14 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
         if(maps.size()==0){
             return 0;
         }
+        String sql2 = " SELECT LOGINSTATUS FROM RZTSYSUSER WHERE ID=?1 ";
+        List<Map<String, Object>> maps2 = execSql(sql2, userId);
+        if(maps2.size()>0){
+            Integer loginstatus = Integer.parseInt(maps2.get(0).get("LOGINSTATUS").toString());
+            if(loginstatus==0){
+                return 0;
+            }
+        }
         int flag = 0;
         for (Map<String, Object> map:maps) {
             //开始时间
@@ -178,37 +195,56 @@ public class GJTask  extends CurdService<Monitorcheckyj, Monitorcheckyjrepositor
                             if (taskType==2){
                                 key = "ONE+"+map.get("ID")+"+2+8+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME")+"+"+reason;
                                 resp.saveCheckEjWdw(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(map.get("ID").toString()),2,8,map.get("USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString(),reason);
+                                lixianRedis(map.get("USER_ID").toString());
                             }else if (taskType==1){
                                 key = "ONE+"+map.get("ID")+"+1+2+"+map.get("CM_USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME")+"+"+reason;
                                 resp.saveCheckEjWdw(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(map.get("ID").toString()),1,2,map.get("CM_USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString(),reason);
+                                lixianRedis(map.get("CM_USER_ID").toString());
                             }else if(taskType==3){
                                 key = "ONE+"+map.get("ID")+"+3+13+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME")+"+"+reason;
                                 resp.saveCheckEjWdw(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(map.get("ID").toString()),3,13,map.get("USER_ID").toString(),map.get("DEPTID").toString(),map.get("TASK_NAME").toString(),reason);
+                                lixianRedis(map.get("USER_ID").toString());
                             }
                             redisService.setex(key);
 
                         }
                     }
-                }/*else if(new Date().getTime()<startDate){
-                    String s = "未上线";
-                    String key = "";
-                    if (taskType==2){
-                        key = "TWO+"+map.get("ID")+"+2+8+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME")+"+"+s;
-                    }else if (taskType==1){
-                        key = "TWO+"+map.get("ID")+"+1+2+"+map.get("CM_USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME")+"+"+s;
-                    }else if(taskType==3){
-                        key = "TWO+"+map.get("ID")+"+3+13+"+map.get("USER_ID")+"+"+map.get("DEPTID")+"+"+map.get("TASK_NAME")+"+"+s;
-                    }
-                    Long time = plan_start_time.getTime() - new Date().getTime();
-                    time = time+5400000L;
-                    redisService.psetex(key,time);
-                }*/
+                }
             } catch (Exception e) {
+                e.printStackTrace();
             }
         }
         return flag;
     }
 
 
+    public void lixianRedis(String userId){
+        Jedis jedis = null;
+        try {
+            String sql = "SELECT * FROM ALARM_OFFLINE WHERE USER_ID=?1 AND trunc(CREATE_TIME)=trunc(sysdate)";
+            List<Map<String, Object>> maps = execSql(sql, userId);
+            Date date = new Date();
+            Long timeLong = 5400000l; //延迟之后报的警，所以告警产生时就已经离线90分钟
+            if(maps.size()==0){//如果ALARM_OFFLINE表中没有数据，则进行添加
+                //向ALARM_OFFLINE中添加数据
+                offline.addoffLine(SnowflakeIdWorker.getInstance(10,10).nextId(),userId,timeLong,date);
+            }else{ //如果已经存在，则只更细时长和次数
+
+                Integer frequency = Integer.parseInt(maps.get(0).get("OFFLINE_FREQUENCY").toString())+1;
+                timeLong = Long.parseLong(maps.get(0).get("OFFLINE_TIME_LONG").toString())+timeLong;
+                offline.updateoffLine(Long.parseLong(maps.get(0).get("ID").toString()),frequency,timeLong,date);
+            }
+
+            jedis = pool.getResource();
+            jedis.select(5);
+            jedis.hset("lixian",userId,String.valueOf(date.getTime()));
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            if(jedis!=null){
+                jedis.close();
+            }
+        }
+    }
 
 }

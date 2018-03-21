@@ -79,7 +79,7 @@ public class CMLINEService extends CurdService<CMLINE,CMLINERepository> {
         return WebApiResponse.success(maps);
     }
 
-    public WebApiResponse getLines(String kv, String currentUserId) {
+    public WebApiResponse getLines(String kv, String lineName,String currentUserId) {
         List<String> list = new ArrayList<>();
         String sql = "select id,line_name from cm_line where id in ( select line_id from cm_line_section where is_del=0 ";
         if(StringUtils.isNotEmpty(currentUserId)){
@@ -113,6 +113,9 @@ public class CMLINEService extends CurdService<CMLINE,CMLINERepository> {
         if(kv!=null&&!"".equals(kv.trim())){
             list.add(kv);
             sql += " and v_level= ?" + list.size();
+        }
+        if(lineName != null && lineName.trim().length() != 0){
+            sql += " and line_name like '%"+lineName+"%'" ;
         }
         sql += ") ORDER BY NLSSORT(line_name,'NLS_SORT = SCHINESE_PINYIN_M')";
         List<Map<String, Object>> maps = execSql(sql,list.toArray());

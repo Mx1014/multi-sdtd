@@ -292,18 +292,19 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
         if (xslx == 0 || xslx == 1) {
             this.reposiotry.updateTxbdExecDetail(sfdw, reason, execDetailId);
         } else {
-            try {
-                if (sfdw == 1) {
-                    warningmonitorServerService.xsTourScope(taskid, userid, reason);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
             //计算十分钟五基塔
             jiSuanGanTa(execDetailId, taskid, userid);
 
             //修改状态
             this.reposiotry.updateZcxsExecDetail(sfdw, reason, execDetailId, longtitude, latitude);
+
+            try {
+                if (sfdw == 1) {
+                    warningmonitorServerService.xsTourScope(taskid, userid, reason,execDetailId);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -335,7 +336,7 @@ public class XsZcTaskwpqrService extends CurdService<XsZcTaskwpqr, XsZcTaskwpqrR
                             long nextId = new SnowflakeIdWorker(18, 21).nextId();
                             this.reposiotry.insertException(nextId, taskid, "十分钟五基塔", JSONObject.toJSONString(gantas));
                             try {
-                                warningmonitorServerService.takePhoto(taskid, userid);
+                                warningmonitorServerService.takePhoto(taskid, userid,nextId);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }

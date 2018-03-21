@@ -20,6 +20,7 @@ import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * 隐患上报处理流程
@@ -89,13 +90,14 @@ public class ProController {
      * @return
      */
     @GetMapping("/proClick")
+    @Transactional
     public WebApiResponse chuLi(String taskId,String YHID,String flag,String isKH,String info,String proId,String currentUserId
     ,String LINE_NAME,String TDYW_ORG,String YWORG_ID){
         String dept = "";
         if(null == currentUserId || "".equals(currentUserId)){
             return WebApiResponse.erro("当前用户权限获取失败 ");
         }
-
+        String userId = currentUserId;
       try {
           if(null != currentUserId && !"".equals(currentUserId)){
                dept = redisUtil.findTDByUserId(currentUserId);
@@ -120,22 +122,25 @@ public class ProController {
           map.put("flag",flag);
           map.put("info",info);
           proService.complete(taskId,map);
-
+          String isjc = "0";
           //获取节点前进后的id   用流程实例id做条件
           String id = proService.findIdByProId(proId);
           //测试稽查  sdid 代表属地监控中心   jkid 代表公司监控中心
           if("sdid".equals(currentUserId) || "jkid".equals(currentUserId)){
+              if(null == id || "".equals(id)){
+                  return WebApiResponse.erro("当前节点任务不存在");
+              }
             // 当dept.equals(TDYW_ORG)?"2":"1"   等于时代表是第二次派出稽查   不等于是派出第一次稽查
               nurseTaskService.addCheckLiveTasksb(id,
                       "0",LINE_NAME+"隐患点",YHID,YWORG_ID,
                       TDYW_ORG,dept.equals(TDYW_ORG)?"2":"1",dept);
+              isjc = "1";
               //  测试模拟稽查   默认为true
               //proService.complete(id,map);
           }
+          String name_ = proService.findAssignee(proId);
+          proService.insertActTaskInfo(UUID.randomUUID().toString(),"wtsh",proId,userId,flag,info,name_,isKH,isjc);
 
-          if(null == id || "".equals(id)){
-              return WebApiResponse.erro("当前节点任务不存在");
-          }
 
 
           //调用稽查接口   派发稽查任务
@@ -158,20 +163,24 @@ public class ProController {
      * @return
      */
     @GetMapping("/jchd")
-    public WebApiResponse jicha(String taskId,String YHID,String flag){
+    public WebApiResponse jicha(String taskId,String YHID,String flag,String userId){
         try {
+            String proInstId = proService.findProInstId(taskId);
             //稽查任务回调   回调时需要传递当前任务id  和flag  隐患id
             Map<String, Object> map = new HashMap<>();
             map.put("YHID",YHID);
             map.put("flag",flag);
             proService.complete(taskId,map);
+            String name_ = proService.findAssignee(proInstId);
+            proService.insertActTaskInfo(UUID.randomUUID().toString(),"wtsh",proInstId,userId,flag,"",name_,"","");
+
             LOGGER.info("稽查回调成功");
             return WebApiResponse.success("稽查回调成功");
         }catch (Exception e){
             LOGGER.error("taskId      " + taskId);
             LOGGER.error("YHID      " + YHID);
             LOGGER.error("flag      " + flag);
-            return WebApiResponse.erro("稽查任务回调失败"+e.getMessage());
+            return WebApiResponse.success("稽查任务回调失败"+e.getMessage());
         }
     }
     /**
@@ -273,6 +282,47 @@ public class ProController {
 
             return "权限查询失败"+e.getMessage();
         }
+    }
+
+    /**
+     * 页面 派稽查权限接口
+     * 返回1 不显示 代表运检部  返回1时显示代表  监控中心
+     * @param currentUserId
+     * @return
+     */
+    @GetMapping("/activitiAuth")
+    public String activitiAuth(String currentUserId){
+        try{
+            String roleIdByUserId = redisUtil.findRoleIdByUserId(currentUserId);
+            if("sdid".equals(roleIdByUserId) || "jkid".equals(roleIdByUserId)){
+                return "0";
+            }else if("sdyjid".equals(roleIdByUserId) || "yjid".equals(roleIdByUserId)){
+                return "1";
+            }else {
+                return "";
+            }
+        }catch (Exception e){
+
+            return "权限查询失败"+e.getMessage();
+        }
+    }
+
+    /**
+     * 根据上报隐患id查询隐患回显数据
+     * @return
+     */
+    @GetMapping("/findYHINFO")
+    public WebApiResponse findYHINFO(String proId){
+        return proService.findYHINFO(proId);
+    }
+
+    /**
+     * 查询当前任务的进度
+     * @return
+     */
+    @GetMapping("/findJD")
+    public WebApiResponse findJD(String proId){
+        return proService.findJD(proId);
     }
 
 

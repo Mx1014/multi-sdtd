@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.rzt.websocket.service.FirstLevelCommandPushService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.annotation.Async;
 
 import javax.annotation.Resource;
 import javax.websocket.*;
@@ -13,6 +14,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @ServerEndpoint("/serverendpoint/firstlevelcommand/{currentUserId}/{mapType}/{type}/{tableType}")
 public class FirstLevelCommandServerEndpoint {
@@ -51,17 +54,79 @@ public class FirstLevelCommandServerEndpoint {
         h.put("tableType", tableType);
         h.put("DEPTID", jsonObject.get("DEPTID"));
         livingSessions.put(sessionId, h);
-        firstLevelCommandPushService.adminModule1();
-        firstLevelCommandPushService.adminModule2();
-        firstLevelCommandPushService.adminModule3();
-        firstLevelCommandPushService.adminModule4();
-        firstLevelCommandPushService.adminModule5();
-        firstLevelCommandPushService.adminModule6();
-        firstLevelCommandPushService.adminModule6_1();
-        firstLevelCommandPushService.adminModule7();
-        firstLevelCommandPushService.adminModule8();
-        firstLevelCommandPushService.adminModule20();
+        ExecutorService executorService = Executors.newCachedThreadPool();
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                firstLevelCommandPushService.adminModule7();
+            }
+        });
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                firstLevelCommandPushService.adminModule6();
+            }
+        });
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                firstLevelCommandPushService.adminModule6_1();
+            }
+        });
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                firstLevelCommandPushService.adminModule8();
+            }
+        });
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                firstLevelCommandPushService.adminModule1();
+            }
+        });
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                firstLevelCommandPushService.adminModule2();
+            }
+        });
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                firstLevelCommandPushService.adminModule3();
+            }
+        });
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                firstLevelCommandPushService.adminModule4();
+            }
+        });
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                firstLevelCommandPushService.adminModule5();
+            }
+        });
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                firstLevelCommandPushService.adminModule20();
+            }
+        });
+//        firstLevelCommandPushService.adminModule1();
+//        firstLevelCommandPushService.adminModule2();
+//        firstLevelCommandPushService.adminModule3();
+//        firstLevelCommandPushService.adminModule4();
+//        firstLevelCommandPushService.adminModule5();
+//        firstLevelCommandPushService.adminModule6();
+//        firstLevelCommandPushService.adminModule6_1();
+//        firstLevelCommandPushService.adminModule7();
+//        firstLevelCommandPushService.adminModule8();
+//        firstLevelCommandPushService.adminModule20();
     }
+
 
     public Map<String, HashMap> sendMsg() {
         return livingSessions;

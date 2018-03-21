@@ -2,9 +2,7 @@ package com.rzt.utils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class weekTime {
     public static Map weekTime() {
@@ -31,4 +29,39 @@ public class weekTime {
             return null;
         }
     }
+
+    //获取本月第一天
+    public static String getFirstDayOfMonth(){
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(getNowYear(), getNowMonth() - 1, 1);
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        String format1 = format.format(calendar.getTime());
+        return format1;
+    }
+    //获取本月最后一天
+    public static String getLastDayOfMonth(){
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(getNowYear(), getNowMonth() - 1, 1);
+        int day = calendar.getActualMaximum(5);
+        calendar.set(getNowYear(), getNowMonth() - 1, day);
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        String format2 = format.format(calendar.getTime());
+        return format2;
+    }
+
+    //获取今年是哪一年
+    public static Integer getNowYear() {
+        Date date = new Date();
+        GregorianCalendar gc = (GregorianCalendar) Calendar.getInstance();
+        gc.setTime(date);
+        return Integer.valueOf(gc.get(1));
+    }
+    //获取本月是哪一月
+    public static int getNowMonth() {
+        Date date = new Date();
+        GregorianCalendar gc = (GregorianCalendar) Calendar.getInstance();
+        gc.setTime(date);
+        return gc.get(2) + 1;
+    }
+
 }

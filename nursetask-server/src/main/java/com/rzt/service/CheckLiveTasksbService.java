@@ -234,4 +234,14 @@ public class CheckLiveTasksbService extends CurdService<CheckLiveTasksb,CheckLiv
         }
         return childOrg;
     }
+
+    @Transactional
+    public void updateSbCheckUser(Long id, String userId, String userName) {
+        reposiotry.updateSbCheckUser(id,userId,userName);
+
+    }
+
+    public List<Map<String, Object>> checkLiveTasksbInfo(String yhId) {
+         return execSql("select * from xs_sb_yh where id=?", Long.valueOf(yhId));
+    }
 }

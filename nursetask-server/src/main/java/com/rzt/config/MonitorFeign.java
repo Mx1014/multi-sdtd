@@ -16,9 +16,11 @@ public interface MonitorFeign {
      * @param flag
      * @return
      */
-    @GetMapping("/pro/jchd")
+    @GetMapping("/monitorServer/pro/jchd")
     public WebApiResponse jicha(@RequestParam(name = "taskId") String taskId,
                                 @RequestParam(name = "YHID") String YHID,
-                                @RequestParam(name = "flag") String flag);
+                                @RequestParam(name = "flag") String flag,
+                                @RequestParam(name = "userId") String userId
+                                );
 
 }

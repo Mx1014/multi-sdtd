@@ -320,6 +320,27 @@ public class XsZcCycleController extends
 	public void autoInsertTourTask(String sql,Long xsZcCycleId) {
 		scheduledTaskService.autoInsertTourTask();
 	}
+	/***
+	* @Method xsCycleEdit
+	* @Description 巡视周期变更
+	* @param [sql, xsZcCycleId]
+	* @return void
+	* @date 2018/3/20 15:12
+	* @author nwz
+	*/
+	@PatchMapping("xsCycleEdit")
+	public WebApiResponse xsCycleEdit(String currentUserId,Long id,Integer cycle,Integer inUse,Integer planXsNum,String planStartTime,String planEndTime,Integer isKt,String userId,String changeReson,String description) {
+		try{
+			this.service.xsCycleEdit(currentUserId,id,cycle,inUse,planXsNum,planStartTime,planEndTime,isKt,userId,changeReson,description);
+			return WebApiResponse.success("");
+		} catch(Exception e) {
+			e.printStackTrace();
+			return WebApiResponse.erro("出错了 --> " + e.getMessage());
+
+		}
+
+	}
+
 
 	@InitBinder
 	public void initBinder(ServletRequestDataBinder binder) {

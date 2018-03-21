@@ -8,6 +8,7 @@ package com.rzt.service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.rzt.entity.Monitorcheckej;
+import com.rzt.repository.AlarmOfflineRepository;
 import com.rzt.repository.Monitorcheckejrepository;
 import com.rzt.util.WebApiResponse;
 import com.rzt.utils.SnowflakeIdWorker;
@@ -20,11 +21,11 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * 类名称：MONITORCHECKEJService
@@ -46,6 +47,15 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
 
     @Autowired
     private RedisService redisService;
+
+    @Autowired
+    JedisPool pool;
+
+    @Autowired
+    private AlarmOfflineRepository offlineRepository;
+
+    @Autowired
+    private AlarmOfflineRepository offline;
 
     //获取通道公司ID
     public Object getDeptId(String userId) {
@@ -78,6 +88,7 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
                 //如果任务状态不为2，才将数据插入进去
                 if(Integer.parseInt(map.get("STAUTS").toString())==0 && Integer.parseInt(map2.get("LOGINSTATUS").toString())==0){
                     resp.saveCheckEjWdw(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(messages[1]),Integer.valueOf(messages[2]),Integer.valueOf(messages[3]),messages[4],messages[5],messages[6],messages[7]);
+                    lixianRedis( messages[4]);//将离线的userId放入redis中
                     flag = true;
                 }
             } catch (Exception e) {
@@ -93,10 +104,37 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
             if(maps!=null && maps.size()>0 && Integer.parseInt(maps.get("LOGINSTATUS").toString())==0){
                 //看护没有提前完成的
                 resp.saveCheckEjWdw(SnowflakeIdWorker.getInstance(20,14).nextId(),Long.valueOf(messages[1]),Integer.valueOf(messages[2]),Integer.valueOf(messages[3]),messages[4],messages[5],messages[6],messages[7]);
+                lixianRedis( messages[4]);//将离线的userId放入redis中
                 flag = true;
             }
         }
         return flag;
+    }
+    private void lixianRedis(String userId){
+        String sql = "SELECT * FROM ALARM_OFFLINE WHERE USER_ID=?1 AND trunc(CREATE_TIME)=trunc(sysdate)";
+        List<Map<String, Object>> maps = execSql(sql, userId);
+        Date date = new Date();
+        Long timeLong = 5400000l;//延迟了90分钟报的警，所以报警时此人已经离线90分钟
+        if(maps.size()==0){//如果ALARM_OFFLINE表中没有数据，则进行添加
+            //向ALARM_OFFLINE中添加数据
+            offline.addoffLine(SnowflakeIdWorker.getInstance(10,10).nextId(),userId,timeLong,date);
+        }else{ //如果已经存在，则只更细时长和次数
+            Integer frequency = Integer.parseInt(maps.get(0).get("OFFLINE_FREQUENCY").toString())+1;
+            timeLong = Long.parseLong(maps.get(0).get("OFFLINE_TIME_LONG").toString())+timeLong;
+            offline.updateoffLine(Long.parseLong(maps.get(0).get("ID").toString()),frequency,timeLong,date);
+        }
+        Jedis jedis=null;
+        try {
+            jedis = pool.getResource();
+            jedis.select(5);
+            jedis.hset("lixian",userId,String.valueOf(date.getTime()));
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            if(jedis!=null){
+                jedis.close();
+            }
+        }
     }
 
     //判断权限，获取当前登录用户的deptId，如果是全部查询则返回0
@@ -507,6 +545,8 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
             if ("0".equals(deptId)) {
                 return WebApiResponse.success(resp.updateYJ(taskId, type, warningType, checkInfo, checkAppInfo,createTime,checkMode));
             } else {
+                String userId1 = getUserId(2, taskId, type, warningType);//查找该任务负责人id
+                checkAlarm(userId1,taskId,warningType,1);
                 return WebApiResponse.success(resp.updateEJ(taskId, type, warningType, checkInfo, checkAppInfo,createTime,checkMode));
             }
         } catch (Exception e) {
@@ -527,11 +567,50 @@ public class Monitorcheckejservice extends CurdService<Monitorcheckej, Monitorch
             if ("0".equals(deptId)) {
                 return WebApiResponse.success(resp.updateYJC(taskId, type, warningType, checkInfo, userId,createTime,checkMode));
             } else {
+                String userId1 = getUserId(2, taskId, type, warningType);//查找该任务负责人id
+                checkAlarm(userId1,taskId,warningType,2);
                 return WebApiResponse.success(resp.updateEJC(taskId, type, warningType, checkInfo, userId,createTime,checkMode));
             }
         } catch (Exception e) {
             return WebApiResponse.erro("添加失败" + e.getMessage());
         }
+    }
+
+    //更改Alarm系列表中的状态
+    private void checkAlarm(String userId, Long taskId, Integer warningType,Integer status){
+        if(warningType==2 || warningType==8||warningType==13){
+            //更改离线表中的状态
+            offlineRepository.updateOffLineStatus(userId,status);
+        }else if(warningType==3 || warningType==5){
+            //更改巡视不合格表中的状态
+            offlineRepository.updateXS(userId,taskId,status);
+        }else if(warningType==4 || warningType==10){
+            //更改未按时接任务中的状态
+            offlineRepository.updateNotNoTimeStatus(userId,taskId,status);
+        }else if(warningType==1){
+            //更改超期表中的状态
+            offlineRepository.updateOverdue(userId,taskId,status);
+        }else if(warningType==7){
+            //更改看护脱岗表中的状态
+            offlineRepository.updateoffWorkStatus(userId,taskId,status);
+        }
+    }
+
+    private String getUserId(Integer userType, Long taskId, Integer type, Integer warningType){
+        String sql="";
+        String userId = "";
+        if(userType==1){ //一级单位处理
+                sql = "SELECT USER_ID FROM MONITOR_CHECK_YJ WHERE \n" +
+                        "TASK_ID=?1 AND TASK_TYPE=?2 AND WARNING_TYPE=?3 ";
+        }else if (userType==2){ //二级单位处理
+                sql="SELECT USER_ID FROM MONITOR_CHECK_EJ WHERE \n" +
+                        "TASK_ID=?1 AND TASK_TYPE=?2 AND WARNING_TYPE=?3  ";
+        }
+        List<Map<String, Object>> maps = execSql(sql, taskId, type, warningType);
+        if(maps.size()>0){
+           userId = maps.get(0).get("USER_ID").toString();
+        }
+        return userId;
     }
 
     //未按时接任务添加
